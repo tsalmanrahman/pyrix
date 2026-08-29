@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-Cash Book - {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl">
+
+  <!-- Minimalist Header Banner with Sleek Icon Back Button -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <i data-lucide="{% if is_edit_mode %}edit-3{% else %}database{% endif %}" class="w-6 h-6 text-blue-400 shrink-0"></i>
+      <h2 class="text-lg font-bold text-white tracking-tight">
+        {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
+      </h2>
+    </div>
+
+    <!-- Sleek Back Button -->
+    <a 
+      href="/modules/cash-book?tab={{ sub_tab|default('overview') }}" 
+      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
+      title="Back to List"
+    >
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
+  </div>
+
+  <!-- Form Container -->
+  <form action="{% if is_edit_mode %}/modules/cash-book/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/cash-book/master/{{ entity }}/new{% endif %}" method="POST" class="space-y-4">
+
+    <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
+      <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
+        <span>Master Record Parameters</span>
+      </h3>
+
+      <!-- 1. Cashier Setup -->
+      {% if entity == 'cashiers' %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Cashier Code <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="cashier_code" 
+              required 
+              value="{{ record.cashier_code if record else '' }}" 
+              class="mac-input w-full font-mono font-semibold text-blue-400" 
+              placeholder="e.g. CSH-APEX-02"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Cashier / Station Name <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="cashier_name" 
+              required 
+              value="{{ record.cashier_name if record else '' }}" 
+              class="mac-input w-full" 
+              placeholder="e.g. South Gate Receiving Cashier"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Operating Subsidiary <span class="text-blue-400">*</span></label>
+            <select name="company_id" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+              {% for c in companies_list %}
+                <option value="{{ c.id }}" {% if (record and record.company_id == c.id) or (not record and active_company.id == c.id) %}selected{% endif %}>
+                  [{{ c.short_code }}] {{ c.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Physical Counter / Booth Location <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="counter_station" 
+              required 
+              value="{{ record.counter_station if record else '' }}" 
+              class="mac-input w-full" 
+              placeholder="e.g. Counter Station #2 (Plant Main Gate)"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Daily Cash Balance Limit ($)</label>
+            <input 
+              type="number" 
+              step="100" 
+              name="daily_cash_limit" 
+              value="{{ record.daily_cash_limit if record else '50000.00' }}" 
+              class="mac-input w-full font-mono"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Linked General Ledger Account</label>
+            <select name="gl_account_id" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+              <option value="">-- Select GL Cash Account --</option>
+              {% for g in gl_accounts %}
+                <option value="{{ g.id }}" {% if record and record.gl_account_id == g.id %}selected{% endif %}>
+                  [{{ g.account_number }}] {{ g.account_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+      <!-- 2. Bank Master -->
+      {% elif entity == 'banks' %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Bank Code <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="bank_code" 
+              required 
+              value="{{ record.bank_code if record else '' }}" 
+              class="mac-input w-full font-mono font-semibold text-blue-400" 
+              placeholder="e.g. BNK-BOA"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Bank Name / Corporate Title <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="bank_name" 
+              required 
+              value="{{ record.bank_name if record else '' }}" 
+              class="mac-input w-full" 
+              placeholder="e.g. Bank of America Merrill Lynch"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">SWIFT / BIC Code</label>
+            <input 
+              type="text" 
+              name="swift_code" 
+              value="{{ record.swift_code if record else '' }}" 
+              class="mac-input w-full font-mono" 
+              placeholder="e.g. BOFAUS3N"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Country / Domicile</label>
+            <input 
+              type="text" 
+              name="country" 
+              value="{{ record.country if record else 'United States' }}" 
+              class="mac-input w-full" 
+              placeholder="e.g. United States"
+            >
+          </div>
+        </div>
+
+      <!-- 3. Bank Branches -->
+      {% elif entity == 'branches' %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Parent Bank <span class="text-blue-400">*</span></label>
+            <select name="bank_id" required class="mac-input w-full bg-slate-900">
+              {% for b in banks_list %}
+                <option value="{{ b.id }}" {% if record and record.bank_id == b.id %}selected{% endif %}>
+                  [{{ b.bank_code }}] {{ b.bank_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Branch Code <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="branch_code" 
+              required 
+              value="{{ record.branch_code if record else '' }}" 
+              class="mac-input w-full font-mono font-semibold text-blue-400" 
+              placeholder="e.g. BR-BOA-BOS"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Branch Name <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="branch_name" 
+              required 
+              value="{{ record.branch_name if record else '' }}" 
+              class="mac-input w-full" 
+              placeholder="e.g. Boston Financial Center Branch"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">ABA Routing / Clearing Transit Number</label>
+            <input 
+              type="text" 
+              name="routing_number" 
+              value="{{ record.routing_number if record else '' }}" 
+              class="mac-input w-full font-mono" 
+              placeholder="e.g. 011000138"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Branch Physical Address</label>
+            <input 
+              type="text" 
+              name="branch_address" 
+              value="{{ record.branch_address if record else '' }}" 
+              class="mac-input w-full" 
+              placeholder="e.g. 100 Federal Street, Boston, MA"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Contact Phone</label>
+            <input 
+              type="text" 
+              name="contact_phone" 
+              value="{{ record.contact_phone if record else '' }}" 
+              class="mac-input w-full font-mono" 
+              placeholder="+1 (617) 555-0199"
+            >
+          </div>
+        </div>
+
+      <!-- 4. Bank Accounts -->
+      {% elif entity == 'accounts' %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Company Operating Entity <span class="text-blue-400">*</span></label>
+            <select name="company_id" required class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+              {% for c in companies_list %}
+                <option value="{{ c.id }}" {% if (record and record.company_id == c.id) or (not record and active_company.id == c.id) %}selected{% endif %}>
+                  [{{ c.short_code }}] {{ c.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Bank Branch Location <span class="text-blue-400">*</span></label>
+            <select name="branch_id" required class="mac-input w-full bg-slate-900 text-[11px]">
+              {% for br in branches_list %}
+                <option value="{{ br.id }}" {% if record and record.branch_id == br.id %}selected{% endif %}>
+                  {{ br.bank_name }} - {{ br.branch_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Account Number <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="account_number" 
+              required 
+              value="{{ record.account_number if record else '' }}" 
+              class="mac-input w-full font-mono font-semibold text-blue-400" 
+              placeholder="e.g. BOA-8812-9901"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Account Title / Label <span class="text-blue-400">*</span></label>
+            <input 
+              type="text" 
+              name="account_title" 
+              required 
+              value="{{ record.account_title if record else '' }}" 
+              class="mac-input w-full" 
+              placeholder="e.g. Apex Operating Clearing Account"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Account Type <span class="text-blue-400">*</span></label>
+            <select name="account_type" required class="mac-input w-full bg-slate-900 font-medium">
+              <option value="CURRENT" {% if record and record.account_type == 'CURRENT' %}selected{% endif %}>CURRENT (Operating)</option>
+              <option value="SAVINGS" {% if record and record.account_type == 'SAVINGS' %}selected{% endif %}>SAVINGS (Interest Yield)</option>
+              <option value="ESCROW" {% if record and record.account_type == 'ESCROW' %}selected{% endif %}>ESCROW (Project Trust)</option>
+              <option value="SWEEP" {% if record and record.account_type == 'SWEEP' %}selected{% endif %}>SWEEP (Overnight Liquidity)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Currency <span class="text-blue-400">*</span></label>
+            <select name="currency" required class="mac-input w-full bg-slate-900 font-mono">
+              <option value="USD" {% if (record and record.currency == 'USD') or not record %}selected{% endif %}>USD ($)</option>
+              <option value="EUR" {% if record and record.currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
+              <option value="GBP" {% if record and record.currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
+              <option value="BDT" {% if record and record.currency == 'BDT' %}selected{% endif %}>BDT (৳)</option>
+              <option value="SGD" {% if record and record.currency == 'SGD' %}selected{% endif %}>SGD (S$)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Linked General Ledger Account <span class="text-blue-400">*</span></label>
+            <select name="gl_account_id" required class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+              {% for g in gl_accounts %}
+                <option value="{{ g.id }}" {% if record and record.gl_account_id == g.id %}selected{% endif %}>
+                  [{{ g.account_number }}] {{ g.account_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Opening / Initial Balance ($)</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              name="opening_balance" 
+              value="{{ record.opening_balance if record else '0.00' }}" 
+              class="mac-input w-full font-mono"
+            >
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-slate-300 font-medium mb-1">Approved Overdraft Facility Limit ($)</label>
+            <input 
+              type="number" 
+              step="1000" 
+              name="overdraft_limit" 
+              value="{{ record.overdraft_limit if record else '0.00' }}" 
+              class="mac-input w-full font-mono"
+            >
+          </div>
+        </div>
+
+      {% endif %}
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-between pt-2">
+      <a 
+        href="/modules/cash-book?tab={{ sub_tab|default('overview') }}" 
+        class="px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 transition"
+      >
+        Cancel
+      </a>
+      <button 
+        type="submit" 
+        class="h-10 px-6 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 transition cursor-pointer shadow-lg shadow-blue-600/20"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+        <span>{% if is_edit_mode %}Update {{ entity_title }}{% else %}Save {{ entity_title }}{% endif %}</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}

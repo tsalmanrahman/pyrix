@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Locked - Pyrix</title>
+  
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230078D4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#0F1117] text-slate-100 min-h-screen flex items-center justify-center p-4 relative selection:bg-blue-600/30 selection:text-white">
+
+  <!-- Ambient Glow -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="w-full max-w-sm space-y-6 text-center relative z-10">
+
+    <!-- User Lock Info -->
+    <div class="space-y-3">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white text-2xl font-black shadow-2xl shadow-blue-600/30 relative">
+        <span>{{ user.initials if user and user.initials else 'AV' }}</span>
+        <span class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-500 border-2 border-[#0F1117] flex items-center justify-center text-slate-950">
+          <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+        </span>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-bold text-white tracking-tight">{{ user.full_name }}</h2>
+        <p class="text-xs text-slate-400 font-mono mt-0.5">Terminal Locked &bull; [{{ active_company.short_code }}]</p>
+      </div>
+    </div>
+
+    <!-- Unlock Card -->
+    <div class="glass-card rounded-2xl p-6 border border-white/10 shadow-2xl space-y-4">
+      <form action="/session/unlock" method="POST" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5 text-left">Enter Password to Resume</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+              <i data-lucide="key" class="w-4 h-4"></i>
+            </div>
+            <input 
+              type="password" 
+              name="password" 
+              required 
+              placeholder="••••••••" 
+              autofocus
+              class="mac-input w-full pl-9"
+            >
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full h-10 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-lg shadow-blue-600/20"
+        >
+          <i data-lucide="unlock" class="w-4 h-4"></i>
+          <span>Unlock Terminal</span>
+        </button>
+      </form>
+
+      <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
+        <a href="/login" class="text-slate-400 hover:text-white transition">Switch Account</a>
+        <a href="/logout" class="text-rose-400 hover:text-rose-300 transition">Sign Out</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

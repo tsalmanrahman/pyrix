@@ -1,0 +1,26 @@
+<!-- Windows 11 Modern Settings Style Clickable Breadcrumb Trail -->
+{% if breadcrumbs and breadcrumbs | length > 0 %}
+<nav aria-label="Breadcrumb" class="mt-4 mb-2 flex items-center flex-wrap gap-1 text-lg sm:text-xl font-semibold tracking-tight">
+  {% for item in breadcrumbs %}
+    {% if not loop.last and item.url %}
+      <!-- Clickable Parent Link -->
+      <a 
+        href="{{ item.url }}" 
+        class="text-slate-400 hover:text-blue-400 transition-colors duration-150 flex items-center gap-1.5 cursor-pointer"
+      >
+        {% if loop.first and item.title == 'Home' %}
+          <i data-lucide="home" class="w-4 h-4 text-slate-400"></i>
+        {% endif %}
+        <span>{{ item.title }}</span>
+      </a>
+      <!-- Windows 11 Fluent Chevron Separator -->
+      <span class="text-slate-500 font-normal px-1 select-none text-base">›</span>
+    {% else %}
+      <!-- Current Active Page Leaf (Matching Windows 11 'System > Sound' Typography) -->
+      <span class="text-white font-bold tracking-tight">
+        {{ item.title }}
+      </span>
+    {% endif %}
+  {% endfor %}
+</nav>
+{% endif %}

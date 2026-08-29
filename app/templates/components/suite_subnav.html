@@ -1,0 +1,34 @@
+<!-- DYNAMIC SUITE-CONTEXTUAL SUB-NAVIGATION BAR (System-Wide Universal Component) -->
+{% if active_suite and active_suite.cards and active_suite.cards|length > 1 %}
+  <div id="dynamic-suite-subnav" class="glass-card rounded-2xl p-2 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-2 overflow-x-auto text-xs font-semibold shadow-sm">
+    <div class="flex items-center gap-1.5 min-w-0">
+      
+      <!-- Back to Executive Master Hub Overview -->
+      <a 
+        href="/modules/{{ module.route_slug }}" 
+        class="px-2.5 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-white transition flex items-center gap-1.5 shrink-0"
+        title="Back to {{ module.name }} Master Hub"
+      >
+        <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+        <span>Overview</span>
+      </a>
+
+      <div class="h-4 w-px bg-slate-300 dark:bg-white/10 mx-1 shrink-0"></div>
+
+      <!-- Sibling Options belonging EXCLUSIVELY to this Operational Suite -->
+      <div class="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+        {% for card in active_suite.cards %}
+          {% set is_active = ('tab=' ~ current_tab in card.url or card.url.endswith('/' ~ current_tab)) %}
+          <a 
+            href="{{ card.url }}" 
+            class="px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shrink-0 {% if is_active %}{% if active_suite.theme_color == 'emerald' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold shadow-sm{% elif active_suite.theme_color == 'purple' %}bg-purple-500/20 text-purple-400 border border-purple-500/30 font-bold shadow-sm{% elif active_suite.theme_color == 'amber' %}bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold shadow-sm{% elif active_suite.theme_color == 'rose' %}bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold shadow-sm{% else %}bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold shadow-sm{% endif %}{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5{% endif %}"
+          >
+            <i data-lucide="{{ card.icon }}" class="w-3.5 h-3.5"></i>
+            <span>{{ card.title }}</span>
+          </a>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+{% endif %}

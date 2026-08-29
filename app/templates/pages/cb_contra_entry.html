@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-Cash Book - Inter Bank-Cash Contra Transfer{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl">
+
+  <!-- Header Banner -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <i data-lucide="arrow-left-right" class="w-6 h-6 text-blue-400 shrink-0"></i>
+      <div>
+        <h2 class="text-lg font-bold text-white tracking-tight">Inter Bank-Cash Contra Transfer Studio</h2>
+        <p class="text-xs text-slate-400">Cash-to-Bank Deposits, Bank-to-Cash Withdrawals & Treasury Transfers</p>
+      </div>
+    </div>
+
+    <!-- Sleek Back Button -->
+    <a 
+      href="/modules/cash-book?tab=transfers" 
+      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
+      title="Back to Contra Transfers"
+    >
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
+  </div>
+
+  <!-- Form Container -->
+  <form action="/modules/cash-book/transfers/new" method="POST" class="space-y-5">
+    
+    <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
+      <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
+        <span>Transfer Routing & Direction</span>
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        
+        <!-- Operating Company -->
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Operating Subsidiary</label>
+          <input type="text" readonly value="[{{ active_company.short_code }}] {{ active_company.name }}" class="mac-input w-full font-semibold text-slate-300">
+        </div>
+
+        <!-- Transfer Type -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Contra Transaction Type <span class="text-blue-400">*</span></label>
+          <select name="transfer_type" id="transfer_type" onchange="adjustContraSelectors()" required class="mac-input w-full bg-slate-900 font-medium">
+            <option value="CASH_TO_BANK" selected>Cash to Bank (Cash Deposit into Bank)</option>
+            <option value="BANK_TO_CASH">Bank to Cash (Petty Cash / Till Withdrawal)</option>
+            <option value="BANK_TO_BANK">Bank to Bank (Inter-Account Fund Transfer)</option>
+          </select>
+        </div>
+
+        <!-- Date -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Transfer Date <span class="text-blue-400">*</span></label>
+          <input type="date" name="transfer_date" id="transfer_date" required class="mac-input w-full font-mono">
+        </div>
+
+      </div>
+
+      <!-- Source and Destination Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
+        
+        <!-- Source (From) -->
+        <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
+          <p class="text-[11px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+            <span>Source Origin (Credit Account)</span>
+          </p>
+
+          <!-- From Cashier -->
+          <div id="from_cashier_box">
+            <label class="block text-slate-300 font-medium mb-1">From Cashier Station</label>
+            <select name="from_cashier_id" id="from_cashier_id" class="mac-input w-full bg-slate-900 text-[11px]">
+              {% for c in cashiers %}
+                <option value="{{ c.id }}">{{ c.cashier_code }} - {{ c.cashier_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- From Bank -->
+          <div id="from_bank_box" class="hidden">
+            <label class="block text-slate-300 font-medium mb-1">From Bank Account</label>
+            <select name="from_bank_account_id" id="from_bank_account_id" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+              {% for ba in bank_accounts %}
+                <option value="{{ ba.id }}">{{ ba.bank_name }} - {{ ba.account_number }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Destination (To) -->
+        <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
+          <p class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Destination Target (Debit Account)</span>
+          </p>
+
+          <!-- To Bank -->
+          <div id="to_bank_box">
+            <label class="block text-slate-300 font-medium mb-1">To Bank Account</label>
+            <select name="to_bank_account_id" id="to_bank_account_id" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+              {% for ba in bank_accounts %}
+                <option value="{{ ba.id }}">{{ ba.bank_name }} - {{ ba.account_number }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- To Cashier -->
+          <div id="to_cashier_box" class="hidden">
+            <label class="block text-slate-300 font-medium mb-1">To Cashier Station</label>
+            <select name="to_cashier_id" id="to_cashier_id" class="mac-input w-full bg-slate-900 text-[11px]">
+              {% for c in cashiers %}
+                <option value="{{ c.id }}">{{ c.cashier_code }} - {{ c.cashier_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Amount and Reference -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Transfer Amount ({{ active_company.currency }}) <span class="text-blue-400">*</span></label>
+          <div class="relative">
+            <input type="number" step="0.01" name="amount" required placeholder="0.00" class="mac-input w-full font-mono text-sm font-bold text-emerald-400 pl-8">
+            <span class="absolute left-3 top-2.5 text-xs text-slate-500 font-mono">$</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Deposit Slip / Cheque Ref No <span class="text-blue-400">*</span></label>
+          <input type="text" name="reference_number" required placeholder="e.g. DEP-SLIP-8812 / CHQ-SELF-1092" class="mac-input w-full font-mono">
+        </div>
+      </div>
+
+      <!-- Narration -->
+      <div class="text-xs">
+        <label class="block text-slate-300 font-medium mb-1">Contra Transfer Narration</label>
+        <textarea name="narration" rows="2" placeholder="e.g. Daily cash collection deposit into primary treasury account" class="mac-input w-full"></textarea>
+      </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between pt-2">
+      <a href="/modules/cash-book?tab=transfers" class="px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 transition">
+        Cancel
+      </a>
+      <button type="submit" class="h-10 px-6 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 transition cursor-pointer shadow-lg shadow-blue-600/20">
+        <i data-lucide="check" class="w-4 h-4"></i>
+        <span>Post Contra Transfer</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+  document.getElementById('transfer_date').valueAsDate = new Date();
+
+  function adjustContraSelectors() {
+    const t = document.getElementById('transfer_type').value;
+    const fromCashier = document.getElementById('from_cashier_box');
+    const fromBank = document.getElementById('from_bank_box');
+    const toBank = document.getElementById('to_bank_box');
+    const toCashier = document.getElementById('to_cashier_box');
+
+    if (t === 'CASH_TO_BANK') {
+      fromCashier.classList.remove('hidden');
+      fromBank.classList.add('hidden');
+      toBank.classList.remove('hidden');
+      toCashier.classList.add('hidden');
+    } else if (t === 'BANK_TO_CASH') {
+      fromCashier.classList.add('hidden');
+      fromBank.classList.remove('hidden');
+      toBank.classList.add('hidden');
+      toCashier.classList.remove('hidden');
+    } else if (t === 'BANK_TO_BANK') {
+      fromCashier.classList.add('hidden');
+      fromBank.classList.remove('hidden');
+      toBank.classList.remove('hidden');
+      toCashier.classList.add('hidden');
+    }
+  }
+</script>
+{% endblock %}

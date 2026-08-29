@@ -1,0 +1,44 @@
+<!-- =========================================================================
+     PYRIX ENTERPRISE: UNIVERSAL CARD & SUITE JINJA MACRO SYSTEM
+     Ensures 100% Visual Consistency & Modern Responsiveness Across All Modules
+     ========================================================================= -->
+
+{% macro render_suite_header(icon, title, subtitle, count_label="", theme_color="blue") %}
+  <div class="flex items-center justify-between pb-1">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+      <i data-lucide="{{ icon }}" class="w-4 h-4 text-{{ theme_color }}-500"></i>
+      <span>{{ title }}</span>
+    </h2>
+  </div>
+{% endmacro %}
+
+{% macro render_subarea_card(title, subtitle, badge_text, url, icon_name, theme_color="blue", is_active=false, custom_badge_class="") %}
+  <a 
+    href="{{ url }}" 
+    class="sub-area-card glass-card rounded-xl p-3.5 flex items-center justify-between gap-3 group border transition-all duration-150 cursor-pointer {% if is_active %}border-{{ theme_color }}-500 bg-{{ theme_color }}-500/10 shadow-sm shadow-{{ theme_color }}-500/20{% else %}border-slate-200 dark:border-white/10 hover:border-{{ theme_color }}-500/40 hover:bg-slate-50 dark:hover:bg-white/[0.04]{% endif %}"
+    data-card-title="{{ title|lower }}"
+    data-card-desc="{{ subtitle|lower }}"
+  >
+    <div class="flex items-center gap-3 min-w-0 flex-1">
+      <div class="w-9 h-9 rounded-lg bg-{{ theme_color }}-500/10 border border-{{ theme_color }}-500/20 flex items-center justify-center text-{{ theme_color }}-500 shrink-0 group-hover:scale-105 transition-transform">
+        <i data-lucide="{{ icon_name }}" class="w-5 h-5"></i>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2">
+          <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-{{ theme_color }}-600 dark:group-hover:text-{{ theme_color }}-400 truncate uppercase tracking-tight transition-colors">
+            {{ title }}
+          </h3>
+          {% if badge_text %}
+            <span class="px-1.5 py-0.2 text-[9px] font-mono rounded font-semibold shrink-0 {% if custom_badge_class %}{{ custom_badge_class }}{% else %}bg-{{ theme_color }}-500/15 text-{{ theme_color }}-600 dark:text-{{ theme_color }}-400 border border-{{ theme_color }}-500/30{% endif %}">
+              {{ badge_text }}
+            </span>
+          {% endif %}
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{{ subtitle }}</p>
+      </div>
+    </div>
+    <div class="flex items-center shrink-0">
+      <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-{{ theme_color }}-500 group-hover:translate-x-0.5 transition-all"></i>
+    </div>
+  </a>
+{% endmacro %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="glass-card rounded-3xl p-6 border border-white/10 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
+        <i data-lucide="palette" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-white tracking-tight">Appearance & Glassmorphism Studio</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Customize macOS backdrop blur depth, Windows 11 Fluent themes, and accent lighting</p>
+      </div>
+    </div>
+  </div>
+
+  <form id="appearance-form" class="space-y-4">
+
+    <!-- 1. THEME MODE SELECTOR -->
+    <div class="glass-card rounded-2xl p-5 space-y-3">
+      <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+        <i data-lucide="sun-moon" class="w-4 h-4 text-blue-400"></i>
+        <span>Color Theme</span>
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        
+        <label class="cursor-pointer">
+          <input type="radio" name="theme_mode" value="dark" class="peer sr-only" {% if appearance.theme_mode == 'dark' %}checked{% endif %}>
+          <div class="p-4 rounded-xl bg-slate-900 border-2 border-white/10 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 transition">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-white">Dark Mica</span>
+              <span class="w-3 h-3 rounded-full bg-slate-800 border border-white/20"></span>
+            </div>
+            <p class="text-[11px] text-slate-400">Deep Windows 11 dark acrylic background with ambient glow</p>
+          </div>
+        </label>
+
+        <label class="cursor-pointer">
+          <input type="radio" name="theme_mode" value="light" class="peer sr-only" {% if appearance.theme_mode == 'light' %}checked{% endif %}>
+          <div class="p-4 rounded-xl bg-slate-100 border-2 border-white/10 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 transition">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-900">Light Glass</span>
+              <span class="w-3 h-3 rounded-full bg-white border border-slate-300"></span>
+            </div>
+            <p class="text-[11px] text-slate-600">Crisp macOS clean light frosted backdrop with subtle gray strokes</p>
+          </div>
+        </label>
+
+        <label class="cursor-pointer">
+          <input type="radio" name="theme_mode" value="acrylic" class="peer sr-only" {% if appearance.theme_mode == 'acrylic' %}checked{% endif %}>
+          <div class="p-4 rounded-xl bg-slate-950 border-2 border-white/10 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 transition">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-white">Ultra Acrylic</span>
+              <span class="w-3 h-3 rounded-full bg-indigo-900 border border-white/20"></span>
+            </div>
+            <p class="text-[11px] text-slate-400">Maximum transparency with intense Gaussian backdrop blur</p>
+          </div>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- 2. ACCENT COLOR PALETTE -->
+    <div class="glass-card rounded-2xl p-5 space-y-3">
+      <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i>
+        <span>System Accent Color</span>
+      </h3>
+      <div class="flex items-center gap-3 flex-wrap">
+        {% set colors = [
+          ("#0078D4", "Fluent Blue"),
+          ("#5856D6", "Apple Indigo"),
+          ("#10B981", "Plant Emerald"),
+          ("#F59E0B", "Amber Warning"),
+          ("#EC4899", "Neon Pink"),
+          ("#06B6D4", "Cyan Cyber"),
+          ("#8B5CF6", "Purple Glass")
+        ] %}
+        {% for hex, label in colors %}
+          <label class="cursor-pointer">
+            <input type="radio" name="accent_color" value="{{ hex }}" class="peer sr-only" {% if appearance.accent_color == hex %}checked{% endif %}>
+            <div class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-white/10 peer-checked:border-white peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-slate-900 peer-checked:ring-white/50 bg-white/5 transition">
+              <span class="w-4 h-4 rounded-full" style="background-color: {{ hex }};"></span>
+              <span class="text-xs font-medium text-slate-200">{{ label }}</span>
+            </div>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 3. FROSTED GLASS BLUR INTENSITY -->
+    <div class="glass-card rounded-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+            <i data-lucide="droplet" class="w-4 h-4 text-blue-400"></i>
+            <span>macOS Backdrop Blur Depth</span>
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">Controls the Gaussian kernel blur applied to floating layers</p>
+        </div>
+        <span class="text-xs font-mono font-bold text-blue-400 px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+          <span id="blur-val">{{ appearance.glass_blur_px }}</span> px
+        </span>
+      </div>
+      <input 
+        type="range" 
+        name="glass_blur_px" 
+        id="glass-blur-slider"
+        min="4" 
+        max="48" 
+        step="2" 
+        value="{{ appearance.glass_blur_px }}" 
+        class="w-full"
+        oninput="document.getElementById('blur-val').textContent = this.value; document.documentElement.style.setProperty('--glass-blur', this.value + 'px')"
+      >
+    </div>
+
+    <!-- 4. SIDEBAR & BORDER GLOW -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+        <div>
+          <h4 class="text-sm font-semibold text-white">Floating Sidebar Geometry</h4>
+          <p class="text-xs text-slate-400 mt-0.5">Detached floating macOS pill vs docked</p>
+        </div>
+        <select name="sidebar_style" class="mac-input text-xs py-1.5 px-3 bg-slate-900">
+          <option value="floating" {% if appearance.sidebar_style == 'floating' %}selected{% endif %}>Floating (macOS)</option>
+          <option value="docked" {% if appearance.sidebar_style == 'docked' %}selected{% endif %}>Docked Edge</option>
+        </select>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 flex items-center justify-between">
+        <div>
+          <h4 class="text-sm font-semibold text-white">Ambient Border Glow</h4>
+          <p class="text-xs text-slate-400 mt-0.5">Highlight active card borders with accent glow</p>
+        </div>
+        <label class="mac-toggle">
+          <input type="checkbox" name="border_glow" value="1" {% if appearance.border_glow %}checked{% endif %}>
+          <span class="mac-toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <input type="hidden" name="glass_opacity_pct" value="75">
+
+    <!-- Save Button -->
+    <div class="flex justify-end pt-2">
+      <button 
+        type="button" 
+        onclick="saveAppearance()"
+        class="px-6 py-2.5 rounded-xl font-semibold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 border border-white/10 transition flex items-center gap-2"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+        <span>Save Appearance Settings</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+async function saveAppearance() {
+  const form = document.getElementById('appearance-form');
+  const formData = new FormData(form);
+  if (!formData.has('border_glow')) {
+    formData.append('border_glow', '0');
+  }
+
+  try {
+    const res = await fetch('/api/appearance/update', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Appearance settings saved to SQL Server.');
+      setTimeout(() => window.location.reload(), 800);
+    }
+  } catch (err) {
+    showToast('Failed to save appearance.', 'error');
+  }
+}
+</script>
+{% endblock %}

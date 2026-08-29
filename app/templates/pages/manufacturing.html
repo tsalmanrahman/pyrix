@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }} - Plant Operations{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Manufacturing Hero Header -->
+  <div class="glass-card rounded-3xl p-6 border border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-xl shadow-emerald-500/25">
+        <i data-lucide="factory" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h2 class="text-xl font-bold text-white tracking-tight">Plant Telemetry & Assembly Lines</h2>
+          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            Shift A Active
+          </span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Real-time shop-floor operational status, line speeds, and thermal monitoring</p>
+      </div>
+    </div>
+
+    <!-- Quick Stats Summary -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Active Cells</p>
+        <p class="text-lg font-bold text-emerald-400 mt-0.5">{{ plant_summary.running }} / {{ plant_summary.total_machines }}</p>
+      </div>
+      <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Avg Efficiency</p>
+        <p class="text-lg font-bold text-blue-400 mt-0.5">{{ plant_summary.average_efficiency }}%</p>
+      </div>
+      <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Units Produced</p>
+        <p class="text-lg font-bold text-white mt-0.5">{{ "{:,}".format(plant_summary.total_units_today) }}</p>
+      </div>
+      <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
+        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Defect Ratio</p>
+        <p class="text-lg font-bold text-amber-400 mt-0.5">{{ plant_summary.defect_rate_pct }}%</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Machine Grid Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for m in machines %}
+      <div class="glass-card rounded-2xl p-5 space-y-4 border border-white/10 relative overflow-hidden">
+        <!-- Accent line based on status -->
+        {% if m.status == 'RUNNING' %}
+          <div class="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
+        {% elif m.status == 'ALERT' %}
+          <div class="absolute top-0 left-0 right-0 h-1 bg-rose-500 animate-pulse"></div>
+        {% else %}
+          <div class="absolute top-0 left-0 right-0 h-1 bg-amber-500"></div>
+        {% endif %}
+
+        <!-- Machine Card Header -->
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <span class="text-[10px] font-mono font-semibold text-slate-400 uppercase tracking-wider">{{ m.machine_id }}</span>
+            <h3 class="text-sm font-bold text-white mt-0.5">{{ m.machine_name }}</h3>
+            <p class="text-xs text-slate-400 mt-0.5">{{ m.line_name }}</p>
+          </div>
+
+          <!-- Status Badge Dropdown -->
+          <select 
+            class="mac-input py-1 px-2.5 text-xs font-bold bg-slate-900 cursor-pointer {% if m.status == 'RUNNING' %}text-emerald-400 border-emerald-500/30{% elif m.status == 'ALERT' %}text-rose-400 border-rose-500/30{% else %}text-amber-400 border-amber-500/30{% endif %}"
+            onchange="updateMachineStatus('{{ m.machine_id }}', this.value)"
+          >
+            <option value="RUNNING" {% if m.status == 'RUNNING' %}selected{% endif %}>RUNNING</option>
+            <option value="IDLE" {% if m.status == 'IDLE' %}selected{% endif %}>IDLE</option>
+            <option value="MAINTENANCE" {% if m.status == 'MAINTENANCE' %}selected{% endif %}>MAINTENANCE</option>
+            <option value="ALERT" {% if m.status == 'ALERT' %}selected{% endif %}>ALERT</option>
+          </select>
+        </div>
+
+        <!-- Telemetry Gauges -->
+        <div class="grid grid-cols-4 gap-2 pt-2 border-t border-white/5 text-center">
+          <div class="p-2 rounded-xl bg-white/[0.02]">
+            <p class="text-[10px] text-slate-400 uppercase">Efficiency</p>
+            <p class="text-xs font-bold text-emerald-400 mt-0.5 font-mono">{{ m.efficiency_pct }}%</p>
+          </div>
+          <div class="p-2 rounded-xl bg-white/[0.02]">
+            <p class="text-[10px] text-slate-400 uppercase">Temp</p>
+            <p class="text-xs font-bold {% if m.temperature_c > 70 %}text-rose-400{% else %}text-slate-200{% endif %} mt-0.5 font-mono">{{ m.temperature_c }}°C</p>
+          </div>
+          <div class="p-2 rounded-xl bg-white/[0.02]">
+            <p class="text-[10px] text-slate-400 uppercase">Vibration</p>
+            <p class="text-xs font-bold {% if m.vibration_mm_s > 2.0 %}text-rose-400{% else %}text-slate-200{% endif %} mt-0.5 font-mono">{{ m.vibration_mm_s }} mm/s</p>
+          </div>
+          <div class="p-2 rounded-xl bg-white/[0.02]">
+            <p class="text-[10px] text-slate-400 uppercase">Defects</p>
+            <p class="text-xs font-bold {% if m.defect_count > 10 %}text-rose-400{% else %}text-slate-200{% endif %} mt-0.5 font-mono">{{ m.defect_count }}</p>
+          </div>
+        </div>
+
+        <!-- Line Speed Control -->
+        <div class="pt-2 flex items-center justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="text-slate-400 font-semibold">Conveyor Speed</span>
+              <span class="font-mono font-bold text-slate-200"><span id="speed-{{ m.machine_id }}">{{ m.actual_ppm }}</span> / {{ m.target_ppm }} PPM</span>
+            </div>
+            <input 
+              type="range" 
+              min="0" 
+              max="400" 
+              step="5" 
+              value="{{ m.actual_ppm }}" 
+              class="w-full"
+              oninput="document.getElementById('speed-{{ m.machine_id }}').textContent = this.value"
+              onchange="updateLineSpeed('{{ m.machine_id }}', this.value)"
+            >
+          </div>
+        </div>
+
+        <!-- Operator on duty footer -->
+        <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Operator: <strong class="text-slate-200">{{ m.operator_name }}</strong></span>
+          <span>{{ m.shift_name }}</span>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+async function updateMachineStatus(id, status) {
+  const formData = new FormData();
+  formData.append('machine_id', id);
+  formData.append('status', status);
+
+  try {
+    const res = await fetch('/api/manufacturing/machine-status', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Machine '${id}' status updated to ${status}.`);
+      setTimeout(() => window.location.reload(), 600);
+    }
+  } catch (err) {
+    showToast('Failed to update machine status.', 'error');
+  }
+}
+
+async function updateLineSpeed(id, speed) {
+  const formData = new FormData();
+  formData.append('machine_id', id);
+  formData.append('speed', speed);
+
+  try {
+    const res = await fetch('/api/manufacturing/line-speed', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`Machine '${id}' speed set to ${speed} PPM.`);
+    }
+  } catch (err) {
+    showToast('Failed to adjust speed.', 'error');
+  }
+}
+</script>
+{% endblock %}

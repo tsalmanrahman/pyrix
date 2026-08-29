@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-AR - {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl">
+
+  <!-- Minimalist Header Banner with Sleek Icon Back Button & Contextual Search -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-3 min-w-0">
+      <i data-lucide="{% if is_edit_mode %}edit-3{% else %}user-plus{% endif %}" class="w-6 h-6 text-blue-500 shrink-0"></i>
+      <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">
+        {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
+      </h2>
+    </div>
+
+    <!-- Back Button to Sub-Area List -->
+    <a 
+      href="/modules/accounts-receivable?tab={{ sub_tab|default('customers') }}" 
+      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
+      title="Back to List"
+    >
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
+  </div>
+
+  <!-- Dedicated Solid Form Container (Zero-Modal Full Page) -->
+  <form action="{% if is_edit_mode %}/modules/accounts-receivable/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/accounts-receivable/master/{{ entity }}{% endif %}" method="POST" class="space-y-4">
+
+    <!-- =========================================================================
+         1. CUSTOMER MASTER PROFILE (customers)
+         ========================================================================= -->
+    {% if entity == 'customers' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-5">
+        
+        <!-- Section 1: Customer Identification -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="building-2" class="w-4 h-4"></i>
+            <span>1. Customer Identification & Corporate Entity</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Code <span class="text-blue-500">*</span></label>
+              <input 
+                type="text" 
+                name="customer_code" 
+                required 
+                value="{{ record.customer_code if record else '' }}" 
+                placeholder="e.g. CUST-2001" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400"
+              >
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Registered Legal Name <span class="text-blue-500">*</span></label>
+              <input 
+                type="text" 
+                name="customer_name" 
+                required 
+                value="{{ record.customer_name if record else '' }}" 
+                placeholder="Full registered corporate name" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Group Classifications & Tier Rankings -->
+        <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-white/5">
+          <h3 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="folder-cog" class="w-4 h-4"></i>
+            <span>2. Group Classifications & Tier Rankings</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">AR Customer Group</label>
+              <select name="ar_customer_group_id" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+                <option value="">-- Select AR Group --</option>
+                {% for g in ar_customer_groups %}
+                  <option value="{{ g.id }}" {% if record and record.ar_customer_group_id|string == g.id|string %}selected{% endif %}>{{ g.group_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Commercial Sales Group</label>
+              <select name="commercial_group_id" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+                <option value="">-- Select Commercial --</option>
+                {% for cg in ar_commercial_groups %}
+                  <option value="{{ cg.id }}" {% if record and record.commercial_group_id|string == cg.id|string %}selected{% endif %}>{{ cg.group_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Tier Category</label>
+              <select name="group_category_id" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+                <option value="">-- Select Category --</option>
+                {% for cat in ar_group_categories %}
+                  <option value="{{ cat.id }}" {% if record and record.group_category_id|string == cat.id|string %}selected{% endif %}>{{ cat.category_name }} ({{ cat.tier_level }})</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Contact Information & Billing Address -->
+        <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-white/5">
+          <h3 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="contact" class="w-4 h-4"></i>
+            <span>3. Contact Details & Billing Information</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Primary Contact Person</label>
+              <input 
+                type="text" 
+                name="contact_person" 
+                value="{{ record.contact_person if record else '' }}" 
+                placeholder="e.g. John Doe" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Corporate Email</label>
+              <input 
+                type="email" 
+                name="email" 
+                value="{{ record.email if record else '' }}" 
+                placeholder="finance@customer.com" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
+              <input 
+                type="text" 
+                name="phone" 
+                value="{{ record.phone if record else '' }}" 
+                placeholder="+1 (555) 000-0000" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
+              >
+            </div>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Registered Billing Address</label>
+            <textarea 
+              name="billing_address" 
+              rows="2" 
+              placeholder="Full registered corporate billing address..." 
+              class="mac-input w-full p-2.5 rounded-xl border border-slate-300 dark:border-white/10"
+            >{{ record.billing_address if record else '' }}</textarea>
+          </div>
+        </div>
+
+        <!-- Section 4: Commercial & Credit Terms -->
+        <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-white/5">
+          <h3 class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="scale" class="w-4 h-4"></i>
+            <span>4. Commercial Credit Limits & Settlement Terms</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Credit Limit ($) <span class="text-blue-500">*</span></label>
+              <input 
+                type="number" 
+                step="1000" 
+                name="credit_limit" 
+                required 
+                value="{{ record.credit_limit if record else 1000000 }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Terms (Days) <span class="text-blue-500">*</span></label>
+              <input 
+                type="number" 
+                name="payment_terms_days" 
+                required 
+                value="{{ record.payment_terms_days if record else 30 }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Cash Discount (%)</label>
+              <input 
+                type="number" 
+                step="0.1" 
+                name="discount_percentage" 
+                value="{{ record.discount_percentage if record else 0.0 }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Tax / BIN ID</label>
+              <input 
+                type="text" 
+                name="tax_bin_number" 
+                value="{{ record.tax_bin_number if record else '' }}" 
+                placeholder="BIN-992019-US" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono"
+              >
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    <!-- =========================================================================
+         2. AR CUSTOMER GROUPS (ar-customer-groups)
+         ========================================================================= -->
+    {% elif entity == 'ar-customer-groups' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Group Code *</label>
+            <input type="text" name="group_code" required value="{{ record.group_code if record else '' }}" placeholder="e.g. AR-COMM" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Group Name *</label>
+            <input type="text" name="group_name" required value="{{ record.group_name if record else '' }}" placeholder="Commercial Trade Receivables" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Default Control Account Set</label>
+            <select name="control_account_set_id" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              <option value="">-- Select Control Set --</option>
+              {% for cs in ar_control_sets %}
+                <option value="{{ cs.id }}" {% if record and record.control_account_set_id|string == cs.id|string %}selected{% endif %}>{{ cs.set_code }} - {{ cs.set_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Default Credit ($)</label>
+              <input type="number" name="default_credit_limit" value="{{ record.default_credit_limit if record else 500000 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Grace Period (Days)</label>
+              <input type="number" name="grace_period_days" value="{{ record.grace_period_days if record else 30 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- =========================================================================
+         3. COMMERCIAL CUSTOMER GROUPS (customer-groups)
+         ========================================================================= -->
+    {% elif entity == 'customer-groups' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Commercial Group Code *</label>
+            <input type="text" name="group_code" required value="{{ record.group_code if record else '' }}" placeholder="e.g. CG-WHOLESALE" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Commercial Group Name *</label>
+            <input type="text" name="group_name" required value="{{ record.group_name if record else '' }}" placeholder="Wholesale & Bulk Distribution" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Region / Territory</label>
+            <input type="text" name="region" value="{{ record.region if record else '' }}" placeholder="e.g. National, North America, EMEA" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+            <input type="text" name="description" value="{{ record.description if record else '' }}" placeholder="Channel description" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+          </div>
+        </div>
+      </div>
+
+    <!-- =========================================================================
+         4. TIER GROUP CATEGORIES (group-categories)
+         ========================================================================= -->
+    {% elif entity == 'group-categories' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Category Code *</label>
+            <input type="text" name="category_code" required value="{{ record.category_code if record else '' }}" placeholder="e.g. CAT-TIER1" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Category Name *</label>
+            <input type="text" name="category_name" required value="{{ record.category_name if record else '' }}" placeholder="Tier 1 - Strategic Key Account" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Tier Level</label>
+            <select name="tier_level" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              <option value="Tier 1 (Strategic)" {% if record and record.tier_level == 'Tier 1 (Strategic)' %}selected{% endif %}>Tier 1 (Strategic)</option>
+              <option value="Tier 2 (Commercial)" {% if record and record.tier_level == 'Tier 2 (Commercial)' %}selected{% endif %}>Tier 2 (Commercial)</option>
+              <option value="Tier 3 (Standard)" {% if record and record.tier_level == 'Tier 3 (Standard)' %}selected{% endif %}>Tier 3 (Standard)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Min Annual Turnover ($)</label>
+            <input type="number" name="min_turnover" value="{{ record.min_turnover if record else 0.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Priority Level</label>
+            <input type="number" name="priority_level" value="{{ record.priority_level if record else 1 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+          </div>
+        </div>
+      </div>
+
+    <!-- =========================================================================
+         5. CUSTOMER COMPANY MAPPING (company-mappings)
+         ========================================================================= -->
+    {% elif entity == 'company-mappings' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Select Customer *</label>
+            <select name="customer_id" required class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              <option value="">-- Choose Customer --</option>
+              {% for cust in ar_customers %}
+                <option value="{{ cust.id }}" {% if record and record.customer_id|string == cust.id|string %}selected{% endif %}>{{ cust.customer_code }} - {{ cust.customer_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Operating Entity / Subsidiary *</label>
+            <select name="company_id" required class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              {% for comp in companies_list %}
+                <option value="{{ comp.id }}" {% if record and record.company_id|string == comp.id|string %}selected{% elif not record and comp.id|string == active_company.id|string %}selected{% endif %}>{{ comp.short_code }} - {{ comp.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Subsidiary Account Alias Code</label>
+            <input type="text" name="subsidiary_account_code" value="{{ record.subsidiary_account_code if record else '' }}" placeholder="e.g. APEX-CUST-1001" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Allocated Credit Limit ($)</label>
+            <input type="number" name="allocated_credit_limit" value="{{ record.allocated_credit_limit if record else 500000.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Assigned Sales Representative</label>
+            <input type="text" name="assigned_sales_rep" value="{{ record.assigned_sales_rep if record else '' }}" placeholder="Account Executive Name" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+          </div>
+        </div>
+      </div>
+
+    <!-- =========================================================================
+         6. SHIP TO ADDRESSES (ship-to-addresses)
+         ========================================================================= -->
+    {% elif entity == 'ship-to-addresses' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Account *</label>
+            <select name="customer_id" required class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              {% for cust in ar_customers %}
+                <option value="{{ cust.id }}" {% if record and record.customer_id|string == cust.id|string %}selected{% endif %}>{{ cust.customer_code }} - {{ cust.customer_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Delivery Location Name *</label>
+            <input type="text" name="location_name" required value="{{ record.location_name if record else '' }}" placeholder="e.g. Central Plant Warehouse Dock #3" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Full Shipping Street Address *</label>
+            <textarea name="ship_address" required rows="2" class="mac-input w-full p-2.5 rounded-xl border border-slate-300 dark:border-white/10">{{ record.ship_address if record else '' }}</textarea>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">City / Municipality</label>
+            <input type="text" name="city" value="{{ record.city if record else '' }}" placeholder="e.g. Chittagong" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Person at Dock</label>
+            <input type="text" name="contact_person" value="{{ record.contact_person if record else '' }}" placeholder="Receiver Name" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+          </div>
+        </div>
+      </div>
+
+    <!-- =========================================================================
+         7. CONTROL ACCOUNT SETS (control-accounts)
+         ========================================================================= -->
+    {% elif entity == 'control-accounts' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Control Set Code *</label>
+            <input type="text" name="set_code" required value="{{ record.set_code if record else '' }}" placeholder="e.g. AR-COMM-SET" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Control Set Name *</label>
+            <input type="text" name="set_name" required value="{{ record.set_name if record else '' }}" placeholder="Standard Commercial AR Control Set" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Main A/R Control GL Account *</label>
+            <select name="ar_control_gl_id" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              {% for acc in gl_accounts %}
+                <option value="{{ acc.id }}" {% if record and record.ar_control_gl_id|string == acc.id|string %}selected{% endif %}>{{ acc.account_number }} - {{ acc.account_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Sales Discount GL Account</label>
+            <select name="sales_discount_gl_id" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              <option value="">-- None --</option>
+              {% for acc in gl_accounts %}
+                <option value="{{ acc.id }}" {% if record and record.sales_discount_gl_id|string == acc.id|string %}selected{% endif %}>{{ acc.account_number }} - {{ acc.account_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+    <!-- =========================================================================
+         8. REMINDER CRITERIA (reminder-criteria)
+         ========================================================================= -->
+    {% elif entity == 'reminder-criteria' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Criteria Code *</label>
+            <input type="text" name="criteria_code" required value="{{ record.criteria_code if record else '' }}" placeholder="e.g. CRIT-DUN-L1" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Criteria Name *</label>
+            <input type="text" name="criteria_name" required value="{{ record.criteria_name if record else '' }}" placeholder="15-Day Gentle Reminder Notice" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Reminder Level</label>
+            <select name="reminder_level" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              <option value="Level 1 (Gentle)" {% if record and record.reminder_level == 'Level 1 (Gentle)' %}selected{% endif %}>Level 1 (Gentle)</option>
+              <option value="Level 2 (Formal Overdue)" {% if record and record.reminder_level == 'Level 2 (Formal Overdue)' %}selected{% endif %}>Level 2 (Formal Overdue)</option>
+              <option value="Level 3 (Final Demand)" {% if record and record.reminder_level == 'Level 3 (Final Demand)' %}selected{% endif %}>Level 3 (Final Demand)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Overdue Days Threshold</label>
+            <input type="number" name="overdue_days_threshold" value="{{ record.overdue_days_threshold if record else 15 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Min Overdue Amount ($)</label>
+            <input type="number" name="min_overdue_amount" value="{{ record.min_overdue_amount if record else 1000.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Penalty Interest Rate (%)</label>
+            <input type="number" step="0.5" name="penalty_interest_pct" value="{{ record.penalty_interest_pct if record else 0.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+          </div>
+        </div>
+      </div>
+
+    <!-- =========================================================================
+         9. AGING PROFILES (aging-profiles)
+         ========================================================================= -->
+    {% elif entity == 'aging-profiles' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Profile Code *</label>
+            <input type="text" name="profile_code" required value="{{ record.profile_code if record else '' }}" placeholder="e.g. AGING-STD" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Profile Name *</label>
+            <input type="text" name="profile_name" required value="{{ record.profile_name if record else '' }}" placeholder="Standard Multi-Bracket Aging" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
+          </div>
+        </div>
+      </div>
+
+    <!-- =========================================================================
+         10. ADJUSTMENT TYPES (adjustment-types)
+         ========================================================================= -->
+    {% elif entity == 'adjustment-types' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Adjustment Code *</label>
+            <input type="text" name="adjustment_code" required value="{{ record.adjustment_code if record else '' }}" placeholder="e.g. ADJ-BAD-DEBT" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Adjustment Name *</label>
+            <input type="text" name="adjustment_name" required value="{{ record.adjustment_name if record else '' }}" placeholder="Bad Debt Write-off" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Adjustment Category</label>
+            <select name="adjustment_category" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+              <option value="CREDIT" {% if record and record.adjustment_category == 'CREDIT' %}selected{% endif %}>CREDIT Adjustment</option>
+              <option value="DEBIT" {% if record and record.adjustment_category == 'DEBIT' %}selected{% endif %}>DEBIT Adjustment</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Universal Form Bottom Actions Bar -->
+    <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-3">
+      <a 
+        href="/modules/accounts-receivable?tab={{ sub_tab|default('customers') }}" 
+        class="px-4 py-2 rounded-xl border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-white/[0.04] transition"
+      >
+        Cancel & Return to List
+      </a>
+      <button 
+        type="submit" 
+        class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+        <span>{% if is_edit_mode %}Save Changes{% else %}Create {{ entity_title }}{% endif %}</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}

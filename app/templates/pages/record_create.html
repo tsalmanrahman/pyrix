@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-{{ module.short_code }} - {% if is_edit_mode %}Edit Entry #{{ record.code }}{% else %}New Entry{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl">
+
+  <!-- Minimalist Header Banner with Sleek Icon Back Button -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <i data-lucide="{% if is_edit_mode %}edit-3{% else %}{{ module.icon }}{% endif %}" class="w-6 h-6 text-blue-400 shrink-0"></i>
+      <h2 class="text-lg font-bold text-white tracking-tight">
+        {% if is_edit_mode %}Edit {{ module.name }} Entry #{{ record.code }}{% else %}New {{ module.name }} Entry{% endif %}
+      </h2>
+    </div>
+
+    <!-- Sleek Tinted Icon Back Button (Indigo Glass) -->
+    <a 
+      href="/modules/{{ module.route_slug }}" 
+      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
+      title="Back to {{ module.name }}"
+    >
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
+  </div>
+
+  <!-- Solid Form Container -->
+  <form action="{% if is_edit_mode %}/modules/{{ module.route_slug }}/records/{{ record_id }}/edit{% else %}/modules/{{ module.route_slug }}/new{% endif %}" method="POST" class="space-y-4">
+    <input type="hidden" name="module_code" value="{{ module.module_code }}">
+
+    <!-- 1. Document Reference & Type Card -->
+    <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3.5">
+      <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <i data-lucide="file-text" class="w-4 h-4 text-blue-400"></i>
+        <span>Document Classification & Reference</span>
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Operating Entity</label>
+          <input type="text" readonly value="[{{ active_company.short_code }}] {{ active_company.name }}" class="mac-input w-full font-medium">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Record / Voucher Type <span class="text-blue-400">*</span></label>
+          <select name="record_type" class="mac-input w-full bg-slate-900 font-medium" required>
+            <option value="SALES_ORDER" {% if record and record.record_type == 'SALES_ORDER' %}selected{% endif %}>Sales Order (SO)</option>
+            <option value="STO" {% if record and record.record_type == 'STO' %}selected{% endif %}>Stock Transfer Order (STO)</option>
+            <option value="PO" {% if record and record.record_type == 'PO' %}selected{% endif %}>Purchase Order (PO)</option>
+            <option value="JV" {% if record and record.record_type == 'JV' %}selected{% endif %}>Journal Voucher (JV)</option>
+            <option value="WORK_ORDER" {% if record and record.record_type == 'WORK_ORDER' %}selected{% endif %}>Production / Work Order</option>
+            <option value="ALLOTMENT" {% if record and record.record_type == 'ALLOTMENT' %}selected{% endif %}>Unit Allotment Letter</option>
+            <option value="CNF_JOB" {% if record and record.record_type == 'CNF_JOB' %}selected{% endif %}>Customs & Freight Clearance</option>
+            <option value="DISPATCH" {% if record and record.record_type == 'DISPATCH' %}selected{% endif %}>Fleet Dispatch Manifest</option>
+            <option value="INVOICE" {% if record and record.record_type == 'INVOICE' %}selected{% endif %}>Accounts Receivable Invoice</option>
+            <option value="COST_AUDIT" {% if record and record.record_type == 'COST_AUDIT' %}selected{% endif %}>Project Cost Center Voucher</option>
+            <option value="ENTRY" {% if record and record.record_type == 'ENTRY' %}selected{% endif %}>General Transaction Entry</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Reference / Voucher No (Auto-ID)</label>
+          <input 
+            type="text" 
+            name="ref_number" 
+            readonly 
+            value="{{ record.ref_number if record else 'DOC-' ~ active_company.short_code ~ '-' ~ range(1000, 9999)|random }}" 
+            class="mac-input w-full font-mono font-semibold text-blue-500"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Transaction Details Card -->
+    <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3.5">
+      <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
+        <span>Transaction Ledger Details</span>
+      </h3>
+
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Transaction Title / Description <span class="text-blue-400">*</span></label>
+          <input 
+            type="text" 
+            name="title" 
+            required 
+            value="{{ record.title if record else '' }}" 
+            class="mac-input w-full" 
+            placeholder="Enter full transaction description, item batch, or operational note..."
+          >
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Account / Counterparty / Vendor / Customer</label>
+            <input 
+              type="text" 
+              name="party_name" 
+              value="{{ record.party_name if record and record.party_name else '' }}" 
+              class="mac-input w-full" 
+              placeholder="e.g. Continental Logistics GmbH, Client Account, Central Warehouse"
+            >
+          </div>
+
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Transaction Amount ({{ active_company.currency }}) <span class="text-blue-400">*</span></label>
+            <input 
+              type="number" 
+              step="any" 
+              name="amount" 
+              required 
+              value="{{ record.amount if record else '0.00' }}" 
+              class="mac-input w-full font-mono font-medium" 
+              placeholder="0.00"
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-slate-300 font-medium mb-1">Workflow Status</label>
+            <select name="status" class="mac-input w-full bg-slate-900">
+              <option value="COMPLETED" {% if record and record.status == 'COMPLETED' %}selected{% endif %}>COMPLETED (Approved & Posted)</option>
+              <option value="PENDING" {% if record and record.status == 'PENDING' %}selected{% endif %}>PENDING (Under Review)</option>
+              <option value="IN_PROGRESS" {% if record and record.status == 'IN_PROGRESS' %}selected{% endif %}>IN_PROGRESS (Operations Active)</option>
+              <option value="PROCESSING" {% if record and record.status == 'PROCESSING' %}selected{% endif %}>PROCESSING (Queued for Dispatch)</option>
+              <option value="APPROVED" {% if record and record.status == 'APPROVED' %}selected{% endif %}>APPROVED (Authorized)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Authorized Operator</label>
+            <input type="text" name="created_by" readonly value="{{ record.created_by if record else 'Operator Admin' }}" class="mac-input w-full">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Submission Action Bar -->
+    <div class="flex items-center justify-end gap-2.5 pt-1">
+      <a href="/modules/{{ module.route_slug }}" class="btn-action-cancel h-9 px-4 rounded-xl text-xs font-medium transition flex items-center justify-center">
+        Cancel
+      </a>
+      <button type="submit" class="h-9 px-5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm">
+        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <span>{% if is_edit_mode %}Update Entry{% else %}Save Entry{% endif %}</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}

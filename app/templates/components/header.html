@@ -1,0 +1,155 @@
+<header class="glass-card rounded-2xl px-4 py-2 flex items-center justify-between border border-white/10 flex-wrap gap-2.5 relative z-30">
+  
+  <!-- Left: Sidebar Toggle Button & Global Company Selector Pill (Popup Trigger) -->
+  <div class="flex items-center gap-2">
+    
+    <!-- 🗂️ SIDEBAR HIDE / UNHIDE TOGGLE BUTTON -->
+    <button 
+      id="sidebar-toggle-btn"
+      onclick="toggleSidebar()" 
+      class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition flex items-center justify-center cursor-pointer shrink-0"
+      title="Hide / Unhide Side Navigation (Ctrl + B)"
+    >
+      <i id="sidebar-toggle-icon" data-lucide="panel-left" class="w-4 h-4 text-blue-400"></i>
+    </button>
+
+    <!-- Company Switcher Button (Opens Popup Modal) -->
+    <button 
+      onclick="openCompanyModal()" 
+      class="h-9 group flex items-center gap-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/40 transition text-left cursor-pointer shrink-0"
+      title="Click or press Ctrl+Shift+C to switch active subsidiary entity"
+    >
+      <i data-lucide="{{ active_company.logo_icon if active_company and active_company.logo_icon else 'building-2' }}" class="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition shrink-0"></i>
+      <div class="min-w-0">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-semibold text-slate-200 tracking-tight truncate max-w-[200px]">
+            {{ active_company.name if active_company else 'Apex Manufacturing Group' }}
+          </span>
+          <!-- Company Prefix Badge -->
+          <span class="px-1.5 py-0.2 text-[9px] font-mono font-bold uppercase rounded bg-blue-500/15 text-blue-400 border border-blue-500/30">
+            {{ active_company.short_code if active_company else 'APEX' }}
+          </span>
+        </div>
+      </div>
+      <div class="pl-1 text-slate-400 group-hover:text-slate-200 transition">
+        <i data-lucide="chevrons-up-down" class="w-3 h-3"></i>
+      </div>
+    </button>
+
+  </div>
+
+  <!-- Right Actions: Search Slider, Theme Toggle & Dynamic Professional User Profile Menu -->
+  <div class="flex items-center gap-2 relative">
+    
+    <!-- 🔍 SLIDING EXPANDABLE SEARCH COMPONENT (Right-to-Left Slide) -->
+    <div id="header-search-container" class="relative flex items-center">
+      <!-- Expandable Sliding Search Input (Slides out to the left of search icon) -->
+      <div id="search-slider-box" class="search-slider-box-rtl">
+        <div class="relative w-full">
+          <input 
+            type="text" 
+            id="global-search" 
+            placeholder="Search modules & records..." 
+            class="mac-input h-9 w-full pl-3.5 pr-8 text-xs rounded-xl"
+            autocomplete="off"
+          >
+          <!-- Quick Clear Button inside Search Input -->
+          <button 
+            type="button"
+            id="search-clear-btn" 
+            onclick="clearHeaderSearch()" 
+            class="absolute inset-y-0 right-2.5 flex items-center text-slate-400 hover:text-white cursor-pointer hidden"
+            title="Clear search"
+          >
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Trigger Icon Button (Stationary beside Theme Toggle) -->
+      <button 
+        id="search-toggle-btn"
+        class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition flex items-center justify-center cursor-pointer shrink-0"
+        title="Search modules & records (Ctrl + K)"
+        type="button"
+      >
+        <i id="search-toggle-icon" data-lucide="search" class="w-4 h-4 text-blue-400"></i>
+      </button>
+    </div>
+
+    <!-- 🌙 / ☀️ DARK & LIGHT MODE TOGGLE BUTTON -->
+    <button 
+      id="theme-toggle-btn"
+      onclick="toggleTheme()" 
+      class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-amber-300 transition flex items-center justify-center cursor-pointer shrink-0"
+      title="Toggle Dark / Light Theme"
+    >
+      <i id="theme-toggle-icon" data-lucide="{{ 'sun' if current_user and current_user.theme_pref == 'dark' else 'moon' }}" class="w-4 h-4 {{ 'text-amber-400' if current_user and current_user.theme_pref == 'dark' else 'text-indigo-600' }}"></i>
+    </button>
+
+    <!-- 👤 DYNAMIC USER PROFILE BUTTON WITH AVATAR & DROPDOWN -->
+    <div class="relative" id="user-profile-menu-container">
+      <button 
+        id="user-profile-btn"
+        class="h-9 flex items-center gap-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/30 transition text-left cursor-pointer shrink-0"
+        title="User Profile & Settings"
+        type="button"
+      >
+        <!-- Dynamic Avatar with Online Indicator -->
+        <div class="relative w-6 h-6 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-[10px] font-bold shadow-sm shrink-0">
+          <span>{{ current_user.initials if current_user and current_user.initials else 'AV' }}</span>
+          <span class="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 border border-slate-100 dark:border-[#0F1117]"></span>
+        </div>
+        
+        <div class="hidden sm:block text-left">
+          <p class="text-xs font-semibold text-slate-200 tracking-tight leading-tight">{{ current_user.short_name if current_user and current_user.short_name else 'Alexander V.' }}</p>
+          <p class="text-[9px] text-slate-400 font-mono">{{ current_user.role_summary if current_user and current_user.role_summary else 'Sys Admin' }}</p>
+        </div>
+
+        <i id="user-profile-chevron" data-lucide="chevron-down" class="w-3 h-3 text-slate-400 transition-transform duration-200 ml-0.5"></i>
+      </button>
+
+      <!-- 📋 PROFESSIONAL LIST-DOWN USER PROFILE DROPDOWN MENU -->
+      <div 
+        id="user-profile-dropdown"
+        class="user-dropdown-menu absolute right-0 mt-2 w-64 glass-card rounded-2xl p-2 border border-white/10 shadow-2xl space-y-1.5 hidden z-50"
+      >
+        <!-- User Profile Header Card (Clickable to /profile) -->
+        <a href="/profile" class="block p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 transition group">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-md shrink-0">
+              {{ current_user.initials if current_user and current_user.initials else 'AV' }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-1.5">
+                <h4 class="text-xs font-bold text-white truncate group-hover:text-blue-400 transition">
+                  {{ current_user.full_name if current_user else 'Alexander Vance' }}
+                </h4>
+                <span class="px-1.5 py-0.2 text-[8px] font-mono font-bold uppercase rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 shrink-0">
+                  {{ active_company.short_code if active_company else 'APEX' }}
+                </span>
+              </div>
+              <p class="text-[10px] text-slate-400 truncate">{{ current_user.email if current_user else 'alex.vance@pyrix.internal' }}</p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Menu Action Items: My Profile & Account + Sign Out -->
+        <div class="space-y-0.5 text-xs text-slate-300">
+          <a href="/profile" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-white/5 hover:text-white transition">
+            <i data-lucide="user" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>My Profile & Account</span>
+          </a>
+
+          <a href="/logout" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-rose-500/10 text-rose-400 hover:text-rose-300 transition">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>Sign Out</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</header>

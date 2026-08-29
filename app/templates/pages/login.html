@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Pyrix Enterprise Suite</title>
+  
+  <!-- Clean SVG Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230078D4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Design Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex items-center justify-center p-4 relative overflow-hidden selection:bg-blue-600/30 selection:text-white">
+
+  <!-- Background Ambient Glow Accents -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="w-full max-w-md space-y-6 relative z-10">
+
+    <!-- Top Brand Logo -->
+    <div class="text-center space-y-2">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/25 mb-1">
+        <i data-lucide="layers" class="w-6 h-6"></i>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight text-[#0F172A]">Pyrix Enterprise Suite</h1>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xl space-y-5">
+
+      {% if error %}
+        <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex items-center gap-2">
+          <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+          <span>{{ error }}</span>
+        </div>
+      {% endif %}
+
+      <form action="/login" method="POST" class="space-y-4 text-xs">
+        <input type="hidden" name="next_url" value="{{ next_url|default('/') }}">
+
+        <!-- Username -->
+        <div>
+          <label class="block text-slate-700 font-semibold mb-1.5">Username</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="user" class="w-4 h-4"></i>
+            </div>
+            <input 
+              type="text" 
+              name="email" 
+              id="login-email"
+              required 
+              value="alex.vance@pyrix.internal" 
+              placeholder="Enter your username or email" 
+              class="mac-input w-full pl-9 font-medium text-slate-900 bg-white border border-slate-300 rounded-xl h-10"
+            >
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-slate-700 font-semibold">Password</label>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+            </div>
+            <input 
+              type="password" 
+              name="password" 
+              id="login-password"
+              required 
+              value="admin123" 
+              placeholder="••••••••" 
+              class="mac-input w-full pl-9 pr-9 text-slate-900 bg-white border border-slate-300 rounded-xl h-10"
+            >
+            <button 
+              type="button" 
+              onclick="togglePasswordVisibility()" 
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              <i id="pw-toggle-icon" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember Me -->
+        <div class="flex items-center justify-between pt-1">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" name="remember" class="rounded border-slate-300 text-blue-600 focus:ring-0">
+            <span class="text-slate-500">Remember session on this device</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="w-full h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-md shadow-blue-600/25 mt-2"
+        >
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span>Sign In</span>
+        </button>
+      </form>
+
+      <!-- 1-Click Quick Login Personas -->
+      <div class="pt-4 border-t border-slate-100 space-y-2.5">
+        <p class="text-[10px] uppercase font-bold tracking-wider text-slate-400 text-center">
+          1-Click Quick Sign-In
+        </p>
+
+        <div class="grid grid-cols-3 gap-2 text-left">
+          <button 
+            type="button" 
+            onclick="setPersona('alex.vance@pyrix.internal', 'admin123')"
+            class="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 transition cursor-pointer group text-left"
+          >
+            <div class="font-bold text-slate-800 group-hover:text-blue-600 text-[11px] truncate">Alexander V.</div>
+            <div class="text-[9px] text-slate-500 truncate">Sys Admin</div>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setPersona('sarah.jenkins@pyrix.internal', 'finance123')"
+            class="p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 transition cursor-pointer group text-left"
+          >
+            <div class="font-bold text-slate-800 group-hover:text-emerald-600 text-[11px] truncate">Sarah J.</div>
+            <div class="text-[9px] text-slate-500 truncate">CFO / Finance</div>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="setPersona('marcus.sterling@pyrix.internal', 'supply123')"
+            class="p-2.5 rounded-xl bg-slate-50 hover:bg-cyan-50 border border-slate-200 hover:border-cyan-400 transition cursor-pointer group text-left"
+          >
+            <div class="font-bold text-slate-800 group-hover:text-cyan-600 text-[11px] truncate">Marcus S.</div>
+            <div class="text-[9px] text-slate-500 truncate">Supply Chain</div>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Dynamic Copyright Footer -->
+    <div class="text-center text-xs text-slate-500 font-medium pt-2">
+      <p>&copy; <span id="copyright-year">2026</span> Pyrix Enterprise Suite. All rights reserved.</p>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    (function() {
+      const yrEl = document.getElementById('copyright-year');
+      if (yrEl) yrEl.textContent = new Date().getFullYear();
+    })();
+
+    function togglePasswordVisibility() {
+      const pwInput = document.getElementById('login-password');
+      const icon = document.getElementById('pw-toggle-icon');
+      if (pwInput.type === 'password') {
+        pwInput.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        pwInput.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function setPersona(email, pw) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = pw;
+    }
+  </script>
+</body>
+</html>

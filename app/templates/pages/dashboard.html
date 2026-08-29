@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Top Hero Overview Banner -->
+  <div class="glass-card rounded-2xl p-5 border border-white/10 relative overflow-hidden">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div class="flex items-center gap-4 min-w-0">
+        <!-- Company Logo Icon (Borderless) -->
+        <i data-lucide="{{ active_company.logo_icon if active_company else 'factory' }}" class="w-8 h-8 text-blue-400 shrink-0"></i>
+        <div class="min-w-0 space-y-0.5">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h2 class="text-xl font-bold tracking-tight text-white">{{ active_company.name }}</h2>
+            <!-- Clean Company Prefix Badge -->
+            <span class="px-2 py-0.5 text-xs font-mono font-bold uppercase rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/30">
+              {{ active_company.short_code }}
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 truncate">
+            {{ active_company.industry if active_company and active_company.industry else 'Enterprise Operations' }} • {{ active_company.headquarters if active_company and active_company.headquarters else 'Main Facility' }} • {{ active_company.tagline if active_company and active_company.tagline else 'Multi-Entity ERP' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Dynamic Company Operational Information Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 shrink-0">
+        <!-- 1. Entity Code -->
+        <div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Entity Code</p>
+          <p class="text-base font-bold text-white mt-0.5 font-mono">{{ active_company.code }}</p>
+        </div>
+
+        <!-- 2. Fiscal Cycle -->
+        <div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Fiscal Cycle</p>
+          <p class="text-xs font-bold text-emerald-400 mt-1 font-mono">{{ active_company.fiscal_year }}</p>
+        </div>
+
+        <!-- 3. Base Currency -->
+        <div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Base Currency</p>
+          <p class="text-base font-bold text-blue-400 mt-0.5 font-mono">{{ active_company.currency }} ($)</p>
+        </div>
+
+        <!-- 4. Operating Status -->
+        <div class="px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Operating Status</p>
+          <div class="flex items-center gap-1.5 mt-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs font-bold text-emerald-400">Active / Live</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Domain Filter Bar -->
+  <div class="flex items-center gap-1.5 flex-wrap" id="domain-filters">
+    <button onclick="filterDomain('all')" class="domain-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white border border-blue-600 transition">
+      All Modules
+    </button>
+    <button onclick="filterDomain('Financial & Treasury')" class="domain-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition">
+      Financial & Treasury
+    </button>
+    <button onclick="filterDomain('Supply Chain & Logistics')" class="domain-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition">
+      Supply Chain
+    </button>
+    <button onclick="filterDomain('Manufacturing & Plant')" class="domain-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition">
+      Manufacturing & MRP
+    </button>
+    <button onclick="filterDomain('Property & Construction')" class="domain-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition">
+      Property & Construction
+    </button>
+    <button onclick="filterDomain('Human Capital & Admin')" class="domain-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition">
+      HRIS & CRM
+    </button>
+    <button onclick="filterDomain('Intelligence & Admin')" class="domain-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition">
+      Analytics & Admin
+    </button>
+  </div>
+
+  <!-- THE 21 ENTERPRISE MODULES GRID (Dynamic Multi-Column Viewport Scaling) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-3.5" id="modules-catalog-grid">
+    {% for mod in all_modules %}
+      <a 
+        href="/modules/{{ mod.route_slug }}" 
+        class="module-card-item glass-card rounded-xl p-3.5 flex items-center justify-between gap-3 group border border-white/10 hover:border-blue-500/40 transition-all duration-150"
+        data-domain="{{ mod.domain_group }}"
+        data-label="{{ mod.name }}"
+        data-desc="{{ mod.description }}"
+        data-code="{{ mod.module_code }}"
+      >
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <!-- Borderless Icon -->
+          <i data-lucide="{{ mod.icon }}" class="w-5 h-5 text-blue-400 group-hover:text-blue-300 transition-colors shrink-0"></i>
+
+          <!-- Module Name & Domain Tag -->
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <h3 class="text-xs font-bold text-slate-100 group-hover:text-blue-400 truncate tracking-tight uppercase transition">
+                {{ mod.name }}
+              </h3>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate mt-0.5">{{ mod.description }}</p>
+          </div>
+        </div>
+
+        <!-- Right Chevron (Clean without count badge) -->
+        <div class="flex items-center shrink-0">
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 group-hover:text-slate-200 transition"></i>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+function filterDomain(domain) {
+  document.querySelectorAll('.domain-btn').forEach(btn => {
+    btn.className = 'domain-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition';
+  });
+  event.target.className = 'domain-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white border border-blue-600 transition';
+
+  const cards = document.querySelectorAll('.module-card-item');
+  cards.forEach(card => {
+    const cardDomain = card.getAttribute('data-domain');
+    if (domain === 'all' || cardDomain === domain) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+</script>
+{% endblock %}

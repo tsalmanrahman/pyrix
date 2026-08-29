@@ -1,0 +1,102 @@
+<div 
+  class="glass-card rounded-2xl p-4 flex items-center justify-between gap-4 setting-card-item"
+  data-option-id="{{ option.code }}"
+  data-key="{{ option.option_key }}"
+  data-label="{{ option.label }}"
+  data-desc="{{ option.description }}"
+>
+  <!-- Left Section: Drag Handle, Icon, and Information -->
+  <div class="flex items-center gap-3.5 min-w-0 flex-1">
+    <!-- Drag Handle -->
+    <div class="drag-handle p-1 text-slate-500 hover:text-slate-300" title="Drag to reorder card">
+      <i data-lucide="grip-vertical" class="w-4 h-4"></i>
+    </div>
+
+    <!-- Category Icon (Borderless) -->
+    <i data-lucide="{{ option.icon if option.icon else 'sliders' }}" class="w-5 h-5 text-blue-400 shrink-0"></i>
+
+    <!-- Label & Description -->
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2">
+        <h4 class="text-sm font-semibold text-slate-100 truncate">{{ option.label }}</h4>
+        <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold rounded bg-slate-800 text-blue-400 border border-blue-500/30">#{{ option.code }}</span>
+        {% if option.is_system %}
+          <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-slate-800 text-slate-400 border border-slate-700">System</span>
+        {% endif %}
+      </div>
+      <p class="text-xs text-slate-400 truncate mt-0.5">{{ option.description }}</p>
+    </div>
+  </div>
+
+  <!-- Right Section: Dynamic Control Dispatcher -->
+  <div class="flex items-center gap-3 shrink-0">
+    
+    <!-- 1. TOGGLE SWITCH -->
+    {% if option.field_type == 'toggle' %}
+      <label class="mac-toggle">
+        <input 
+          type="checkbox" 
+          class="dynamic-toggle-input" 
+          data-key="{{ option.option_key }}"
+          {% if option.current_value == 'true' or option.current_value == '1' %}checked{% endif %}
+        >
+        <span class="mac-toggle-slider"></span>
+      </label>
+
+    <!-- 2. SLIDER INPUT -->
+    {% elif option.field_type == 'slider' %}
+      <div class="flex items-center gap-3 w-56">
+        <input 
+          type="range" 
+          class="w-full dynamic-slider-input" 
+          data-key="{{ option.option_key }}"
+          min="{{ option.min_val if option.min_val is not none else 0 }}" 
+          max="{{ option.max_val if option.max_val is not none else 100 }}" 
+          step="{{ option.step_val if option.step_val is not none else 1 }}"
+          value="{{ option.current_value }}"
+        >
+        <span class="text-xs font-mono font-bold text-slate-300 w-14 text-right px-2 py-1 rounded-lg bg-white/5 border border-white/10">
+          <span id="val-{{ option.option_key }}">{{ option.current_value }}</span> {{ option.unit if option.unit else '' }}
+        </span>
+      </div>
+
+    <!-- 3. SELECT DROPDOWN -->
+    {% elif option.field_type == 'select' %}
+      <select 
+        class="mac-input py-1.5 px-3 text-xs dynamic-select-input cursor-pointer bg-slate-900"
+        data-key="{{ option.option_key }}"
+      >
+        {% for item in option.options_parsed %}
+          <option value="{{ item.value }}" {% if option.current_value == item.value %}selected{% endif %}>
+            {{ item.label }}
+          </option>
+        {% endfor %}
+      </select>
+
+    <!-- 4. COLOR PICKER -->
+    {% elif option.field_type == 'color' %}
+      <div class="flex items-center gap-2">
+        <input 
+          type="color" 
+          class="w-8 h-8 rounded-xl border border-white/20 cursor-pointer bg-transparent dynamic-color-input"
+          data-key="{{ option.option_key }}"
+          value="{{ option.current_value }}"
+        >
+        <span class="text-xs font-mono text-slate-400">{{ option.current_value }}</span>
+      </div>
+
+    <!-- 5. TEXT / NUMBER INPUT -->
+    {% else %}
+      <div class="w-64">
+        <input 
+          type="{{ 'number' if option.field_type == 'number' else 'text' }}" 
+          class="mac-input w-full py-1.5 px-3 text-xs dynamic-text-input" 
+          data-key="{{ option.option_key }}"
+          value="{{ option.current_value }}"
+          placeholder="{{ option.default_value }}"
+        >
+      </div>
+    {% endif %}
+
+  </div>
+</div>

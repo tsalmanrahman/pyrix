@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-GL - {% if is_edit_mode %}Edit Journal Voucher{% else %}New Journal Voucher{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Header Banner -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <i data-lucide="file-spread" class="w-6 h-6 text-blue-400 shrink-0"></i>
+      <div>
+        <h2 class="text-lg font-bold text-white tracking-tight">
+          {% if is_edit_mode %}Edit Journal Voucher #{{ voucher.voucher_number }}{% else %}New Double-Entry Journal Voucher (JV){% endif %}
+        </h2>
+        <p class="text-xs text-slate-400">Multi-line balanced accounting distribution studio</p>
+      </div>
+    </div>
+
+    <!-- Sleek Back Button -->
+    <a 
+      href="/modules/general-ledger?tab=journals" 
+      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
+      title="Back to Journal List"
+    >
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
+  </div>
+
+  <!-- Main Journal Form -->
+  <form id="journal-form" action="{% if is_edit_mode %}/modules/general-ledger/journals/{{ voucher.id }}/edit{% else %}/modules/general-ledger/journals/new{% endif %}" method="POST" class="space-y-4">
+
+    <!-- 1. Voucher Header Metadata -->
+    <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3.5">
+      <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <i data-lucide="file-text" class="w-4 h-4 text-blue-400"></i>
+        <span>Voucher Header & Scoping</span>
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3.5 text-xs">
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Voucher Number (Auto-ID)</label>
+          <input 
+            type="text" 
+            name="voucher_number" 
+            readonly 
+            value="{{ voucher.voucher_number if voucher else 'JV-' ~ active_company.short_code ~ '-2026-' ~ range(1000, 9999)|random }}" 
+            class="mac-input w-full font-mono font-semibold text-blue-400"
+          >
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Posting Date <span class="text-blue-400">*</span></label>
+          <input 
+            type="date" 
+            name="voucher_date" 
+            required 
+            value="{{ voucher.voucher_date if voucher else '2026-08-24' }}" 
+            class="mac-input w-full font-mono"
+          >
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-medium mb-1">Source Ref / Doc No</label>
+          <input 
+            type="text" 
+            name="reference_number" 
+            value="{{ voucher.reference_number if voucher and voucher.reference_number else '' }}" 
+            placeholder="e.g. INV-9041, PO-502" 
+            class="mac-input w-full font-mono"
+          >
+        </div>
+
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Operating Entity Scope</label>
+          <input 
+            type="text" 
+            readonly 
+            value="[{{ active_company.short_code }}] {{ active_company.name }}" 
+            class="mac-input w-full font-medium"
+          >
+        </div>
+
+        <div class="md:col-span-4">
+          <label class="block text-slate-300 font-medium mb-1">General Narration / Purpose of Entry <span class="text-blue-400">*</span></label>
+          <input 
+            type="text" 
+            name="narration" 
+            required 
+            value="{{ voucher.narration if voucher else '' }}" 
+            placeholder="e.g. Month-end commercial revenue recognition and liquid cash settlement..." 
+            class="mac-input w-full"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Double-Entry Line Items Grid -->
+    <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
+        <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+          <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
+          <span>Double-Entry Line Items (Debit = Credit)</span>
+        </h3>
+        <button 
+          type="button" 
+          onclick="addJournalLine()" 
+          class="btn-action-add h-7 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer"
+        >
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Add Line Item</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs" id="journal-lines-table">
+          <thead>
+            <tr class="border-b border-white/5 text-slate-400 font-medium uppercase tracking-wider text-[10px]">
+              <th class="py-2 px-2 w-10">#</th>
+              <th class="py-2 px-2 min-w-[220px]">GL Account <span class="text-blue-400">*</span></th>
+              <th class="py-2 px-2 min-w-[160px]">Cost Centre / Dept</th>
+              <th class="py-2 px-2 min-w-[180px]">Line Description / Memo</th>
+              <th class="py-2 px-2 w-32 text-right">Debit ({{ active_company.currency }})</th>
+              <th class="py-2 px-2 w-32 text-right">Credit ({{ active_company.currency }})</th>
+              <th class="py-2 px-2 w-10 text-center"></th>
+            </tr>
+          </thead>
+          <tbody id="lines-container" class="divide-y divide-white/5 text-slate-300">
+            {% if lines %}
+              {% for l in lines %}
+                <tr class="line-row hover:bg-white/[0.02] transition">
+                  <td class="py-2 px-2 text-slate-500 font-mono row-number">{{ loop.index }}</td>
+                  <td class="py-2 px-2">
+                    <select name="line_account_id[]" class="mac-input w-full bg-slate-900 font-mono text-[11px]" required>
+                      {% for acc in all_accounts %}
+                        <option value="{{ acc.id }}" {% if acc.id == l.gl_account_id %}selected{% endif %}>
+                          {{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }})
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td class="py-2 px-2">
+                    <select name="line_cost_centre_id[]" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+                      <option value="">-- General / Corporate --</option>
+                      {% for cc in all_cost_centres %}
+                        <option value="{{ cc.id }}" {% if cc.id == l.cost_centre_id %}selected{% endif %}>
+                          {{ cc.cost_centre_code }} — {{ cc.cost_centre_name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td class="py-2 px-2">
+                    <input type="text" name="line_narration[]" value="{{ l.line_narration if l.line_narration else '' }}" placeholder="Line memo..." class="mac-input w-full text-xs">
+                  </td>
+                  <td class="py-2 px-2 text-right">
+                    <input type="number" step="any" min="0" name="line_debit[]" value="{{ l.debit_amount if l.debit_amount else '0.00' }}" oninput="recalcTotals()" class="mac-input w-full text-right font-mono font-bold text-cyan-400 debit-input" placeholder="0.00">
+                  </td>
+                  <td class="py-2 px-2 text-right">
+                    <input type="number" step="any" min="0" name="line_credit[]" value="{{ l.credit_amount if l.credit_amount else '0.00' }}" oninput="recalcTotals()" class="mac-input w-full text-right font-mono font-bold text-amber-400 credit-input" placeholder="0.00">
+                  </td>
+                  <td class="py-2 px-2 text-center">
+                    <button type="button" onclick="removeLine(this)" class="w-7 h-7 rounded-lg text-slate-500 hover:text-rose-400 flex items-center justify-center transition cursor-pointer" title="Remove Line">
+                      <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <!-- Default 2 Empty Lines -->
+              <tr class="line-row hover:bg-white/[0.02] transition">
+                <td class="py-2 px-2 text-slate-500 font-mono row-number">1</td>
+                <td class="py-2 px-2">
+                  <select name="line_account_id[]" class="mac-input w-full bg-slate-900 font-mono text-[11px]" required>
+                    {% for acc in all_accounts %}
+                      <option value="{{ acc.id }}">{{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }})</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td class="py-2 px-2">
+                  <select name="line_cost_centre_id[]" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+                    <option value="">-- General / Corporate --</option>
+                    {% for cc in all_cost_centres %}
+                      <option value="{{ cc.id }}">{{ cc.cost_centre_code }} — {{ cc.cost_centre_name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td class="py-2 px-2">
+                  <input type="text" name="line_narration[]" placeholder="Line memo..." class="mac-input w-full text-xs">
+                </td>
+                <td class="py-2 px-2 text-right">
+                  <input type="number" step="any" min="0" name="line_debit[]" value="10000.00" oninput="recalcTotals()" class="mac-input w-full text-right font-mono font-bold text-cyan-400 debit-input" placeholder="0.00">
+                </td>
+                <td class="py-2 px-2 text-right">
+                  <input type="number" step="any" min="0" name="line_credit[]" value="0.00" oninput="recalcTotals()" class="mac-input w-full text-right font-mono font-bold text-amber-400 credit-input" placeholder="0.00">
+                </td>
+                <td class="py-2 px-2 text-center">
+                  <button type="button" onclick="removeLine(this)" class="w-7 h-7 rounded-lg text-slate-500 hover:text-rose-400 flex items-center justify-center transition cursor-pointer" title="Remove Line">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr class="line-row hover:bg-white/[0.02] transition">
+                <td class="py-2 px-2 text-slate-500 font-mono row-number">2</td>
+                <td class="py-2 px-2">
+                  <select name="line_account_id[]" class="mac-input w-full bg-slate-900 font-mono text-[11px]" required>
+                    {% for acc in all_accounts %}
+                      <option value="{{ acc.id }}" {% if loop.index == 2 %}selected{% endif %}>{{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }})</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td class="py-2 px-2">
+                  <select name="line_cost_centre_id[]" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+                    <option value="">-- General / Corporate --</option>
+                    {% for cc in all_cost_centres %}
+                      <option value="{{ cc.id }}">{{ cc.cost_centre_code }} — {{ cc.cost_centre_name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td class="py-2 px-2">
+                  <input type="text" name="line_narration[]" placeholder="Line memo..." class="mac-input w-full text-xs">
+                </td>
+                <td class="py-2 px-2 text-right">
+                  <input type="number" step="any" min="0" name="line_debit[]" value="0.00" oninput="recalcTotals()" class="mac-input w-full text-right font-mono font-bold text-cyan-400 debit-input" placeholder="0.00">
+                </td>
+                <td class="py-2 px-2 text-right">
+                  <input type="number" step="any" min="0" name="line_credit[]" value="10000.00" oninput="recalcTotals()" class="mac-input w-full text-right font-mono font-bold text-amber-400 credit-input" placeholder="0.00">
+                </td>
+                <td class="py-2 px-2 text-center">
+                  <button type="button" onclick="removeLine(this)" class="w-7 h-7 rounded-lg text-slate-500 hover:text-rose-400 flex items-center justify-center transition cursor-pointer" title="Remove Line">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  </button>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Real-Time Balanced Validator Card -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-black/20 border border-white/10 text-xs">
+        <div>
+          <span class="block text-slate-400 uppercase tracking-wider font-semibold text-[10px]">Total Debits</span>
+          <span id="total-debit-val" class="font-mono font-black text-cyan-400 text-base">$0.00</span>
+        </div>
+        <div>
+          <span class="block text-slate-400 uppercase tracking-wider font-semibold text-[10px]">Total Credits</span>
+          <span id="total-credit-val" class="font-mono font-black text-amber-400 text-base">$0.00</span>
+        </div>
+        <div>
+          <span class="block text-slate-400 uppercase tracking-wider font-semibold text-[10px]">Net Out-Of-Balance</span>
+          <span id="diff-val" class="font-mono font-black text-slate-200 text-base">$0.00</span>
+        </div>
+        <div class="flex items-center justify-end">
+          <span id="balance-badge" class="px-3 py-1.5 rounded-xl font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>BALANCED</span>
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3. Submission Action Bar -->
+    <div class="flex items-center justify-end gap-2.5 pt-1">
+      <a href="/modules/general-ledger?tab=journals" class="btn-action-cancel h-9 px-4 rounded-xl text-xs font-medium transition flex items-center justify-center">
+        Cancel
+      </a>
+      <button 
+        id="submit-voucher-btn" 
+        type="submit" 
+        class="h-9 px-5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <span>{% if is_edit_mode %}Update & Post Voucher{% else %}Post Journal Voucher{% endif %}</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+  // Options template for dynamic row creation
+  const accountsOptions = `{% for acc in all_accounts %}<option value="{{ acc.id }}">{{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }})</option>{% endfor %}`;
+  const costCentresOptions = `<option value="">-- General / Corporate --</option>{% for cc in all_cost_centres %}<option value="{{ cc.id }}">{{ cc.cost_centre_code }} — {{ cc.cost_centre_name }}</option>{% endfor %}`;
+
+  function addJournalLine() {
+    const container = document.getElementById('lines-container');
+    const rowCount = container.querySelectorAll('.line-row').length + 1;
+    const tr = document.createElement('tr');
+    tr.className = 'line-row hover:bg-white/[0.02] transition';
+    tr.innerHTML = `
+      <td class="py-2 px-2 text-slate-500 font-mono row-number">${rowCount}</td>
+      <td class="py-2 px-2">
+        <select name="line_account_id[]" class="mac-input w-full bg-slate-900 font-mono text-[11px]" required>
+          ${accountsOptions}
+        </select>
+      </td>
+      <td class="py-2 px-2">
+        <select name="line_cost_centre_id[]" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+          ${costCentresOptions}
+        </select>
+      </td>
+      <td class="py-2 px-2">
+        <input type="text" name="line_narration[]" placeholder="Line memo..." class="mac-input w-full text-xs">
+      </td>
+      <td class="py-2 px-2 text-right">
+        <input type="number" step="any" min="0" name="line_debit[]" value="0.00" oninput="recalcTotals()" class="mac-input w-full text-right font-mono font-bold text-cyan-400 debit-input" placeholder="0.00">
+      </td>
+      <td class="py-2 px-2 text-right">
+        <input type="number" step="any" min="0" name="line_credit[]" value="0.00" oninput="recalcTotals()" class="mac-input w-full text-right font-mono font-bold text-amber-400 credit-input" placeholder="0.00">
+      </td>
+      <td class="py-2 px-2 text-center">
+        <button type="button" onclick="removeLine(this)" class="w-7 h-7 rounded-lg text-slate-500 hover:text-rose-400 flex items-center justify-center transition cursor-pointer" title="Remove Line">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </td>
+    `;
+    container.appendChild(tr);
+    lucide.createIcons();
+    recalcTotals();
+  }
+
+  function removeLine(btn) {
+    const container = document.getElementById('lines-container');
+    if (container.querySelectorAll('.line-row').length <= 2) {
+      alert("A double-entry Journal Voucher requires at least 2 line items.");
+      return;
+    }
+    btn.closest('tr').remove();
+    updateRowNumbers();
+    recalcTotals();
+  }
+
+  function updateRowNumbers() {
+    document.querySelectorAll('.row-number').forEach((td, idx) => {
+      td.textContent = idx + 1;
+    });
+  }
+
+  function recalcTotals() {
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    document.querySelectorAll('.debit-input').forEach(input => {
+      totalDebit += parseFloat(input.value) || 0;
+    });
+
+    document.querySelectorAll('.credit-input').forEach(input => {
+      totalCredit += parseFloat(input.value) || 0;
+    });
+
+    const diff = Math.abs(totalDebit - totalCredit);
+    document.getElementById('total-debit-val').textContent = `$${totalDebit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('total-credit-val').textContent = `$${totalCredit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('diff-val').textContent = `$${diff.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+    const badge = document.getElementById('balance-badge');
+    const submitBtn = document.getElementById('submit-voucher-btn');
+
+    if (diff < 0.001 && totalDebit > 0) {
+      badge.className = 'px-3 py-1.5 rounded-xl font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+      badge.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i><span>BALANCED</span>';
+      submitBtn.disabled = false;
+    } else {
+      badge.className = 'px-3 py-1.5 rounded-xl font-mono font-bold text-xs flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20';
+      badge.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4"></i><span>OUT OF BALANCE</span>';
+      submitBtn.disabled = true;
+    }
+    lucide.createIcons();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    recalcTotals();
+  });
+</script>
+{% endblock %}

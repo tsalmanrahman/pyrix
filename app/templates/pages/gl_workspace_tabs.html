@@ -1,0 +1,936 @@
+<!-- =========================================================================
+     PYRIX ENTERPRISE: GENERAL LEDGER UNIFIED MASTER HUB & TABBED SUITE
+     Full Parity with Legacy ERP: Setup, Transaction, Process, Analysis, Report
+     ========================================================================= -->
+
+<!-- =========================================================================
+     2. TRANSACTION PROCESSING TABS (Journals, Auto Batches, Templates, Vouchers)
+     ========================================================================= -->
+
+<!-- TAB: Journal Vouchers (journals) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'journals' %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="file-spread" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Double-Entry Journal Vouchers (JV)</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Balanced debit and credit distribution records</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Filter vouchers..." onkeyup="filterTable('gl-vouchers-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
+        <a href="/modules/general-ledger/journals/new" class="mac-btn-primary px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Journal Voucher</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
+      <table class="w-full text-left text-xs" id="gl-vouchers-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Voucher #</th>
+            <th class="py-2.5 px-3">Date</th>
+            <th class="py-2.5 px-3">Batch / Ref</th>
+            <th class="py-2.5 px-3">Narration</th>
+            <th class="py-2.5 px-3 text-right">Total ($)</th>
+            <th class="py-2.5 px-3 text-center">Lines</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+            <th class="py-2.5 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for v in gl_vouchers %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ v.voucher_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.voucher_date }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.reference_number|default(v.batch_number|default('-')) }}</td>
+              <td class="py-2.5 px-3 max-w-xs truncate font-medium">{{ v.narration|default('General Accounting Journal') }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(v.total_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center font-mono">{{ v.line_count|default(2) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="px-2 py-0.5 text-[9px] font-bold rounded {% if v.status == 'POSTED' %}bg-emerald-500/15 text-emerald-600 border border-emerald-500/30{% else %}bg-amber-500/15 text-amber-600 border border-amber-500/30{% endif %}">
+                  {{ v.status|default('POSTED') }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button onclick="printGLVoucher('{{ v.id }}')" class="p-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 transition" title="Print Letterhead Voucher">
+                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <a href="/modules/general-ledger/journals/{{ v.id }}/edit" class="p-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 transition" title="Edit Voucher">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Generate Batch from Auto Journals (auto-batch-gen) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'auto-batch-gen' %}
+  <div class="space-y-5">
+    <div class="glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center"><i data-lucide="sparkles" class="w-6 h-6"></i></div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Generate Batch from Auto Journals</h2>
+          <p class="text-xs text-slate-400">Automated recurring month-end depreciation, prepaid expenses amortization, and utility accruals</p>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20 space-y-2 text-xs">
+        <div class="font-bold text-cyan-700 dark:text-cyan-400 flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4"></i> Automated Accrual Rules Active</div>
+        <p class="text-slate-600 dark:text-slate-300">Scanning all active fixed asset depreciation registers and utility accrual parameters. Clicking the button below will instantly compile a balanced recurring batch in <code>UNPOSTED</code> state for controller review.</p>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button onclick="generateAutoBatch()" class="mac-btn-primary px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md">
+          <i data-lucide="play" class="w-4 h-4"></i>
+          <span>Execute Auto-Journals Batch Run</span>
+        </button>
+        <a href="/modules/general-ledger?tab=batches" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/5 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition">
+          View Batch Status
+        </a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Generate Batch from Template (template-batch-gen) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'template-batch-gen' %}
+  <div class="space-y-5">
+    <div class="glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-sm space-y-5">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="copy-check" class="w-6 h-6"></i></div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Generate Batch from Template Wizard</h2>
+          <p class="text-xs text-slate-400">Instantly generate balanced journal batches from preconfigured distribution templates</p>
+        </div>
+      </div>
+
+      <form onsubmit="handleTemplateBatchSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Select Template *</label>
+          <select id="tmpl-select" required class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
+            {% for t in gl_templates %}
+              <option value="{{ t.id }}">{{ t.template_code }} - {{ t.template_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Batch Title / Narration *</label>
+          <input type="text" id="tmpl-title" required value="Bi-Weekly Payroll Allocation Batch" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Total Distribution Amount ($) *</label>
+          <input type="number" id="tmpl-amount" step="0.01" required value="75000.00" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
+        </div>
+
+        <div class="flex items-end">
+          <button type="submit" class="mac-btn-primary w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Compile & Stage Batch</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Automatic Batch Profiles (auto-batch-profiles) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'auto-batch-profiles' %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center"><i data-lucide="clock-4" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Automatic Batch Profiles</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Recurring schedule rules for automated periodic ledger journals</p>
+        </div>
+      </div>
+      <button onclick="document.getElementById('modal-new-profile').classList.remove('hidden')" class="mac-btn-primary px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        <span>Create Automatic Batch Profile</span>
+      </button>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Profile Code</th>
+            <th class="py-2.5 px-3">Profile Name</th>
+            <th class="py-2.5 px-3">Frequency</th>
+            <th class="py-2.5 px-3">Day of Period</th>
+            <th class="py-2.5 px-3 text-right">Default Amount ($)</th>
+            <th class="py-2.5 px-3 text-center">Auto Trigger</th>
+            <th class="py-2.5 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for p in gl_auto_profiles %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ p.profile_code }}</td>
+              <td class="py-2.5 px-3 font-medium">{{ p.profile_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-purple-600 font-semibold">{{ p.frequency }}</td>
+              <td class="py-2.5 px-3 font-mono">Day {{ p.day_of_period }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(p.default_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="px-2 py-0.5 text-[9px] font-bold rounded-full {% if p.is_auto_trigger %}bg-emerald-100 text-emerald-800{% else %}bg-slate-100 text-slate-700{% endif %}">
+                  {% if p.is_auto_trigger %}AUTO RUN{% else %}MANUAL{% endif %}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <button onclick="deleteAutoProfile('{{ p.id }}')" class="p-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 transition" title="Delete Profile">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Batch Status (batches) -->
+{% if module.route_slug == 'general-ledger' and (current_tab == 'batches' or current_tab == 'batch-status' or current_tab == 'post-batch') %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><i data-lucide="package-check" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Batch Processing & Status Control</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Batch lifecycle management, approval, and 1-click ledger posting</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Filter batches..." onkeyup="filterTable('gl-batches-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
+      </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
+      <table class="w-full text-left text-xs" id="gl-batches-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Batch Number</th>
+            <th class="py-2.5 px-3">Batch Title</th>
+            <th class="py-2.5 px-3">Type</th>
+            <th class="py-2.5 px-3 text-right">Debit ($)</th>
+            <th class="py-2.5 px-3 text-right">Credit ($)</th>
+            <th class="py-2.5 px-3 text-center">Vouchers</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+            <th class="py-2.5 px-3 text-right">Posting Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for b in gl_batches %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ b.batch_number }}</td>
+              <td class="py-2.5 px-3 font-medium">{{ b.batch_title }}</td>
+              <td class="py-2.5 px-3 font-mono text-purple-600 font-semibold">{{ b.batch_type|default('MANUAL') }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(b.total_debit|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(b.total_credit|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center font-mono">{{ b.voucher_count|default(1) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="px-2 py-0.5 text-[9px] font-bold rounded {% if b.status == 'POSTED' %}bg-emerald-500/15 text-emerald-600 border border-emerald-500/30{% else %}bg-amber-500/15 text-amber-600 border border-amber-500/30{% endif %}">
+                  {{ b.status|default('UNPOSTED') }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                {% if b.status == 'UNPOSTED' %}
+                  <button onclick="postGLBatch('{{ b.id }}')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 font-bold text-[10px] inline-flex items-center gap-1 transition">
+                    <i data-lucide="check" class="w-3 h-3"></i>
+                    <span>Post Batch</span>
+                  </button>
+                {% else %}
+                  <button onclick="unpostGLBatch('{{ b.id }}')" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 font-bold text-[10px] inline-flex items-center gap-1 transition">
+                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                    <span>Unpost</span>
+                  </button>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Print Journal Vouchers (print-vouchers) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'print-vouchers' %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center"><i data-lucide="printer" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Print Journal Vouchers Document Studio</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Formal printable voucher documents with double-entry distributions and 4-tier sign-off blocks</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Voucher #</th>
+            <th class="py-2.5 px-3">Date</th>
+            <th class="py-2.5 px-3">Reference</th>
+            <th class="py-2.5 px-3">Narration</th>
+            <th class="py-2.5 px-3 text-right">Amount ($)</th>
+            <th class="py-2.5 px-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for v in gl_vouchers %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ v.voucher_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.voucher_date }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.reference_number|default('-') }}</td>
+              <td class="py-2.5 px-3 font-medium">{{ v.narration|default('General Accounting Journal Voucher') }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(v.total_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right">
+                <button onclick="printGLVoucher('{{ v.id }}')" class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 text-[11px] font-bold inline-flex items-center gap-1.5 transition">
+                  <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                  <span>Print Voucher</span>
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================================
+     3. FINANCIAL PROCESS & DIAGNOSTIC VIEWS (Data Integrity)
+     ========================================================================= -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'data-integrity' %}
+  <div class="space-y-5">
+    <!-- Diagnostics Banner -->
+    <div class="glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl {% if gl_integrity.is_healthy %}bg-emerald-500/10 text-emerald-600{% else %}bg-rose-500/10 text-rose-600{% endif %} flex items-center justify-center">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Check Data Integrity of GL Transactions</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Automated deep scanner verifying Debit = Credit parity, orphaned lines, and foreign key integrity</p>
+        </div>
+      </div>
+      <button onclick="runGLDataIntegrity()" class="mac-btn-primary px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm">
+        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+        <span>Run Deep Integrity Scan</span>
+      </button>
+    </div>
+
+    <!-- Diagnostic Metrics -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
+        <span class="text-xs text-slate-400 font-medium">Total Vouchers Scanned</span>
+        <div class="text-xl font-bold font-mono text-slate-900 dark:text-white">{{ gl_integrity.total_vouchers_checked }}</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
+        <span class="text-xs text-slate-400 font-medium">Total Lines Verified</span>
+        <div class="text-xl font-bold font-mono text-blue-600">{{ gl_integrity.total_lines_checked }}</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
+        <span class="text-xs text-slate-400 font-medium">Out-of-Balance Entries</span>
+        <div class="text-xl font-bold font-mono {% if gl_integrity.unbalanced_count == 0 %}text-emerald-600{% else %}text-rose-600{% endif %}">{{ gl_integrity.unbalanced_count }}</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
+        <span class="text-xs text-slate-400 font-medium">Orphans / Invalid Accts</span>
+        <div class="text-xl font-bold font-mono text-emerald-600">{{ gl_integrity.orphan_count + gl_integrity.unmapped_count }}</div>
+      </div>
+    </div>
+
+    <!-- Issues Table -->
+    <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Diagnostic Scan Report</h3>
+      {% if gl_integrity.issues|length > 0 %}
+        <div class="space-y-2">
+          {% for iss in gl_integrity.issues %}
+            <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs flex items-center justify-between">
+              <span class="font-medium text-rose-700 dark:text-rose-300">{{ iss.description }}</span>
+              <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-rose-200 text-rose-800">{{ iss.severity }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2 font-medium">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          <span>100% Data Integrity Verified! All double-entry vouchers are balanced and foreign key relationships are strictly intact.</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================================
+     4. FINANCIAL ANALYSIS VIEWS (Cost Analysis & Account Balances)
+     ========================================================================= -->
+
+<!-- TAB: Cost Analysis (cost-analysis) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'cost-analysis' %}
+  <div class="space-y-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
+        <span class="text-xs text-slate-400 font-medium">Total Allocated Budget</span>
+        <div class="text-xl font-bold font-mono text-slate-900 dark:text-white">${{ "{:,.2f}".format(gl_cost_analysis.kpis.total_budget|default(0.0)) }}</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
+        <span class="text-xs text-slate-400 font-medium">Total Actual Expenses</span>
+        <div class="text-xl font-bold font-mono text-amber-600">${{ "{:,.2f}".format(gl_cost_analysis.kpis.total_actual_spent|default(0.0)) }}</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
+        <span class="text-xs text-slate-400 font-medium">Net Budget Variance</span>
+        <div class="text-xl font-bold font-mono text-emerald-600">${{ "{:,.2f}".format(gl_cost_analysis.kpis.net_variance|default(0.0)) }}</div>
+      </div>
+      <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
+        <span class="text-xs text-slate-400 font-medium">Avg Budget Utilization</span>
+        <div class="text-xl font-bold font-mono text-purple-600">{{ gl_cost_analysis.kpis.avg_utilization|default(0.0) }}%</div>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Cost Centre Spending & Variance Matrix</h3>
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Cost Centre</th>
+            <th class="py-2.5 px-3 text-right">Allocated Budget ($)</th>
+            <th class="py-2.5 px-3 text-right">Actual Spent ($)</th>
+            <th class="py-2.5 px-3 text-right">Variance ($)</th>
+            <th class="py-2.5 px-3 text-center">Utilization</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for c in gl_cost_analysis.records %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3">
+                <div class="font-bold text-slate-900 dark:text-white">{{ c.cost_centre_code }}</div>
+                <div class="text-[11px] text-slate-400">{{ c.cost_centre_name }}</div>
+              </td>
+              <td class="py-2.5 px-3 text-right font-mono font-medium">${{ "{:,.2f}".format(c.allocated_budget) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-amber-600">${{ "{:,.2f}".format(c.total_spent) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">${{ "{:,.2f}".format(c.variance) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <div class="text-[10px] font-mono font-bold text-purple-600">{{ c.utilization_pct }}%</div>
+                <div class="w-20 mx-auto bg-slate-100 dark:bg-white/10 h-1.5 rounded-full overflow-hidden mt-1">
+                  <div class="bg-purple-600 h-full rounded-full" style="width: {{ c.utilization_pct }}%"></div>
+                </div>
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-100 text-emerald-800">
+                  {{ c.status }}
+                </span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Account Balance Inquiry (account-balances) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'account-balances' %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="activity" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Real-Time Account Balance Inquiry</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Live ledger lookup with Opening, Period Debits, Credits, and Net Activity</p>
+        </div>
+      </div>
+      <input type="text" placeholder="Filter account..." onkeyup="filterTable('gl-bal-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
+      <table class="w-full text-left text-xs" id="gl-bal-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Account</th>
+            <th class="py-2.5 px-3">Type</th>
+            <th class="py-2.5 px-3 text-right">Opening Bal ($)</th>
+            <th class="py-2.5 px-3 text-right text-emerald-600">Period Debit</th>
+            <th class="py-2.5 px-3 text-right text-rose-600">Period Credit</th>
+            <th class="py-2.5 px-3 text-right">Net Change</th>
+            <th class="py-2.5 px-3 text-right">Closing Bal ($)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for a in gl_account_balances.records %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3">
+                <div class="font-bold font-mono text-slate-900 dark:text-white">{{ a.account_number }}</div>
+                <div class="text-[11px] text-slate-400">{{ a.account_name }}</div>
+              </td>
+              <td class="py-2.5 px-3 font-mono text-slate-500 font-semibold">{{ a.account_type }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">${{ "{:,.2f}".format(a.opening_balance) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">${{ "{:,.2f}".format(a.period_debit) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600">${{ "{:,.2f}".format(a.period_credit) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-medium">${{ "{:,.2f}".format(a.net_change) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(a.closing_balance) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================================
+     5. FINANCIAL STATEMENTS & REPORTING VIEWS
+     ========================================================================= -->
+
+<!-- TAB: Financial Statements (financial-statements) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'financial-statements' %}
+  <div class="space-y-6">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center"><i data-lucide="file-text" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Financial Statements (Balance Sheet & Income Statement)</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Formal financial statement presentation in IFRS compliance</p>
+        </div>
+      </div>
+      <button onclick="window.print()" class="mac-btn-primary px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+        <span>Print Statements</span>
+      </button>
+    </div>
+
+    <!-- 2-Column Statements Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Income Statement -->
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-white/5">Statement of Profit & Loss</h3>
+        <div class="space-y-2 text-xs">
+          <div class="font-bold text-slate-700 dark:text-slate-300">Operating Revenues</div>
+          {% for r in gl_financial_statements.income_statement.revenues %}
+            <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
+              <span>{{ r.account_name }}</span>
+              <span class="font-mono">${{ "{:,.2f}".format(r.balance) }}</span>
+            </div>
+          {% endfor %}
+          <div class="flex items-center justify-between py-1.5 font-bold border-t border-slate-100 dark:border-white/5 text-slate-900 dark:text-white">
+            <span>Total Revenue</span>
+            <span class="font-mono text-emerald-600">${{ "{:,.2f}".format(gl_financial_statements.income_statement.total_revenue|default(0.0)) }}</span>
+          </div>
+
+          <div class="font-bold text-slate-700 dark:text-slate-300 pt-3">Operating Expenses</div>
+          {% for e in gl_financial_statements.income_statement.expenses %}
+            <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
+              <span>{{ e.account_name }}</span>
+              <span class="font-mono">${{ "{:,.2f}".format(e.balance) }}</span>
+            </div>
+          {% endfor %}
+          <div class="flex items-center justify-between py-1.5 font-bold border-t border-slate-100 dark:border-white/5 text-slate-900 dark:text-white">
+            <span>Total Expenses</span>
+            <span class="font-mono text-rose-600">${{ "{:,.2f}".format(gl_financial_statements.income_statement.total_expense|default(0.0)) }}</span>
+          </div>
+
+          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 font-bold text-emerald-700 dark:text-emerald-300 text-sm mt-3">
+            <span>Net Operating Profit</span>
+            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.income_statement.net_profit|default(0.0)) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Balance Sheet -->
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-white/5">Balance Sheet (Statement of Financial Position)</h3>
+        <div class="space-y-2 text-xs">
+          <div class="font-bold text-slate-700 dark:text-slate-300">Total Assets</div>
+          <div class="flex items-center justify-between py-1.5 font-bold text-slate-900 dark:text-white">
+            <span>Current & Fixed Assets</span>
+            <span class="font-mono text-blue-600">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.total_assets|default(0.0)) }}</span>
+          </div>
+
+          <div class="font-bold text-slate-700 dark:text-slate-300 pt-3">Liabilities & Equity</div>
+          <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
+            <span>Total Liabilities</span>
+            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.total_liabilities|default(0.0)) }}</span>
+          </div>
+          <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
+            <span>Share Capital & Reserves</span>
+            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.total_equity|default(0.0)) }}</span>
+          </div>
+          <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
+            <span>Net Profit for Period</span>
+            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.net_profit_transferred|default(0.0)) }}</span>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 font-bold text-blue-700 dark:text-blue-300 text-sm mt-3">
+            <span>Total Liabilities & Equity</span>
+            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.total_liabilities_and_equity|default(0.0)) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Trial Balance (trial-balance) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'trial-balance' %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center"><i data-lucide="scale" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Trial Balance Suite</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Opening balances, period movements, and closing balances</p>
+        </div>
+      </div>
+      <input type="text" placeholder="Filter trial balance..." onkeyup="filterTable('gl-tb-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
+      <table class="w-full text-left text-xs" id="gl-tb-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Account Number</th>
+            <th class="py-2.5 px-3">Account Title</th>
+            <th class="py-2.5 px-3 text-right">Debit ($)</th>
+            <th class="py-2.5 px-3 text-right">Credit ($)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for r in gl_trial_balance.records %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ r.account_number }}</td>
+              <td class="py-2.5 px-3 font-medium">{{ r.account_name }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 font-medium">{% if r.closing_debit > 0 %}${{ "{:,.2f}".format(r.closing_debit) }}{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600 font-medium">{% if r.closing_credit > 0 %}${{ "{:,.2f}".format(r.closing_credit) }}{% else %}-{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="border-t-2 border-slate-200 dark:border-white/10 font-bold font-mono text-slate-900 dark:text-white bg-slate-50 dark:bg-white/[0.02]">
+            <td colspan="2" class="py-3 px-3 uppercase">Total Trial Balance</td>
+            <td class="py-3 px-3 text-right text-emerald-600">${{ "{:,.2f}".format(gl_trial_balance.totals.closing_debit|default(0.0)) }}</td>
+            <td class="py-3 px-3 text-right text-rose-600">${{ "{:,.2f}".format(gl_trial_balance.totals.closing_credit|default(0.0)) }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Transaction Details (gl-transaction-details) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'gl-transaction-details' %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center"><i data-lucide="list-filter" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">General Ledger Transaction Audit Register</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Itemized line postings by cost centre, department, and account</p>
+        </div>
+      </div>
+      <input type="text" placeholder="Filter lines..." onkeyup="filterTable('gl-txn-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
+      <table class="w-full text-left text-xs" id="gl-txn-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Voucher #</th>
+            <th class="py-2.5 px-3">Date</th>
+            <th class="py-2.5 px-3">Account</th>
+            <th class="py-2.5 px-3">Cost Centre / Dept</th>
+            <th class="py-2.5 px-3">Line Memo</th>
+            <th class="py-2.5 px-3 text-right">Debit ($)</th>
+            <th class="py-2.5 px-3 text-right">Credit ($)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for t in gl_transaction_details %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ t.voucher_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-500">{{ t.voucher_date }}</td>
+              <td class="py-2.5 px-3">
+                <span class="font-mono font-semibold">{{ t.account_number }}</span>
+                <span class="text-[11px] text-slate-400 block">{{ t.account_name }}</span>
+              </td>
+              <td class="py-2.5 px-3 font-mono text-slate-500">{{ t.cost_centre_code|default(t.dept_code|default('CORP')) }}</td>
+              <td class="py-2.5 px-3 max-w-xs truncate">{{ t.line_narration|default('-') }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{% if t.debit_amount > 0 %}${{ "{:,.2f}".format(t.debit_amount) }}{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600">{% if t.credit_amount > 0 %}${{ "{:,.2f}".format(t.credit_amount) }}{% else %}-{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Cost-Centre wise Profit and Loss (cost-centre-pnl) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'cost-centre-pnl' %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="layers" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Cost-Centre wise Profit and Loss Report</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Operating revenue, direct costs, overheads, and net contribution margins</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <th class="py-2.5 px-3">Cost Centre</th>
+            <th class="py-2.5 px-3 text-right">Revenues ($)</th>
+            <th class="py-2.5 px-3 text-right">Direct Costs ($)</th>
+            <th class="py-2.5 px-3 text-right">Overheads ($)</th>
+            <th class="py-2.5 px-3 text-right">Net Margin ($)</th>
+            <th class="py-2.5 px-3 text-center">Margin %</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for p in gl_cost_centre_pnl %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ p.cost_centre_code }} - {{ p.cost_centre_name }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 font-bold">${{ "{:,.2f}".format(p.revenue) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-500">${{ "{:,.2f}".format(p.direct_costs) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-amber-500">${{ "{:,.2f}".format(p.overheads) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(p.net_contribution) }}</td>
+              <td class="py-2.5 px-3 text-center font-mono font-bold text-purple-600">{{ p.margin_pct }}%</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB: Notes to the Accounts (notes-to-accounts) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'notes-to-accounts' %}
+  <div class="space-y-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><i data-lucide="file-code-2" class="w-5 h-5"></i></div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Notes to the Accounts & Statutory Disclosures</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Formal footnote disclosures and accounting policy schedules</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {% for n in gl_notes_to_accounts %}
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">{{ n.note_number }}</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300">{{ n.category }}</span>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ n.title }}</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{{ n.summary }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================================
+     6. UNIVERSAL PRINTABLE LETTERHEAD VOUCHER MODAL
+     ========================================================================= -->
+<div id="modal-print-gl-voucher" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div class="glass-card rounded-3xl p-6 sm:p-8 max-w-3xl w-full border border-slate-200 dark:border-white/10 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+    <!-- Header Letterhead -->
+    <div class="flex items-start justify-between border-b border-slate-200 dark:border-white/10 pb-4">
+      <div>
+        <div class="text-xs uppercase font-mono tracking-widest text-slate-400">Pyrix Enterprise Financial Systems</div>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight" id="pv-title">Journal Voucher</h2>
+        <div class="text-xs font-mono text-slate-500 mt-0.5" id="pv-number">JV-XXXX</div>
+      </div>
+      <button onclick="document.getElementById('modal-print-gl-voucher').classList.add('hidden')" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Metadata Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Date:</span> <span id="pv-date" class="font-bold font-mono">2026-08-27</span></div>
+      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Reference:</span> <span id="pv-ref" class="font-bold font-mono">-</span></div>
+      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Status:</span> <span id="pv-status" class="font-bold text-emerald-600">POSTED</span></div>
+      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Currency:</span> <span id="pv-curr" class="font-bold font-mono">USD ($)</span></div>
+    </div>
+
+    <!-- Narration -->
+    <div class="text-xs">
+      <span class="text-slate-400 block text-[10px] uppercase font-mono">General Narration:</span>
+      <p id="pv-narration" class="font-medium text-slate-800 dark:text-slate-200 mt-0.5">-</p>
+    </div>
+
+    <!-- Distribution Lines Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 uppercase font-mono text-[10px]">
+            <th class="py-2">Account Title</th>
+            <th class="py-2">Cost Centre</th>
+            <th class="py-2">Line Memo</th>
+            <th class="py-2 text-right">Debit ($)</th>
+            <th class="py-2 text-right">Credit ($)</th>
+          </tr>
+        </thead>
+        <tbody id="pv-lines-body" class="divide-y divide-slate-100 dark:divide-white/5"></tbody>
+        <tfoot>
+          <tr class="border-t-2 border-slate-900 dark:border-white font-bold font-mono">
+            <td colspan="3" class="py-2.5">Total Distribution</td>
+            <td class="py-2.5 text-right font-mono" id="pv-tot-deb">$0.00</td>
+            <td class="py-2.5 text-right font-mono" id="pv-tot-crd">$0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- 4-Tier Sign-Off Footer -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-slate-200 dark:border-white/10 text-center text-[10px]">
+      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold uppercase text-slate-500">Prepared By</span></div>
+      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold uppercase text-slate-500">Verified By</span></div>
+      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold uppercase text-slate-500">Approved By</span></div>
+      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold uppercase text-slate-500">Auditor Sign-Off</span></div>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 pt-3">
+      <button onclick="window.print()" class="mac-btn-primary px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm">
+        <i data-lucide="printer" class="w-4 h-4"></i>
+        <span>Print Document (PDF / Paper)</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     7. JAVASCRIPT LOGIC & ASYNC OPERATIONS
+     ========================================================================= -->
+<script>
+async function generateAutoBatch() {
+  try {
+    const res = await fetch('/api/modules/general-ledger/transactions/auto-batch/generate', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('Automated recurring month-end batch successfully compiled and staged!');
+      window.location.href = '/modules/general-ledger?tab=batches';
+    } else {
+      alert('Error generating auto batch: ' + (data.message || 'Unknown error'));
+    }
+  } catch (err) {
+    alert('Failed to connect to batch engine.');
+  }
+}
+
+async function handleTemplateBatchSubmit(e) {
+  e.preventDefault();
+  const template_id = document.getElementById('tmpl-select').value;
+  const batch_title = document.getElementById('tmpl-title').value;
+  const amount = parseFloat(document.getElementById('tmpl-amount').value);
+
+  try {
+    const res = await fetch('/api/modules/general-ledger/transactions/template-batch/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ template_id, batch_title, amount })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('Template batch successfully created!');
+      window.location.href = '/modules/general-ledger?tab=batches';
+    } else {
+      alert('Error: ' + (data.message || 'Failed'));
+    }
+  } catch (err) {
+    alert('Server error creating template batch.');
+  }
+}
+
+async function postGLBatch(batchId) {
+  try {
+    const res = await fetch(`/api/modules/general-ledger/transactions/batches/${batchId}/post`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert(`Batch ${data.batch_number} successfully posted to master GL accounts!`);
+      window.location.reload();
+    }
+  } catch (err) {
+    alert('Failed to post batch.');
+  }
+}
+
+async function unpostGLBatch(batchId) {
+  try {
+    const res = await fetch(`/api/modules/general-ledger/transactions/batches/${batchId}/unpost`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('Batch status set to UNPOSTED.');
+      window.location.reload();
+    }
+  } catch (err) {
+    alert('Failed to unpost batch.');
+  }
+}
+
+async function runGLDataIntegrity() {
+  try {
+    const res = await fetch('/api/modules/general-ledger/process/data-integrity/run', { method: 'POST' });
+    const data = await res.json();
+    alert(`Integrity Scan Complete: ${data.status_label}\nTotal Vouchers Checked: ${data.total_vouchers_checked}\nTotal Lines Checked: ${data.total_lines_checked}`);
+    window.location.reload();
+  } catch (err) {
+    alert('Failed to run integrity scanner.');
+  }
+}
+
+async function printGLVoucher(voucherId) {
+  try {
+    const res = await fetch(`/api/modules/general-ledger/reports/voucher/${voucherId}/print-data`);
+    const data = await res.json();
+    if (data.success && data.document) {
+      const d = data.document;
+      document.getElementById('pv-number').innerText = d.voucher.voucher_number;
+      document.getElementById('pv-date').innerText = d.voucher.voucher_date;
+      document.getElementById('pv-ref').innerText = d.voucher.reference_number || '-';
+      document.getElementById('pv-status').innerText = d.voucher.status;
+      document.getElementById('pv-narration').innerText = d.voucher.narration || '-';
+      document.getElementById('pv-tot-deb').innerText = '$' + d.total_debit.toLocaleString('en-US', { minimumFractionDigits: 2 });
+      document.getElementById('pv-tot-crd').innerText = '$' + d.total_credit.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+      let rowsHtml = '';
+      d.lines.forEach(l => {
+        rowsHtml += `
+          <tr class="py-1.5">
+            <td class="py-1.5 font-semibold text-slate-800 dark:text-slate-200">${l.account_number} - ${l.account_name}</td>
+            <td class="py-1.5 font-mono text-slate-500">${l.cost_centre_code || '-'}</td>
+            <td class="py-1.5 text-slate-500">${l.line_narration || '-'}</td>
+            <td class="py-1.5 text-right font-mono text-emerald-600">${l.debit_amount > 0 ? '$' + l.debit_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}</td>
+            <td class="py-1.5 text-right font-mono text-rose-600">${l.credit_amount > 0 ? '$' + l.credit_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}</td>
+          </tr>
+        `;
+      });
+      document.getElementById('pv-lines-body').innerHTML = rowsHtml;
+      document.getElementById('modal-print-gl-voucher').classList.remove('hidden');
+    }
+  } catch (err) {
+    alert('Failed to load printable voucher document.');
+  }
+}
+</script>

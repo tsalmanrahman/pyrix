@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ current_user.theme_pref if current_user and current_user.theme_pref else 'light' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Dynamic Hierarchical Browser Title Bar (Logo in Favicon, Clean Text in Title) -->
+  <title>{% block title %}{{ active_company.short_code if active_company else 'APEX' }}{% endblock %}</title>
+  
+  <!-- Dynamic Company Logo Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>{{ active_company.logo_emoji if active_company else '🏭' }}</text></svg>">
+
+  <!-- Pre-render Theme & Sidebar State Script (Zero Flashing) -->
+  <script>
+    (function() {
+      const htmlEl = document.documentElement;
+      const initialTheme = htmlEl.getAttribute('data-theme') || localStorage.getItem('pyrix_theme') || 'light';
+      htmlEl.setAttribute('data-theme', initialTheme);
+      if (initialTheme === 'dark') {
+        htmlEl.classList.add('dark');
+        htmlEl.classList.remove('light');
+      } else {
+        htmlEl.classList.add('light');
+        htmlEl.classList.remove('dark');
+      }
+
+      const sidebarCollapsed = localStorage.getItem('pyrix_sidebar_collapsed') === 'true';
+      if (sidebarCollapsed) {
+        htmlEl.classList.add('sidebar-collapsed');
+      }
+    })();
+  </script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#2563EB',
+              dark: '#0F1117',
+              card: '#161A23',
+              border: 'rgba(255, 255, 255, 0.08)'
+            }
+          },
+          borderRadius: {
+            '2xl': '1rem',
+            '3xl': '1.25rem'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SortableJS CDN for Drag and Drop -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+  <!-- Custom Design Engine Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#0F1117] text-slate-100 antialiased selection:bg-blue-600/30 selection:text-white transition-colors duration-150">
+
+  <!-- Minimal Floating Sidebar -->
+  {% include "components/sidebar.html" %}
+
+  <!-- Main Application Area -->
+  <main class="main-wrapper">
+    <!-- Top Header & Search -->
+    {% include "components/header.html" %}
+
+    <!-- Windows 11 Fluent Clickable Breadcrumb Navigation -->
+    {% include "components/breadcrumbs.html" %}
+
+    <!-- Page Dynamic Content -->
+    <div class="mt-4 w-full max-w-[1920px] mx-auto transition-all duration-150">
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- Dynamic Copyright Footer -->
+    {% include "components/footer.html" %}
+  </main>
+
+  <!-- Global Company Switcher Modal -->
+  {% include "components/company_modal.html" %}
+
+  <!-- Global Client App Script -->
+  <script src="/static/js/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
