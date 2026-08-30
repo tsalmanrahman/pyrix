@@ -11,7 +11,6 @@
       <i data-lucide="printer" class="w-6 h-6 text-blue-400 shrink-0"></i>
       <div>
         <h2 class="text-base font-bold text-white tracking-tight">Contra Voucher Document</h2>
-        <p class="text-xs text-slate-400">Official Bank / Cash Contra Transfer Posting Slip</p>
       </div>
     </div>
 
@@ -52,18 +51,18 @@
     <!-- Metadata Grid -->
     <div class="grid grid-cols-2 gap-4 py-5 border-b border-slate-200 text-xs">
       <div>
-        <span class="text-slate-500 uppercase tracking-wider text-[10px] font-bold block">Contra Type:</span>
+        <span class="text-slate-500 font-semibold text-xs font-bold block">Contra Type:</span>
         <span class="font-bold text-slate-900 text-sm block mt-0.5 font-mono uppercase">{{ transfer.transfer_type }}</span>
         <span class="text-slate-500 text-[11px] block mt-0.5">Reference: {{ transfer.reference_number }}</span>
       </div>
 
       <div class="text-right space-y-1">
         <div>
-          <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Date:</span>
+          <span class="text-slate-500 text-[10px] font-bold tracking-tight">Date:</span>
           <span class="font-mono font-bold text-slate-900 ml-2">{{ transfer.transfer_date }}</span>
         </div>
         <div>
-          <span class="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Status:</span>
+          <span class="text-slate-500 text-[10px] font-bold tracking-tight">Status:</span>
           <span class="font-bold text-emerald-700 ml-2 uppercase">{{ transfer.status }}</span>
         </div>
       </div>
@@ -73,7 +72,7 @@
     <div class="py-5 border-b border-slate-200">
       <table class="w-full text-xs text-left">
         <thead>
-          <tr class="border-b border-slate-300 text-slate-500 font-bold uppercase text-[10px]">
+          <tr class="border-b border-slate-300 text-slate-500 font-semibold text-xs">
             <th class="py-2">Account Description / Routing</th>
             <th class="py-2 text-right">Debit ($)</th>
             <th class="py-2 text-right">Credit ($)</th>
@@ -127,7 +126,7 @@
 
       <!-- Narration -->
       <div class="text-xs pt-4">
-        <span class="text-slate-500 uppercase tracking-wider text-[10px] font-bold block">Narration:</span>
+        <span class="text-slate-500 font-semibold text-xs font-bold block">Narration:</span>
         <p class="text-slate-800 font-medium mt-1 leading-relaxed">{{ transfer.narration }}</p>
       </div>
     </div>

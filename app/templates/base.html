@@ -24,7 +24,9 @@
         htmlEl.classList.remove('dark');
       }
 
-      const sidebarCollapsed = localStorage.getItem('pyrix_sidebar_collapsed') === 'true';
+      const isSmallScreen = window.innerWidth < 1024;
+      const savedCollapsed = localStorage.getItem('pyrix_sidebar_collapsed');
+      const sidebarCollapsed = isSmallScreen || savedCollapsed === 'true';
       if (sidebarCollapsed) {
         htmlEl.classList.add('sidebar-collapsed');
       }
@@ -38,6 +40,11 @@
       darkMode: ['class', '[data-theme="dark"]'],
       theme: {
         extend: {
+          screens: {
+            '3xl': '1920px',
+            '4xl': '2560px',
+            '5xl': '3840px'
+          },
           colors: {
             brand: {
               blue: '#2563EB',
@@ -65,6 +72,14 @@
 </head>
 <body class="bg-[#0F1117] text-slate-100 antialiased selection:bg-blue-600/30 selection:text-white transition-colors duration-150">
 
+  <!-- Frosted Backdrop Blur Scrim Overlay (Small Screen Drawer Dismissal) -->
+  <div 
+    id="sidebar-backdrop" 
+    onclick="closeSidebarMobile()" 
+    class="sidebar-backdrop fixed inset-0 bg-black/60 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-250 cursor-pointer"
+    aria-hidden="true"
+  ></div>
+
   <!-- Minimal Floating Sidebar -->
   {% include "components/sidebar.html" %}
 
@@ -77,7 +92,7 @@
     {% include "components/breadcrumbs.html" %}
 
     <!-- Page Dynamic Content -->
-    <div class="mt-4 w-full max-w-[1920px] mx-auto transition-all duration-150">
+    <div class="mt-4 w-full max-w-[2560px] 4xl:max-w-[3440px] mx-auto transition-all duration-150">
       {% block content %}{% endblock %}
     </div>
 

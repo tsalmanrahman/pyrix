@@ -13,8 +13,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="users" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Customer Master Profile</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total active accounts: {{ ar_customers|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Customer Master Profile</h3>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -29,7 +28,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs" id="ar-customers-table">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Code</th>
             <th class="py-2.5 px-3">Customer Legal Name</th>
             <th class="py-2.5 px-3">AR / Commercial Group</th>
@@ -114,8 +113,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center"><i data-lucide="folder-cog" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">AR Customer Groups</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total groups: {{ ar_customer_groups|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">AR Customer Groups</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/ar-customer-groups/new" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -127,7 +125,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Group Code</th>
             <th class="py-2.5 px-3">Group Name</th>
             <th class="py-2.5 px-3">Control Account Set</th>
@@ -169,8 +167,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center"><i data-lucide="building-2" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Commercial Customer Groups</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total commercial groups: {{ ar_commercial_groups|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Commercial Customer Groups</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/customer-groups/new" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -182,7 +179,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Group Code</th>
             <th class="py-2.5 px-3">Commercial Group Name</th>
             <th class="py-2.5 px-3">Region / Territory</th>
@@ -222,8 +219,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="tags" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Customer Group Categories</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total tier classifications: {{ ar_group_categories|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Customer Group Categories</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/group-categories/new" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -235,7 +231,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Category Code</th>
             <th class="py-2.5 px-3">Category Name</th>
             <th class="py-2.5 px-3">Tier Level</th>
@@ -272,8 +268,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-violet-500/10 text-violet-600 flex items-center justify-center"><i data-lucide="network" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Customer Mapping Matrix ({{ active_company.short_code }})</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total company allocations: {{ ar_mappings|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Customer Mapping Matrix ({{ active_company.short_code }})</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/company-mappings/new" class="px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -285,7 +280,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Customer Code</th>
             <th class="py-2.5 px-3">Customer Name</th>
             <th class="py-2.5 px-3">Operating Subsidiary</th>
@@ -324,8 +319,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><i data-lucide="truck" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Customers' Ship to Address</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total delivery destinations: {{ ar_ship_addresses|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Customers' Ship to Address</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/ship-to-addresses/new" class="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -337,7 +331,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Customer</th>
             <th class="py-2.5 px-3">Destination Name</th>
             <th class="py-2.5 px-3">Facility Delivery Address</th>
@@ -376,8 +370,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center"><i data-lucide="scale" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">A/R Control Account Sets</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total GL control configurations: {{ ar_control_sets|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">A/R Control Account Sets</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/control-accounts/new" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -389,7 +382,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Set Code</th>
             <th class="py-2.5 px-3">Set Name</th>
             <th class="py-2.5 px-3">Receivables Control GL</th>
@@ -426,8 +419,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center"><i data-lucide="mail-warning" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Reminder Letter Criteria Setup</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total dunning levels: {{ ar_reminder_criteria|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Reminder Letter Criteria Setup</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/reminder-criteria/new" class="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -439,7 +431,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Criteria Code</th>
             <th class="py-2.5 px-3">Criteria Name</th>
             <th class="py-2.5 px-3">Severity Level</th>
@@ -478,8 +470,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center"><i data-lucide="clock-3" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">AR Aging Profile Brackets</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total aging profiles: {{ ar_aging_profiles|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">AR Aging Profile Brackets</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/aging-profiles/new" class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -491,7 +482,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Code</th>
             <th class="py-2.5 px-3">Profile Name</th>
             <th class="py-2.5 px-3">Bucket 1 (Current)</th>
@@ -534,8 +525,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center"><i data-lucide="sliders-horizontal" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">A/R Adjustment Types</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total adjustment codes: {{ ar_adjustment_types|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">A/R Adjustment Types</h3>
         </div>
       </div>
       <a href="/modules/accounts-receivable/master/adjustment-types/new" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
@@ -547,7 +537,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Adjustment Code</th>
             <th class="py-2.5 px-3">Adjustment Name</th>
             <th class="py-2.5 px-3 text-center">Category</th>
@@ -592,8 +582,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="layers-2" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Adjustment of Advance with Bills</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total matched adjustments: {{ ar_advance_adjustments|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Adjustment of Advance with Bills</h3>
         </div>
       </div>
       <button type="button" onclick="openArModal('modal-add-adv-adj')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer">
@@ -605,7 +594,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Voucher #</th>
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Customer</th>
@@ -644,8 +633,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="file-check-2" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Adjustment of Accounts Receivable</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total adjustments: {{ ar_general_adjustments|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Adjustment of Accounts Receivable</h3>
         </div>
       </div>
     </div>
@@ -653,7 +641,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Voucher #</th>
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Customer</th>
@@ -694,7 +682,7 @@
           <i data-lucide="{% if 'debit' in current_tab %}file-plus{% else %}file-minus{% endif %}" class="w-4 h-4"></i>
         </div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{{ current_page_title }}</h3>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{{ current_page_title }}</h3>
         </div>
       </div>
     </div>
@@ -703,7 +691,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Note #</th>
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Customer</th>
@@ -742,8 +730,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="receipt" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Issue Money Receipts (Customer Collections)</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total active receipts: {{ ar_receipts|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Issue Money Receipts (Customer Collections)</h3>
         </div>
       </div>
     </div>
@@ -751,7 +738,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Receipt #</th>
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Customer</th>
@@ -788,8 +775,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center"><i data-lucide="receipt-x" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Cancelled Money Receipts (Audit Trail)</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total voided receipts: {{ ar_cancelled_receipts|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Cancelled Money Receipts (Audit Trail)</h3>
         </div>
       </div>
     </div>
@@ -797,7 +783,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Receipt #</th>
             <th class="py-2.5 px-3">Original Date</th>
             <th class="py-2.5 px-3">Customer</th>
@@ -834,8 +820,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><i data-lucide="mail-warning" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Automatic Reminder Letter to Customer</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total generated dunning letters: {{ ar_reminder_letters|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Automatic Reminder Letter to Customer</h3>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -850,7 +835,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Letter #</th>
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Customer</th>
@@ -893,7 +878,7 @@
           <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center"><i data-lucide="wallet" class="w-3.5 h-3.5"></i></div>
         </div>
         <div class="text-2xl font-bold font-mono text-slate-900 dark:text-white">${{ "{:,.2f}".format(ar_credit_status.kpis.total_exposure) }}</div>
-        <p class="text-[11px] text-slate-400">Across active accounts</p>
+        
       </div>
 
       <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
@@ -911,7 +896,7 @@
           <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i></div>
         </div>
         <div class="text-2xl font-bold font-mono text-amber-600">{{ ar_credit_status.kpis.high_risk_count }} Accounts</div>
-        <p class="text-[11px] text-slate-400">{{ ar_credit_status.kpis.hold_count }} on commercial delivery hold</p>
+        
       </div>
 
       <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
@@ -930,8 +915,7 @@
     <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
       <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-100 dark:border-white/5">
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Due, Overdue Status & Credit Aging Monitor</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Real-time credit limits, overdue brackets and recommended dunning actions</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Due, Overdue Status & Credit Aging Monitor</h3>
         </div>
         <div class="flex items-center gap-2">
           <input type="text" placeholder="Filter customer..." onkeyup="filterTable('ar-status-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
@@ -941,7 +925,7 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs" id="ar-status-table">
           <thead>
-            <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
               <th class="py-2.5 px-3">Customer</th>
               <th class="py-2.5 px-3 text-right">Credit Limit & Util.</th>
               <th class="py-2.5 px-3 text-right">Balance ($)</th>
@@ -992,7 +976,7 @@
                   {% elif s.credit_status == 'WATCHLIST' %}
                     <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-amber-500/15 text-amber-600 border border-amber-500/30">WATCHLIST</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-500/15 text-emerald-600 border border-emerald-500/30">ACTIVE</span>
+                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-500/15 text-emerald-600 border border-emerald-500/30">Active</span>
                   {% endif %}
                 </td>
                 <td class="py-2.5 px-3 text-right">
@@ -1021,8 +1005,7 @@
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center"><i data-lucide="calendar-range" class="w-5 h-5"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Accounts Receivable Schedule</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Subledger Roll-Forward as of {{ ar_schedule.as_of_date }} ({{ active_company.name }})</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Accounts Receivable Schedule</h3>
         </div>
       </div>
       <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-200 text-xs font-semibold flex items-center gap-1.5 transition">
@@ -1035,7 +1018,7 @@
     <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Customer Code</th>
             <th class="py-2.5 px-3">Customer Legal Name</th>
             <th class="py-2.5 px-3 text-right">Opening Bal ($)</th>
@@ -1070,8 +1053,7 @@
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="file-spread" class="w-5 h-5"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Customer Account Statement</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Chronological Ledger with Real-Time Running Balance</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Customer Account Statement</h3>
         </div>
       </div>
       <form method="GET" action="/modules/accounts-receivable" class="flex items-center gap-2 flex-wrap text-xs">
@@ -1094,7 +1076,7 @@
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+            <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
               <th class="py-2.5 px-3">Date</th>
               <th class="py-2.5 px-3">Type</th>
               <th class="py-2.5 px-3">Voucher #</th>
@@ -1130,8 +1112,7 @@
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Customer - Sales, Collection & Outstanding</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Commercial Realization & Performance Matrix ({{ active_company.name }})</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Customer - Sales, Collection & Outstanding</h3>
         </div>
       </div>
     </div>
@@ -1139,7 +1120,7 @@
     <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Customer</th>
             <th class="py-2.5 px-3 text-right">Gross Sales ($)</th>
             <th class="py-2.5 px-3 text-right">Collections ($)</th>
@@ -1172,8 +1153,7 @@
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center"><i data-lucide="scale" class="w-5 h-5"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Aged Trial Balance of Accounts Receivables</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Aging Analysis & Bad Debt Provision as of {{ ar_atb.as_of_date }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Aged Trial Balance of Accounts Receivables</h3>
         </div>
       </div>
     </div>
@@ -1181,7 +1161,7 @@
     <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Customer</th>
             <th class="py-2.5 px-3 text-right">Total Balance</th>
             <th class="py-2.5 px-3 text-right text-emerald-600">Current (0-30d)</th>
@@ -1218,8 +1198,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><i data-lucide="receipt" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Collection from Customers Register</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Cleared Receipts: ${{ "{:,.2f}".format(ar_collections_register.total_collected) }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Collection from Customers Register</h3>
         </div>
       </div>
     </div>
@@ -1227,7 +1206,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Receipt #</th>
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Customer</th>
@@ -1260,8 +1239,7 @@
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center"><i data-lucide="file-minus-2" class="w-4 h-4"></i></div>
         <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Debit Note & Credit Note Summary Report</h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Active Notes: {{ ar_notes_summary.notes|length }}</p>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Debit Note & Credit Note Summary Report</h3>
         </div>
       </div>
     </div>
@@ -1269,19 +1247,19 @@
     <!-- KPI Strip -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
       <div class="glass-card rounded-xl p-3 border border-slate-200 dark:border-white/10">
-        <span class="text-[10px] font-medium text-rose-500 uppercase tracking-wider block">Total Debit Notes</span>
+        <span class="text-[10px] font-medium text-rose-500 tracking-tight block">Total Debit Notes</span>
         <span class="text-sm font-bold font-mono text-rose-600">${{ "{:,.2f}".format(ar_notes_summary.totals.total_debit_notes) }}</span>
       </div>
       <div class="glass-card rounded-xl p-3 border border-slate-200 dark:border-white/10">
-        <span class="text-[10px] font-medium text-blue-500 uppercase tracking-wider block">Total Credit Notes</span>
+        <span class="text-[10px] font-medium text-blue-500 tracking-tight block">Total Credit Notes</span>
         <span class="text-sm font-bold font-mono text-blue-600">${{ "{:,.2f}".format(ar_notes_summary.totals.total_credit_notes) }}</span>
       </div>
       <div class="glass-card rounded-xl p-3 border border-slate-200 dark:border-white/10">
-        <span class="text-[10px] font-medium text-purple-500 uppercase tracking-wider block">Total Tax</span>
+        <span class="text-[10px] font-medium text-purple-500 tracking-tight block">Total Tax</span>
         <span class="text-sm font-bold font-mono text-purple-600">${{ "{:,.2f}".format(ar_notes_summary.totals.total_tax) }}</span>
       </div>
       <div class="glass-card rounded-xl p-3 border border-slate-200 dark:border-white/10">
-        <span class="text-[10px] font-medium text-slate-400 uppercase tracking-wider block">Net Ledger Impact</span>
+        <span class="text-[10px] font-medium text-slate-400 tracking-tight block">Net Ledger Impact</span>
         <span class="text-sm font-bold font-mono text-slate-900 dark:text-white">${{ "{:,.2f}".format(ar_notes_summary.totals.net_note_impact) }}</span>
       </div>
     </div>
@@ -1289,7 +1267,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 uppercase font-mono text-[10px] tracking-wider">
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Note #</th>
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Type</th>

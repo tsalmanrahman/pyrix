@@ -30,13 +30,13 @@
       <div class="grid grid-cols-2 gap-3 shrink-0">
         <!-- 1. Fiscal Cycle -->
         <div class="px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/5 min-w-[110px]">
-          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Fiscal Cycle</p>
+          <p class="text-[10px] font-semibold text-slate-400 tracking-tight">Fiscal Cycle</p>
           <p class="text-xs font-bold text-emerald-400 mt-1 font-mono">{{ active_company.fiscal_year }}</p>
         </div>
 
         <!-- 2. Base Currency -->
         <div class="px-4 py-2.5 rounded-xl bg-white/[0.02] border border-white/5 min-w-[110px]">
-          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Base Currency</p>
+          <p class="text-[10px] font-semibold text-slate-400 tracking-tight">Base Currency</p>
           <p class="text-sm font-bold text-blue-400 mt-0.5 font-mono">{{ active_company.currency }} ($)</p>
         </div>
       </div>
@@ -68,36 +68,28 @@
     </button>
   </div>
 
-  <!-- THE 21 ENTERPRISE MODULES GRID (Dynamic Multi-Column Viewport Scaling) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-3.5" id="modules-catalog-grid">
+  <!-- THE ENTERPRISE MODULES CATALOG GRID (Adaptive Multi-Resolution Auto-Fit Engine) -->
+  <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));" id="modules-catalog-grid">
     {% for mod in all_modules %}
       <a 
         href="/modules/{{ mod.route_slug }}" 
-        class="module-card-item glass-card rounded-xl p-3.5 flex items-center justify-between gap-3 group border border-white/10 hover:border-blue-500/40 transition-all duration-150"
+        class="module-card-item glass-card rounded-xl p-3 flex items-center justify-between gap-3 group border border-white/10 hover:border-blue-500/40 hover:bg-white/[0.04] transition-all duration-150 shadow-sm"
         data-domain="{{ mod.domain_group }}"
         data-label="{{ mod.name }}"
-        data-desc="{{ mod.description }}"
         data-code="{{ mod.module_code }}"
       >
         <div class="flex items-center gap-3 min-w-0 flex-1">
           <!-- Borderless Icon -->
-          <i data-lucide="{{ mod.icon }}" class="w-5 h-5 text-blue-400 group-hover:text-blue-300 transition-colors shrink-0"></i>
+          <i data-lucide="{{ mod.icon }}" class="w-5 h-5 text-blue-400 group-hover:text-blue-300 group-hover:scale-105 transition-all shrink-0"></i>
 
-          <!-- Module Name & Domain Tag -->
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <h3 class="text-xs font-bold text-slate-100 group-hover:text-blue-400 truncate tracking-tight uppercase transition">
-                {{ mod.name }}
-              </h3>
-            </div>
-            <p class="text-[11px] text-slate-400 truncate mt-0.5">{{ mod.description }}</p>
-          </div>
+          <!-- Module Name -->
+          <h3 class="text-xs font-semibold text-slate-100 group-hover:text-blue-400 truncate tracking-tight transition">
+            {{ mod.name }}
+          </h3>
         </div>
 
-        <!-- Right Chevron (Clean without count badge) -->
-        <div class="flex items-center shrink-0">
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 group-hover:text-slate-200 transition"></i>
-        </div>
+        <!-- Right Chevron -->
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 group-hover:text-slate-200 group-hover:translate-x-0.5 transition shrink-0"></i>
       </a>
     {% endfor %}
   </div>

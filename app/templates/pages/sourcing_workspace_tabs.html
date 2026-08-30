@@ -12,7 +12,6 @@
             <i data-lucide="users" class="w-4 h-4 text-blue-500"></i>
             <span>Vendor Master Directory</span>
           </h3>
-          <p class="text-xs text-slate-400">Supplier master profiles, tax IDs, credit limits & banking details</p>
         </div>
         <button onclick="document.getElementById('modal-add-vendor').classList.remove('hidden')" class="btn-action-add px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition shadow">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -23,7 +22,7 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 uppercase text-[10px] font-semibold">
+            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 font-semibold text-xs">
               <th class="py-2.5 px-3">Code</th>
               <th class="py-2.5 px-3">Vendor Name</th>
               <th class="py-2.5 px-3">Group / Org Type</th>
@@ -85,7 +84,6 @@
             <i data-lucide="file-text" class="w-4 h-4 text-emerald-500"></i>
             <span>Purchase Requisitions (PR)</span>
           </h3>
-          <p class="text-xs text-slate-400">Spares, Services, Stationery & Decision Forms</p>
         </div>
         <button onclick="document.getElementById('modal-add-pr').classList.remove('hidden')" class="btn-action-add px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 transition shadow">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -96,7 +94,7 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 uppercase text-[10px] font-semibold">
+            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 font-semibold text-xs">
               <th class="py-2.5 px-3">PR Number</th>
               <th class="py-2.5 px-3">Type</th>
               <th class="py-2.5 px-3">Requisition Title</th>
@@ -150,7 +148,6 @@
             <i data-lucide="scale" class="w-4 h-4 text-amber-500"></i>
             <span>Comparative Statement (CS) Tender Evaluation</span>
           </h3>
-          <p class="text-xs text-slate-400">Automated commercial & technical bid matrix with 1-click PO generation</p>
         </div>
       </div>
 
@@ -212,7 +209,6 @@
             <i data-lucide="shopping-cart" class="w-4 h-4 text-indigo-500"></i>
             <span>Purchase Orders (PO Master Register)</span>
           </h3>
-          <p class="text-xs text-slate-400">Local & Import Purchase Orders with 4-tier approval blocks</p>
         </div>
         <button onclick="document.getElementById('modal-add-po').classList.remove('hidden')" class="btn-action-add px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition shadow">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -223,7 +219,7 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 uppercase text-[10px] font-semibold">
+            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 font-semibold text-xs">
               <th class="py-2.5 px-3">PO Number</th>
               <th class="py-2.5 px-3">Category</th>
               <th class="py-2.5 px-3">Vendor / Supplier</th>
@@ -289,7 +285,6 @@
             <i data-lucide="check-check" class="w-4 h-4 text-purple-500"></i>
             <span>Executive Digital e-Approval Queue</span>
           </h3>
-          <p class="text-xs text-slate-400">Multi-tier approval workflows for Requisitions and Purchase Orders</p>
         </div>
         <form action="/modules/sourcing/actions/approvals/batch-approve" method="POST">
           <button type="submit" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1.5 transition shadow">
@@ -356,14 +351,13 @@
             <i data-lucide="check-circle-2" class="w-4 h-4 text-rose-500"></i>
             <span>PR vs PO vs GRN 3-Way Reconciliation Audit</span>
           </h3>
-          <p class="text-xs text-slate-400">Line-item procurement fulfillment tracking linking Requisition &rarr; PO &rarr; Goods Receipt</p>
         </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 uppercase text-[10px] font-semibold">
+            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 font-semibold text-xs">
               <th class="py-2.5 px-3">PO & Requisition</th>
               <th class="py-2.5 px-3">Item Description</th>
               <th class="py-2.5 px-3">PR Requested</th>
@@ -415,7 +409,6 @@
             <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
             <span>Vendor Performance KPI Scorecards</span>
           </h3>
-          <p class="text-xs text-slate-400">Total spend, quality rating, and return defect ratios</p>
         </div>
       </div>
 
@@ -464,7 +457,6 @@
             <i data-lucide="landmark" class="w-4 h-4 text-purple-500"></i>
             <span>Letter of Credit (LC) & C&F Shipping Register</span>
           </h3>
-          <p class="text-xs text-slate-400">Import LC bank margin tracking & port forwarding dispatch</p>
         </div>
       </div>
 

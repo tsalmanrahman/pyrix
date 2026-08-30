@@ -15,16 +15,9 @@
     <!-- Category Icon (Borderless) -->
     <i data-lucide="{{ option.icon if option.icon else 'sliders' }}" class="w-5 h-5 text-blue-400 shrink-0"></i>
 
-    <!-- Label & Description -->
+    <!-- Label -->
     <div class="min-w-0 flex-1">
-      <div class="flex items-center gap-2">
-        <h4 class="text-sm font-semibold text-slate-100 truncate">{{ option.label }}</h4>
-        <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold rounded bg-slate-800 text-blue-400 border border-blue-500/30">#{{ option.code }}</span>
-        {% if option.is_system %}
-          <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-slate-800 text-slate-400 border border-slate-700">System</span>
-        {% endif %}
-      </div>
-      <p class="text-xs text-slate-400 truncate mt-0.5">{{ option.description }}</p>
+      <h4 class="text-sm font-semibold text-slate-100 truncate">{{ option.label }}</h4>
     </div>
   </div>
 

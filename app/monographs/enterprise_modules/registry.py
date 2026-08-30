@@ -8,11 +8,11 @@ from app.core.db import db
 
 # Color mapping per suite
 SUITE_THEMES = {
-    1: {"color": "blue", "icon": "settings-2", "title": "1. Master Setup Suite"},
-    2: {"color": "emerald", "icon": "arrow-left-right", "title": "2. Transaction Processing & Automation Suite"},
-    3: {"color": "purple", "icon": "check-check", "title": "3. Process, Batch & Closing Suite"},
-    4: {"color": "amber", "icon": "bar-chart-2", "title": "4. Financial & Operational Analysis Suite"},
-    5: {"color": "rose", "icon": "file-pie-chart", "title": "5. Reporting & Statements Suite"},
+    1: {"color": "blue", "icon": "settings-2", "title": "Master Setup Suite"},
+    2: {"color": "emerald", "icon": "arrow-left-right", "title": "Transaction Processing & Automation Suite"},
+    3: {"color": "purple", "icon": "check-check", "title": "Process, Batch & Closing Suite"},
+    4: {"color": "amber", "icon": "bar-chart-2", "title": "Financial & Operational Analysis Suite"},
+    5: {"color": "rose", "icon": "file-pie-chart", "title": "Reporting & Statements Suite"},
 }
 
 def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
@@ -27,7 +27,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Chart of Accounts, Mappings & Cost Dimensions",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -43,7 +43,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing & Automation Suite",
+                "title": "Transaction Processing & Automation Suite",
                 "subtitle": "Double-Entry Journals, Recurring Engines & Vouchers",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -61,7 +61,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Financial Process & Closing Suite",
+                "title": "Financial Process & Closing Suite",
                 "subtitle": "Bulk Staging, Ledger Commitment & Data Diagnostics",
                 "icon": "check-check",
                 "theme_color": "purple",
@@ -73,7 +73,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Financial Analysis & Cost Control Suite",
+                "title": "Financial Analysis & Cost Control Suite",
                 "subtitle": "Departmental Spending & Real-Time Account Inquiry",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -85,7 +85,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. Financial Reporting & Statements Suite",
+                "title": "Financial Reporting & Statements Suite",
                 "subtitle": "Balance Sheet, Income Statement, Trial Balance & Cost Centre P&L",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -105,7 +105,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Customer Profiles, Credit Limits & Group Classifications",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -125,7 +125,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing & Automation Suite",
+                "title": "Transaction Processing & Automation Suite",
                 "subtitle": "Adjustments, Invoices, Debit/Credit Notes & Money Receipts",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -143,7 +143,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Credit Management Process Suite",
+                "title": "Credit Management Process Suite",
                 "subtitle": "Overdue Tracking, Dunning Escalation & Reminder Generation",
                 "icon": "shield-alert",
                 "theme_color": "purple",
@@ -154,7 +154,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Financial & Operational Analysis Suite",
+                "title": "Financial & Operational Analysis Suite",
                 "subtitle": "Real-Time Aging Matrix, Credit Limits & Portfolio Utilization",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -165,7 +165,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. Financial Reporting & Statements Suite",
+                "title": "Financial Reporting & Statements Suite",
                 "subtitle": "Statements, Aging Schedules, Real-Time Turnover & Registers",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -186,7 +186,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Cashier Stations, Bank Accounts & Currency Rules",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -201,7 +201,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing Suite",
+                "title": "Transaction Processing Suite",
                 "subtitle": "Receipts, Payments & Contra Transfers",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -215,7 +215,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Treasury Process & Reconciliation",
+                "title": "Treasury Process & Reconciliation",
                 "subtitle": "Bank Reconciliation & Daily Cash Drawer Closings",
                 "icon": "check-check",
                 "theme_color": "purple",
@@ -227,7 +227,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Liquidity & Cash Flow Analysis",
+                "title": "Liquidity & Cash Flow Analysis",
                 "subtitle": "Live Treasury Balances & Cash Velocity",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -239,7 +239,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. Treasury Reporting Suite",
+                "title": "Treasury Reporting Suite",
                 "subtitle": "Daily Cash Sheet, Bank Registers & Cheque Status",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -258,7 +258,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Vendor Master, AP Groups & Payment Terms",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -273,7 +273,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing Suite",
+                "title": "Transaction Processing Suite",
                 "subtitle": "Invoices, Payment Vouchers & Debit/Credit Notes",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -289,7 +289,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Payment Run & AP Process Suite",
+                "title": "Payment Run & AP Process Suite",
                 "subtitle": "Batch Payment Runs & AP Data Diagnostics",
                 "icon": "check-check",
                 "theme_color": "purple",
@@ -301,7 +301,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Payable Aging & Cash Outflow Analysis",
+                "title": "Payable Aging & Cash Outflow Analysis",
                 "subtitle": "DPO Metrics & Projected Cash Requirements",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -313,7 +313,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. AP Reporting & 1099 Disclosures",
+                "title": "AP Reporting & 1099 Disclosures",
                 "subtitle": "AP Schedule, Vendor Statements & Tax Filings",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -333,7 +333,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Vendor Profiles, Enlistment Tiers, Buyer Governance & Incoterms",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -351,7 +351,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing & Automation Suite",
+                "title": "Transaction Processing & Automation Suite",
                 "subtitle": "Multi-Type PR, RFQ Tenders, Dynamic CS Matrix & Purchase Orders",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -366,7 +366,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Process, Batch & e-Approval Suite",
+                "title": "Process, Batch & e-Approval Suite",
                 "subtitle": "Multi-Tier Approval Chains, LC Operations & C&F Dispatch",
                 "icon": "check-check",
                 "theme_color": "purple",
@@ -380,7 +380,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Financial & Operational Analysis Suite",
+                "title": "Financial & Operational Analysis Suite",
                 "subtitle": "LC Exposure, Vendor Scorecards & Spend Analytics",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -393,7 +393,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. Sourcing Reporting & 3-Way Audit Suite",
+                "title": "Sourcing Reporting & 3-Way Audit Suite",
                 "subtitle": "PR-PO-GRN Reconciliation, Purchase Registers & Schedules",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -423,7 +423,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
     return [
         {
             "suite_id": 1,
-            "title": "1. Master Setup Suite",
+            "title": "Master Setup Suite",
             "subtitle": f"Core Master Catalogs, Policies & System Parameters for {mod_name}",
             "icon": "settings-2",
             "theme_color": "blue",
@@ -437,7 +437,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
         },
         {
             "suite_id": 2,
-            "title": "2. Transaction Processing & Automation Suite",
+            "title": "Transaction Processing & Automation Suite",
             "subtitle": f"Operational Vouchers, Workflow Documents & Processing Engine",
             "icon": "arrow-left-right",
             "theme_color": "emerald",
@@ -451,7 +451,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
         },
         {
             "suite_id": 3,
-            "title": "3. Process, Approval & Closing Suite",
+            "title": "Process, Approval & Closing Suite",
             "subtitle": "Workflow Approvals, Periodic Cycles & Integrity Diagnostics",
             "icon": "check-check",
             "theme_color": "purple",
@@ -463,7 +463,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
         },
         {
             "suite_id": 4,
-            "title": "4. Analytical & Control Suite",
+            "title": "Analytical & Control Suite",
             "subtitle": "Performance Metrics, Variance Calculations & KPI Dashboards",
             "icon": "bar-chart-2",
             "theme_color": "amber",
@@ -475,7 +475,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
         },
         {
             "suite_id": 5,
-            "title": "5. Reporting & Statements Suite",
+            "title": "Reporting & Statements Suite",
             "subtitle": f"Statutory Registers, Periodic Schedules & Exportable Reports",
             "icon": "file-pie-chart",
             "theme_color": "rose",

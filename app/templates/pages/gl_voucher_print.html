@@ -11,7 +11,6 @@
       <i data-lucide="printer" class="w-6 h-6 text-blue-400 shrink-0"></i>
       <div>
         <h2 class="text-base font-bold text-white tracking-tight">Journal Voucher (JV) Slip Document</h2>
-        <p class="text-xs text-slate-400">Official General Ledger double-entry posting slip</p>
       </div>
     </div>
 
@@ -51,25 +50,25 @@
     <!-- Metadata Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 mb-6 text-xs">
       <div>
-        <span class="block text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Voucher Date</span>
+        <span class="block text-slate-500 tracking-tight font-semibold text-[10px]">Voucher Date</span>
         <span class="font-mono font-bold text-slate-900 text-sm">{{ voucher.voucher_date }}</span>
       </div>
       <div>
-        <span class="block text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Reference / Doc No</span>
+        <span class="block text-slate-500 tracking-tight font-semibold text-[10px]">Reference / Doc No</span>
         <span class="font-mono font-bold text-slate-900 text-sm">{{ voucher.reference_number if voucher.reference_number else 'N/A' }}</span>
       </div>
       <div>
-        <span class="block text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Currency / Fiscal</span>
+        <span class="block text-slate-500 tracking-tight font-semibold text-[10px]">Currency / Fiscal</span>
         <span class="font-mono font-bold text-slate-900 text-sm">{{ voucher.currency }} &bull; FY 2026-27</span>
       </div>
       <div>
-        <span class="block text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Posting Status</span>
+        <span class="block text-slate-500 tracking-tight font-semibold text-[10px]">Posting Status</span>
         <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
           {{ voucher.status }}
         </span>
       </div>
       <div class="col-span-2 sm:col-span-4 pt-2 border-t border-slate-200">
-        <span class="block text-slate-500 uppercase tracking-wider font-semibold text-[10px]">General Narration / Purpose</span>
+        <span class="block text-slate-500 tracking-tight font-semibold text-[10px]">General Narration / Purpose</span>
         <p class="font-medium text-slate-800 text-xs mt-0.5">{{ voucher.narration }}</p>
       </div>
     </div>
@@ -78,7 +77,7 @@
     <div class="overflow-x-auto mb-6">
       <table class="w-full text-left text-xs border-collapse">
         <thead>
-          <tr class="border-b-2 border-slate-900 text-slate-700 font-bold uppercase tracking-wider text-[10px] bg-slate-100">
+          <tr class="border-b-2 border-slate-900 text-slate-700 font-bold font-semibold text-xs bg-slate-100">
             <th class="py-2.5 px-3">#</th>
             <th class="py-2.5 px-3 font-mono">Account No</th>
             <th class="py-2.5 px-3">Account Title & Classification</th>
@@ -112,7 +111,7 @@
         </tbody>
         <tfoot>
           <tr class="border-t-2 border-slate-900 bg-slate-50 font-mono font-black text-slate-900 text-sm">
-            <td colspan="5" class="py-3 px-3 text-right uppercase tracking-wider font-sans font-bold text-xs">
+            <td colspan="5" class="py-3 px-3 text-right tracking-tight font-sans font-bold text-xs">
               Total Balanced Voucher Posting:
             </td>
             <td class="py-3 px-3 text-right text-blue-800">
@@ -132,7 +131,7 @@
         <div class="h-16 border-b border-dashed border-slate-400 flex items-end justify-center pb-2">
           <span class="font-mono text-slate-600 text-[11px]">{{ voucher.created_by }}</span>
         </div>
-        <span class="block mt-2 font-bold uppercase tracking-wider text-slate-700 text-[10px]">Prepared By</span>
+        <span class="block mt-2 font-bold tracking-tight text-slate-700 text-[10px]">Prepared By</span>
         <span class="text-[9px] text-slate-400 font-mono">{{ voucher.created_at }}</span>
       </div>
 
@@ -140,7 +139,7 @@
         <div class="h-16 border-b border-dashed border-slate-400 flex items-end justify-center pb-2">
           <span class="font-mono text-slate-600 text-[11px]">Audit Verified</span>
         </div>
-        <span class="block mt-2 font-bold uppercase tracking-wider text-slate-700 text-[10px]">Verified / Audited By</span>
+        <span class="block mt-2 font-bold tracking-tight text-slate-700 text-[10px]">Verified / Audited By</span>
         <span class="text-[9px] text-slate-400">Chief Financial Controller</span>
       </div>
 
@@ -148,7 +147,7 @@
         <div class="h-16 border-b border-dashed border-slate-400 flex items-end justify-center pb-2">
           <span class="font-mono text-slate-600 text-[11px]">Authorized Signatory</span>
         </div>
-        <span class="block mt-2 font-bold uppercase tracking-wider text-slate-700 text-[10px]">Approved By</span>
+        <span class="block mt-2 font-bold tracking-tight text-slate-700 text-[10px]">Approved By</span>
         <span class="text-[9px] text-slate-400">Managing Director / CFO</span>
       </div>
     </div>
