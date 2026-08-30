@@ -1,0 +1,8 @@
+# 1. Check which files were modified
+git status
+# 2. Stage all changed files
+git add .
+# 3. Create a commit with a descriptive message
+git commit -m "feat(dashboard): show company address and simplify operational banner metrics"
+# 4. Push your commit to GitHub on branch salman
+git push origin salman
