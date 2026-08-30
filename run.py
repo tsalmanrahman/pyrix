@@ -20,6 +20,8 @@ def main():
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.DEBUG,
+        reload_dirs=["app"],
+        reload_includes=["*.py", "*.html", "*.css", "*.js"],
         log_level="info"
     )
 
