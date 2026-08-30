@@ -225,7 +225,7 @@ async def user_profile_page(request: Request, success_msg: Optional[str] = None)
     breadcrumbs = [
         {"title": "Home", "url": "/"},
         {"title": "Settings", "url": "/settings/dynamic-options"},
-        {"title": "User Profile & Account", "url": None}
+        {"title": "My Profile & Account", "url": None}
     ]
 
     return templates.TemplateResponse(
@@ -275,7 +275,7 @@ async def update_user_profile(
     breadcrumbs = [
         {"title": "Home", "url": "/"},
         {"title": "Settings", "url": "/settings/dynamic-options"},
-        {"title": "User Profile & Account", "url": None}
+        {"title": "My Profile & Account", "url": None}
     ]
 
     response = templates.TemplateResponse(
@@ -318,7 +318,7 @@ async def change_user_password(
     breadcrumbs = [
         {"title": "Home", "url": "/"},
         {"title": "Settings", "url": "/settings/dynamic-options"},
-        {"title": "User Profile & Account", "url": None}
+        {"title": "My Profile & Account", "url": None}
     ]
 
     if new_password != confirm_password:

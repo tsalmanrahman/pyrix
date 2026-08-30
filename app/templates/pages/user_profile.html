@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}User Profile - {{ user.full_name }}{% endblock %}
+{% block title %}My Profile & Account - {{ user.full_name }}{% endblock %}
 
 {% block content %}
 <style>
@@ -17,6 +17,12 @@
     background-color: rgba(244, 63, 94, 0.04) !important;
     box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.18) !important;
   }
+  .profile-tab-btn.active {
+    background: rgba(37, 99, 235, 0.15);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  }
 </style>
 
 <div class="space-y-6">
@@ -24,10 +30,11 @@
   <!-- Minimalist Header Banner with Sleek Icon Back Button -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <i data-lucide="user" class="w-6 h-6 text-blue-400 shrink-0"></i>
+      <div class="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+        <i data-lucide="user" class="w-4 h-4"></i>
+      </div>
       <div>
-        <h2 class="text-lg font-bold text-white tracking-tight">My Profile & Enterprise Account</h2>
-        <p class="text-xs text-slate-400">User credentials, profile settings, and workspace preferences</p>
+        <h2 class="text-lg font-bold text-white tracking-tight">My Profile & Account</h2>
       </div>
     </div>
 
@@ -43,25 +50,27 @@
 
   <!-- User Identity Overview Hero Card -->
   <div class="glass-card rounded-2xl p-6 border border-white/10 relative overflow-hidden">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
       
       <!-- Avatar & Identity Info -->
       <div class="flex items-center gap-4">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-600/30 shrink-0">
-          {{ user.initials if user and user.initials else 'AV' }}
-        </div>
-        <div class="space-y-1 min-w-0">
-          <div class="flex items-center gap-2.5 flex-wrap">
-            <h3 class="text-lg font-bold text-white tracking-tight">{{ user.full_name }}</h3>
-            <span class="px-2 py-0.5 text-xs font-mono font-bold uppercase rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/30">
-              {{ user.company_code|default(active_company.short_code) }}
-            </span>
-            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online
-            </span>
+        <div class="relative">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-blue-600/30 shrink-0">
+            {{ user.initials if user and user.initials else 'AV' }}
           </div>
+          <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#0F1117] flex items-center justify-center" title="Online & Connected">
+            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+          </span>
+        </div>
+        
+        <div class="space-y-1 min-w-0">
+          <h3 class="text-lg font-bold text-white tracking-tight">{{ user.full_name }}</h3>
           <p class="text-xs text-slate-300 font-medium">{{ user.job_title }} &bull; <span class="text-slate-400">{{ user.department }}</span></p>
-          <p class="text-[11px] text-slate-400 font-mono">{{ user.email }} &bull; Employee ID: <strong class="text-slate-200">{{ user.employee_id }}</strong></p>
+          <p class="text-[11px] text-slate-400 font-mono flex items-center gap-2 flex-wrap">
+            <span>{{ user.email }}</span>
+            <span class="text-slate-600">&bull;</span>
+            <span>Employee ID: <strong class="text-slate-200">{{ user.employee_id }}</strong></span>
+          </p>
         </div>
       </div>
 
@@ -77,232 +86,312 @@
   </div>
 
   {% if success_msg %}
-    <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
-      <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
-      <span>{{ success_msg }}</span>
+    <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-between gap-2 shadow-sm animate-fade-in">
+      <div class="flex items-center gap-2">
+        <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+        <span class="font-medium">{{ success_msg }}</span>
+      </div>
+      <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-200 cursor-pointer">
+        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+      </button>
     </div>
   {% endif %}
 
   {% if error_msg %}
-    <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-      <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
-      <span>{{ error_msg }}</span>
+    <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center justify-between gap-2 shadow-sm animate-fade-in">
+      <div class="flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+        <span class="font-medium">{{ error_msg }}</span>
+      </div>
+      <button onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-200 cursor-pointer">
+        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+      </button>
     </div>
   {% endif %}
 
-  <!-- Main Grid: Profile Settings + Security -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Dynamic Segment / Tab Navigation Bar -->
+  <div class="flex items-center gap-2 flex-wrap border-b border-white/5 pb-2">
+    <button 
+      type="button"
+      onclick="switchProfileTab('personal')" 
+      id="tab-btn-personal"
+      class="profile-tab-btn active px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5 transition flex items-center gap-2 cursor-pointer"
+    >
+      <i data-lucide="id-card" class="w-3.5 h-3.5"></i>
+      <span>Personal Details</span>
+    </button>
 
-    <!-- Left 2 Cols: Personal & Work Information Form -->
-    <div class="lg:col-span-2 space-y-6">
-      
-      <!-- 1. Profile Details Form -->
-      <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
+    <button 
+      type="button"
+      onclick="switchProfileTab('security')" 
+      id="tab-btn-security"
+      class="profile-tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5 transition flex items-center gap-2 cursor-pointer"
+    >
+      <i data-lucide="key" class="w-3.5 h-3.5"></i>
+      <span>Change Password</span>
+    </button>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 1: PERSONAL & WORK INFORMATION -->
+  <!-- ========================================== -->
+  <div id="tab-content-personal" class="profile-tab-panel space-y-6">
+    <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+      <div class="flex items-center justify-between">
         <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
           <i data-lucide="id-card" class="w-4 h-4 text-blue-400"></i>
-          <span>Personal & Work Information</span>
+          <span>Personal Details</span>
         </h3>
+      </div>
 
-        <form id="profile-form" action="/profile" method="POST" onsubmit="return validateProfileForm(event)" class="space-y-4 text-xs" novalidate>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            <!-- Full Name -->
-            <div id="wrapper-full_name" class="space-y-1 transition-all">
-              <label class="block text-slate-300 font-medium mb-1">Full Name <span class="text-blue-400">*</span></label>
+      <form id="profile-form" action="/profile" method="POST" onsubmit="return validateProfileForm(event)" class="space-y-4 text-xs" novalidate>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Full Name -->
+          <div id="wrapper-full_name" class="space-y-1.5 transition-all">
+            <label class="block text-slate-300 font-medium">Full Name</label>
+            <div class="relative">
+              <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
               <input 
                 type="text" 
                 id="input-full_name"
                 name="full_name" 
                 required 
                 value="{{ user.full_name }}" 
-                placeholder="Enter full name"
-                class="mac-input w-full font-medium"
+                placeholder="Enter your full name"
+                class="mac-input w-full pl-10 font-medium"
               >
-              <p id="error-full_name" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
-                <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Full name is required.</span>
-              </p>
             </div>
+            <p id="error-full_name" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
+              <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Full name is required.</span>
+            </p>
+          </div>
 
-            <!-- Employee ID -->
-            <div class="space-y-1">
-              <label class="block text-slate-400 font-medium mb-1">Employee ID</label>
-              <input type="text" readonly value="{{ user.employee_id }}" class="mac-input w-full font-mono font-bold text-blue-400 cursor-not-allowed">
+          <!-- Employee ID -->
+          <div class="space-y-1.5">
+            <label class="block text-slate-300 font-medium">Employee ID</label>
+            <div class="relative">
+              <i data-lucide="hash" class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input 
+                type="text" 
+                readonly 
+                value="{{ user.employee_id }}" 
+                class="mac-input w-full pl-10 font-mono font-bold text-blue-400 cursor-not-allowed opacity-80"
+              >
             </div>
+          </div>
 
-            <!-- Email Address -->
-            <div id="wrapper-email" class="space-y-1 transition-all">
-              <label class="block text-slate-300 font-medium mb-1">Email Address <span class="text-blue-400">*</span></label>
+          <!-- Email Address -->
+          <div id="wrapper-email" class="space-y-1.5 transition-all">
+            <label class="block text-slate-300 font-medium">Email Address</label>
+            <div class="relative">
+              <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
               <input 
                 type="email" 
                 id="input-email"
                 name="email" 
                 required 
                 value="{{ user.email }}" 
-                placeholder="name@company.com"
-                class="mac-input w-full font-mono"
+                placeholder="name@company.internal"
+                class="mac-input w-full pl-10 font-mono"
               >
-              <p id="error-email" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
-                <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Please enter a valid email address.</span>
-              </p>
             </div>
+            <p id="error-email" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
+              <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Please enter a valid email address.</span>
+            </p>
+          </div>
 
-            <!-- Phone Number -->
-            <div class="space-y-1">
-              <label class="block text-slate-300 font-medium mb-1">Phone Number</label>
-              <input type="text" id="input-phone" name="phone" value="{{ user.phone if user.phone else '' }}" placeholder="+1 (555) 000-0000" class="mac-input w-full font-mono">
+          <!-- Phone Number -->
+          <div class="space-y-1.5">
+            <label class="block text-slate-300 font-medium">Phone Number</label>
+            <div class="relative">
+              <i data-lucide="phone" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input 
+                type="text" 
+                id="input-phone" 
+                name="phone" 
+                value="{{ user.phone if user.phone else '' }}" 
+                placeholder="+1 (555) 000-0000" 
+                class="mac-input w-full pl-10 font-mono"
+              >
             </div>
+          </div>
 
-            <!-- Job Title -->
-            <div id="wrapper-job_title" class="space-y-1 transition-all">
-              <label class="block text-slate-300 font-medium mb-1">Job Title <span class="text-blue-400">*</span></label>
+          <!-- Job Title -->
+          <div id="wrapper-job_title" class="space-y-1.5 transition-all">
+            <label class="block text-slate-300 font-medium">Job Title</label>
+            <div class="relative">
+              <i data-lucide="briefcase" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
               <input 
                 type="text" 
                 id="input-job_title"
                 name="job_title" 
                 required 
                 value="{{ user.job_title }}" 
-                placeholder="Enter job title"
-                class="mac-input w-full"
+                placeholder="e.g. Enterprise Architect"
+                class="mac-input w-full pl-10"
               >
-              <p id="error-job_title" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
-                <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Job title cannot be left blank.</span>
-              </p>
             </div>
+            <p id="error-job_title" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
+              <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Job title cannot be left blank.</span>
+            </p>
+          </div>
 
-            <!-- Department -->
-            <div id="wrapper-department" class="space-y-1 transition-all">
-              <label class="block text-slate-300 font-medium mb-1">Department <span class="text-blue-400">*</span></label>
+          <!-- Department -->
+          <div id="wrapper-department" class="space-y-1.5 transition-all">
+            <label class="block text-slate-300 font-medium">Department</label>
+            <div class="relative">
+              <i data-lucide="building" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
               <input 
                 type="text" 
                 id="input-department"
                 name="department" 
                 required 
                 value="{{ user.department }}" 
-                placeholder="Enter department"
-                class="mac-input w-full"
+                placeholder="e.g. Technology"
+                class="mac-input w-full pl-10"
               >
-              <p id="error-department" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
-                <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Department cannot be blank.</span>
-              </p>
             </div>
+            <p id="error-department" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
+              <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Department cannot be blank.</span>
+            </p>
+          </div>
 
-            <!-- Operating Company -->
-            <div class="md:col-span-2">
-              <label class="block text-slate-300 font-medium mb-1">Operating Company</label>
-              <select name="primary_company_id" class="mac-input w-full bg-slate-900 font-mono text-[11px]">
+          <!-- Operating Company -->
+          <div class="md:col-span-2 space-y-1.5">
+            <label class="block text-slate-300 font-medium">Operating Company</label>
+            <div class="relative">
+              <i data-lucide="building-2" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <select name="primary_company_id" class="mac-input w-full pl-10 bg-slate-900 font-mono text-xs">
                 <option value="" {% if not user.primary_company_id %}selected{% endif %}>
-                  -- None (Always prompt company selection at login) --
+                  Select Company
                 </option>
                 {% for c in companies %}
                   <option value="{{ c.id }}" {% if user.primary_company_id == c.id %}selected{% endif %}>
-                    [{{ c.short_code }}] {{ c.name }} ({{ c.industry }})
+                    {{ c.name }} - {{ c.short_code }}
                   </option>
                 {% endfor %}
               </select>
             </div>
-
           </div>
 
-          <div class="pt-2 flex items-center justify-end">
-            <button type="submit" class="h-9 px-5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm">
-              <i data-lucide="check" class="w-3.5 h-3.5"></i>
-              <span>Save Profile Changes</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- 2. Active Terminal Sessions Card -->
-      <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3">
-        <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-          <i data-lucide="monitor" class="w-4 h-4 text-blue-400"></i>
-          <span>Active Terminal Sessions</span>
-        </h3>
-
-        <div class="divide-y divide-white/5 text-xs text-slate-300">
-          <div class="py-2.5 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <i data-lucide="laptop" class="w-4 h-4 text-blue-400"></i>
-              <div>
-                <div class="font-bold text-white">Current Web Terminal (Active)</div>
-                <div class="text-[10px] text-slate-400 font-mono">Chrome on Windows 11 &bull; IP: 127.0.0.1 (Localhost)</div>
-              </div>
-            </div>
-            <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Active Now
-            </span>
-          </div>
-
-          <div class="py-2.5 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <i data-lucide="smartphone" class="w-4 h-4 text-slate-400"></i>
-              <div>
-                <div class="font-bold text-slate-200">Pyrix Mobile Client</div>
-                <div class="text-[10px] text-slate-400 font-mono">iOS Enterprise Hub &bull; 2 hours ago</div>
-              </div>
-            </div>
-            <span class="text-[10px] text-slate-500 font-mono">Authorized</span>
-          </div>
         </div>
-      </div>
 
+        <div class="pt-3 flex items-center justify-end border-t border-white/5">
+          <button type="submit" class="h-9 px-5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-blue-500/20">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Right 1 Col: Change Password Card -->
-    <div class="space-y-6">
-
-      <!-- Change Password Card -->
-      <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3.5">
+  <!-- ========================================== -->
+  <!-- TAB 2: SECURITY & CREDENTIALS -->
+  <!-- ========================================== -->
+  <div id="tab-content-security" class="profile-tab-panel space-y-6 hidden">
+    <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+      <div class="flex items-center justify-between">
         <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
           <i data-lucide="key" class="w-4 h-4 text-blue-400"></i>
-          <span>Change Terminal Password</span>
+          <span>Change Password</span>
         </h3>
+      </div>
 
-        <form id="password-form" action="/profile/change-password" method="POST" onsubmit="return validatePasswordForm(event)" class="space-y-3 text-xs" novalidate>
-          <div id="wrapper-new_password" class="space-y-1">
-            <label class="block text-slate-300 font-medium mb-1">New Password</label>
-            <input 
-              type="password" 
-              id="input-new_password"
-              name="new_password" 
-              required 
-              placeholder="••••••••" 
-              class="mac-input w-full"
-            >
+      <form id="password-form" action="/profile/change-password" method="POST" onsubmit="return validatePasswordForm(event)" class="space-y-4 text-xs" novalidate>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <div id="wrapper-new_password" class="space-y-1.5">
+            <label class="block text-slate-300 font-medium">New Password</label>
+            <div class="relative">
+              <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input 
+                type="password" 
+                id="input-new_password"
+                name="new_password" 
+                required 
+                placeholder="••••••••" 
+                class="mac-input w-full pl-10"
+                oninput="checkPasswordMatch()"
+              >
+            </div>
             <p id="error-new_password" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
               <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Password is required.</span>
             </p>
           </div>
 
-          <div id="wrapper-confirm_password" class="space-y-1">
-            <label class="block text-slate-300 font-medium mb-1">Confirm New Password</label>
-            <input 
-              type="password" 
-              id="input-confirm_password"
-              name="confirm_password" 
-              required 
-              placeholder="••••••••" 
-              class="mac-input w-full"
-            >
+          <div id="wrapper-confirm_password" class="space-y-1.5">
+            <label class="block text-slate-300 font-medium">Confirm New Password</label>
+            <div class="relative">
+              <i data-lucide="shield-check" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input 
+                type="password" 
+                id="input-confirm_password"
+                name="confirm_password" 
+                required 
+                placeholder="••••••••" 
+                class="mac-input w-full pl-10"
+                oninput="checkPasswordMatch()"
+              >
+            </div>
             <p id="error-confirm_password" class="text-[11px] text-rose-400 font-medium hidden flex items-center gap-1 mt-1">
               <i data-lucide="alert-circle" class="w-3 h-3"></i> <span>Passwords do not match.</span>
             </p>
           </div>
 
-          <button type="submit" class="w-full h-8 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 flex items-center justify-center gap-1.5 transition cursor-pointer mt-1">
-            <i data-lucide="lock" class="w-3.5 h-3.5 text-blue-400"></i>
+        </div>
+
+        <div id="password-match-status" class="hidden text-[11px] font-medium flex items-center gap-1.5 pt-1"></div>
+
+        <div class="pt-3 flex justify-end border-t border-white/5">
+          <button type="submit" class="h-9 px-5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-blue-500/20">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
             <span>Update Password</span>
           </button>
-        </form>
-      </div>
-
+        </div>
+      </form>
     </div>
-
   </div>
 
 </div>
 
 <script>
+  function switchProfileTab(tabName) {
+    // Hide all tab panels
+    document.querySelectorAll('.profile-tab-panel').forEach(panel => {
+      panel.classList.add('hidden');
+    });
+
+    // Deactivate all tab buttons
+    document.querySelectorAll('.profile-tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    // Show target tab panel
+    const targetPanel = document.getElementById(`tab-content-${tabName}`);
+    const targetBtn = document.getElementById(`tab-btn-${tabName}`);
+
+    if (targetPanel) targetPanel.classList.remove('hidden');
+    if (targetBtn) targetBtn.classList.add('active');
+
+    // Update URL hash
+    window.location.hash = tabName;
+    
+    // Refresh icons if lucide exists
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  // Restore active tab from hash on load
+  window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById(`tab-content-${hash}`)) {
+      switchProfileTab(hash);
+    }
+  });
+
   function triggerFieldShake(fieldId, errorMsg) {
     const wrapper = document.getElementById(`wrapper-${fieldId}`);
     const input = document.getElementById(`input-${fieldId}`);
@@ -358,6 +447,28 @@
       return false;
     }
     return true;
+  }
+
+  function checkPasswordMatch() {
+    const p1 = document.getElementById('input-new_password');
+    const p2 = document.getElementById('input-confirm_password');
+    const status = document.getElementById('password-match-status');
+    
+    if (!p1 || !p2 || !status) return;
+
+    if (p1.value && p2.value) {
+      status.classList.remove('hidden');
+      if (p1.value === p2.value) {
+        status.className = 'text-[11px] font-medium flex items-center gap-1.5 text-emerald-400 pt-1';
+        status.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5"></i> <span>Passwords match</span>';
+      } else {
+        status.className = 'text-[11px] font-medium flex items-center gap-1.5 text-rose-400 pt-1';
+        status.innerHTML = '<i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> <span>Passwords do not match</span>';
+      }
+      if (window.lucide) lucide.createIcons();
+    } else {
+      status.classList.add('hidden');
+    }
   }
 
   function validatePasswordForm(e) {
