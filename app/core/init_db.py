@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 from app.config import get_settings
 from app.core.db import db
 
@@ -1104,7 +1105,1089 @@ def initialize_tables():
                 created_at DATETIME DEFAULT GETDATE()
             );
         END
+        """,
+
+        # 51. Inventory: Warehouses & Storage Facilities Master
         """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_warehouses')
+        BEGIN
+            CREATE TABLE inv_warehouses (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                warehouse_code VARCHAR(30) NOT NULL UNIQUE,
+                warehouse_name NVARCHAR(150) NOT NULL,
+                warehouse_type VARCHAR(50) DEFAULT 'CENTRAL_STORE',
+                address NVARCHAR(300),
+                manager_name NVARCHAR(150) NOT NULL,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 52. Inventory: Multi-Bin Storage Locations (Aisle/Rack/Shelf/Bin)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_bins')
+        BEGIN
+            CREATE TABLE inv_bins (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                warehouse_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_warehouses(id),
+                bin_code VARCHAR(50) NOT NULL,
+                aisle VARCHAR(20) NOT NULL,
+                rack VARCHAR(20) NOT NULL,
+                shelf VARCHAR(20) NOT NULL,
+                bin_number VARCHAR(20) NOT NULL,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 53. Inventory: Product Groups & Categorization
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_product_groups')
+        BEGIN
+            CREATE TABLE inv_product_groups (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(2001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                group_code VARCHAR(30) NOT NULL UNIQUE,
+                group_name NVARCHAR(150) NOT NULL,
+                group_type VARCHAR(50) DEFAULT 'FINISHED_GOODS',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 54. Inventory: Units of Measure (UOM) & Conversion
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_uom')
+        BEGIN
+            CREATE TABLE inv_uom (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                uom_code VARCHAR(20) NOT NULL UNIQUE,
+                uom_name NVARCHAR(100) NOT NULL,
+                base_uom VARCHAR(20) DEFAULT 'PCS',
+                conversion_ratio FLOAT DEFAULT 1.0,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 55. Inventory: Master Items Catalog
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_items')
+        BEGIN
+            CREATE TABLE inv_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(3001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                group_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES inv_product_groups(id),
+                uom_code VARCHAR(20) DEFAULT 'PCS',
+                item_code VARCHAR(50) NOT NULL UNIQUE,
+                item_name NVARCHAR(200) NOT NULL,
+                specification NVARCHAR(300),
+                standard_cost FLOAT NOT NULL DEFAULT 0.0,
+                min_reorder_qty FLOAT DEFAULT 100.0,
+                safety_stock_qty FLOAT DEFAULT 50.0,
+                is_serialized BIT DEFAULT 0,
+                item_status VARCHAR(30) DEFAULT 'ACTIVE',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 56. Inventory: Stock Balances Matrix (Multi-Warehouse / Bin)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_stock_balances')
+        BEGIN
+            CREATE TABLE inv_stock_balances (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                warehouse_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_warehouses(id),
+                bin_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES inv_bins(id),
+                item_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_items(id),
+                on_hand_qty FLOAT NOT NULL DEFAULT 0.0,
+                reserved_qty FLOAT NOT NULL DEFAULT 0.0,
+                in_transit_qty FLOAT NOT NULL DEFAULT 0.0,
+                last_updated DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 57. Inventory: Goods Receiving Notes (GRN Header)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_grn_headers')
+        BEGIN
+            CREATE TABLE inv_grn_headers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(10001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                warehouse_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_warehouses(id),
+                grn_number VARCHAR(50) NOT NULL UNIQUE,
+                grn_type VARCHAR(30) DEFAULT 'VENDOR_PO',
+                po_ref VARCHAR(50) NULL,
+                supplier_name NVARCHAR(200) NOT NULL,
+                grn_date DATE NOT NULL,
+                challan_ref VARCHAR(80) NULL,
+                received_by NVARCHAR(100) NOT NULL,
+                qc_status VARCHAR(30) DEFAULT 'PASSED',
+                total_received_value FLOAT NOT NULL DEFAULT 0.0,
+                status VARCHAR(30) DEFAULT 'POSTED',
+                is_gl_posted BIT DEFAULT 1,
+                gl_journal_ref VARCHAR(50) NULL,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 58. Inventory: Goods Receiving Note Items
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_grn_items')
+        BEGIN
+            CREATE TABLE inv_grn_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                grn_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_grn_headers(id),
+                item_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_items(id),
+                bin_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES inv_bins(id),
+                received_qty FLOAT NOT NULL,
+                accepted_qty FLOAT NOT NULL,
+                rejected_qty FLOAT DEFAULT 0.0,
+                unit_cost FLOAT NOT NULL,
+                line_total FLOAT NOT NULL,
+                batch_number VARCHAR(50) NULL,
+                remarks NVARCHAR(250) NULL
+            );
+        END
+        """,
+
+        # 59. Inventory: Goods Issue Challans (Header)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_issues')
+        BEGIN
+            CREATE TABLE inv_issues (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(20001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                warehouse_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_warehouses(id),
+                issue_number VARCHAR(50) NOT NULL UNIQUE,
+                issue_type VARCHAR(30) DEFAULT 'DELIVERY_DISPATCH',
+                order_ref VARCHAR(50) NULL,
+                cost_centre_name NVARCHAR(100) NULL,
+                issue_date DATE NOT NULL,
+                gate_pass_ref VARCHAR(80) NULL,
+                issued_by NVARCHAR(100) NOT NULL,
+                recipient_name NVARCHAR(150) NOT NULL,
+                total_issue_value FLOAT NOT NULL DEFAULT 0.0,
+                status VARCHAR(30) DEFAULT 'DISPATCHED',
+                is_gl_posted BIT DEFAULT 1,
+                gl_journal_ref VARCHAR(50) NULL,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 60. Inventory: Goods Issue Items
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_issue_items')
+        BEGIN
+            CREATE TABLE inv_issue_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                issue_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_issues(id),
+                item_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_items(id),
+                bin_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES inv_bins(id),
+                issued_qty FLOAT NOT NULL,
+                unit_cost FLOAT NOT NULL,
+                line_total FLOAT NOT NULL,
+                remarks NVARCHAR(250) NULL
+            );
+        END
+        """,
+
+        # 61. Inventory: Inter-Warehouse Stock Transfer Orders (STO)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_stock_transfers')
+        BEGIN
+            CREATE TABLE inv_stock_transfers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(30001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                from_warehouse_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_warehouses(id),
+                to_warehouse_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_warehouses(id),
+                transfer_number VARCHAR(50) NOT NULL UNIQUE,
+                transfer_date DATE NOT NULL,
+                dispatch_date DATE NOT NULL,
+                carrier_name NVARCHAR(150) NULL,
+                vehicle_no VARCHAR(50) NULL,
+                tracking_ref VARCHAR(80) NULL,
+                total_transfer_value FLOAT NOT NULL DEFAULT 0.0,
+                status VARCHAR(30) DEFAULT 'IN_TRANSIT',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 62. Inventory: Stock Transfer Items
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_transfer_items')
+        BEGIN
+            CREATE TABLE inv_transfer_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                transfer_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_stock_transfers(id),
+                item_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_items(id),
+                transfer_qty FLOAT NOT NULL,
+                received_qty FLOAT DEFAULT 0.0,
+                unit_cost FLOAT NOT NULL,
+                line_total FLOAT NOT NULL
+            );
+        END
+        """,
+
+        # 63. Inventory: Physical Cycle Count Adjustments (+/-)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_adjustments')
+        BEGIN
+            CREATE TABLE inv_adjustments (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(40001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                warehouse_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_warehouses(id),
+                adjustment_number VARCHAR(50) NOT NULL UNIQUE,
+                adjustment_date DATE NOT NULL,
+                reason_type VARCHAR(50) NOT NULL,
+                total_variance_amount FLOAT NOT NULL DEFAULT 0.0,
+                adjusted_by NVARCHAR(100) NOT NULL,
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 64. Inventory: Serial Number Registry & Warranties
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_warranties')
+        BEGIN
+            CREATE TABLE inv_warranties (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(50001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                item_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES inv_items(id),
+                serial_number VARCHAR(80) NOT NULL UNIQUE,
+                customer_name NVARCHAR(200) NOT NULL,
+                order_ref VARCHAR(50) NULL,
+                invoice_ref VARCHAR(50) NULL,
+                warranty_start_date DATE NOT NULL,
+                warranty_end_date DATE NOT NULL,
+                warranty_months INT DEFAULT 12,
+                status VARCHAR(30) DEFAULT 'ACTIVE',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 65. Inventory: Multi-Tier Approvals Tracking
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'inv_approvals')
+        BEGIN
+            CREATE TABLE inv_approvals (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(60001, 1) NOT NULL,
+                entity_type VARCHAR(30) NOT NULL,
+                entity_id UNIQUEIDENTIFIER NOT NULL,
+                tier_level INT NOT NULL,
+                tier_name NVARCHAR(100) NOT NULL,
+                approver_name NVARCHAR(100) NOT NULL,
+                approver_role NVARCHAR(100) NOT NULL,
+                action VARCHAR(30) DEFAULT 'PENDING',
+                comments NVARCHAR(300),
+                action_date DATETIME,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 66. Fixed Assets: Asset Groups & Categories
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_asset_groups')
+        BEGIN
+            CREATE TABLE fa_asset_groups (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                group_code VARCHAR(30) NOT NULL,
+                group_name NVARCHAR(150) NOT NULL,
+                asset_type VARCHAR(50) DEFAULT 'TANGIBLE_DEPRECIATING',
+                is_depreciating BIT DEFAULT 1,
+                default_useful_life_years INT DEFAULT 10,
+                default_depr_rate DECIMAL(6, 2) DEFAULT 10.00,
+                gl_cost_account VARCHAR(50) DEFAULT '1500-PLANT',
+                gl_acc_depr_account VARCHAR(50) DEFAULT '1505-ACC-PLANT',
+                gl_depr_expense_account VARCHAR(50) DEFAULT '6500-DEPR-PLANT',
+                gl_gain_loss_account VARCHAR(50) DEFAULT '7200-GAIN-LOSS-ASSET',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 67. Fixed Assets: Primary Physical Locations
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_locations')
+        BEGIN
+            CREATE TABLE fa_locations (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70101, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                location_code VARCHAR(30) NOT NULL,
+                location_name NVARCHAR(150) NOT NULL,
+                location_type VARCHAR(50) DEFAULT 'MANUFACTURING_PLANT',
+                address NVARCHAR(250),
+                manager_name NVARCHAR(100),
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 68. Fixed Assets: 2D Sub-Locations & Machine Bays
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_sub_locations')
+        BEGIN
+            CREATE TABLE fa_sub_locations (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70201, 1) NOT NULL,
+                location_id UNIQUEIDENTIFIER NOT NULL,
+                sub_location_code VARCHAR(30) NOT NULL,
+                sub_location_name NVARCHAR(150) NOT NULL,
+                floor_or_bay NVARCHAR(100),
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 69. Fixed Assets: Depreciation Policies
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_depreciation_policies')
+        BEGIN
+            CREATE TABLE fa_depreciation_policies (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70301, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                policy_code VARCHAR(30) NOT NULL,
+                policy_name NVARCHAR(150) NOT NULL,
+                method VARCHAR(50) DEFAULT 'STRAIGHT_LINE',
+                useful_life_years INT DEFAULT 10,
+                salvage_value_pct DECIMAL(5, 2) DEFAULT 5.00,
+                depr_rate DECIMAL(6, 2) DEFAULT 10.00,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 70. Fixed Assets: Master Asset Register
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_assets')
+        BEGIN
+            CREATE TABLE fa_assets (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70401, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                group_id UNIQUEIDENTIFIER NOT NULL,
+                location_id UNIQUEIDENTIFIER NOT NULL,
+                sub_location_id UNIQUEIDENTIFIER,
+                policy_id UNIQUEIDENTIFIER NOT NULL,
+                asset_tag VARCHAR(50) NOT NULL UNIQUE,
+                asset_name NVARCHAR(200) NOT NULL,
+                serial_number VARCHAR(100),
+                barcode VARCHAR(100),
+                manufacturer NVARCHAR(150),
+                model_number NVARCHAR(100),
+                purchase_date DATE NOT NULL,
+                capitalization_date DATE,
+                purchase_cost DECIMAL(18, 2) NOT NULL,
+                accumulated_depreciation DECIMAL(18, 2) DEFAULT 0.00,
+                net_book_value DECIMAL(18, 2) NOT NULL,
+                custodian_name NVARCHAR(100),
+                department_name NVARCHAR(100),
+                supplier_name NVARCHAR(150),
+                warranty_expiry DATE,
+                insurance_policy_ref VARCHAR(100),
+                is_leased BIT DEFAULT 0,
+                is_capitalized BIT DEFAULT 1,
+                status VARCHAR(30) DEFAULT 'IN_SERVICE',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 71. Fixed Assets: Capital Asset Receiving Notes (Asset GRN)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_grn_headers')
+        BEGIN
+            CREATE TABLE fa_grn_headers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70501, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                location_id UNIQUEIDENTIFIER NOT NULL,
+                grn_number VARCHAR(50) NOT NULL UNIQUE,
+                po_ref VARCHAR(50),
+                supplier_name NVARCHAR(150) NOT NULL,
+                grn_date DATE NOT NULL,
+                received_by NVARCHAR(100) NOT NULL,
+                qc_status VARCHAR(30) DEFAULT 'PASSED_QA_INSPECTION',
+                total_cost DECIMAL(18, 2) NOT NULL,
+                status VARCHAR(30) DEFAULT 'POSTED',
+                is_gl_posted BIT DEFAULT 1,
+                gl_journal_ref VARCHAR(50) DEFAULT 'GL-JV-2026-CAP-001',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 72. Fixed Assets: Asset Transfers Log
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_transfers')
+        BEGIN
+            CREATE TABLE fa_transfers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70601, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                asset_id UNIQUEIDENTIFIER NOT NULL,
+                transfer_number VARCHAR(50) NOT NULL UNIQUE,
+                transfer_date DATE NOT NULL,
+                from_location_id UNIQUEIDENTIFIER NOT NULL,
+                to_location_id UNIQUEIDENTIFIER NOT NULL,
+                from_custodian NVARCHAR(100),
+                to_custodian NVARCHAR(100) NOT NULL,
+                reason NVARCHAR(250),
+                status VARCHAR(30) DEFAULT 'COMPLETED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 73. Fixed Assets: Disposals & Write-offs
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_disposals')
+        BEGIN
+            CREATE TABLE fa_disposals (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70701, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                asset_id UNIQUEIDENTIFIER NOT NULL,
+                disposal_number VARCHAR(50) NOT NULL UNIQUE,
+                disposal_date DATE NOT NULL,
+                disposal_type VARCHAR(50) DEFAULT 'SALE',
+                disposal_proceeds DECIMAL(18, 2) DEFAULT 0.00,
+                original_cost DECIMAL(18, 2) NOT NULL,
+                acc_depr_at_disposal DECIMAL(18, 2) NOT NULL,
+                net_book_value DECIMAL(18, 2) NOT NULL,
+                gain_loss_amount DECIMAL(18, 2) NOT NULL,
+                buyer_name NVARCHAR(150),
+                approved_by NVARCHAR(100),
+                status VARCHAR(30) DEFAULT 'POSTED',
+                is_gl_posted BIT DEFAULT 1,
+                gl_journal_ref VARCHAR(50) DEFAULT 'GL-JV-2026-DSP-001',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 74. Fixed Assets: Depreciation Runs
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_depreciation_runs')
+        BEGIN
+            CREATE TABLE fa_depreciation_runs (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70801, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                run_number VARCHAR(50) NOT NULL UNIQUE,
+                period_name NVARCHAR(100) NOT NULL,
+                run_date DATE NOT NULL,
+                total_depreciation_amount DECIMAL(18, 2) NOT NULL,
+                total_assets_processed INT NOT NULL,
+                status VARCHAR(30) DEFAULT 'POSTED',
+                is_gl_posted BIT DEFAULT 1,
+                gl_journal_ref VARCHAR(50) DEFAULT 'GL-JV-2026-DPR-001',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 75. Fixed Assets: Depreciation Itemized Lines
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_depreciation_lines')
+        BEGIN
+            CREATE TABLE fa_depreciation_lines (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70901, 1) NOT NULL,
+                run_id UNIQUEIDENTIFIER NOT NULL,
+                asset_id UNIQUEIDENTIFIER NOT NULL,
+                opening_cost DECIMAL(18, 2) NOT NULL,
+                opening_acc_depr DECIMAL(18, 2) NOT NULL,
+                period_depreciation DECIMAL(18, 2) NOT NULL,
+                closing_acc_depr DECIMAL(18, 2) NOT NULL,
+                closing_nbv DECIMAL(18, 2) NOT NULL
+            );
+        END
+        """,
+
+        # 76. Fixed Assets: Physical Verification Audits
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_physical_audits')
+        BEGIN
+            CREATE TABLE fa_physical_audits (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(71001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                location_id UNIQUEIDENTIFIER NOT NULL,
+                audit_number VARCHAR(50) NOT NULL UNIQUE,
+                audit_date DATE NOT NULL,
+                auditor_name NVARCHAR(100) NOT NULL,
+                total_audited INT NOT NULL,
+                found_count INT NOT NULL,
+                missing_count INT NOT NULL,
+                damaged_count INT NOT NULL,
+                status VARCHAR(30) DEFAULT 'VERIFIED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 77. Fixed Assets: Multi-Tier Approvals Tracking
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'fa_approvals')
+        BEGIN
+            CREATE TABLE fa_approvals (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(71101, 1) NOT NULL,
+                entity_type VARCHAR(30) NOT NULL,
+                entity_id UNIQUEIDENTIFIER NOT NULL,
+                tier_level INT NOT NULL,
+                tier_name NVARCHAR(100) NOT NULL,
+                approver_name NVARCHAR(100) NOT NULL,
+                approver_role NVARCHAR(100) NOT NULL,
+                action VARCHAR(30) DEFAULT 'APPROVED',
+                comments NVARCHAR(300),
+                action_date DATETIME,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """
+
+
+        # 78. HR: Employee Grades & Pay Scale Bands
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_grades')
+        BEGIN
+            CREATE TABLE hr_grades (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                grade_code VARCHAR(50) NOT NULL,
+                grade_name NVARCHAR(100) NOT NULL,
+                rank_level INT NOT NULL,
+                min_basic_salary DECIMAL(18, 2) NOT NULL,
+                max_basic_salary DECIMAL(18, 2) NOT NULL,
+                hra_pct DECIMAL(5, 2) DEFAULT 25.00,
+                medical_pct DECIMAL(5, 2) DEFAULT 10.00,
+                conveyance_pct DECIMAL(5, 2) DEFAULT 10.00,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 79. HR: Organizational Departments
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_departments')
+        BEGIN
+            CREATE TABLE hr_departments (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80101, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                dept_code VARCHAR(50) NOT NULL,
+                dept_name NVARCHAR(150) NOT NULL,
+                cost_center_code VARCHAR(50) NOT NULL,
+                head_of_dept NVARCHAR(100),
+                location_name NVARCHAR(150),
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 80. HR: Designations & Job Titles
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_designations')
+        BEGIN
+            CREATE TABLE hr_designations (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80201, 1) NOT NULL,
+                department_id UNIQUEIDENTIFIER NOT NULL,
+                designation_code VARCHAR(50) NOT NULL,
+                designation_title NVARCHAR(150) NOT NULL,
+                skill_level VARCHAR(50) DEFAULT 'SENIOR_PROFESSIONAL',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 81. HR: Work-Shifts & Roster Configuration
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_shifts')
+        BEGIN
+            CREATE TABLE hr_shifts (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80301, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                shift_code VARCHAR(50) NOT NULL,
+                shift_name NVARCHAR(100) NOT NULL,
+                start_time VARCHAR(10) NOT NULL,
+                end_time VARCHAR(10) NOT NULL,
+                grace_period_mins INT DEFAULT 15,
+                half_day_hours DECIMAL(4, 2) DEFAULT 4.00,
+                is_night_shift BIT DEFAULT 0,
+                night_allowance DECIMAL(18, 2) DEFAULT 0.00,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 82. HR: Annual Holiday Calendar
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_holidays')
+        BEGIN
+            CREATE TABLE hr_holidays (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80401, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                holiday_name NVARCHAR(150) NOT NULL,
+                holiday_date DATE NOT NULL,
+                holiday_type VARCHAR(50) DEFAULT 'PUBLIC_HOLIDAY',
+                is_recurring BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 83. HR: Leave Policies & Entitlement Types
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_leave_types')
+        BEGIN
+            CREATE TABLE hr_leave_types (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80501, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                leave_code VARCHAR(50) NOT NULL,
+                leave_name NVARCHAR(100) NOT NULL,
+                yearly_quota INT NOT NULL,
+                is_paid BIT DEFAULT 1,
+                is_encashable BIT DEFAULT 0,
+                max_carryforward INT DEFAULT 5,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 84. HR: Corporate Bank Accounts for Salary Disbursement
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_bank_accounts')
+        BEGIN
+            CREATE TABLE hr_bank_accounts (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80601, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                bank_name NVARCHAR(150) NOT NULL,
+                branch_name NVARCHAR(150) NOT NULL,
+                account_number VARCHAR(50) NOT NULL,
+                routing_number VARCHAR(50) NOT NULL,
+                currency VARCHAR(10) DEFAULT 'USD',
+                is_default BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 85. HR: Master Employee Profiles & Dossiers
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_employees')
+        BEGIN
+            CREATE TABLE hr_employees (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80701, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                department_id UNIQUEIDENTIFIER NOT NULL,
+                designation_id UNIQUEIDENTIFIER NOT NULL,
+                grade_id UNIQUEIDENTIFIER NOT NULL,
+                shift_id UNIQUEIDENTIFIER NOT NULL,
+                employee_code VARCHAR(50) NOT NULL UNIQUE,
+                first_name NVARCHAR(100) NOT NULL,
+                last_name NVARCHAR(100) NOT NULL,
+                email VARCHAR(150) NOT NULL,
+                phone VARCHAR(50) NOT NULL,
+                national_id VARCHAR(50) NOT NULL,
+                tin_number VARCHAR(50),
+                tax_zone NVARCHAR(100),
+                tax_circle NVARCHAR(100),
+                date_of_birth DATE NOT NULL,
+                gender VARCHAR(20) DEFAULT 'MALE',
+                blood_group VARCHAR(10) DEFAULT 'O+',
+                joining_date DATE NOT NULL,
+                employment_status VARCHAR(50) DEFAULT 'PERMANENT',
+                basic_salary DECIMAL(18, 2) NOT NULL,
+                gross_salary DECIMAL(18, 2) NOT NULL,
+                bank_name NVARCHAR(150),
+                bank_account_number VARCHAR(50),
+                bank_routing_number VARCHAR(50),
+                emergency_contact_name NVARCHAR(100),
+                emergency_contact_phone VARCHAR(50),
+                is_pf_member BIT DEFAULT 1,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 86. HR: Temporary / Casual / Daily Worker Rosters
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_contract_workers')
+        BEGIN
+            CREATE TABLE hr_contract_workers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80801, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                department_id UNIQUEIDENTIFIER NOT NULL,
+                worker_code VARCHAR(50) NOT NULL UNIQUE,
+                worker_name NVARCHAR(150) NOT NULL,
+                contractor_agency NVARCHAR(150),
+                worker_type VARCHAR(50) DEFAULT 'DAILY_WAGE',
+                daily_rate DECIMAL(18, 2) NOT NULL,
+                contract_start_date DATE NOT NULL,
+                contract_end_date DATE NOT NULL,
+                status VARCHAR(30) DEFAULT 'ACTIVE',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 87. HR: Digital Document Vault & Credentials Archive
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_documents')
+        BEGIN
+            CREATE TABLE hr_documents (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(80901, 1) NOT NULL,
+                employee_id UNIQUEIDENTIFIER NOT NULL,
+                doc_title NVARCHAR(200) NOT NULL,
+                doc_type VARCHAR(50) NOT NULL,
+                doc_file_ref VARCHAR(250) NOT NULL,
+                issue_date DATE,
+                expiry_date DATE,
+                verification_status VARCHAR(30) DEFAULT 'VERIFIED',
+                verified_by NVARCHAR(100),
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 88. HR: Employee Transfers & Promotions Log
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_transfers')
+        BEGIN
+            CREATE TABLE hr_transfers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                employee_id UNIQUEIDENTIFIER NOT NULL,
+                transfer_number VARCHAR(50) NOT NULL UNIQUE,
+                transfer_date DATE NOT NULL,
+                transfer_type VARCHAR(50) DEFAULT 'INTER_PLANT_TRANSFER',
+                from_dept_id UNIQUEIDENTIFIER NOT NULL,
+                to_dept_id UNIQUEIDENTIFIER NOT NULL,
+                from_designation_id UNIQUEIDENTIFIER NOT NULL,
+                to_designation_id UNIQUEIDENTIFIER NOT NULL,
+                previous_salary DECIMAL(18, 2) NOT NULL,
+                revised_salary DECIMAL(18, 2) NOT NULL,
+                reason NVARCHAR(300),
+                approved_by NVARCHAR(100),
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 89. HR: Recruitment Manpower Requisitions
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_job_requisitions')
+        BEGIN
+            CREATE TABLE hr_job_requisitions (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81101, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                department_id UNIQUEIDENTIFIER NOT NULL,
+                requisition_number VARCHAR(50) NOT NULL UNIQUE,
+                position_title NVARCHAR(150) NOT NULL,
+                vacancies_count INT DEFAULT 1,
+                experience_years_required INT DEFAULT 3,
+                budgeted_salary DECIMAL(18, 2) NOT NULL,
+                target_joining_date DATE NOT NULL,
+                justification NVARCHAR(400),
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 90. HR: CV Bank, Candidates & Interview Evaluations
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_candidates')
+        BEGIN
+            CREATE TABLE hr_candidates (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81201, 1) NOT NULL,
+                requisition_id UNIQUEIDENTIFIER NOT NULL,
+                candidate_name NVARCHAR(150) NOT NULL,
+                email VARCHAR(150) NOT NULL,
+                phone VARCHAR(50) NOT NULL,
+                years_of_experience DECIMAL(4, 1) NOT NULL,
+                key_skills NVARCHAR(300),
+                expected_salary DECIMAL(18, 2) NOT NULL,
+                interview_score DECIMAL(5, 2) DEFAULT 88.50,
+                interview_feedback NVARCHAR(400),
+                hiring_status VARCHAR(50) DEFAULT 'SELECTED_FOR_OFFER',
+                applied_date DATE NOT NULL,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 91. HR: Employee Loan Type Profiles
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_loan_types')
+        BEGIN
+            CREATE TABLE hr_loan_types (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81301, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                loan_type_code VARCHAR(50) NOT NULL,
+                loan_type_name NVARCHAR(150) NOT NULL,
+                max_loan_limit DECIMAL(18, 2) NOT NULL,
+                max_installments INT NOT NULL,
+                interest_rate_pct DECIMAL(5, 2) DEFAULT 0.00,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 92. HR: Employee Loans & Salary Advances Ledger
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_loans')
+        BEGIN
+            CREATE TABLE hr_loans (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81401, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                employee_id UNIQUEIDENTIFIER NOT NULL,
+                loan_type_id UNIQUEIDENTIFIER NOT NULL,
+                loan_number VARCHAR(50) NOT NULL UNIQUE,
+                principal_amount DECIMAL(18, 2) NOT NULL,
+                interest_rate_pct DECIMAL(5, 2) DEFAULT 0.00,
+                tenure_months INT NOT NULL,
+                monthly_emi DECIMAL(18, 2) NOT NULL,
+                disbursement_date DATE NOT NULL,
+                repayment_start_month VARCHAR(20) NOT NULL,
+                total_paid_amount DECIMAL(18, 2) DEFAULT 0.00,
+                outstanding_balance DECIMAL(18, 2) NOT NULL,
+                status VARCHAR(30) DEFAULT 'ACTIVE',
+                gl_voucher_ref VARCHAR(50) DEFAULT 'GL-JV-2026-LN-001',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 93. HR: Statutory Income Tax Slabs & Allowable Rebate Settings
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_tax_slabs')
+        BEGIN
+            CREATE TABLE hr_tax_slabs (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81501, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                fiscal_year VARCHAR(20) NOT NULL,
+                slab_order INT NOT NULL,
+                slab_description NVARCHAR(150) NOT NULL,
+                slab_limit DECIMAL(18, 2) NOT NULL,
+                tax_rate_pct DECIMAL(5, 2) NOT NULL,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 94. HR: Treasury Tax Deposit Log
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_tax_deposits')
+        BEGIN
+            CREATE TABLE hr_tax_deposits (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81601, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                deposit_month VARCHAR(20) NOT NULL,
+                challan_number VARCHAR(50) NOT NULL UNIQUE,
+                challan_date DATE NOT NULL,
+                depository_bank NVARCHAR(150) NOT NULL,
+                total_tax_deposited DECIMAL(18, 2) NOT NULL,
+                employees_covered_count INT NOT NULL,
+                gl_voucher_ref VARCHAR(50) DEFAULT 'GL-JV-2026-TAX-001',
+                status VARCHAR(30) DEFAULT 'VERIFIED_BY_TREASURY',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 95. HR: Daily Biometric Terminal Clock-In Attendance Logs
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_attendance_logs')
+        BEGIN
+            CREATE TABLE hr_attendance_logs (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81701, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                employee_id UNIQUEIDENTIFIER NOT NULL,
+                attendance_date DATE NOT NULL,
+                clock_in_time VARCHAR(10) NOT NULL,
+                clock_out_time VARCHAR(10),
+                terminal_device_ip VARCHAR(50) DEFAULT '192.168.10.201 (BioMetric-RFID-01)',
+                attendance_status VARCHAR(30) DEFAULT 'PRESENT',
+                is_late BIT DEFAULT 0,
+                late_minutes INT DEFAULT 0,
+                overtime_hours DECIMAL(4, 2) DEFAULT 0.00,
+                remarks NVARCHAR(200),
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 96. HR: Online Leave Applications & Multi-Tier Approvals
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_leave_applications')
+        BEGIN
+            CREATE TABLE hr_leave_applications (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81801, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                employee_id UNIQUEIDENTIFIER NOT NULL,
+                leave_type_id UNIQUEIDENTIFIER NOT NULL,
+                application_number VARCHAR(50) NOT NULL UNIQUE,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                leave_days INT NOT NULL,
+                reason NVARCHAR(300) NOT NULL,
+                approver_name NVARCHAR(100) NOT NULL,
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                applied_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 97. HR: Overtime Records Matrix
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_overtime_records')
+        BEGIN
+            CREATE TABLE hr_overtime_records (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(81901, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                employee_id UNIQUEIDENTIFIER NOT NULL,
+                ot_date DATE NOT NULL,
+                ot_hours DECIMAL(4, 2) NOT NULL,
+                hourly_rate DECIMAL(18, 2) NOT NULL,
+                multiplier_factor DECIMAL(3, 1) DEFAULT 1.5,
+                total_ot_amount DECIMAL(18, 2) NOT NULL,
+                supervisor_name NVARCHAR(100) NOT NULL,
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 98. HR: Monthly Payroll Batch Execution Runs
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_payroll_runs')
+        BEGIN
+            CREATE TABLE hr_payroll_runs (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(82001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                payroll_batch_number VARCHAR(50) NOT NULL UNIQUE,
+                period_month VARCHAR(20) NOT NULL,
+                fiscal_year VARCHAR(20) NOT NULL,
+                run_date DATE NOT NULL,
+                total_employees_processed INT NOT NULL,
+                total_gross_payout DECIMAL(18, 2) NOT NULL,
+                total_deductions DECIMAL(18, 2) NOT NULL,
+                total_net_payout DECIMAL(18, 2) NOT NULL,
+                status VARCHAR(30) DEFAULT 'POSTED',
+                is_gl_posted BIT DEFAULT 1,
+                gl_journal_ref VARCHAR(50) DEFAULT 'GL-JV-2026-PAY-001',
+                bank_advice_locked BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 99. HR: Itemized Payslips with Full Gross-to-Net Breakdown
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'hr_payslips')
+        BEGIN
+            CREATE TABLE hr_payslips (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(82101, 1) NOT NULL,
+                payroll_run_id UNIQUEIDENTIFIER NOT NULL,
+                employee_id UNIQUEIDENTIFIER NOT NULL,
+                payslip_number VARCHAR(50) NOT NULL UNIQUE,
+                basic_salary DECIMAL(18, 2) NOT NULL,
+                house_rent_allowance DECIMAL(18, 2) NOT NULL,
+                medical_allowance DECIMAL(18, 2) NOT NULL,
+                conveyance_allowance DECIMAL(18, 2) NOT NULL,
+                special_allowance DECIMAL(18, 2) DEFAULT 0.00,
+                overtime_pay DECIMAL(18, 2) DEFAULT 0.00,
+                bonus_amount DECIMAL(18, 2) DEFAULT 0.00,
+                gross_earnings DECIMAL(18, 2) NOT NULL,
+                pf_employee_deduction DECIMAL(18, 2) NOT NULL,
+                pf_employer_matching DECIMAL(18, 2) NOT NULL,
+                income_tax_deduction DECIMAL(18, 2) DEFAULT 0.00,
+                loan_emi_deduction DECIMAL(18, 2) DEFAULT 0.00,
+                late_penalty_deduction DECIMAL(18, 2) DEFAULT 0.00,
+                total_deductions DECIMAL(18, 2) NOT NULL,
+                net_salary_payable DECIMAL(18, 2) NOT NULL,
+                payment_mode VARCHAR(50) DEFAULT 'BANK_TRANSFER',
+                bank_account_number VARCHAR(50),
+                status VARCHAR(30) DEFAULT 'PAID',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """
+
     ]
 
     for ddl in ddl_scripts:
@@ -2046,6 +3129,814 @@ def seed_sales_master_and_transactions():
                 )
         logger.info("Seeded Sales Management Master & Transactional Blueprint data.")
 
+
+def seed_inventory_master_and_transactions():
+    """Seeds comprehensive Inventory master data, warehouses, bins, items, stock balances, GRNs, Issues, STOs, and Warranties."""
+    wh_count = db.query_one("SELECT COUNT(*) AS cnt FROM inv_warehouses")["cnt"]
+    if wh_count == 0:
+        apex = db.query_one("SELECT id FROM companies WHERE short_code = 'APEX'")
+        horizon = db.query_one("SELECT id FROM companies WHERE short_code = 'HORIZON'")
+        delta = db.query_one("SELECT id FROM companies WHERE short_code = 'DELTA'")
+        titan = db.query_one("SELECT id FROM companies WHERE short_code = 'TITAN'")
+        prime = db.query_one("SELECT id FROM companies WHERE short_code = 'PRIME'")
+
+        # 1. Warehouses Master
+        warehouses = [
+            (apex["id"], "WH-APX-01", "Apex Central Raw Materials & Stores", "CENTRAL_STORE", "Plant Delta 01 - Gate 2", "Marcus Sterling"),
+            (apex["id"], "WH-APX-02", "Apex High-Bay Finished Goods Depot", "FINISHED_GOODS", "Plant Delta 01 - Bay 04", "Rashid Al-Hassan"),
+            (horizon["id"], "WH-HRZ-01", "Horizon Landmark Project Site Store", "PROJECT_SITE", "Horizon Landmark Tower Fl B2", "Tanvir Ahmed"),
+            (delta["id"], "WH-DLT-01", "Delta Port Intermodal CFS Yard", "TRANSIT_CFS", "Berth 4 Marine Terminal", "Khorshed Alam"),
+            (titan["id"], "WH-TTN-01", "Titan Heavy Metallurgy Ingot Yard", "HEAVY_YARD", "Titan Complex B Yard", "Hiroshi Sato"),
+            (prime["id"], "WH-PRM-01", "Prime National Retail FMCG Distribution Center", "CENTRAL_DC", "Central Logistics Park DC-08", "Farhana Anis"),
+        ]
+        for w in warehouses:
+            db.execute(
+                """
+                INSERT INTO inv_warehouses (company_id, warehouse_code, warehouse_name, warehouse_type, address, manager_name, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
+                """,
+                w
+            )
+        logger.info("Seeded 6 Warehouses across 5 subsidiaries.")
+
+        wh_apx_1 = db.query_one("SELECT id FROM inv_warehouses WHERE warehouse_code = 'WH-APX-01'")
+        wh_apx_2 = db.query_one("SELECT id FROM inv_warehouses WHERE warehouse_code = 'WH-APX-02'")
+
+        # 2. Multi-Bin Storage Locations
+        if wh_apx_1 and wh_apx_2:
+            bins = [
+                (wh_apx_1["id"], "BIN-A1-01", "Aisle A", "Rack 01", "Shelf 1", "Bin 01"),
+                (wh_apx_1["id"], "BIN-A1-02", "Aisle A", "Rack 01", "Shelf 2", "Bin 02"),
+                (wh_apx_1["id"], "BIN-B2-01", "Aisle B", "Rack 02", "Shelf 1", "Bin 01"),
+                (wh_apx_2["id"], "BIN-FG-01", "Aisle HighBay", "Rack 01", "Shelf 1", "Bin 01"),
+                (wh_apx_2["id"], "BIN-FG-02", "Aisle HighBay", "Rack 01", "Shelf 2", "Bin 02"),
+            ]
+            for b in bins:
+                db.execute(
+                    """
+                    INSERT INTO inv_bins (warehouse_id, bin_code, aisle, rack, shelf, bin_number, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
+                    """,
+                    b
+                )
+            logger.info("Seeded 5 Storage Bins.")
+
+        # 3. Product Groups
+        groups = [
+            (apex["id"], "GRP-RM-CNC", "CNC Raw Materials & Fasteners", "RAW_MATERIALS"),
+            (apex["id"], "GRP-FG-AERO", "Aerospace & Automotive Assemblies", "FINISHED_GOODS"),
+            (apex["id"], "GRP-TOOL-CN", "Carbide Tooling & Plant Consumables", "CONSUMABLES"),
+            (horizon["id"], "GRP-CIVIL-RM", "Civil Construction Steel & Concrete", "RAW_MATERIALS"),
+            (delta["id"], "GRP-FRT-EQP", "Port Container Cargo Handling Spares", "SPARE_PARTS"),
+            (prime["id"], "GRP-FMCG-FG", "Supermarket Retail Consumer Goods", "FINISHED_GOODS"),
+        ]
+        for g in groups:
+            db.execute(
+                """
+                INSERT INTO inv_product_groups (company_id, group_code, group_name, group_type, is_active)
+                VALUES (?, ?, ?, ?, 1)
+                """,
+                g
+            )
+        logger.info("Seeded 6 Product Groups.")
+
+        grp_rm = db.query_one("SELECT id FROM inv_product_groups WHERE group_code = 'GRP-RM-CNC'")
+        grp_fg = db.query_one("SELECT id FROM inv_product_groups WHERE group_code = 'GRP-FG-AERO'")
+        grp_tool = db.query_one("SELECT id FROM inv_product_groups WHERE group_code = 'GRP-TOOL-CN'")
+
+        # 4. Units of Measure (UOM)
+        uoms = [
+            (apex["id"], "PCS", "Pieces (Base Unit)", "PCS", 1.0),
+            (apex["id"], "BOX", "Box (1000 Pieces)", "PCS", 1000.0),
+            (apex["id"], "SET", "Assembly Set (4 Pieces)", "PCS", 4.0),
+            (apex["id"], "KG", "Kilogram (Weight)", "KG", 1.0),
+            (apex["id"], "TON", "Metric Ton (1000 KG)", "KG", 1000.0),
+            (apex["id"], "MTR", "Meter (Length)", "MTR", 1.0),
+        ]
+        for u in uoms:
+            db.execute(
+                """
+                INSERT INTO inv_uom (company_id, uom_code, uom_name, base_uom, conversion_ratio, is_active)
+                VALUES (?, ?, ?, ?, ?, 1)
+                """,
+                u
+            )
+        logger.info("Seeded 6 UOMs & Conversion Ratios.")
+
+        # 5. Master Inventory Items
+        items = [
+            (apex["id"], grp_rm["id"] if grp_rm else None, "BOX", "ITM-CNC-M8", "M8 High-Tensile Socket Screws (Box 1000)", "DIN 912 Class 12.9 Black Oxide Finish", 120.0, 200.0, 100.0, 0, "ACTIVE"),
+            (apex["id"], grp_fg["id"] if grp_fg else None, "SET", "ITM-AERO-01", "Aerospace Titanium Bearing Bushings (Set 4)", "Ti-6Al-4V Grade 5 Precision CNC Milled", 800.0, 50.0, 20.0, 1, "ACTIVE"),
+            (apex["id"], grp_fg["id"] if grp_fg else None, "PCS", "ITM-SMT-PCB", "5-Axis Surface Mount PCB Assembly", "FR4 High-Temp Multilayer SMT Assembled", 380.0, 100.0, 50.0, 1, "ACTIVE"),
+            (apex["id"], grp_tool["id"] if grp_tool else None, "BOX", "TOOL-CARBIDE-10", "Sandvik Coromant Milling Carbide Inserts", "Grade GC1130 PVD Coated Milling Inserts (Box 10)", 48.50, 100.0, 50.0, 0, "ACTIVE"),
+        ]
+        for it in items:
+            db.execute(
+                """
+                INSERT INTO inv_items (company_id, group_id, uom_code, item_code, item_name, specification, standard_cost, min_reorder_qty, safety_stock_qty, is_serialized, item_status, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                """,
+                it
+            )
+        logger.info("Seeded 4 Master Inventory Items.")
+
+        itm_m8 = db.query_one("SELECT id FROM inv_items WHERE item_code = 'ITM-CNC-M8'")
+        itm_aero = db.query_one("SELECT id FROM inv_items WHERE item_code = 'ITM-AERO-01'")
+        itm_pcb = db.query_one("SELECT id FROM inv_items WHERE item_code = 'ITM-SMT-PCB'")
+        itm_tool = db.query_one("SELECT id FROM inv_items WHERE item_code = 'TOOL-CARBIDE-10'")
+
+        bin_1 = db.query_one("SELECT id FROM inv_bins WHERE bin_code = 'BIN-A1-01'")
+        bin_fg = db.query_one("SELECT id FROM inv_bins WHERE bin_code = 'BIN-FG-01'")
+
+        # 6. Real-Time Stock Balances
+        if wh_apx_1 and itm_m8:
+            db.execute(
+                """
+                INSERT INTO inv_stock_balances (company_id, warehouse_id, bin_id, item_id, on_hand_qty, reserved_qty, in_transit_qty)
+                VALUES (?, ?, ?, ?, 1500.0, 500.0, 200.0)
+                """,
+                (apex["id"], wh_apx_1["id"], bin_1["id"] if bin_1 else None, itm_m8["id"])
+            )
+        if wh_apx_2 and itm_aero:
+            db.execute(
+                """
+                INSERT INTO inv_stock_balances (company_id, warehouse_id, bin_id, item_id, on_hand_qty, reserved_qty, in_transit_qty)
+                VALUES (?, ?, ?, ?, 250.0, 100.0, 0.0)
+                """,
+                (apex["id"], wh_apx_2["id"], bin_fg["id"] if bin_fg else None, itm_aero["id"])
+            )
+        if wh_apx_2 and itm_pcb:
+            db.execute(
+                """
+                INSERT INTO inv_stock_balances (company_id, warehouse_id, bin_id, item_id, on_hand_qty, reserved_qty, in_transit_qty)
+                VALUES (?, ?, ?, ?, 480.0, 120.0, 50.0)
+                """,
+                (apex["id"], wh_apx_2["id"], bin_fg["id"] if bin_fg else None, itm_pcb["id"])
+            )
+        if wh_apx_1 and itm_tool:
+            db.execute(
+                """
+                INSERT INTO inv_stock_balances (company_id, warehouse_id, bin_id, item_id, on_hand_qty, reserved_qty, in_transit_qty)
+                VALUES (?, ?, ?, ?, 800.0, 0.0, 100.0)
+                """,
+                (apex["id"], wh_apx_1["id"], bin_1["id"] if bin_1 else None, itm_tool["id"])
+            )
+        logger.info("Seeded Real-Time Stock Balances.")
+
+        # 7. Goods Receiving Notes (GRN)
+        if wh_apx_1 and itm_tool:
+            db.execute(
+                """
+                INSERT INTO inv_grn_headers (company_id, warehouse_id, grn_number, grn_type, po_ref, supplier_name, grn_date, challan_ref, received_by, qc_status, total_received_value, status, is_gl_posted, gl_journal_ref)
+                VALUES (?, ?, 'GRN-APX-2026-001', 'VENDOR_PO', 'PO-APX-2026-01', 'Sandvik Coromant Nordic AB', '2026-08-18', 'CH-SDV-99182', 'Marcus Sterling', 'PASSED', 48500.0, 'POSTED', 1, 'JV-INV-0818')
+                """,
+                (apex["id"], wh_apx_1["id"])
+            )
+            grn_1 = db.query_one("SELECT id FROM inv_grn_headers WHERE grn_number = 'GRN-APX-2026-001'")
+            if grn_1:
+                db.execute(
+                    """
+                    INSERT INTO inv_grn_items (grn_id, item_id, bin_id, received_qty, accepted_qty, rejected_qty, unit_cost, line_total, batch_number, remarks)
+                    VALUES (?, ?, ?, 1000.0, 1000.0, 0.0, 48.50, 48500.0, 'BATCH-SDV-2608', 'Passed optical dimension inspection')
+                    """,
+                    (grn_1["id"], itm_tool["id"], bin_1["id"] if bin_1 else None)
+                )
+
+        # 8. Goods Issue Challans
+        if wh_apx_2 and itm_m8:
+            db.execute(
+                """
+                INSERT INTO inv_issues (company_id, warehouse_id, issue_number, issue_type, order_ref, cost_centre_name, issue_date, gate_pass_ref, issued_by, recipient_name, total_issue_value, status, is_gl_posted, gl_journal_ref)
+                VALUES (?, ?, 'ISS-APX-2026-001', 'DELIVERY_DISPATCH', 'SO-APX-8801', 'Export Sales Commercial', '2026-08-20', 'GP-2026-APX-082', 'Rashid Al-Hassan', 'EuroAutomotive AG (Carrier: DHL)', 120000.0, 'DISPATCHED', 1, 'JV-ISS-0820')
+                """,
+                (apex["id"], wh_apx_2["id"])
+            )
+            iss_1 = db.query_one("SELECT id FROM inv_issues WHERE issue_number = 'ISS-APX-2026-001'")
+            if iss_1:
+                db.execute(
+                    """
+                    INSERT INTO inv_issue_items (issue_id, item_id, bin_id, issued_qty, unit_cost, line_total, remarks)
+                    VALUES (?, ?, ?, 1000.0, 120.0, 120000.0, 'Dispatched against Delivery Order DO-APX-2026-001')
+                    """,
+                    (iss_1["id"], itm_m8["id"], bin_fg["id"] if bin_fg else None)
+                )
+
+        # 9. Inter-Warehouse Stock Transfers (STO)
+        if wh_apx_1 and wh_apx_2 and itm_m8:
+            db.execute(
+                """
+                INSERT INTO inv_stock_transfers (company_id, from_warehouse_id, to_warehouse_id, transfer_number, transfer_date, dispatch_date, carrier_name, vehicle_no, tracking_ref, total_transfer_value, status)
+                VALUES (?, ?, ?, 'STO-APX-2026-01', '2026-08-24', '2026-08-24', 'Apex Internal Shuttling Fleet', 'TRK-INT-02', 'TRACK-STO-9912', 24000.0, 'IN_TRANSIT')
+                """,
+                (apex["id"], wh_apx_1["id"], wh_apx_2["id"])
+            )
+            sto_1 = db.query_one("SELECT id FROM inv_stock_transfers WHERE transfer_number = 'STO-APX-2026-01'")
+            if sto_1:
+                db.execute(
+                    """
+                    INSERT INTO inv_transfer_items (transfer_id, item_id, transfer_qty, received_qty, unit_cost, line_total)
+                    VALUES (?, ?, 200.0, 0.0, 120.0, 24000.0)
+                    """,
+                    (sto_1["id"], itm_m8["id"])
+                )
+
+        # 10. Physical Cycle Count Adjustments
+        if wh_apx_1:
+            db.execute(
+                """
+                INSERT INTO inv_adjustments (company_id, warehouse_id, adjustment_number, adjustment_date, reason_type, total_variance_amount, adjusted_by, status)
+                VALUES (?, ?, 'ADJ-APX-2026-01', '2026-08-25', 'CYCLE_COUNT_GAIN', 850.0, 'Marcus Sterling', 'APPROVED')
+                """,
+                (apex["id"], wh_apx_1["id"])
+            )
+
+        # 11. Serialized Warranties Registry
+        if itm_aero and itm_pcb:
+            warranties = [
+                (apex["id"], itm_aero["id"], "SN-AERO-2026-8801", "Boeing Subcontractor Aviation Corp", "SO-APX-8802", "INV-APX-2026-8802", "2026-08-18", "2028-08-18", 24, "ACTIVE"),
+                (apex["id"], itm_pcb["id"], "SN-SMT-2026-9901", "Siemens Smart Energy Infrastructure", "SO-APX-8801", "INV-APX-2026-8801", "2026-08-20", "2027-08-20", 12, "ACTIVE"),
+            ]
+            for w in warranties:
+                db.execute(
+                    """
+                    INSERT INTO inv_warranties (company_id, item_id, serial_number, customer_name, order_ref, invoice_ref, warranty_start_date, warranty_end_date, warranty_months, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    w
+                )
+
+        # 12. Multi-Tier e-Approvals Tracking
+        if wh_apx_1:
+            grn_row = db.query_one("SELECT id FROM inv_grn_headers WHERE grn_number = 'GRN-APX-2026-001'")
+            if grn_row:
+                approvals = [
+                    ("GRN", grn_row["id"], 1, "Tier 1: Quality QA Inspection", "Engr. K. Hasan", "Lead QA Metallurgist", "APPROVED", "Material test certificate compliant with DIN 912 specs", "2026-08-18 11:30:00"),
+                    ("GRN", grn_row["id"], 2, "Tier 2: Warehouse Store Inwarding", "Marcus Sterling", "Central Stores Manager", "APPROVED", "Stock placed in Bin BIN-A1-01 and balance updated", "2026-08-18 14:00:00"),
+                ]
+                for a in approvals:
+                    db.execute(
+                        """
+                        INSERT INTO inv_approvals (entity_type, entity_id, tier_level, tier_name, approver_name, approver_role, action, comments, action_date)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        a
+                    )
+        logger.info("Seeded Inventory Master, Transactions, Transfers, Balances & Warranties.")
+
+def seed_fixed_assets_master_and_transactions():
+    """Seeds multi-company Fixed Assets Master Data, Capital Assets, Depreciation, and Audits."""
+    fa_count = db.query_one("SELECT COUNT(*) AS cnt FROM fa_assets")["cnt"]
+    if fa_count == 0:
+        companies = db.query("SELECT id, short_code FROM companies ORDER BY code ASC")
+        for comp in companies:
+            cid = comp["id"]
+            code_prefix = comp["short_code"]
+
+            # 1. Seed Asset Groups
+            grp_plant_id = str(uuid.uuid4())
+            grp_bldg_id = str(uuid.uuid4())
+            grp_land_id = str(uuid.uuid4())
+            grp_veh_id = str(uuid.uuid4())
+            grp_it_id = str(uuid.uuid4())
+            grp_furn_id = str(uuid.uuid4())
+
+            groups_data = [
+                (grp_plant_id, cid, "GRP-PLANT", "Plant & Heavy Machinery", "TANGIBLE_DEPRECIATING", 1, 10, 10.00, "1500-PLANT", "1505-ACC-PLANT", "6500-DEPR-PLANT"),
+                (grp_bldg_id, cid, "GRP-BLDG", "Industrial Buildings & Sheds", "TANGIBLE_DEPRECIATING", 1, 30, 3.33, "1510-BLDG", "1515-ACC-BLDG", "6510-DEPR-BLDG"),
+                (grp_land_id, cid, "GRP-LAND", "Freehold Industrial Land Plots", "TANGIBLE_NON_DEPRECIATING", 0, 0, 0.00, "1520-LAND", "N/A", "N/A"),
+                (grp_veh_id, cid, "GRP-VEH", "Commercial Fleet & Logistics Trucks", "TANGIBLE_DEPRECIATING", 1, 5, 20.00, "1530-VEH", "1535-ACC-VEH", "6530-DEPR-VEH"),
+                (grp_it_id, cid, "GRP-IT", "IT Server Clusters & Datacenter Infrastructure", "TANGIBLE_DEPRECIATING", 1, 4, 25.00, "1540-IT", "1545-ACC-IT", "6540-DEPR-IT"),
+                (grp_furn_id, cid, "GRP-FURN", "Corporate Furniture & Executive Fixtures", "TANGIBLE_DEPRECIATING", 1, 7, 14.28, "1550-FURN", "1555-ACC-FURN", "6550-DEPR-FURN"),
+            ]
+            for g in groups_data:
+                db.execute(
+                    """
+                    INSERT INTO fa_asset_groups (id, company_id, group_code, group_name, asset_type, is_depreciating, default_useful_life_years, default_depr_rate, gl_cost_account, gl_acc_depr_account, gl_depr_expense_account)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    g
+                )
+
+            # 2. Seed Locations
+            loc1_id = str(uuid.uuid4())
+            loc2_id = str(uuid.uuid4())
+
+            db.execute(
+                """
+                INSERT INTO fa_locations (id, company_id, location_code, location_name, location_type, address, manager_name)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (loc1_id, cid, f"LOC-{code_prefix}-01", f"{code_prefix} Main Manufacturing Facility", "MANUFACTURING_PLANT", "Plot 14-22, High-Tech Industrial Zone", "Marcus Vance, Plant Director")
+            )
+            db.execute(
+                """
+                INSERT INTO fa_locations (id, company_id, location_code, location_name, location_type, address, manager_name)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (loc2_id, cid, f"LOC-{code_prefix}-02", f"{code_prefix} Logistics Terminal & Yard", "LOGISTICS_DEPOT", "Harbor Gate 4, Port Corridor", "Capt. Tariq Al-Mansoor, Logistics Head")
+            )
+
+            # 3. Seed Sub-Locations
+            subloc1_id = str(uuid.uuid4())
+            subloc2_id = str(uuid.uuid4())
+
+            db.execute(
+                """
+                INSERT INTO fa_sub_locations (id, location_id, sub_location_code, sub_location_name, floor_or_bay)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (subloc1_id, loc1_id, f"BAY-{code_prefix}-A1", "Heavy CNC Milling & Turning Bay 1", "Ground Floor, Section A")
+            )
+            db.execute(
+                """
+                INSERT INTO fa_sub_locations (id, location_id, sub_location_code, sub_location_name, floor_or_bay)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (subloc2_id, loc1_id, f"SRV-{code_prefix}-01", "Tier-3 Datacenter & Server Room", "Building 2, 2nd Floor")
+            )
+
+            # 4. Seed Depreciation Policies
+            pol_slm_id = str(uuid.uuid4())
+            pol_wdv_id = str(uuid.uuid4())
+            pol_none_id = str(uuid.uuid4())
+
+            db.execute(
+                """
+                INSERT INTO fa_depreciation_policies (id, company_id, policy_code, policy_name, method, useful_life_years, salvage_value_pct, depr_rate)
+                VALUES (?, ?, 'POL-SLM-10Y', 'Straight-Line 10 Years (10% Residual)', 'STRAIGHT_LINE', 10, 10.00, 9.00)
+                """,
+                (pol_slm_id, cid)
+            )
+            db.execute(
+                """
+                INSERT INTO fa_depreciation_policies (id, company_id, policy_code, policy_name, method, useful_life_years, salvage_value_pct, depr_rate)
+                VALUES (?, ?, 'POL-WDV-20P', 'Reducing Balance WDV 20% Annual', 'REDUCING_BALANCE_WDV', 5, 5.00, 20.00)
+                """,
+                (pol_wdv_id, cid)
+            )
+            db.execute(
+                """
+                INSERT INTO fa_depreciation_policies (id, company_id, policy_code, policy_name, method, useful_life_years, salvage_value_pct, depr_rate)
+                VALUES (?, ?, 'POL-NON-DEPR', 'Non-Depreciating Capital Asset Policy', 'NON_DEPRECIATING', 0, 100.00, 0.00)
+                """,
+                (pol_none_id, cid)
+            )
+
+            # 5. Seed Master Capital Assets
+            asset1_id = str(uuid.uuid4())
+            asset2_id = str(uuid.uuid4())
+            asset3_id = str(uuid.uuid4())
+            asset4_id = str(uuid.uuid4())
+
+            db.execute(
+                """
+                INSERT INTO fa_assets (id, company_id, group_id, location_id, sub_location_id, policy_id, asset_tag, asset_name, serial_number, barcode, manufacturer, model_number, purchase_date, capitalization_date, purchase_cost, accumulated_depreciation, net_book_value, custodian_name, department_name, supplier_name, warranty_expiry, insurance_policy_ref, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'IN_SERVICE')
+                """,
+                (asset1_id, cid, grp_plant_id, loc1_id, subloc1_id, pol_slm_id, f"AST-{code_prefix}-CNC-001", "DMG MORI 5-Axis High-Precision CNC Machining Center", "DMG-2024-88421", f"BC-AST-{code_prefix}-001", "DMG MORI Germany", "DMU 50 3rd Gen", "2024-03-15", "2024-04-01", 385000.00, 77000.00, 308000.00, "Engr. Dieter Mueller", "Precision Machining Division", "DMG MORI Global Distribution GmbH", "2027-03-15", f"INS-ALLIANZ-{code_prefix}-9901")
+            )
+
+            db.execute(
+                """
+                INSERT INTO fa_assets (id, company_id, group_id, location_id, sub_location_id, policy_id, asset_tag, asset_name, serial_number, barcode, manufacturer, model_number, purchase_date, capitalization_date, purchase_cost, accumulated_depreciation, net_book_value, custodian_name, department_name, supplier_name, warranty_expiry, insurance_policy_ref, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'IN_SERVICE')
+                """,
+                (asset2_id, cid, grp_it_id, loc1_id, subloc2_id, pol_wdv_id, f"AST-{code_prefix}-SRV-001", "Dell PowerEdge R760 Enterprise Server Rack Cluster", "DELL-SRV-901844", f"BC-AST-{code_prefix}-002", "Dell Technologies", "PowerEdge R760 Dual Xeon", "2025-01-10", "2025-01-20", 125000.00, 31250.00, 93750.00, "Liam O'Connor", "Information Technology", "Dell Enterprise Middle East", "2028-01-10", f"INS-ALLIANZ-{code_prefix}-9902")
+            )
+
+            db.execute(
+                """
+                INSERT INTO fa_assets (id, company_id, group_id, location_id, sub_location_id, policy_id, asset_tag, asset_name, serial_number, barcode, manufacturer, model_number, purchase_date, capitalization_date, purchase_cost, accumulated_depreciation, net_book_value, custodian_name, department_name, supplier_name, warranty_expiry, insurance_policy_ref, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'IN_SERVICE')
+                """,
+                (asset3_id, cid, grp_veh_id, loc2_id, None, pol_wdv_id, f"AST-{code_prefix}-TRK-001", "Mercedes-Benz Actros 3340 Heavy Prime Mover Hauler", "WDB-963403-1L99281", f"BC-AST-{code_prefix}-003", "Daimler Commercial Vehicles", "Actros 3340 6x4", "2024-08-20", "2024-09-01", 165000.00, 49500.00, 115500.00, "Hamad Al-Kaabi", "Logistics & Transport", "Daimler Truck Sales Regional", "2026-08-20", f"INS-ALLIANZ-{code_prefix}-9903")
+            )
+
+            db.execute(
+                """
+                INSERT INTO fa_assets (id, company_id, group_id, location_id, sub_location_id, policy_id, asset_tag, asset_name, serial_number, barcode, manufacturer, model_number, purchase_date, capitalization_date, purchase_cost, accumulated_depreciation, net_book_value, custodian_name, department_name, supplier_name, warranty_expiry, insurance_policy_ref, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'IN_SERVICE')
+                """,
+                (asset4_id, cid, grp_land_id, loc1_id, None, pol_none_id, f"AST-{code_prefix}-LND-001", "Freehold Heavy Industrial Development Land (5.5 Acres)", "DEED-LAND-2023-881", f"BC-AST-{code_prefix}-004", "Govt Industrial Development Authority", "Plot 14-22 Heavy Zone", "2023-05-10", "2023-05-10", 1200000.00, 0.00, 1200000.00, "Corporate Secretariat", "Executive Management", "Ministry of Land Development", "2099-12-31", f"INS-ALLIANZ-{code_prefix}-9904")
+            )
+
+            # 6. Seed Capital Asset Inwarding GRN
+            grn_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO fa_grn_headers (id, company_id, location_id, grn_number, po_ref, supplier_name, grn_date, received_by, qc_status, total_cost, status, is_gl_posted, gl_journal_ref)
+                VALUES (?, ?, ?, ?, 'CAPEX-PO-2026-0041', 'DMG MORI Global Distribution GmbH', '2026-08-15', 'Engr. Dieter Mueller', 'PASSED_QA_INSPECTION', 385000.00, 'POSTED', 1, 'GL-JV-2026-CAP-001')
+                """,
+                (grn_id, cid, loc1_id, f"AGRN-{code_prefix}-2026-0001")
+            )
+
+            # 7. Seed Asset Transfer
+            tr_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO fa_transfers (id, company_id, asset_id, transfer_number, transfer_date, from_location_id, to_location_id, from_custodian, to_custodian, reason, status)
+                VALUES (?, ?, ?, ?, '2026-07-10', ?, ?, ?, ?, ?, 'COMPLETED')
+                """,
+                (tr_id, cid, asset2_id, f"ATRN-{code_prefix}-2026-0001", loc2_id, loc1_id, "Liam O'Connor", "Engr. Kevin Vance", "Relocated server compute nodes to Primary Datacenter Bay")
+            )
+
+            # 8. Seed Asset Disposal Log
+            dsp_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO fa_disposals (id, company_id, asset_id, disposal_number, disposal_date, disposal_type, disposal_proceeds, original_cost, acc_depr_at_disposal, net_book_value, gain_loss_amount, buyer_name, approved_by, status, is_gl_posted, gl_journal_ref)
+                VALUES (?, ?, ?, ?, '2026-06-25', 'SALE', 125000.00, 165000.00, 49500.00, 115500.00, 9500.00, 'Global Heavy Haulage Logistics LLC', 'Chief Financial Officer', 'POSTED', 1, 'GL-JV-2026-DSP-001')
+                """,
+                (dsp_id, cid, asset3_id, f"ADSP-{code_prefix}-2026-0001")
+            )
+
+            # 9. Seed Depreciation Run
+            depr_run_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO fa_depreciation_runs (id, company_id, run_number, period_name, run_date, total_depreciation_amount, total_assets_processed, status, is_gl_posted, gl_journal_ref)
+                VALUES (?, ?, ?, 'August 2026 Period Depreciation', '2026-08-31', 8458.33, 3, 'POSTED', 1, 'GL-JV-2026-DPR-001')
+                """,
+                (depr_run_id, cid, f"DEPR-{code_prefix}-2026-M08")
+            )
+
+            # 10. Seed Depreciation Itemized Lines
+            db.execute(
+                """
+                INSERT INTO fa_depreciation_lines (run_id, asset_id, opening_cost, opening_acc_depr, period_depreciation, closing_acc_depr, closing_nbv)
+                VALUES (?, ?, 385000.00, 73791.67, 3208.33, 77000.00, 308000.00)
+                """,
+                (depr_run_id, asset1_id)
+            )
+
+            # 11. Seed Physical Verification Audit
+            aud_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO fa_physical_audits (id, company_id, location_id, audit_number, audit_date, auditor_name, total_audited, found_count, missing_count, damaged_count, status)
+                VALUES (?, ?, ?, ?, '2026-08-28', 'Alexander Vance, Internal Asset Controller', 42, 42, 0, 0, 'VERIFIED')
+                """,
+                (aud_id, cid, loc1_id, f"AUD-{code_prefix}-2026-Q3")
+            )
+
+            # 12. Seed Approvals
+            approvals = [
+                ("ASSET_GRN", grn_id, 1, "Tier 1: Engineering Technical Acceptance", "Engr. Dieter Mueller", "Lead Plant Engineer", "APPROVED", "CNC DMG MORI geometric laser alignment certified and operational", "2026-08-15 14:30:00"),
+                ("ASSET_GRN", grn_id, 2, "Tier 2: CFO Capex Capitalization", "CFO / Finance Controller", "Chief Financial Officer", "APPROVED", "Approved for capitalization under Asset Code 1500-PLANT", "2026-08-16 09:15:00"),
+            ]
+            for a in approvals:
+                db.execute(
+                    """
+                    INSERT INTO fa_approvals (entity_type, entity_id, tier_level, tier_name, approver_name, approver_role, action, comments, action_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    a
+                )
+        logger.info("Seeded Fixed Assets Master, Capital Assets, Depreciation Runs, Audits & Approvals.")
+
+def seed_hr_master_and_transactions():
+    """Seeds multi-company Human Resources & Payroll Master Data, Employees, Attendance, Loans, Tax, and Payroll Runs."""
+    hr_count = db.query_one("SELECT COUNT(*) AS cnt FROM hr_employees")["cnt"]
+    if hr_count == 0:
+        companies = db.query("SELECT id, short_code FROM companies ORDER BY code ASC")
+        for comp in companies:
+            cid = comp["id"]
+            code_prefix = comp["short_code"]
+
+            # 1. Seed Grades
+            grd1_id = str(uuid.uuid4())
+            grd2_id = str(uuid.uuid4())
+            grd3_id = str(uuid.uuid4())
+            grd4_id = str(uuid.uuid4())
+            grd5_id = str(uuid.uuid4())
+            grd6_id = str(uuid.uuid4())
+
+            grades = [
+                (grd1_id, cid, f"GRD-{code_prefix}-01", "Executive Leadership & Directors", 1, 10000.00, 25000.00, 25.0, 10.0, 10.0),
+                (grd2_id, cid, f"GRD-{code_prefix}-02", "Senior Management & Principal Architects", 2, 7000.00, 14000.00, 25.0, 10.0, 10.0),
+                (grd3_id, cid, f"GRD-{code_prefix}-03", "Mid-Level Engineers & Senior Specialists", 3, 4500.00, 8500.00, 25.0, 10.0, 10.0),
+                (grd4_id, cid, f"GRD-{code_prefix}-04", "Junior Staff & Engineering Associates", 4, 3000.00, 5500.00, 25.0, 10.0, 10.0),
+                (grd5_id, cid, f"GRD-{code_prefix}-05", "Technical Plant Operators & CNC Machinists", 5, 2200.00, 4200.00, 25.0, 10.0, 10.0),
+                (grd6_id, cid, f"GRD-{code_prefix}-06", "Apprentices, Trainees & Casual Labor", 6, 1500.00, 2600.00, 25.0, 10.0, 10.0),
+            ]
+            for g in grades:
+                db.execute(
+                    """
+                    INSERT INTO hr_grades (id, company_id, grade_code, grade_name, rank_level, min_basic_salary, max_basic_salary, hra_pct, medical_pct, conveyance_pct)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    g
+                )
+
+            # 2. Seed Departments
+            dept_eng_id = str(uuid.uuid4())
+            dept_plt_id = str(uuid.uuid4())
+            dept_fin_id = str(uuid.uuid4())
+            dept_scm_id = str(uuid.uuid4())
+            dept_qc_id = str(uuid.uuid4())
+            dept_hr_id = str(uuid.uuid4())
+
+            depts = [
+                (dept_eng_id, cid, f"DPT-{code_prefix}-ENG", "Advanced Engineering & Automation", f"CC-{code_prefix}-ENG", "Dr. Hans Zimmer, VP Engineering", f"{code_prefix} Innovation Wing"),
+                (dept_plt_id, cid, f"DPT-{code_prefix}-PLT", "Heavy Plant Operations & Fabrication", f"CC-{code_prefix}-PLT", "Marcus Vance, Plant Director", f"{code_prefix} Main Works Floor"),
+                (dept_fin_id, cid, f"DPT-{code_prefix}-FIN", "Finance, Tax & Treasury Control", f"CC-{code_prefix}-FIN", "Elena Rostova, Chief Financial Officer", f"{code_prefix} Corporate HQ Fl 4"),
+                (dept_scm_id, cid, f"DPT-{code_prefix}-SCM", "Global Supply Chain & Logistics", f"CC-{code_prefix}-SCM", "Capt. Tariq Al-Mansoor", f"{code_prefix} Logistics Terminal Berth 4"),
+                (dept_qc_id, cid, f"DPT-{code_prefix}-QC", "Metallurgy & QA Certification", f"CC-{code_prefix}-QC", "Engr. Kevin Vance", f"{code_prefix} Testing Lab 02"),
+                (dept_hr_id, cid, f"DPT-{code_prefix}-HR", "Human Resources & Administration", f"CC-{code_prefix}-HR", "Sarah Jenkins, HR Director", f"{code_prefix} Corporate HQ Fl 3"),
+            ]
+            for d in depts:
+                db.execute(
+                    """
+                    INSERT INTO hr_departments (id, company_id, dept_code, dept_name, cost_center_code, head_of_dept, location_name)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    d
+                )
+
+            # 3. Seed Designations
+            desig_arch_id = str(uuid.uuid4())
+            desig_eng_id = str(uuid.uuid4())
+            desig_ctrl_id = str(uuid.uuid4())
+            desig_mach_id = str(uuid.uuid4())
+            desig_hr_id = str(uuid.uuid4())
+
+            desigs = [
+                (desig_arch_id, dept_eng_id, f"DSG-{code_prefix}-01", "Principal Systems Architect", "EXECUTIVE_LEAD"),
+                (desig_eng_id, dept_plt_id, f"DSG-{code_prefix}-02", "Lead Plant Operations Engineer", "SENIOR_PROFESSIONAL"),
+                (desig_ctrl_id, dept_fin_id, f"DSG-{code_prefix}-03", "Senior Financial Controller", "SENIOR_PROFESSIONAL"),
+                (desig_mach_id, dept_plt_id, f"DSG-{code_prefix}-04", "Senior 5-Axis CNC Precision Machinist", "SPECIALIST_OPERATOR"),
+                (desig_hr_id, dept_hr_id, f"DSG-{code_prefix}-05", "Senior Talent & Payroll Specialist", "PROFESSIONAL"),
+            ]
+            for ds in desigs:
+                db.execute(
+                    """
+                    INSERT INTO hr_designations (id, department_id, designation_code, designation_title, skill_level)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    ds
+                )
+
+            # 4. Seed Shifts
+            shift_gen_id = str(uuid.uuid4())
+            shift_morn_id = str(uuid.uuid4())
+            shift_ngt_id = str(uuid.uuid4())
+            shift_sec_id = str(uuid.uuid4())
+
+            shifts = [
+                (shift_gen_id, cid, f"SHF-{code_prefix}-GEN", "Corporate General Shift", "08:00", "17:00", 15, 4.0, 0, 0.00),
+                (shift_morn_id, cid, f"SHF-{code_prefix}-MRN", "Plant Production Morning Shift", "07:00", "15:30", 10, 4.0, 0, 0.00),
+                (shift_ngt_id, cid, f"SHF-{code_prefix}-NGT", "Heavy Machining Night Shift", "23:00", "07:30", 10, 4.0, 1, 45.00),
+                (shift_sec_id, cid, f"SHF-{code_prefix}-SEC", "24/7 Security Shift", "00:00", "23:59", 0, 12.0, 0, 25.00),
+            ]
+            for s in shifts:
+                db.execute(
+                    """
+                    INSERT INTO hr_shifts (id, company_id, shift_code, shift_name, start_time, end_time, grace_period_mins, half_day_hours, is_night_shift, night_allowance)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    s
+                )
+
+            # 5. Seed Holidays
+            holidays = [
+                (cid, "International New Year's Day", "2026-01-01", "PUBLIC_HOLIDAY"),
+                (cid, "National Independence & Republic Day", "2026-03-26", "GAZETTED_HOLIDAY"),
+                (cid, "Summer Corporate Foundation Day", "2026-06-15", "CORPORATE_OFF_DAY"),
+                (cid, "National Autumn Festival", "2026-10-12", "PUBLIC_HOLIDAY"),
+                (cid, "Annual Winter Holiday & Year-End Closing", "2026-12-25", "GAZETTED_HOLIDAY"),
+            ]
+            for h in holidays:
+                db.execute(
+                    """
+                    INSERT INTO hr_holidays (company_id, holiday_name, holiday_date, holiday_type)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    h
+                )
+
+            # 6. Seed Leave Types
+            lt_cl_id = str(uuid.uuid4())
+            lt_sl_id = str(uuid.uuid4())
+            lt_el_id = str(uuid.uuid4())
+            lt_mat_id = str(uuid.uuid4())
+
+            leave_types = [
+                (lt_cl_id, cid, "LV-CL", "Casual Leave (CL)", 10, 1, 0, 3),
+                (lt_sl_id, cid, "LV-SL", "Sick & Medical Leave (SL)", 14, 1, 0, 0),
+                (lt_el_id, cid, "LV-EL", "Annual Earned Leave (EL)", 18, 1, 1, 10),
+                (lt_mat_id, cid, "LV-MAT", "Maternity Leave", 120, 1, 0, 0),
+            ]
+            for lt in leave_types:
+                db.execute(
+                    """
+                    INSERT INTO hr_leave_types (id, company_id, leave_code, leave_name, yearly_quota, is_paid, is_encashable, max_carryforward)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    lt
+                )
+
+            # 7. Seed Corporate Bank Accounts
+            bank1_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO hr_bank_accounts (id, company_id, bank_name, branch_name, account_number, routing_number, currency, is_default)
+                VALUES (?, ?, 'Standard Chartered Corporate Banking', 'Industrial Commercial Zone Branch', 'SCB-8890-4412-9901', 'SCBLUS33XXX', 'USD', 1)
+                """,
+                (bank1_id, cid)
+            )
+
+            # 8. Seed Master Employees
+            emp1_id = str(uuid.uuid4())
+            emp2_id = str(uuid.uuid4())
+            emp3_id = str(uuid.uuid4())
+            emp4_id = str(uuid.uuid4())
+
+            employees = [
+                (emp1_id, cid, dept_eng_id, desig_arch_id, grd1_id, shift_gen_id, f"EMP-{code_prefix}-001", "Alexander", "Vance", f"alex.vance@{code_prefix.lower()}.pyrix.internal", "+1 (555) 902-8811", f"NID-{code_prefix}-001928", f"TIN-{code_prefix}-882199", "Large Taxpayer Unit", "Zone 1 Circle 4", "1985-04-12", "MALE", "O+", "2020-01-15", "PERMANENT", 5750.00, 11500.00, "Standard Chartered Bank", "SCB-7721-0091", "SCBLUS33XXX", "Elena Vance (Spouse)", "+1 (555) 902-8812"),
+                (emp2_id, cid, dept_plt_id, desig_eng_id, grd2_id, shift_morn_id, f"EMP-{code_prefix}-002", "Dieter", "Mueller", f"dieter.m@{code_prefix.lower()}.pyrix.internal", "+1 (555) 902-8822", f"NID-{code_prefix}-002844", f"TIN-{code_prefix}-882200", "Manufacturing Circle", "Zone 2 Circle 1", "1982-08-24", "MALE", "A+", "2021-03-01", "PERMANENT", 4100.00, 8200.00, "Citibank Commercial", "CITI-8832-1102", "CITIUS33XXX", "Greta Mueller (Spouse)", "+1 (555) 902-8823"),
+                (emp3_id, cid, dept_fin_id, desig_ctrl_id, grd2_id, shift_gen_id, f"EMP-{code_prefix}-003", "Elena", "Rostova", f"elena.r@{code_prefix.lower()}.pyrix.internal", "+1 (555) 902-8833", f"NID-{code_prefix}-003711", f"TIN-{code_prefix}-882201", "Corporate Tax Zone", "Zone 1 Circle 2", "1988-11-19", "FEMALE", "B+", "2022-06-15", "PERMANENT", 3900.00, 7800.00, "Standard Chartered Bank", "SCB-7721-0094", "SCBLUS33XXX", "Mikhail Rostov (Brother)", "+1 (555) 902-8834"),
+                (emp4_id, cid, dept_plt_id, desig_mach_id, grd5_id, shift_morn_id, f"EMP-{code_prefix}-004", "Rashid", "Al-Nuaimi", f"rashid.a@{code_prefix.lower()}.pyrix.internal", "+1 (555) 902-8844", f"NID-{code_prefix}-004922", f"TIN-{code_prefix}-882202", "Industrial District Circle", "Zone 3 Circle 6", "1994-02-10", "MALE", "AB+", "2023-09-01", "PERMANENT", 2250.00, 4500.00, "HSBC Bank Middle East", "HSBC-4491-8822", "HSBCUS33XXX", "Fatima Al-Nuaimi (Mother)", "+1 (555) 902-8845"),
+            ]
+            for emp in employees:
+                db.execute(
+                    """
+                    INSERT INTO hr_employees (id, company_id, department_id, designation_id, grade_id, shift_id, employee_code, first_name, last_name, email, phone, national_id, tin_number, tax_zone, tax_circle, date_of_birth, gender, blood_group, joining_date, employment_status, basic_salary, gross_salary, bank_name, bank_account_number, bank_routing_number, emergency_contact_name, emergency_contact_phone, is_pf_member)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                    """,
+                    emp
+                )
+
+            # 9. Seed Contract / Casual Workers
+            contract_workers = [
+                (cid, dept_plt_id, f"CW-{code_prefix}-01", "Marco Rossi", "Apex Global Manpower Services", "DAILY_WAGE", 110.00, "2026-01-01", "2026-12-31"),
+                (cid, dept_plt_id, f"CW-{code_prefix}-02", "Cheng Wei", "Apex Global Manpower Services", "PIECE_RATE", 95.00, "2026-01-01", "2026-12-31"),
+                (cid, dept_scm_id, f"CW-{code_prefix}-03", "Ahmed Al-Fassi", "SecureForce Guard Services", "SECURITY_GUARD", 85.00, "2026-01-01", "2026-12-31"),
+            ]
+            for cw in contract_workers:
+                db.execute(
+                    """
+                    INSERT INTO hr_contract_workers (company_id, department_id, worker_code, worker_name, contractor_agency, worker_type, daily_rate, contract_start_date, contract_end_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    cw
+                )
+
+            # 10. Seed Document Vault
+            docs = [
+                (emp1_id, "Executive Employment Agreement", "CONTRACT", f"DOC-{code_prefix}-EMP001-CTR", "2020-01-15", "2030-01-15", "VERIFIED", "HR Compliance Board"),
+                (emp1_id, "National ID Card Verification", "NATIONAL_ID", f"DOC-{code_prefix}-EMP001-NID", "2020-01-10", "2035-01-10", "VERIFIED", "Govt ID Registry"),
+                (emp2_id, "Master of Science in Mechanical Metallurgy", "ACADEMIC_DEGREE", f"DOC-{code_prefix}-EMP002-DEG", "2008-07-20", None, "VERIFIED", "University Registrar"),
+            ]
+            for doc in docs:
+                db.execute(
+                    """
+                    INSERT INTO hr_documents (employee_id, doc_title, doc_type, doc_file_ref, issue_date, expiry_date, verification_status, verified_by)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    doc
+                )
+
+            # 11. Seed Employee Transfers
+            db.execute(
+                """
+                INSERT INTO hr_transfers (company_id, employee_id, transfer_number, transfer_date, transfer_type, from_dept_id, to_dept_id, from_designation_id, to_designation_id, previous_salary, revised_salary, reason, approved_by)
+                VALUES (?, ?, ?, '2026-06-01', 'PROMOTION_AND_TRANSFER', ?, ?, ?, ?, 7500.00, 8200.00, 'Promoted to Lead Plant Operations Engineer with relocation to Main Facility', 'Board of Directors')
+                """,
+                (cid, emp2_id, f"TRF-{code_prefix}-2026-0001", dept_eng_id, dept_plt_id, desig_eng_id, desig_eng_id)
+            )
+
+            # 12. Seed Recruitment Requisition & Candidate
+            req_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO hr_job_requisitions (id, company_id, department_id, requisition_number, position_title, vacancies_count, experience_years_required, budgeted_salary, target_joining_date, justification, status)
+                VALUES (?, ?, ?, ?, 'Senior Metallurgy QC Inspection Specialist', 2, 5, 6500.00, '2026-10-01', 'Required for new DIN 912 aerospace titanium turbine alloy inspection line', 'APPROVED')
+                """,
+                (req_id, cid, dept_qc_id, f"REQ-{code_prefix}-2026-0042")
+            )
+
+            db.execute(
+                """
+                INSERT INTO hr_candidates (requisition_id, candidate_name, email, phone, years_of_experience, key_skills, expected_salary, interview_score, interview_feedback, hiring_status, applied_date)
+                VALUES (?, 'Engr. Viktor Frank', 'viktor.frank@talent-pool.internal', '+1 (555) 919-4411', 6.5, 'X-Ray Fluorescence, Ultrasonic Flaw Detection, DIN 912 Specs', 6200.00, 94.50, 'Exceptional technical depth in non-destructive testing and metallurgy.', 'SELECTED_FOR_OFFER', '2026-08-10')
+                """,
+                (req_id,)
+            )
+
+            # 13. Seed Loan Types & Active Loan
+            lt_pers_id = str(uuid.uuid4())
+            lt_veh_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO hr_loan_types (id, company_id, loan_type_code, loan_type_name, max_loan_limit, max_installments, interest_rate_pct)
+                VALUES (?, ?, 'LN-EMERGENCY', 'Staff Emergency Personal Loan', 5000.00, 12, 0.00)
+                """,
+                (lt_pers_id, cid)
+            )
+            db.execute(
+                """
+                INSERT INTO hr_loan_types (id, company_id, loan_type_code, loan_type_name, max_loan_limit, max_installments, interest_rate_pct)
+                VALUES (?, ?, 'LN-VEHICLE', 'Company Vehicle Purchase Advance', 20000.00, 36, 3.50)
+                """,
+                (lt_veh_id, cid)
+            )
+
+            loan_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO hr_loans (id, company_id, employee_id, loan_type_id, loan_number, principal_amount, interest_rate_pct, tenure_months, monthly_emi, disbursement_date, repayment_start_month, total_paid_amount, outstanding_balance, status, gl_voucher_ref)
+                VALUES (?, ?, ?, ?, ?, 6000.00, 0.00, 12, 500.00, '2026-05-15', '2026-06', 1500.00, 4500.00, 'ACTIVE', 'GL-JV-2026-LN-001')
+                """,
+                (loan_id, cid, emp2_id, lt_pers_id, f"LN-{code_prefix}-2026-001")
+            )
+
+            # 14. Seed Tax Slabs & Tax Deposit
+            tax_slabs = [
+                (cid, "FY 2026-2027", 1, "First $350,000 Annual Tax-Free Bracket", 350000.00, 0.00),
+                (cid, "FY 2026-2027", 2, "Next $100,000 at 5% Progressive Rate", 100000.00, 5.00),
+                (cid, "FY 2026-2027", 3, "Next $300,000 at 10% Progressive Rate", 300000.00, 10.00),
+                (cid, "FY 2026-2027", 4, "Next $400,000 at 15% Progressive Rate", 400000.00, 15.00),
+                (cid, "FY 2026-2027", 5, "Balance above $1,150,000 at 20% Top Slab", 99999999.00, 20.00),
+            ]
+            for ts in tax_slabs:
+                db.execute(
+                    """
+                    INSERT INTO hr_tax_slabs (company_id, fiscal_year, slab_order, slab_description, slab_limit, tax_rate_pct)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    ts
+                )
+
+            db.execute(
+                """
+                INSERT INTO hr_tax_deposits (company_id, deposit_month, challan_number, challan_date, depository_bank, total_tax_deposited, employees_covered_count, gl_voucher_ref, status)
+                VALUES (?, 'August 2026', ?, '2026-08-31', 'Federal Treasury Depository Bank', 16420.00, 4, 'GL-JV-2026-TAX-001', 'VERIFIED_BY_TREASURY')
+                """,
+                (cid, f"CHL-{code_prefix}-2026-08")
+            )
+
+            # 15. Seed Attendance Logs
+            att_records = [
+                (cid, emp1_id, "2026-08-31", "08:02", "17:15", "PRESENT", 0, 0, 0.0, "On-time biometric clock-in"),
+                (cid, emp2_id, "2026-08-31", "06:58", "15:35", "PRESENT", 0, 0, 0.0, "Morning shift on-time"),
+                (cid, emp3_id, "2026-08-31", "08:14", "17:30", "PRESENT", 0, 0, 0.0, "Within 15-min grace window"),
+                (cid, emp4_id, "2026-08-31", "06:55", "17:30", "PRESENT", 0, 0, 2.0, "Completed 2.0 hours approved Overtime"),
+            ]
+            for att in att_records:
+                db.execute(
+                    """
+                    INSERT INTO hr_attendance_logs (company_id, employee_id, attendance_date, clock_in_time, clock_out_time, attendance_status, is_late, late_minutes, overtime_hours, remarks)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    att
+                )
+
+            # 16. Seed Leave Application
+            db.execute(
+                """
+                INSERT INTO hr_leave_applications (company_id, employee_id, leave_type_id, application_number, start_date, end_date, leave_days, reason, approver_name, status)
+                VALUES (?, ?, ?, ?, '2026-08-18', '2026-08-19', 2, 'Personal urgent family commitment', 'Marcus Vance, Plant Director', 'APPROVED')
+                """,
+                (cid, emp2_id, lt_cl_id, f"LA-{code_prefix}-2026-0012")
+            )
+
+            # 17. Seed Overtime Record
+            db.execute(
+                """
+                INSERT INTO hr_overtime_records (company_id, employee_id, ot_date, ot_hours, hourly_rate, multiplier_factor, total_ot_amount, supervisor_name, status)
+                VALUES (?, ?, '2026-08-31', 16.0, 25.00, 1.5, 600.00, 'Engr. Dieter Mueller', 'APPROVED')
+                """,
+                (cid, emp4_id)
+            )
+
+            # 18. Seed Monthly Payroll Run & Payslips
+            pay_run_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO hr_payroll_runs (id, company_id, payroll_batch_number, period_month, fiscal_year, run_date, total_employees_processed, total_gross_payout, total_deductions, total_net_payout, status, is_gl_posted, gl_journal_ref, bank_advice_locked)
+                VALUES (?, ?, ?, 'August 2026', 'FY 2026-2027', '2026-08-31', 4, 32600.00, 5280.00, 27320.00, 'POSTED', 1, 'GL-JV-2026-PAY-001', 1)
+                """,
+                (pay_run_id, cid, f"PAY-{code_prefix}-2026-M08")
+            )
+
+            # 4 Payslips
+            payslips = [
+                (pay_run_id, emp1_id, f"PS-{code_prefix}-202608-001", 5750.00, 2875.00, 1150.00, 1150.00, 575.00, 0.00, 0.00, 11500.00, 479.00, 479.00, 1150.00, 0.00, 0.00, 1629.00, 9871.00, "SCB-7721-0091"),
+                (pay_run_id, emp2_id, f"PS-{code_prefix}-202608-002", 4100.00, 2050.00, 820.00, 820.00, 410.00, 0.00, 0.00, 8200.00, 341.50, 341.50, 620.00, 500.00, 0.00, 1461.50, 6738.50, "CITI-8832-1102"),
+                (pay_run_id, emp3_id, f"PS-{code_prefix}-202608-003", 3900.00, 1950.00, 780.00, 780.00, 390.00, 0.00, 0.00, 7800.00, 324.87, 324.87, 580.00, 0.00, 0.00, 904.87, 6895.13, "SCB-7721-0094"),
+                (pay_run_id, emp4_id, f"PS-{code_prefix}-202608-004", 2250.00, 1125.00, 450.00, 450.00, 225.00, 600.00, 0.00, 5100.00, 187.42, 187.42, 220.00, 0.00, 0.00, 407.42, 4692.58, "HSBC-4491-8822"),
+            ]
+            for ps in payslips:
+                db.execute(
+                    """
+                    INSERT INTO hr_payslips (payroll_run_id, employee_id, payslip_number, basic_salary, house_rent_allowance, medical_allowance, conveyance_allowance, special_allowance, overtime_pay, bonus_amount, gross_earnings, pf_employee_deduction, pf_employer_matching, income_tax_deduction, loan_emi_deduction, late_penalty_deduction, total_deductions, net_salary_payable, bank_account_number, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PAID')
+                    """,
+                    ps
+                )
+        logger.info("Seeded Human Resources Master, Employees, Attendance, Loans, Tax & Payroll Runs.")
+
+
 def seed_appearance():
     """Seeds default appearance settings."""
     app_count = db.query_one("SELECT COUNT(*) AS cnt FROM appearance_settings")["cnt"]
@@ -2071,6 +3962,8 @@ def setup_database():
     seed_gl_master_data()
     seed_sourcing_master_and_transactions()
     seed_sales_master_and_transactions()
+    seed_inventory_master_and_transactions()
+    seed_fixed_assets_master_and_transactions()
     seed_appearance()
     logger.info("PyrixDB multi-company initialization and seed complete.")
 

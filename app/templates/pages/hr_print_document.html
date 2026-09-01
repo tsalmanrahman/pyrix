@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ doc_type_title }} - {{ doc_number }} | Pyrix Enterprise HRIS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .page-break {
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 p-6 min-h-screen font-sans text-slate-800 dark:text-slate-200">
+
+  <!-- Print Action Toolbar -->
+  <div class="max-w-4xl mx-auto mb-4 flex items-center justify-between no-print">
+    <a href="/modules/hris?tab=hr-print-studio" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-300 transition">
+      &larr; Back to HR Workspace
+    </a>
+    <button onclick="window.print()" class="px-5 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs shadow-lg hover:bg-blue-700 transition flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+      Print Official Document
+    </button>
+  </div>
+
+  <!-- A4 Document Sheet -->
+  <div class="max-w-4xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl p-8 space-y-6">
+    
+    <!-- Letterhead Header -->
+    <div class="flex items-start justify-between border-b border-slate-200 dark:border-white/10 pb-6">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">
+            {{ active_company.short_code|default('PYX') }}
+          </div>
+          <h1 class="text-xl font-bold text-slate-900 dark:text-white">{{ active_company.name|default('Apex Precision Manufacturing Group Ltd') }}</h1>
+        </div>
+        <p class="text-xs text-slate-500 font-medium">{{ active_company.industry|default('Precision Metallurgy & Heavy Capital Plant Engineering') }}</p>
+        <p class="text-[11px] text-slate-400">Corporate Human Capital &amp; Payroll Administration</p>
+      </div>
+
+      <div class="text-right space-y-1">
+        <span class="px-3 py-1 text-xs font-mono font-bold uppercase rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+          {{ doc_type_title }}
+        </span>
+        <p class="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">{{ doc_number }}</p>
+        <p class="text-xs text-slate-500">Date: <span class="font-mono font-semibold">{{ doc_date }}</span></p>
+      </div>
+    </div>
+
+    {% if doc_type == 'payslip' %}
+      <!-- PAYSLIP BODY -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-xs">
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Employee Name</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ employee.employee_name }}</p>
+          <p class="font-mono text-[11px] text-blue-600 dark:text-blue-400">{{ employee.employee_code }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Department &amp; Title</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ employee.designation_title }}</p>
+          <p class="text-[11px] text-slate-500">{{ employee.dept_name }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Tax TIN # / Zone</span>
+          <p class="font-mono font-bold text-purple-600 dark:text-purple-400 mt-0.5">{{ employee.tin_number|default('TIN-2026-REG-01') }}</p>
+          <p class="text-[11px] text-slate-500">Large Taxpayer Unit</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Disbursement Bank</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ employee.bank_name|default('Standard Chartered Bank') }}</p>
+          <p class="font-mono text-[11px] text-slate-500">{{ employee.bank_account_number }}</p>
+        </div>
+      </div>
+
+      <!-- Earnings vs Deductions 2-Column Table -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <!-- Earnings Column -->
+        <div class="space-y-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 border-b border-slate-200 dark:border-white/10 pb-2">Gross Earnings</h3>
+          <div class="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+              <span>Basic Salary</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(employee.basic_salary) }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+              <span>House Rent Allowance (HRA)</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(employee.house_rent_allowance) }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+              <span>Medical Allowance</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(employee.medical_allowance) }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+              <span>Conveyance Allowance</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(employee.conveyance_allowance) }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+              <span>Special Executive Allowance</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(employee.special_allowance) }}</span>
+            </div>
+            {% if employee.overtime_pay > 0 %}
+              <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+                <span>Overtime (OT) Pay</span>
+                <span class="font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(employee.overtime_pay) }}</span>
+              </div>
+            {% endif %}
+            <div class="flex justify-between py-2 border-t-2 border-slate-900 dark:border-white text-sm font-bold text-slate-900 dark:text-white">
+              <span>Total Gross Earnings:</span>
+              <span class="font-mono text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(employee.gross_earnings) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deductions Column -->
+        <div class="space-y-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 border-b border-slate-200 dark:border-white/10 pb-2">Statutory &amp; Voluntary Deductions</h3>
+          <div class="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+              <span>Provident Fund (PF Employee 8.33%)</span>
+              <span class="font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(employee.pf_employee_deduction) }}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+              <span>Income Tax Withholding (TIN)</span>
+              <span class="font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(employee.income_tax_deduction) }}</span>
+            </div>
+            {% if employee.loan_emi_deduction > 0 %}
+              <div class="flex justify-between py-1 border-b border-slate-100 dark:border-white/5">
+                <span>Staff Loan EMI Recovery</span>
+                <span class="font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(employee.loan_emi_deduction) }}</span>
+              </div>
+            {% endif %}
+            <div class="flex justify-between py-2 border-t-2 border-slate-900 dark:border-white text-sm font-bold text-slate-900 dark:text-white">
+              <span>Total Deductions:</span>
+              <span class="font-mono text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(employee.total_deductions) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Net Salary Card -->
+      <div class="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase">Net Salary Disbursed to Bank</span>
+          <p class="text-[11px] text-emerald-600 dark:text-emerald-400">Disbursed via Electronic EFT to {{ employee.bank_name|default('Standard Chartered Bank') }}</p>
+        </div>
+        <p class="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-400">${{ "{:,.2f}".format(employee.net_salary_payable) }}</p>
+      </div>
+
+    {% elif doc_type == 'appointment' %}
+      <!-- APPOINTMENT LETTER BODY -->
+      <div class="space-y-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+        <p><strong>To:</strong> {{ candidate.candidate_name }}<br><strong>Email:</strong> {{ candidate.email }} | <strong>Phone:</strong> {{ candidate.phone }}</p>
+        <p class="text-sm font-bold text-slate-900 dark:text-white">Subject: Formal Employment Appointment Offer &ndash; {{ candidate.position_title }}</p>
+        <p>Dear {{ candidate.candidate_name }},</p>
+        <p>We are pleased to offer you the full-time position of <strong>{{ candidate.position_title }}</strong> at <strong>{{ active_company.name }}</strong> following your outstanding interview evaluation (Score: {{ "{:,.1f}".format(candidate.interview_score) }}%).</p>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-2">
+          <div class="grid grid-cols-2 gap-4">
+            <div><span class="font-bold">Position Title:</span> {{ candidate.position_title }}</div>
+            <div><span class="font-bold">Requisition Ref:</span> {{ candidate.requisition_number }}</div>
+            <div><span class="font-bold">Offered Monthly Base:</span> ${{ "{:,.2f}".format(candidate.expected_salary) }}</div>
+            <div><span class="font-bold">Probation Period:</span> 6 Months</div>
+          </div>
+        </div>
+        <p>You will be entitled to standard corporate benefits including Group Health Insurance, 8.33% Matching Provident Fund, Annual Earned Leaves, and Festival Bonuses as per company HR policy.</p>
+        <p>Please sign and return the duplicate copy of this letter within 7 business days to confirm your acceptance.</p>
+      </div>
+
+    {% elif doc_type == 'transfer' %}
+      <!-- TRANSFER ORDER BODY -->
+      <div class="space-y-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+        <p class="text-sm font-bold text-slate-900 dark:text-white">Subject: Official Employee Transfer &amp; Relocation Order</p>
+        <p>This is to officially notify that <strong>{{ transfer.employee_name }}</strong> ({{ transfer.employee_code }}) has been transferred and assigned to the following operational unit:</p>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 grid grid-cols-2 gap-4">
+          <div><span class="font-bold">Origin Department:</span> {{ transfer.from_dept_name }}</div>
+          <div><span class="font-bold">Destination Facility:</span> {{ transfer.to_dept_name }}</div>
+          <div><span class="font-bold">Revised Monthly Salary:</span> ${{ "{:,.2f}".format(transfer.revised_salary) }}</div>
+          <div><span class="font-bold">Effective Date:</span> {{ transfer.transfer_date }}</div>
+        </div>
+        <p><strong>Reason &amp; Remarks:</strong> {{ transfer.reason }}</p>
+      </div>
+
+    {% elif doc_type == 'certificate' %}
+      <!-- EXPERIENCE CERTIFICATE BODY -->
+      <div class="space-y-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+        <p class="text-sm font-bold text-slate-900 dark:text-white text-center uppercase tracking-wider">To Whom It May Concern</p>
+        <p>This is to certify that <strong>{{ employee.full_name }}</strong> (Employee Code: <strong>{{ employee.employee_code }}</strong>) has been employed with <strong>{{ active_company.name }}</strong> from <strong>{{ employee.joining_date }}</strong> to date, serving as <strong>{{ employee.designation_title }}</strong> in the <strong>{{ employee.dept_name }}</strong>.</p>
+        <p>During their tenure, they have demonstrated high professional competency, diligence, and dedication. We wish them all success in their future endeavors.</p>
+      </div>
+
+    {% elif doc_type == 'bank-advice' %}
+      <!-- BANK ADVICE BODY -->
+      <div class="space-y-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+        <p><strong>To:</strong> The Branch Manager<br><strong>Bank:</strong> {{ employee.bank_name }}<br><strong>Routing:</strong> {{ employee.bank_routing_number }}</p>
+        <p class="text-sm font-bold text-slate-900 dark:text-white">Subject: Corporate Salary Disbursement Advice &ndash; August 2026</p>
+        <p>Please debit our Corporate Payroll Account and credit the employee's account as detailed below:</p>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 grid grid-cols-2 gap-4">
+          <div><span class="font-bold">Beneficiary Name:</span> {{ employee.full_name }}</div>
+          <div><span class="font-bold">Account Number:</span> {{ employee.bank_account_number }}</div>
+          <div><span class="font-bold">Net Payout Amount:</span> ${{ "{:,.2f}".format((employee.gross_salary|float) * 0.85) }}</div>
+          <div><span class="font-bold">Disbursement Currency:</span> USD</div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- 3-Tier Official Signature Authorization Matrix -->
+    <div class="pt-8 border-t border-slate-200 dark:border-white/10 grid grid-cols-3 gap-6 text-center text-xs">
+      <div class="space-y-6">
+        <div class="border-b border-slate-300 dark:border-white/20 pb-8"></div>
+        <div>
+          <p class="font-bold text-slate-900 dark:text-white">Prepared By</p>
+          <p class="text-[10px] text-slate-400">Payroll Specialist</p>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div class="border-b border-slate-300 dark:border-white/20 pb-8"></div>
+        <div>
+          <p class="font-bold text-slate-900 dark:text-white">Verified By</p>
+          <p class="text-[10px] text-slate-400">HR Director</p>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div class="border-b border-slate-300 dark:border-white/20 pb-8"></div>
+        <div>
+          <p class="font-bold text-slate-900 dark:text-white">Authorized Signatory</p>
+          <p class="text-[10px] text-slate-400">Chief Financial Officer (CFO)</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

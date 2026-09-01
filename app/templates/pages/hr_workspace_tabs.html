@@ -1,0 +1,1257 @@
+{% if module.route_slug in ['hris', 'hr', 'human-resources', 'human-capital'] %}
+
+  <!-- =========================================================================
+       SUITE 1: PERSONNEL & ORGANIZATION MASTER SETUP SUITE (7 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 1.1 Employee Grades & Bands -->
+  {% if current_tab == 'hr-grades' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="award" class="w-4 h-4 text-blue-500"></i>
+            <span>Employee Grades &amp; Pay Scale Bands</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Corporate hierarchy ranking with basic salary ranges, HRA %, Medical % and Conveyance allowances</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Grade Code</th>
+              <th class="py-2.5 px-3">Grade Classification</th>
+              <th class="py-2.5 px-3 text-center">Rank Level</th>
+              <th class="py-2.5 px-3 text-right">Min Basic</th>
+              <th class="py-2.5 px-3 text-right">Max Basic</th>
+              <th class="py-2.5 px-3 text-right">HRA %</th>
+              <th class="py-2.5 px-3 text-right">Medical %</th>
+              <th class="py-2.5 px-3 text-center">Active Staff</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for g in hr_grades %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ g.grade_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ g.grade_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">Level {{ g.rank_level }}</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(g.min_basic_salary) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(g.max_basic_salary) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">{{ "{:,.1f}".format(g.hra_pct) }}%</td>
+                <td class="py-3 px-3 text-right font-mono text-amber-600 dark:text-amber-400">{{ "{:,.1f}".format(g.medical_pct) }}%</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ g.employee_count }} Staff</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.2 Departments Master -->
+  {% elif current_tab == 'hr-departments' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="building-2" class="w-4 h-4 text-indigo-500"></i>
+            <span>Departments Master &amp; Cost Center Mappings</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Corporate divisions, plant cost centers, and departmental leadership hierarchy</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Dept Code</th>
+              <th class="py-2.5 px-3">Department Name</th>
+              <th class="py-2.5 px-3">GL Cost Center</th>
+              <th class="py-2.5 px-3">Head of Department</th>
+              <th class="py-2.5 px-3">Operating Location</th>
+              <th class="py-2.5 px-3 text-center">Designations</th>
+              <th class="py-2.5 px-3 text-center">Staff Count</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for d in hr_departments %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ d.dept_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ d.dept_name }}</td>
+                <td class="py-3 px-3 font-mono text-purple-600 dark:text-purple-400">{{ d.cost_center_code }}</td>
+                <td class="py-3 px-3 font-medium">{{ d.head_of_dept }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ d.location_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ d.designation_count }} Titles</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ d.employee_count }} Staff</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.3 Designations & Job Titles -->
+  {% elif current_tab == 'hr-designations' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="badge-check" class="w-4 h-4 text-purple-500"></i>
+            <span>Designations &amp; Job Titles Catalog</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Professional designations, technical skill bands, and departmental links</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Designation Code</th>
+              <th class="py-2.5 px-3">Official Job Title</th>
+              <th class="py-2.5 px-3">Department</th>
+              <th class="py-2.5 px-3">Skill Level</th>
+              <th class="py-2.5 px-3 text-center">Assigned Employees</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for des in hr_designations %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ des.designation_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ des.designation_title }}</td>
+                <td class="py-3 px-3 font-medium">{{ des.dept_name }} ({{ des.dept_code }})</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ des.skill_level }}</span></td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ des.employee_count }} Staff</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.4 Work-Shifts & Roster Configuration -->
+  {% elif current_tab == 'hr-shifts' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+            <span>Work-Shifts &amp; Roster Schedules</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Shift timings, grace periods, half-day hour limits, and night differential allowances</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Shift Code</th>
+              <th class="py-2.5 px-3">Shift Name</th>
+              <th class="py-2.5 px-3">Timings</th>
+              <th class="py-2.5 px-3 text-center">Grace Period</th>
+              <th class="py-2.5 px-3 text-center">Type</th>
+              <th class="py-2.5 px-3 text-right">Night Allowance</th>
+              <th class="py-2.5 px-3 text-center">Assigned Staff</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for s in hr_shifts %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ s.shift_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ s.shift_name }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ s.start_time }} &ndash; {{ s.end_time }}</td>
+                <td class="py-3 px-3 text-center font-mono">{{ s.grace_period_mins }} Mins</td>
+                <td class="py-3 px-3 text-center">
+                  {% if s.is_night_shift %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">NIGHT SHIFT</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">STANDARD</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(s.night_allowance) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ s.assigned_staff_count }} Staff</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.5 Annual Holiday Calendar -->
+  {% elif current_tab == 'hr-holidays' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="calendar" class="w-4 h-4 text-emerald-500"></i>
+            <span>Annual Corporate Holiday Calendar</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">National holidays, gazetted festival off-days, and corporate foundation anniversaries</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Holiday Date</th>
+              <th class="py-2.5 px-3">Holiday Description</th>
+              <th class="py-2.5 px-3">Classification</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for h in hr_holidays %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ h.holiday_date }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ h.holiday_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ h.holiday_type }}</span></td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">CONFIRMED</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.6 Leave Policies & Entitlement Types -->
+  {% elif current_tab == 'hr-leave-types' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="file-heart" class="w-4 h-4 text-rose-500"></i>
+            <span>Leave Policies &amp; Yearly Entitlement Rules</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Casual, Medical, Annual Earned, and Maternity quotas with carryforward limits and encashment rules</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Leave Code</th>
+              <th class="py-2.5 px-3">Leave Category</th>
+              <th class="py-2.5 px-3 text-center">Yearly Quota</th>
+              <th class="py-2.5 px-3 text-center">Paid Status</th>
+              <th class="py-2.5 px-3 text-center">Encashable</th>
+              <th class="py-2.5 px-3 text-center">Max Carryforward</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for lt in hr_leave_types %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ lt.leave_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ lt.leave_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ lt.yearly_quota }} Days</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">PAID LEAVE</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  {% if lt.is_encashable %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">YES</span>
+                  {% else %}
+                    <span class="text-slate-400 font-mono">NO</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-center font-mono">{{ lt.max_carryforward }} Days</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.7 Corporate Bank Accounts -->
+  {% elif current_tab == 'hr-bank-accounts' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="landmark" class="w-4 h-4 text-cyan-500"></i>
+            <span>Corporate Disbursement Bank Accounts</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Corporate salary disbursement accounts, branch routing transit numbers, and electronic payroll clearing profiles</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Bank Name</th>
+              <th class="py-2.5 px-3">Branch Location</th>
+              <th class="py-2.5 px-3">Account Number</th>
+              <th class="py-2.5 px-3">Routing Code</th>
+              <th class="py-2.5 px-3 text-center">Disbursement Currency</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for b in hr_bank_accounts %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ b.bank_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ b.branch_name }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ b.account_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ b.routing_number }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ b.currency }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">PRIMARY DISBURSEMENT</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 2: TALENT ACQUISITION & EMPLOYEE LIFECYCLE SUITE (6 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 2.1 Master Employee Profiles -->
+  {% elif current_tab == 'hr-employees' or current_tab is none %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="user-check" class="w-4 h-4 text-emerald-500"></i>
+            <span>Master Employee Digital Dossiers</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Comprehensive workforce records with compensation structure, TIN, bank routing, and emergency contacts</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Employee Code</th>
+              <th class="py-2.5 px-3">Full Name &amp; Contacts</th>
+              <th class="py-2.5 px-3">Department &amp; Title</th>
+              <th class="py-2.5 px-3">Grade &amp; Shift</th>
+              <th class="py-2.5 px-3 text-right">Basic Salary</th>
+              <th class="py-2.5 px-3 text-right">Gross Salary</th>
+              <th class="py-2.5 px-3">Bank Routing</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for e in hr_employees %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ e.employee_code }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ e.full_name }}</span>
+                  <p class="text-[10px] text-slate-500">{{ e.email }} | {{ e.phone }}</p>
+                </td>
+                <td class="py-3 px-3">
+                  <span class="font-medium text-slate-900 dark:text-white">{{ e.designation_title }}</span>
+                  <p class="text-[10px] text-slate-500">{{ e.dept_name }}</p>
+                </td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">
+                  <span>{{ e.grade_name }}</span>
+                  <p class="text-[10px] text-slate-500">{{ e.shift_name }}</p>
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(e.basic_salary) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(e.gross_salary) }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">
+                  <span class="font-medium">{{ e.bank_name }}</span>
+                  <p class="text-[10px] font-mono text-slate-500">{{ e.bank_account_number }}</p>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ e.employment_status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <a href="/modules/hris/print/certificate/{{ e.id }}" target="_blank" class="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition" title="Print Experience Certificate">
+                      <i data-lucide="award" class="w-3.5 h-3.5"></i>
+                    </a>
+                    <a href="/modules/hris/print/bank-advice/{{ e.id }}" target="_blank" class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20 transition" title="Print Bank Advice">
+                      <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.2 Temporary & Casual Workers -->
+  {% elif current_tab == 'hr-contract-workers' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="hard-hat" class="w-4 h-4 text-amber-500"></i>
+            <span>Temporary, Casual &amp; Plant Worker Rosters</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daily wage labor, piece-rated factory workers, and contract guard agency rosters</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Worker Code</th>
+              <th class="py-2.5 px-3">Worker Name</th>
+              <th class="py-2.5 px-3">Agency / Contractor</th>
+              <th class="py-2.5 px-3">Department</th>
+              <th class="py-2.5 px-3">Wage Category</th>
+              <th class="py-2.5 px-3 text-right">Daily Rate</th>
+              <th class="py-2.5 px-3">Contract Validity</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for cw in hr_contract_workers %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ cw.worker_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ cw.worker_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ cw.contractor_agency }}</td>
+                <td class="py-3 px-3 font-medium">{{ cw.dept_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ cw.worker_type }}</span></td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(cw.daily_rate) }}/day</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ cw.contract_start_date }} &ndash; {{ cw.contract_end_date }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ cw.status }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.3 Digital Document Vault -->
+  {% elif current_tab == 'hr-documents' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="folder-lock" class="w-4 h-4 text-blue-500"></i>
+            <span>Digital Document Vault &amp; Credentials Archive</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Signed employment agreements, national identity verifications, and academic degree certifications</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Document Title</th>
+              <th class="py-2.5 px-3">Associated Employee</th>
+              <th class="py-2.5 px-3">Document Category</th>
+              <th class="py-2.5 px-3">File Reference</th>
+              <th class="py-2.5 px-3">Issue Date</th>
+              <th class="py-2.5 px-3">Verification Authority</th>
+              <th class="py-2.5 px-3 text-center">Verification Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for doc in hr_documents %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ doc.doc_title }}</td>
+                <td class="py-3 px-3 font-medium">{{ doc.employee_name }} ({{ doc.employee_code }})</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ doc.doc_type }}</span></td>
+                <td class="py-3 px-3 font-mono text-blue-600 dark:text-blue-400">{{ doc.doc_file_ref }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ doc.issue_date }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ doc.verified_by }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ doc.verification_status }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.4 Transfers & Promotions Log -->
+  {% elif current_tab == 'hr-transfers' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="repeat" class="w-4 h-4 text-purple-500"></i>
+            <span>Employee Transfers &amp; Promotions Log</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Historical records of inter-plant, inter-departmental transfers, and merit salary adjustments</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Transfer #</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3">Transfer Type</th>
+              <th class="py-2.5 px-3">Movement Path</th>
+              <th class="py-2.5 px-3 text-right">Previous Salary</th>
+              <th class="py-2.5 px-3 text-right">Revised Salary</th>
+              <th class="py-2.5 px-3">Effective Date</th>
+              <th class="py-2.5 px-3 text-center">Print Order</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for tr in hr_transfers %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ tr.transfer_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ tr.employee_name }} ({{ tr.employee_code }})</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ tr.transfer_type }}</span></td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ tr.from_dept_name }} &rarr; <span class="font-bold text-slate-900 dark:text-white">{{ tr.to_dept_name }}</span></td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(tr.previous_salary) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(tr.revised_salary) }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ tr.transfer_date }}</td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/hris/print/transfer/{{ tr.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 rounded transition">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Transfer Order</span>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.5 Manpower Job Requisitions -->
+  {% elif current_tab == 'hr-requisitions' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="briefcase" class="w-4 h-4 text-indigo-500"></i>
+            <span>Manpower Recruitment Requisitions</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Department hiring requests with position requirements, budgeted salary, and e-approval status</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Requisition #</th>
+              <th class="py-2.5 px-3">Position Title</th>
+              <th class="py-2.5 px-3">Department</th>
+              <th class="py-2.5 px-3 text-center">Vacancies</th>
+              <th class="py-2.5 px-3 text-right">Budgeted Salary</th>
+              <th class="py-2.5 px-3">Target Date</th>
+              <th class="py-2.5 px-3 text-center">Applicants</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for r in hr_requisitions %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ r.requisition_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ r.position_title }}</td>
+                <td class="py-3 px-3 font-medium">{{ r.dept_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ r.vacancies_count }} Openings</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(r.budgeted_salary) }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ r.target_joining_date }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ r.applicant_count }} Candidates</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ r.status }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.6 CV Bank & Candidate Interview Scoring -->
+  {% elif current_tab == 'hr-candidates' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="user-plus" class="w-4 h-4 text-cyan-500"></i>
+            <span>CV Bank &amp; Interview Evaluation Matrix</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Talent pool candidate screening, interview scores, and 1-click appointment letter issuance</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Candidate Name</th>
+              <th class="py-2.5 px-3">Applied Position</th>
+              <th class="py-2.5 px-3 text-center">Experience</th>
+              <th class="py-2.5 px-3">Key Technical Competencies</th>
+              <th class="py-2.5 px-3 text-right">Expected Salary</th>
+              <th class="py-2.5 px-3 text-center">Interview Score</th>
+              <th class="py-2.5 px-3 text-center">Hiring Status</th>
+              <th class="py-2.5 px-3 text-center">Issue Offer</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for c in hr_candidates %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ c.candidate_name }}</span>
+                  <p class="text-[10px] text-slate-500">{{ c.email }} | {{ c.phone }}</p>
+                </td>
+                <td class="py-3 px-3 font-medium">{{ c.position_title }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ c.years_of_experience }} Yrs</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ c.key_skills }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(c.expected_salary) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ "{:,.1f}".format(c.interview_score) }}%</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ c.hiring_status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/hris/print/appointment/{{ c.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 rounded transition">
+                    <i data-lucide="file-text" class="w-3 h-3"></i>
+                    <span>Offer Letter</span>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 3: TIME, ATTENDANCE & LEAVE MANAGEMENT SUITE (3 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 3.1 Biometric Terminal Punch Clock-In Logs -->
+  {% elif current_tab == 'hr-attendance-log' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="fingerprint" class="w-4 h-4 text-purple-500"></i>
+            <span>Daily Biometric Terminal Attendance Punch Logs</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Biometric RFID/Fingerprint clock-in timestamps, late arrival detection, and overtime tracking</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Date</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3">Department &amp; Shift</th>
+              <th class="py-2.5 px-3 font-mono">Clock-In</th>
+              <th class="py-2.5 px-3 font-mono">Clock-Out</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Overtime Hours</th>
+              <th class="py-2.5 px-3">Terminal Device</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for a in hr_attendance_logs %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono text-slate-500">{{ a.attendance_date }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ a.employee_name }} ({{ a.employee_code }})</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ a.dept_name }} &bull; {{ a.shift_name }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ a.clock_in_time }}</td>
+                <td class="py-3 px-3 font-mono text-blue-600 dark:text-blue-400">{{ a.clock_out_time|default('-') }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ a.attendance_status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">{{ a.overtime_hours }} hrs</td>
+                <td class="py-3 px-3 text-[11px] text-slate-400 font-mono">{{ a.terminal_device_ip }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.2 Leave Applications & Approval Workflow -->
+  {% elif current_tab == 'hr-leaves' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="calendar-heart" class="w-4 h-4 text-rose-500"></i>
+            <span>Leave Applications &amp; Approval Workflow Engine</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Online leave request submissions, entitlement balance checks, and departmental supervisor authorizations</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Application #</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3">Leave Type</th>
+              <th class="py-2.5 px-3 font-mono">Date Range</th>
+              <th class="py-2.5 px-3 text-center">Days</th>
+              <th class="py-2.5 px-3">Reason</th>
+              <th class="py-2.5 px-3">Authorized By</th>
+              <th class="py-2.5 px-3 text-center">Decision</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for la in hr_leave_applications %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ la.application_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ la.employee_name }} ({{ la.employee_code }})</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ la.leave_name }}</span></td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ la.start_date }} &rarr; {{ la.end_date }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ la.leave_days }} Days</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ la.reason }}</td>
+                <td class="py-3 px-3 font-medium">{{ la.approver_name }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ la.status }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.3 Overtime (OT) Engine Matrix -->
+  {% elif current_tab == 'hr-overtime' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="timer" class="w-4 h-4 text-amber-500"></i>
+            <span>Overtime (OT) Hours &amp; Rate Multiplier Engine</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Approved overtime hours calculation with standard 1.5x / 2.0x hourly multiplier rates</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Date</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3">Department</th>
+              <th class="py-2.5 px-3 text-center">OT Hours</th>
+              <th class="py-2.5 px-3 text-right">Hourly Rate</th>
+              <th class="py-2.5 px-3 text-center">Multiplier</th>
+              <th class="py-2.5 px-3 text-right">Total OT Payout</th>
+              <th class="py-2.5 px-3">Supervisor</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for ot in hr_overtime_records %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono text-slate-500">{{ ot.ot_date }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ ot.employee_name }} ({{ ot.employee_code }})</td>
+                <td class="py-3 px-3 font-medium">{{ ot.dept_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">{{ ot.ot_hours }} hrs</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(ot.hourly_rate) }}/hr</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-600 dark:text-blue-400">{{ ot.multiplier_factor }}x</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(ot.total_ot_amount) }}</td>
+                <td class="py-3 px-3 font-medium">{{ ot.supervisor_name }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ ot.status }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 4: PAYROLL, LOANS, INCOME TAX & GL PROCESSING SUITE (5 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 4.1 Monthly Payroll Runs -->
+  {% elif current_tab == 'hr-payroll-runs' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="wallet" class="w-4 h-4 text-emerald-500"></i>
+            <span>Monthly Payroll Batch Execution Runs</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automated Gross-to-Net payroll calculation engine with GL voucher posting and bank advice locking</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Payroll Batch #</th>
+              <th class="py-2.5 px-3">Period Month</th>
+              <th class="py-2.5 px-3">Fiscal Year</th>
+              <th class="py-2.5 px-3 text-center">Headcount</th>
+              <th class="py-2.5 px-3 text-right">Gross Earnings</th>
+              <th class="py-2.5 px-3 text-right">Total Deductions</th>
+              <th class="py-2.5 px-3 text-right">Net Payout</th>
+              <th class="py-2.5 px-3 text-center">GL Journal Ref</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for pr in hr_payroll_runs %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ pr.payroll_batch_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ pr.period_month }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ pr.fiscal_year }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ pr.total_employees_processed }} Staff</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(pr.total_gross_payout) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(pr.total_deductions) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(pr.total_net_payout) }}</td>
+                <td class="py-3 px-3 text-center font-mono text-emerald-600 dark:text-emerald-400">{{ pr.gl_journal_ref }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ pr.status }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.2 Itemized Payslips Register -->
+  {% elif current_tab == 'hr-payslips' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="receipt" class="w-4 h-4 text-blue-500"></i>
+            <span>Itemized Payslips Register</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Individual salary breakdown: Basic, HRA, Medical, Conveyance, PF, Tax, Loan EMI &amp; Net Salary</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Payslip #</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3 text-right">Basic Pay</th>
+              <th class="py-2.5 px-3 text-right">HRA</th>
+              <th class="py-2.5 px-3 text-right">Medical</th>
+              <th class="py-2.5 px-3 text-right">Gross Earnings</th>
+              <th class="py-2.5 px-3 text-right">PF (8.33%)</th>
+              <th class="py-2.5 px-3 text-right">Tax (TIN)</th>
+              <th class="py-2.5 px-3 text-right">Loan EMI</th>
+              <th class="py-2.5 px-3 text-right">Net Payable</th>
+              <th class="py-2.5 px-3 text-center">Print Payslip</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for ps in hr_payslips %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ ps.payslip_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ ps.employee_name }} ({{ ps.employee_code }})</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(ps.basic_salary) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(ps.house_rent_allowance) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-amber-600 dark:text-amber-400">${{ "{:,.2f}".format(ps.medical_allowance) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(ps.gross_earnings) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">(${{"{:,.2f}".format(ps.pf_employee_deduction)}})</td>
+                <td class="py-3 px-3 text-right font-mono text-rose-600 dark:text-rose-400">(${{"{:,.2f}".format(ps.income_tax_deduction)}})</td>
+                <td class="py-3 px-3 text-right font-mono text-amber-600 dark:text-amber-400">(${{"{:,.2f}".format(ps.loan_emi_deduction)}})</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(ps.net_salary_payable) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/hris/print/payslip/{{ ps.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 rounded transition">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Payslip</span>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.3 Employee Loans & Salary Advances -->
+  {% elif current_tab == 'hr-loans' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="coins" class="w-4 h-4 text-amber-500"></i>
+            <span>Employee Loans, Advances &amp; EMI Amortization</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Emergency loans, vehicle advances, monthly payroll recovery EMIs, and outstanding balances</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Loan #</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3">Loan Type</th>
+              <th class="py-2.5 px-3 text-right">Principal Disbursed</th>
+              <th class="py-2.5 px-3 text-center">Tenure</th>
+              <th class="py-2.5 px-3 text-right">Monthly EMI</th>
+              <th class="py-2.5 px-3 text-right">Total Recovered</th>
+              <th class="py-2.5 px-3 text-right">Outstanding Balance</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for ln in hr_loans %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ ln.loan_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ ln.employee_name }} ({{ ln.employee_code }})</td>
+                <td class="py-3 px-3 font-medium">{{ ln.loan_type_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(ln.principal_amount) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ ln.tenure_months }} Months</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(ln.monthly_emi) }}/mo</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(ln.total_paid_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(ln.outstanding_balance) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ ln.status }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.4 Income Tax Slabs & Rebates -->
+  {% elif current_tab == 'hr-tax-slabs' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="scale" class="w-4 h-4 text-indigo-500"></i>
+            <span>Statutory Income Tax Slabs &amp; Graduated Rates</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Progressive income tax slabs, assessment years, and statutory investment rebate rules</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3 text-center">Slab #</th>
+              <th class="py-2.5 px-3">Assessment Year</th>
+              <th class="py-2.5 px-3">Tax Bracket Description</th>
+              <th class="py-2.5 px-3 text-right">Income Bracket Limit</th>
+              <th class="py-2.5 px-3 text-right">Tax Rate %</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for ts in hr_tax_slabs %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">Slab {{ ts.slab_order }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ ts.fiscal_year }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ ts.slab_description }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(ts.slab_limit) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ "{:,.1f}".format(ts.tax_rate_pct) }}%</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">ACTIVE SLAB</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.5 Treasury Tax Deposit Log -->
+  {% elif current_tab == 'hr-tax-deposits' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="landmark" class="w-4 h-4 text-purple-500"></i>
+            <span>Treasury Challan Tax Deposit Log</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Government treasury remittance challans for employee monthly withholding tax deposits</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Challan Number</th>
+              <th class="py-2.5 px-3">Deposit Month</th>
+              <th class="py-2.5 px-3">Challan Date</th>
+              <th class="py-2.5 px-3">Depository Bank</th>
+              <th class="py-2.5 px-3 text-center">Employees Covered</th>
+              <th class="py-2.5 px-3 text-right">Tax Remitted</th>
+              <th class="py-2.5 px-3 text-center">GL Voucher Ref</th>
+              <th class="py-2.5 px-3 text-center">Treasury Verification</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for td in hr_tax_deposits %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ td.challan_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ td.deposit_month }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ td.challan_date }}</td>
+                <td class="py-3 px-3 font-medium">{{ td.depository_bank }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ td.employees_covered_count }} Staff</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(td.total_tax_deposited) }}</td>
+                <td class="py-3 px-3 text-center font-mono text-emerald-600 dark:text-emerald-400">{{ td.gl_voucher_ref }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ td.status }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 5: STATEMENTS, STATUTORY REPORTS & PRINT STUDIO (5 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 5.1 Executive Workforce KPIs -->
+  {% elif current_tab == 'hr-summary' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-blue-500"></i>
+            <span>Executive Workforce &amp; Human Capital KPIs</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">High-level executive metrics for headcount, monthly payroll budget, loan outstanding balances, and total PF assets</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Active Headcount</span>
+          <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ hr_summary.total_headcount|default(0, true) }} Employees</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Monthly Payroll Budget</span>
+          <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(hr_summary.monthly_payroll_budget|default(0.0, true)) }}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Staff Loans Outstanding</span>
+          <p class="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">${{ "{:,.2f}".format(hr_summary.loan_outstanding|default(0.0, true)) }}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Accumulated PF Fund</span>
+          <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(hr_summary.total_pf_fund|default(0.0, true)) }}</p>
+        </div>
+      </div>
+    </div>
+
+  <!-- 5.2 Consolidated Salary Register -->
+  {% elif current_tab == 'hr-salary-register' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-500"></i>
+            <span>Consolidated Corporate Salary Register</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Comprehensive group-wide payroll register with itemized earnings, deductions, and bank payout details</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Period</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3">Department</th>
+              <th class="py-2.5 px-3 text-right">Basic Pay</th>
+              <th class="py-2.5 px-3 text-right">Gross Salary</th>
+              <th class="py-2.5 px-3 text-right">PF Deduction</th>
+              <th class="py-2.5 px-3 text-right">Income Tax</th>
+              <th class="py-2.5 px-3 text-right">Total Deductions</th>
+              <th class="py-2.5 px-3 text-right">Net Payable</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for sr in hr_salary_register %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ sr.period_month }}</td>
+                <td class="py-3 px-3 font-bold text-blue-600 dark:text-blue-400">{{ sr.employee_name }} ({{ sr.employee_code }})</td>
+                <td class="py-3 px-3 font-medium">{{ sr.dept_name }}</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(sr.basic_salary) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(sr.gross_earnings) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">(${{"{:,.2f}".format(sr.pf_employee_deduction)}})</td>
+                <td class="py-3 px-3 text-right font-mono text-rose-600 dark:text-rose-400">(${{"{:,.2f}".format(sr.income_tax_deduction)}})</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(sr.total_deductions) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(sr.net_salary_payable) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.3 Corporate Bank Salary Disbursement Advice -->
+  {% elif current_tab == 'hr-bank-advice' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="credit-card" class="w-4 h-4 text-cyan-500"></i>
+            <span>Corporate Bank Salary Disbursement Advice</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bank transfer advice statement with employee account numbers, routing numbers, and net salary disbursement</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">#</th>
+              <th class="py-2.5 px-3">Employee Code</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3">Department</th>
+              <th class="py-2.5 px-3">Disbursement Bank</th>
+              <th class="py-2.5 px-3 font-mono">Bank Account #</th>
+              <th class="py-2.5 px-3 font-mono">Routing Transit</th>
+              <th class="py-2.5 px-3 text-right">Net Disbursement Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for ba in hr_bank_advice %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono text-slate-400">{{ loop.index }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ ba.employee_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ ba.employee_name }}</td>
+                <td class="py-3 px-3 font-medium">{{ ba.dept_name }}</td>
+                <td class="py-3 px-3 font-medium">{{ ba.bank_name }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ ba.bank_account_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ ba.bank_routing_number }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(ba.net_salary_payable) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.4 Provident Fund (PF) Balance Ledger -->
+  {% elif current_tab == 'hr-pf-ledger' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="shield-dollar" class="w-4 h-4 text-purple-500"></i>
+            <span>Provident Fund (PF) &amp; Gratuity Balance Statement</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cumulative Provident Fund balances: Employee 8.33% contribution + Employer matching fund</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Employee Code</th>
+              <th class="py-2.5 px-3">Employee Name</th>
+              <th class="py-2.5 px-3">Department</th>
+              <th class="py-2.5 px-3">Membership Date</th>
+              <th class="py-2.5 px-3 text-right">Employee Contribution</th>
+              <th class="py-2.5 px-3 text-right">Employer Matching</th>
+              <th class="py-2.5 px-3 text-right">Total PF Balance</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for pf in hr_pf_ledger %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ pf.employee_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ pf.employee_name }}</td>
+                <td class="py-3 px-3 font-medium">{{ pf.dept_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ pf.joining_date }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">${{ "{:,.2f}".format(pf.employee_contribution) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">${{ "{:,.2f}".format(pf.employer_matching) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(pf.total_pf_balance) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.5 HR Official Print Studio -->
+  {% elif current_tab == 'hr-print-studio' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-rose-500"></i>
+            <span>HR Official Document Print Studio</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Generate standardized corporate letterhead documents for Payslips, Appointment Letters, and Transfer Orders</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+            <i data-lucide="receipt" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Monthly Pay Slip</h4>
+          <p class="text-xs text-slate-500">Official employee salary payslip with itemized allowances, tax, PF, loan recovery and net payout</p>
+          {% if hr_payslips %}
+            <a href="/modules/hris/print/payslip/{{ hr_payslips[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print Sample Payslip</span>
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Employment Appointment Letter</h4>
+          <p class="text-xs text-slate-500">Formal job appointment letter with compensation structure, probation terms, and reporting guidelines</p>
+          {% if hr_candidates %}
+            <a href="/modules/hris/print/appointment/{{ hr_candidates[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print Offer Letter</span>
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+            <i data-lucide="repeat" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Transfer &amp; Promotion Order</h4>
+          <p class="text-xs text-slate-500">Official inter-plant and departmental transfer notice with revised designation and salary adjustments</p>
+          {% if hr_transfers %}
+            <a href="/modules/hris/print/transfer/{{ hr_transfers[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print Transfer Order</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+{% endif %}

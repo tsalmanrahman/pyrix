@@ -27,11 +27,67 @@ from app.monographs.enterprise_modules.sales_transaction_service import SalesTra
 from app.monographs.enterprise_modules.sales_process_service import SalesProcessService
 from app.monographs.enterprise_modules.sales_analysis_service import SalesAnalysisService
 from app.monographs.enterprise_modules.sales_report_service import SalesReportService
+from app.monographs.enterprise_modules.inv_master_service import InvMasterService
+from app.monographs.enterprise_modules.inv_transaction_service import InvTransactionService
+from app.monographs.enterprise_modules.inv_process_service import InvProcessService
+from app.monographs.enterprise_modules.inv_warranty_service import InvWarrantyService
+from app.monographs.enterprise_modules.inv_analysis_service import InvAnalysisService
+from app.monographs.enterprise_modules.inv_report_service import InvReportService
+from app.monographs.enterprise_modules.fa_master_service import FAMasterService
+from app.monographs.enterprise_modules.fa_asset_service import FAAssetService
+from app.monographs.enterprise_modules.fa_depreciation_service import FADepreciationService
+from app.monographs.enterprise_modules.fa_verification_service import FAVerificationService
+from app.monographs.enterprise_modules.fa_report_service import FAReportService
+from app.monographs.enterprise_modules.hr_master_service import HRMasterService
+from app.monographs.enterprise_modules.hr_employee_service import HREmployeeService
+from app.monographs.enterprise_modules.hr_recruitment_service import HRRecruitmentService
+from app.monographs.enterprise_modules.hr_attendance_service import HRAttendanceService
+from app.monographs.enterprise_modules.hr_payroll_service import HRPayrollService
+from app.monographs.enterprise_modules.hr_report_service import HRReportService
 from app.monographs.enterprise_modules.registry import get_module_suites_registry, get_active_suite_context
 from app.core.user_service import UserService
 
 router = APIRouter(tags=["Enterprise Modules"])
 templates = Jinja2Templates(directory="app/templates")
+
+
+HR_SUB_AREAS = {
+    # 1. Personnel & Organization Master Setup Suite (7 Sub-Areas)
+    "hr-grades": {"title": "Employee Grades & Bands", "icon": "award", "entity": "hr-grades"},
+    "hr-departments": {"title": "Departments Master", "icon": "building-2", "entity": "hr-departments"},
+    "hr-designations": {"title": "Designations & Titles", "icon": "badge-check", "entity": "hr-designations"},
+    "hr-shifts": {"title": "Work-Shifts & Roster", "icon": "clock", "entity": "hr-shifts"},
+    "hr-holidays": {"title": "Annual Holiday Calendar", "icon": "calendar", "entity": "hr-holidays"},
+    "hr-leave-types": {"title": "Leave Policies & Types", "icon": "file-heart", "entity": "hr-leave-types"},
+    "hr-bank-accounts": {"title": "Corporate Bank Accounts", "icon": "landmark", "entity": "hr-bank-accounts"},
+
+    # 2. Talent Acquisition & Employee Lifecycle Suite (6 Sub-Areas)
+    "hr-employees": {"title": "Master Employee Profiles", "icon": "user-check", "entity": "hr-employees"},
+    "hr-contract-workers": {"title": "Temporary & Casual Workers", "icon": "hard-hat", "entity": "hr-contract-workers"},
+    "hr-documents": {"title": "Digital Document Vault", "icon": "folder-lock", "entity": "hr-documents"},
+    "hr-transfers": {"title": "Transfers & Promotions Log", "icon": "repeat", "entity": "hr-transfers"},
+    "hr-requisitions": {"title": "Manpower Job Requisitions", "icon": "briefcase", "entity": "hr-requisitions"},
+    "hr-candidates": {"title": "CV Bank & Interview Scoring", "icon": "user-plus", "entity": "hr-candidates"},
+
+    # 3. Time, Attendance & Leave Management Suite (3 Sub-Areas)
+    "hr-attendance-log": {"title": "Biometric Punch Logs", "icon": "fingerprint", "entity": "hr-attendance-log"},
+    "hr-leaves": {"title": "Leave Applications & Ledger", "icon": "calendar-heart", "entity": "hr-leaves"},
+    "hr-overtime": {"title": "Overtime (OT) Engine Matrix", "icon": "timer", "entity": "hr-overtime"},
+
+    # 4. Payroll, Loans, Income Tax & GL Processing Suite (5 Sub-Areas)
+    "hr-payroll-runs": {"title": "Monthly Payroll Runs", "icon": "wallet", "entity": "hr-payroll-runs"},
+    "hr-payslips": {"title": "Itemized Payslips Register", "icon": "receipt", "entity": "hr-payslips"},
+    "hr-loans": {"title": "Employee Loans & Advances", "icon": "coins", "entity": "hr-loans"},
+    "hr-tax-slabs": {"title": "Income Tax Slabs & Rebates", "icon": "scale", "entity": "hr-tax-slabs"},
+    "hr-tax-deposits": {"title": "Treasury Tax Deposit Log", "icon": "landmark", "entity": "hr-tax-deposits"},
+
+    # 5. Statements, Statutory Reports & Print Studio Suite (5 Sub-Areas)
+    "hr-summary": {"title": "Executive Workforce KPIs", "icon": "pie-chart", "entity": "hr-summary"},
+    "hr-salary-register": {"title": "Consolidated Salary Register", "icon": "file-spreadsheet", "entity": "hr-salary-register"},
+    "hr-bank-advice": {"title": "Corporate Bank Advice", "icon": "credit-card", "entity": "hr-bank-advice"},
+    "hr-pf-ledger": {"title": "Provident Fund (PF) Ledger", "icon": "shield-dollar", "entity": "hr-pf-ledger"},
+    "hr-print-studio": {"title": "HR Official Print Studio", "icon": "printer", "entity": "hr-print-studio"},
+}
 
 GL_SUB_AREAS = {
     # 1. Master Setup Suite (6 Sub-Areas)
@@ -113,6 +169,73 @@ AR_SUB_AREAS = {
 }
 
 
+
+
+FIXED_ASSETS_SUB_AREAS = {
+    # 1. Master Setup Suite (5 Sub-Areas)
+    "fa-groups": {"title": "Asset Groups & Classes", "icon": "layers", "entity": "fa-groups"},
+    "fa-locations": {"title": "Physical Locations", "icon": "building-2", "entity": "fa-locations"},
+    "fa-sub-locations": {"title": "Sub-Locations & Machine Bays", "icon": "grid", "entity": "fa-sub-locations"},
+    "fa-policies": {"title": "Depreciation Policies", "icon": "percent", "entity": "fa-policies"},
+    "fa-gl-control": {"title": "GL Control Account Sets", "icon": "landmark", "entity": "fa-gl-control"},
+
+    # 2. Asset Register & Lifecycle Suite (6 Sub-Areas)
+    "fa-assets": {"title": "Master Asset Register", "icon": "file-text", "entity": "fa-assets"},
+    "fa-grn": {"title": "Capital Asset Receipts (Asset GRN)", "icon": "inbox", "entity": "fa-grn"},
+    "fa-leased": {"title": "Leased & Low-Value Assets", "icon": "clock-4", "entity": "fa-leased"},
+    "fa-transfers": {"title": "Asset Transfers Log", "icon": "repeat", "entity": "fa-transfers"},
+    "fa-disposals": {"title": "Disposals & Write-Offs", "icon": "trash-2", "entity": "fa-disposals"},
+    "fa-spares": {"title": "Machine-Spares Mapping", "icon": "cpu", "entity": "fa-spares"},
+
+    # 3. Depreciation Engine & GL Automation Suite (3 Sub-Areas)
+    "fa-depr-runs": {"title": "Depreciation Execution Runs", "icon": "history", "entity": "fa-depr-runs"},
+    "fa-depr-simulation": {"title": "Depreciation Live Simulator", "icon": "play-circle", "entity": "fa-depr-simulation"},
+    "fa-approvals": {"title": "Digital e-Approvals Hub", "icon": "shield-check", "entity": "fa-approvals"},
+
+    # 4. Physical Verification & Barcode Studio Suite (2 Sub-Areas)
+    "fa-audits": {"title": "Physical Verification Audits", "icon": "check-circle-2", "entity": "fa-audits"},
+    "fa-scanner": {"title": "Barcode & Tag Scanner Studio", "icon": "scan", "entity": "fa-scanner"},
+
+    # 5. Statutory Asset Schedules & Reporting Suite (4 Sub-Areas)
+    "fa-summary": {"title": "Executive Summary of Fixed Assets", "icon": "pie-chart", "entity": "fa-summary"},
+    "fa-statutory-schedule": {"title": "Statutory Asset Schedule (IAS 16)", "icon": "table", "entity": "fa-statutory-schedule"},
+    "fa-movement-report": {"title": "Asset Movement Audit Statement", "icon": "navigation", "entity": "fa-movement-report"},
+    "fa-print-studio": {"title": "Fixed Asset Print Studio", "icon": "printer", "entity": "fa-print-studio"},
+}
+
+INVENTORY_SUB_AREAS = {
+    # 1. Master Setup Suite
+    "warehouses": {"title": "Warehouses Master", "icon": "warehouse", "entity": "warehouses"},
+    "bins": {"title": "Multi-Bin Storage Map", "icon": "grid", "entity": "bins"},
+    "product-groups": {"title": "Product Groups & Classes", "icon": "folder-tree", "entity": "product-groups"},
+    "uom": {"title": "UOM & Conversion Matrix", "icon": "scale", "entity": "uom"},
+    "items": {"title": "Master Items Catalog", "icon": "package", "entity": "items"},
+    # 2. Transaction Processing & Movement Suite
+    "grn": {"title": "Goods Receiving Notes (GRN)", "icon": "arrow-down-left", "entity": "grn"},
+    "issues": {"title": "Goods Issue Challans", "icon": "arrow-up-right", "entity": "issues"},
+    "stock-transfers": {"title": "Stock Transfer Orders (STO)", "icon": "truck", "entity": "stock-transfers"},
+    "assembly": {"title": "Material Kitting & Assembly", "icon": "layers", "entity": "assembly"},
+    "adjustments": {"title": "Physical Cycle Adjustments", "icon": "sliders-horizontal", "entity": "adjustments"},
+    # 3. Process, e-Approval & Closing Suite
+    "e-approvals": {"title": "e-Approval Hub", "icon": "check-check", "entity": "e-approvals"},
+    "picking-lists": {"title": "Wave Picking Lists", "icon": "list-checks", "entity": "picking-lists"},
+    "day-end-closing": {"title": "Day-End Inventory Closing", "icon": "clock-4", "entity": "day-end-closing"},
+    # 4. Warranty, Serialization & Barcode Suite
+    "warranties": {"title": "Serial & Warranty Registry", "icon": "barcode", "entity": "warranties"},
+    "barcode-inquiry": {"title": "Barcode Scanner Inquiry", "icon": "scan", "entity": "barcode-inquiry"},
+    # 5. Reporting, Statements & Valuation Analysis Suite
+    "product-ledger": {"title": "Product Ledger (Stock Card)", "icon": "file-text", "entity": "product-ledger"},
+    "inventory-valuation": {"title": "Inventory Valuation Report", "icon": "calculator", "entity": "inventory-valuation"},
+    "do-vs-dispatch": {"title": "DO vs Dispatch Reconciliation", "icon": "clock-4", "entity": "do-vs-dispatch"},
+    "production-costing": {"title": "WIP Production Costing", "icon": "layers", "entity": "production-costing"},
+    "plant-consumption": {"title": "Plant-Wise Consumption", "icon": "building-2", "entity": "plant-consumption"},
+    "sto-reports": {"title": "Inter-Warehouse STO Statement", "icon": "truck", "entity": "sto-reports"},
+    "stock-balances": {"title": "Live Stock Balance Matrix", "icon": "bar-chart-3", "entity": "stock-balances"},
+    "goods-in-transit": {"title": "Goods in Transit (GIT)", "icon": "navigation", "entity": "goods-in-transit"},
+    "abc-analysis": {"title": "ABC & Reorder Analytics", "icon": "pie-chart", "entity": "abc-analysis"},
+    "warehouse-print-studio": {"title": "Warehouse Print Studio", "icon": "printer", "entity": "warehouse-print-studio"},
+}
+
 SALES_SUB_AREAS = {
     # 1. Master Setup Suite
     "sales-teams": {"title": "Sales Teams (MM/ZM/TSM)", "icon": "network", "entity": "sales-teams"},
@@ -186,6 +309,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         raise HTTPException(status_code=404, detail="Module not found")
     
     active_company = CompanyService.resolve_active_company(request)
+    active_cid = str(active_company["id"]) if active_company else None
     companies_list = CompanyService.get_all_companies()
     appearance = AppearanceService.get_appearance()
     categories = DynamicOptionService.get_categories()
@@ -303,6 +427,77 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
     sls_do_pending_report = []
     sls_consolidated_statement = []
     sls_profitability_report = []
+    # Inventory Management Collections
+    inv_warehouses = []
+    inv_bins = []
+    inv_groups = []
+    inv_uom_list = []
+    inv_items = []
+    inv_grn_list = []
+    inv_issues = []
+    inv_transfers = []
+    inv_adjustments = []
+    inv_approvals = []
+    inv_picking_lists = []
+    inv_eod_data = {}
+    inv_warranties = []
+    inv_stock_matrix = []
+    inv_git_list = []
+    inv_abc_data = []
+    inv_abc_data = []
+    inv_product_ledger = []
+    inv_valuation_report = {"items": [], "grand_total_valuation": 0, "grand_total_units": 0, "total_skus": 0}
+    inv_do_dispatch_report = []
+    inv_prod_costing_report = []
+    inv_plant_consumption = []
+    inv_sto_reports = []
+    # Fixed Assets Collections
+    fa_groups = []
+    fa_locations = []
+    fa_sub_locations = []
+    fa_policies = []
+    fa_gl_control = []
+    fa_assets = []
+    fa_grn_list = []
+    fa_transfers_list = []
+    fa_disposals_list = []
+    fa_spares_list = []
+    fa_depr_runs = []
+    fa_depr_sim = {"lines": [], "total_monthly_depr": 0, "total_annual_depr": 0, "eligible_assets_count": 0}
+    fa_approvals = []
+    fa_audits = []
+    fa_summary = {}
+    fa_statutory_sched = []
+
+    # HR Master, Employee, Attendance, Payroll & Report Collections
+    hr_grades = []
+    hr_departments = []
+    hr_designations = []
+    hr_shifts = []
+    hr_holidays = []
+    hr_leave_types = []
+    hr_bank_accounts = []
+    hr_employees = []
+    hr_contract_workers = []
+    hr_documents = []
+    hr_transfers = []
+    hr_requisitions = []
+    hr_candidates = []
+    hr_attendance_logs = []
+    hr_leave_applications = []
+    hr_overtime_records = []
+    hr_payroll_runs = []
+    hr_payslips = []
+    hr_loan_types = []
+    hr_loans = []
+    hr_tax_slabs = []
+    hr_tax_deposits = []
+    hr_summary = {}
+    hr_salary_register = []
+    hr_bank_advice = []
+    hr_pf_ledger = []
+
+    fa_movement_log = []
 
     if slug == "general-ledger":
         gl_coa = GLMasterService.get_all_accounts()
@@ -396,6 +591,92 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
 
         src_match_matrix = SourcingReportService.get_three_way_reconciliation_matrix(company_id=str(active_company["id"]))
         src_purchase_register = SourcingReportService.get_purchase_register(company_id=str(active_company["id"]))
+
+
+    elif slug in ("inventory", "inventory-management"):
+        active_cid = str(active_company["id"]) if active_company else None
+        inv_warehouses = InvMasterService.get_warehouses(active_cid)
+        inv_bins = InvMasterService.get_bins()
+        inv_groups = InvMasterService.get_product_groups(active_cid)
+        inv_uom_list = InvMasterService.get_uom_list(active_cid)
+        inv_items = InvMasterService.get_items(active_cid)
+
+        inv_grn_list = InvTransactionService.get_grn_list(active_cid)
+        inv_issues = InvTransactionService.get_issues(active_cid)
+        inv_transfers = InvTransactionService.get_stock_transfers(active_cid)
+        inv_adjustments = InvTransactionService.get_adjustments(active_cid)
+
+        inv_approvals = InvProcessService.get_pending_approvals(active_cid)
+        inv_picking_lists = InvProcessService.get_active_picking_lists(active_cid)
+        inv_eod_data = InvProcessService.execute_day_end_closing()
+
+        inv_warranties = InvWarrantyService.get_warranties(active_cid)
+
+        inv_stock_matrix = InvAnalysisService.get_stock_balance_matrix(active_cid)
+        inv_git_list = InvAnalysisService.get_goods_in_transit(active_cid)
+        inv_abc_data = InvAnalysisService.get_abc_analysis(active_cid)
+
+        inv_product_ledger = InvReportService.get_product_ledger(active_cid)
+        inv_valuation_report = InvReportService.get_inventory_valuation_report(active_cid)
+        inv_do_dispatch_report = InvReportService.get_do_vs_actual_delivery_report(active_cid)
+        inv_prod_costing_report = InvReportService.get_production_costing_report(active_cid)
+        inv_plant_consumption = InvReportService.get_plant_wise_consumption(active_cid)
+        inv_sto_reports = InvReportService.get_sto_transfer_statement(active_cid)
+
+    elif module["route_slug"] in ("hris", "hr", "human-resources", "human-capital"):
+        hr_grades = HRMasterService.get_grades(active_cid)
+        hr_departments = HRMasterService.get_departments(active_cid)
+        hr_designations = HRMasterService.get_designations(active_cid)
+        hr_shifts = HRMasterService.get_shifts(active_cid)
+        hr_holidays = HRMasterService.get_holidays(active_cid)
+        hr_leave_types = HRMasterService.get_leave_types(active_cid)
+        hr_bank_accounts = HRMasterService.get_bank_accounts(active_cid)
+
+        hr_employees = HREmployeeService.get_employees(active_cid)
+        hr_contract_workers = HREmployeeService.get_contract_workers(active_cid)
+        hr_documents = HREmployeeService.get_documents()
+        hr_transfers = HREmployeeService.get_transfers(active_cid)
+        hr_requisitions = HRRecruitmentService.get_job_requisitions(active_cid)
+        hr_candidates = HRRecruitmentService.get_candidates()
+
+        hr_attendance_logs = HRAttendanceService.get_attendance_logs(active_cid)
+        hr_leave_applications = HRAttendanceService.get_leave_applications(active_cid)
+        hr_overtime_records = HRAttendanceService.get_overtime_records(active_cid)
+
+        hr_payroll_runs = HRPayrollService.get_payroll_runs(active_cid)
+        hr_payslips = HRPayrollService.get_payslips(company_id=active_cid)
+        hr_loan_types = HRPayrollService.get_loan_types(active_cid)
+        hr_loans = HRPayrollService.get_loans(active_cid)
+        hr_tax_slabs = HRPayrollService.get_tax_slabs(active_cid)
+        hr_tax_deposits = HRPayrollService.get_tax_deposits(active_cid)
+
+        hr_summary = HRReportService.get_executive_summary(active_cid)
+        hr_salary_register = HRReportService.get_salary_register(active_cid)
+        hr_bank_advice = HRReportService.get_bank_advice(active_cid)
+        hr_pf_ledger = HRReportService.get_pf_ledger(active_cid)
+
+    elif module["route_slug"] in ("fixed-assets", "fixed-asset-management"):
+        fa_groups = FAMasterService.get_asset_groups(active_cid)
+        fa_locations = FAMasterService.get_locations(active_cid)
+        fa_sub_locations = FAMasterService.get_sub_locations()
+        fa_policies = FAMasterService.get_depreciation_policies(active_cid)
+        fa_gl_control = FAMasterService.get_gl_control_sets(active_cid)
+
+        fa_assets = FAAssetService.get_assets(active_cid)
+        fa_grn_list = FAAssetService.get_asset_grns(active_cid)
+        fa_transfers_list = FAAssetService.get_transfers(active_cid)
+        fa_disposals_list = FAAssetService.get_disposals(active_cid)
+        fa_spares_list = FAAssetService.get_spares_mapping(active_cid)
+
+        fa_depr_runs = FADepreciationService.get_depreciation_runs(active_cid)
+        fa_depr_sim = FADepreciationService.get_depreciation_simulation(active_cid)
+        fa_approvals = FADepreciationService.get_approvals(active_cid)
+
+        fa_audits = FAVerificationService.get_physical_audits(active_cid)
+
+        fa_summary = FAReportService.get_summary_of_fixed_assets(active_cid)
+        fa_statutory_sched = FAReportService.get_statutory_asset_schedule(active_cid)
+        fa_movement_log = FAReportService.get_asset_movement_report(active_cid)
 
     elif slug in ("sales", "sales-management"):
         sls_areas = SalesMasterService.get_sales_areas(company_id=str(active_company["id"]))
@@ -502,6 +783,17 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         "sls_returns_count": len(sls_returns),
         "sls_budgets_count": len(sls_budgets),
         "sls_on_hold_count": len([o for o in sls_orders if o.get("is_on_hold") or o.get("status") == "ON_HOLD"]),
+        "inv_wh_count": len(inv_warehouses),
+        "inv_bin_count": len(inv_bins),
+        "inv_group_count": len(inv_groups),
+        "inv_uom_count": len(inv_uom_list),
+        "inv_item_count": len(inv_items),
+        "inv_grn_count": len(inv_grn_list),
+        "inv_issue_count": len(inv_issues),
+        "inv_sto_count": len(inv_transfers),
+        "inv_adj_count": len(inv_adjustments),
+        "inv_warranty_count": len(inv_warranties),
+        "inv_git_count": len(inv_git_list),
         "src_returns_count": len(src_goods_returns),
         "src_pending_approvals": len(src_pending_approvals),
         "src_lc_count": len(src_lc_list),
@@ -615,6 +907,71 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         "sls_do_pending_report": sls_do_pending_report,
         "sls_consolidated_statement": sls_consolidated_statement,
         "sls_profitability_report": sls_profitability_report,
+            "inv_warehouses": inv_warehouses,
+            "inv_bins": inv_bins,
+            "inv_groups": inv_groups,
+            "inv_uom_list": inv_uom_list,
+            "inv_items": inv_items,
+            "inv_grn_list": inv_grn_list,
+            "inv_issues": inv_issues,
+            "inv_transfers": inv_transfers,
+            "inv_adjustments": inv_adjustments,
+            "inv_approvals": inv_approvals,
+            "inv_picking_lists": inv_picking_lists,
+            "inv_eod_data": inv_eod_data,
+            "inv_warranties": inv_warranties,
+            "inv_stock_matrix": inv_stock_matrix,
+            "inv_git_list": inv_git_list,
+            "inv_abc_data": inv_abc_data,
+            "inv_product_ledger": inv_product_ledger,
+            "inv_valuation_report": inv_valuation_report,
+            "inv_do_dispatch_report": inv_do_dispatch_report,
+            "inv_prod_costing_report": inv_prod_costing_report,
+            "inv_plant_consumption": inv_plant_consumption,
+            "inv_sto_reports": inv_sto_reports,
+            "fa_groups": fa_groups,
+            "fa_locations": fa_locations,
+            "fa_sub_locations": fa_sub_locations,
+            "fa_policies": fa_policies,
+            "fa_gl_control": fa_gl_control,
+            "fa_assets": fa_assets,
+            "fa_grn_list": fa_grn_list,
+            "fa_transfers_list": fa_transfers_list,
+            "fa_disposals_list": fa_disposals_list,
+            "fa_spares_list": fa_spares_list,
+            "fa_depr_runs": fa_depr_runs,
+            "fa_depr_sim": fa_depr_sim,
+            "fa_approvals": fa_approvals,
+            "fa_audits": fa_audits,
+            "fa_summary": fa_summary,
+            "fa_statutory_sched": fa_statutory_sched,
+            "fa_movement_log": fa_movement_log,
+            "hr_grades": hr_grades,
+            "hr_departments": hr_departments,
+            "hr_designations": hr_designations,
+            "hr_shifts": hr_shifts,
+            "hr_holidays": hr_holidays,
+            "hr_leave_types": hr_leave_types,
+            "hr_bank_accounts": hr_bank_accounts,
+            "hr_employees": hr_employees,
+            "hr_contract_workers": hr_contract_workers,
+            "hr_documents": hr_documents,
+            "hr_transfers": hr_transfers,
+            "hr_requisitions": hr_requisitions,
+            "hr_candidates": hr_candidates,
+            "hr_attendance_logs": hr_attendance_logs,
+            "hr_leave_applications": hr_leave_applications,
+            "hr_overtime_records": hr_overtime_records,
+            "hr_payroll_runs": hr_payroll_runs,
+            "hr_payslips": hr_payslips,
+            "hr_loan_types": hr_loan_types,
+            "hr_loans": hr_loans,
+            "hr_tax_slabs": hr_tax_slabs,
+            "hr_tax_deposits": hr_tax_deposits,
+            "hr_summary": hr_summary,
+            "hr_salary_register": hr_salary_register,
+            "hr_bank_advice": hr_bank_advice,
+            "hr_pf_ledger": hr_pf_ledger,
             "src_purchase_register": src_purchase_register,
             "src_kpi_summary": src_kpi_summary,
             "current_user": UserService.resolve_current_user(request),
@@ -2555,3 +2912,346 @@ async def print_sales_invoice_page(request: Request, invoice_id: str):
             "total_amount": inv["total_amount"]
         }
     )
+
+
+# =========================================================================
+# INVENTORY OFFICIAL DOCUMENT PRINT STUDIO ROUTES
+# =========================================================================
+@router.get("/modules/inventory/print/{doc_type}/{doc_id}", response_class=HTMLResponse)
+async def inventory_print_document(request: Request, doc_type: str, doc_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    all_companies = CompanyService.get_all_companies()
+    user_id = request.cookies.get(UserService.COOKIE_USER_ID)
+    user = UserService.get_user_by_id(user_id) if user_id else None
+
+    doc_type_clean = doc_type.lower()
+    doc_type_title = "Warehouse Official Document"
+    doc_number = "N/A"
+    doc_date = "2026-08-31"
+    doc_status = "POSTED"
+    warehouse_name = "Central Plant Storage Facility"
+    entity_name = "Enterprise Logistics Partner"
+    order_po_ref = "N/A"
+    gate_pass_ref = "GP-2026-ENTRY-001"
+    carrier_name = ""
+    vehicle_no = ""
+    items = []
+    total_amount = 0.0
+
+    if doc_type_clean == "grn":
+        grn = InvTransactionService.get_grn_by_id(doc_id)
+        if not grn:
+            return HTMLResponse("Goods Receiving Note (GRN) record not found.", status_code=404)
+        doc_type_title = "Goods Receiving Note (GRN / MRR)"
+        doc_number = grn["grn_number"]
+        doc_date = str(grn["grn_date"])
+        doc_status = grn["status"]
+        warehouse_name = grn["warehouse_name"]
+        entity_name = grn["supplier_name"]
+        order_po_ref = grn.get("po_ref", "Direct PO Receipt")
+        gate_pass_ref = grn.get("challan_ref", "GP-IN-0818")
+        items = grn.get("items", [])
+        total_amount = float(grn.get("total_received_value", 0.0))
+
+    elif doc_type_clean in ("issue", "challan"):
+        iss = InvTransactionService.get_issue_by_id(doc_id)
+        if not iss:
+            return HTMLResponse("Goods Issue Challan record not found.", status_code=404)
+        doc_type_title = "Goods Issue Delivery Challan"
+        doc_number = iss["issue_number"]
+        doc_date = str(iss["issue_date"])
+        doc_status = iss["status"]
+        warehouse_name = iss["warehouse_name"]
+        entity_name = iss["recipient_name"]
+        order_po_ref = iss.get("order_ref", "Direct Delivery Challan")
+        gate_pass_ref = iss.get("gate_pass_ref", "GP-OUT-0820")
+        items = iss.get("items", [])
+        total_amount = float(iss.get("total_issue_value", 0.0))
+
+    elif doc_type_clean == "sto":
+        sto = InvTransactionService.get_transfer_by_id(doc_id)
+        if not sto:
+            return HTMLResponse("Stock Transfer Order (STO) record not found.", status_code=404)
+        doc_type_title = "Stock Transfer Note (STO)"
+        doc_number = sto["transfer_number"]
+        doc_date = str(sto["transfer_date"])
+        doc_status = sto["status"]
+        warehouse_name = f"{sto['from_warehouse']} -> {sto['to_warehouse']}"
+        entity_name = f"Destination: {sto['to_warehouse']}"
+        order_po_ref = f"STO Shuttling Ref: {sto['transfer_number']}"
+        gate_pass_ref = sto.get("tracking_ref", "TRACK-STO-9912")
+        carrier_name = sto.get("carrier_name", "Internal Shuttling Fleet")
+        vehicle_no = sto.get("vehicle_no", "TRK-01")
+        items = sto.get("items", [])
+        total_amount = float(sto.get("total_transfer_value", 0.0))
+
+    elif doc_type_clean == "warranty":
+        warr_list = InvWarrantyService.get_warranties()
+        warr = next((w for w in warr_list if str(w["id"]) == doc_id or w["serial_number"] == doc_id), None)
+        if not warr:
+            return HTMLResponse("Warranty Certificate record not found.", status_code=404)
+        doc_type_title = "Official Product Warranty Certificate"
+        doc_number = f"WARR-{warr['serial_number']}"
+        doc_date = str(warr["warranty_start_date"])
+        doc_status = warr["status"]
+        warehouse_name = "Quality Assurance & Warranty Division"
+        entity_name = warr["customer_name"]
+        order_po_ref = f"Invoice Ref: {warr.get('invoice_ref', 'INV-DIRECT')}"
+        gate_pass_ref = f"Serial Number: {warr['serial_number']}"
+        items = [{
+            "item_code": warr["item_code"],
+            "item_name": warr["item_name"],
+            "remarks": f"Valid until {warr['warranty_end_date']} ({warr['warranty_months']} Months Full Coverage)",
+            "bin_code": "QA-CERT",
+            "received_qty": 1,
+            "uom_code": "PCS",
+            "unit_cost": 0.0,
+            "line_total": 0.0
+        }]
+        total_amount = 0.0
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/inv_print_document.html",
+        context={
+            "user": user,
+            "active_company": active_company,
+            "all_companies": all_companies,
+            "doc_type_title": doc_type_title,
+            "doc_number": doc_number,
+            "doc_date": doc_date,
+            "doc_status": doc_status,
+            "warehouse_name": warehouse_name,
+            "entity_name": entity_name,
+            "order_po_ref": order_po_ref,
+            "gate_pass_ref": gate_pass_ref,
+            "carrier_name": carrier_name,
+            "vehicle_no": vehicle_no,
+            "items": items,
+            "total_amount": total_amount,
+        }
+    )
+
+
+# =========================================================================
+# FIXED ASSETS OFFICIAL DOCUMENT PRINT STUDIO ROUTES
+# =========================================================================
+@router.get("/modules/fixed-assets/print/{doc_type}/{doc_id}", response_class=HTMLResponse)
+async def fixed_assets_print_document(request: Request, doc_type: str, doc_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    all_companies = CompanyService.get_all_companies()
+    user_id = request.cookies.get(UserService.COOKIE_USER_ID)
+    user = UserService.get_user_by_id(user_id) if user_id else None
+
+    doc_type_clean = doc_type.lower()
+    doc_type_title = "Capital Asset Official Document"
+    doc_number = "N/A"
+    doc_date = "2026-08-31"
+    doc_status = "POSTED"
+    facility_name = "Primary Manufacturing Facility"
+    entity_name = "Enterprise Asset Management"
+    po_ref = "N/A"
+    custodian_name = "Asset Custodian"
+    department_name = "Precision Engineering"
+    asset_tag = "N/A"
+    serial_number = "N/A"
+    manufacturer = "N/A"
+    model_number = "N/A"
+    items = []
+    total_amount = 0.0
+
+    if doc_type_clean == "grn":
+        grn = db.query_one("SELECT * FROM fa_grn_headers WHERE id = ?", (doc_id,))
+        if grn:
+            doc_type_title = "Capital Asset Receiving Note (Asset GRN)"
+            doc_number = grn["grn_number"]
+            doc_date = str(grn["grn_date"])
+            doc_status = grn["status"]
+            entity_name = grn["supplier_name"]
+            po_ref = grn.get("po_ref", "CAPEX-PO-2026-0041")
+            total_amount = float(grn.get("total_cost", 0.0))
+            items = [{
+                "code": 1,
+                "asset_tag": "AST-CAP-001",
+                "asset_name": "High-Precision Capital Machinery (QA Laser Certified)",
+                "serial_number": "DMG-2024-88421",
+                "capital_cost": total_amount
+            }]
+    elif doc_type_clean == "transfer":
+        tr = db.query_one("SELECT * FROM fa_transfers WHERE id = ?", (doc_id,))
+        if tr:
+            doc_type_title = "Capital Asset Inter-Plant Transfer Note"
+            doc_number = tr["transfer_number"]
+            doc_date = str(tr["transfer_date"])
+            doc_status = tr["status"]
+            custodian_name = tr.get("to_custodian", "Engr. Kevin Vance")
+            entity_name = f"Origin: Plant 01 -> Destination: Plant 02"
+            po_ref = tr.get("reason", "Operational Bay Reallocation")
+            asset = db.query_one("SELECT * FROM fa_assets WHERE id = ?", (str(tr["asset_id"]),))
+            if asset:
+                asset_tag = asset["asset_tag"]
+                serial_number = asset.get("serial_number", "N/A")
+                manufacturer = asset.get("manufacturer", "N/A")
+                total_amount = float(asset.get("purchase_cost", 0.0))
+                items = [{
+                    "code": 1,
+                    "asset_tag": asset["asset_tag"],
+                    "asset_name": asset["asset_name"],
+                    "serial_number": asset.get("serial_number", "N/A"),
+                    "capital_cost": total_amount
+                }]
+    elif doc_type_clean == "disposal":
+        disp = db.query_one("SELECT * FROM fa_disposals WHERE id = ?", (doc_id,))
+        if disp:
+            doc_type_title = "Capital Asset Disposal & Scrapping Certificate"
+            doc_number = disp["disposal_number"]
+            doc_date = str(disp["disposal_date"])
+            doc_status = disp["status"]
+            entity_name = disp.get("buyer_name", "Global Salvage & Recovery LLC")
+            po_ref = f"Disposal Type: {disp.get('disposal_type', 'SALE')}"
+            total_amount = float(disp.get("disposal_proceeds", 0.0))
+            asset = db.query_one("SELECT * FROM fa_assets WHERE id = ?", (str(disp["asset_id"]),))
+            items = [{
+                "code": 1,
+                "asset_tag": asset["asset_tag"] if asset else "AST-DISP-001",
+                "asset_name": asset["asset_name"] if asset else "Retired Commercial Fleet Vehicle",
+                "serial_number": f"Gain/Loss: ${float(disp.get('gain_loss_amount', 0.0)):,.2f}",
+                "capital_cost": float(disp.get("original_cost", 0.0))
+            }]
+    elif doc_type_clean == "tag":
+        asset = db.query_one("SELECT * FROM fa_assets WHERE id = ?", (doc_id,))
+        if asset:
+            doc_type_title = "Official Asset Identification & Barcode Tag"
+            doc_number = asset["asset_tag"]
+            doc_date = str(asset["purchase_date"])
+            doc_status = asset["status"]
+            custodian_name = asset.get("custodian_name", "Asset Custodian")
+            department_name = asset.get("department_name", "Plant Engineering")
+            asset_tag = asset["asset_tag"]
+            serial_number = asset.get("serial_number", "N/A")
+            manufacturer = asset.get("manufacturer", "N/A")
+            model_number = asset.get("model_number", "N/A")
+            total_amount = float(asset.get("purchase_cost", 0.0))
+            items = [{
+                "code": 1,
+                "asset_tag": asset["asset_tag"],
+                "asset_name": asset["asset_name"],
+                "serial_number": serial_number,
+                "capital_cost": total_amount
+            }]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/fa_print_document.html",
+        context={
+            "user": user,
+            "active_company": active_company,
+            "all_companies": all_companies,
+            "doc_type_title": doc_type_title,
+            "doc_number": doc_number,
+            "doc_date": doc_date,
+            "doc_status": doc_status,
+            "facility_name": facility_name,
+            "entity_name": entity_name,
+            "po_ref": po_ref,
+            "custodian_name": custodian_name,
+            "department_name": department_name,
+            "asset_tag": asset_tag,
+            "serial_number": serial_number,
+            "manufacturer": manufacturer,
+            "model_number": model_number,
+            "items": items,
+            "total_amount": total_amount,
+        }
+    )
+
+
+# =========================================================================
+# OFFICIAL HRIS & PAYROLL DOCUMENT PRINT STUDIO ROUTE
+# =========================================================================
+@router.get("/modules/hris/print/{doc_type}/{doc_id}", response_class=HTMLResponse)
+async def print_hr_document(request: Request, doc_type: str, doc_id: str):
+    """
+    Renders standardized, printable corporate letterhead documents for:
+    - payslip: Official Monthly Salary Pay Slip
+    - appointment: Formal Employment Appointment Letter (Offer Letter)
+    - transfer: Inter-Plant / Department Transfer Order
+    - certificate: Official Experience & Service Certificate
+    - bank-advice: Corporate Bank Salary Disbursement Advice
+    """
+    active_company = CompanyService.resolve_active_company(request)
+    doc_type = doc_type.strip().lower()
+
+    if doc_type == "payslip":
+        ps = HRPayrollService.get_payslip_by_id(doc_id)
+        if not ps:
+            raise HTTPException(status_code=404, detail="Payslip record not found")
+        
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/hr_print_document.html",
+            context={
+                "doc_type": "payslip",
+                "doc_type_title": "OFFICIAL MONTHLY SALARY PAYSLIP",
+                "doc_number": ps["payslip_number"],
+                "doc_date": str(ps["run_date"]),
+                "employee": ps,
+                "active_company": active_company
+            }
+        )
+
+    elif doc_type == "appointment":
+        cand = HRRecruitmentService.get_candidate_by_id(doc_id)
+        if not cand:
+            raise HTTPException(status_code=404, detail="Candidate record not found")
+        
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/hr_print_document.html",
+            context={
+                "doc_type": "appointment",
+                "doc_type_title": "FORMAL EMPLOYMENT APPOINTMENT LETTER",
+                "doc_number": f"OFF-{cand['requisition_number']}-01",
+                "doc_date": "2026-09-01",
+                "candidate": cand,
+                "active_company": active_company
+            }
+        )
+
+    elif doc_type == "transfer":
+        tr = HREmployeeService.get_transfer_by_id(doc_id)
+        if not tr:
+            raise HTTPException(status_code=404, detail="Transfer record not found")
+        
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/hr_print_document.html",
+            context={
+                "doc_type": "transfer",
+                "doc_type_title": "OFFICIAL EMPLOYEE TRANSFER & PROMOTION ORDER",
+                "doc_number": tr["transfer_number"],
+                "doc_date": str(tr["transfer_date"]),
+                "transfer": tr,
+                "active_company": active_company
+            }
+        )
+
+    elif doc_type in ("certificate", "bank-advice"):
+        emp = HREmployeeService.get_employee_by_id(doc_id)
+        if not emp:
+            raise HTTPException(status_code=404, detail="Employee record not found")
+        
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/hr_print_document.html",
+            context={
+                "doc_type": doc_type,
+                "doc_type_title": "CERTIFICATE OF EMPLOYMENT & SERVICE EXPERIENCE" if doc_type == "certificate" else "CORPORATE BANK SALARY DISBURSEMENT ADVICE",
+                "doc_number": f"EXP-{emp['employee_code']}-2026" if doc_type == "certificate" else f"BNK-ADV-{emp['employee_code']}-2026",
+                "doc_date": "2026-09-01",
+                "employee": emp,
+                "active_company": active_company
+            }
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Invalid HR document print type")
