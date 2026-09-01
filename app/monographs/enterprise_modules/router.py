@@ -22,6 +22,11 @@ from app.monographs.enterprise_modules.sourcing_transaction_service import Sourc
 from app.monographs.enterprise_modules.sourcing_process_service import SourcingProcessService
 from app.monographs.enterprise_modules.sourcing_analytics_service import SourcingAnalyticsService
 from app.monographs.enterprise_modules.sourcing_report_service import SourcingReportService
+from app.monographs.enterprise_modules.sales_master_service import SalesMasterService
+from app.monographs.enterprise_modules.sales_transaction_service import SalesTransactionService
+from app.monographs.enterprise_modules.sales_process_service import SalesProcessService
+from app.monographs.enterprise_modules.sales_analysis_service import SalesAnalysisService
+from app.monographs.enterprise_modules.sales_report_service import SalesReportService
 from app.monographs.enterprise_modules.registry import get_module_suites_registry, get_active_suite_context
 from app.core.user_service import UserService
 
@@ -105,6 +110,38 @@ AR_SUB_AREAS = {
     "aged-trial-balance": {"title": "Aged Trial Balance of Accounts Receivables", "icon": "scale", "entity": "aged-trial-balance"},
     "collections-register": {"title": "Collection from Customers Report", "icon": "receipt", "entity": "collections-register"},
     "notes-summary": {"title": "Debit Note / Credit Note Summary Report", "icon": "file-minus-2", "entity": "notes-summary"},
+}
+
+
+SALES_SUB_AREAS = {
+    # 1. Master Setup Suite
+    "sales-teams": {"title": "Sales Teams (MM/ZM/TSM)", "icon": "network", "entity": "sales-teams"},
+    "salespersons": {"title": "Salespersons Master", "icon": "users", "entity": "salespersons"},
+    "sales-areas": {"title": "Sales Areas & Territories", "icon": "map-pin", "entity": "sales-areas"},
+    "price-profiles": {"title": "Price Profiles & Lists", "icon": "tag", "entity": "price-profiles"},
+    "product-prices": {"title": "Product Catalog Prices", "icon": "layers", "entity": "product-prices"},
+    "discount-limits": {"title": "Discount Limit Matrix", "icon": "sliders", "entity": "discount-limits"},
+    # 2. Transaction Processing Suite
+    "quotes": {"title": "Sales Quotes & Proformas", "icon": "file-text", "entity": "quotes"},
+    "sales-orders": {"title": "Sales Orders (SO)", "icon": "shopping-cart", "entity": "sales-orders"},
+    "delivery-orders": {"title": "Delivery Orders (DO)", "icon": "truck", "entity": "delivery-orders"},
+    "invoices": {"title": "Sales Invoices", "icon": "receipt", "entity": "invoices"},
+    "returns": {"title": "Sales Returns & Credits", "icon": "rotate-ccw", "entity": "returns"},
+    "budgets": {"title": "Sales Target Budgets", "icon": "pie-chart", "entity": "budgets"},
+    # 3. Process, e-Approval & DSS Suite
+    "document-flow": {"title": "Document Flow Studio", "icon": "git-merge", "entity": "document-flow"},
+    "e-approvals": {"title": "e-Approval Hub", "icon": "check-check", "entity": "e-approvals"},
+    "dss-simulator": {"title": "DSS Margin Simulator", "icon": "calculator", "entity": "dss-simulator"},
+    "on-hold-orders": {"title": "On-Hold Orders Queue", "icon": "pause-circle", "entity": "on-hold-orders"},
+    # 4. Analytical & Dynamic Pivot Suite
+    "sales-collection-pivot": {"title": "Sales, Collection & AR Pivot", "icon": "bar-chart-3", "entity": "sales-collection-pivot"},
+    "hierarchy-performance": {"title": "MM > ZM > TSM Performance", "icon": "trending-up", "entity": "hierarchy-performance"},
+    "target-achievement": {"title": "Target vs Achievement", "icon": "target", "entity": "target-achievement"},
+    # 5. Reporting & Statements Suite
+    "do-invoice-pending": {"title": "DO-GI-Invoice Pending", "icon": "clock-4", "entity": "do-invoice-pending"},
+    "consolidated-statement": {"title": "Consolidated Statement", "icon": "file-spreadsheet", "entity": "consolidated-statement"},
+    "profitability-report": {"title": "Profitability Analysis", "icon": "file-text", "entity": "profitability-report"},
+    "sales-print-studio": {"title": "Sales Print Studio", "icon": "printer", "entity": "sales-print-studio"},
 }
 
 SOURCING_SUB_AREAS = {
@@ -245,6 +282,28 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
     src_purchase_register = []
     src_kpi_summary = {}
 
+    # Sales Management Collections
+    sls_areas = []
+    sls_teams = []
+    sls_reps = []
+    sls_profiles = []
+    sls_prices = []
+    sls_discount_limits = []
+    sls_quotes = []
+    sls_orders = []
+    sls_do_list = []
+    sls_invoices = []
+    sls_returns = []
+    sls_budgets = []
+    sls_doc_flow = []
+    sls_approvals = []
+    sls_pivot_data = {"monthly_data": [], "total_billed": 0, "total_collected": 0, "total_ar": 0, "collection_efficiency_pct": 100}
+    sls_hierarchy_data = []
+    sls_target_variance = []
+    sls_do_pending_report = []
+    sls_consolidated_statement = []
+    sls_profitability_report = []
+
     if slug == "general-ledger":
         gl_coa = GLMasterService.get_all_accounts()
         gl_mappings = GLMasterService.get_mappings_for_company(str(active_company["id"]))
@@ -338,10 +397,36 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         src_match_matrix = SourcingReportService.get_three_way_reconciliation_matrix(company_id=str(active_company["id"]))
         src_purchase_register = SourcingReportService.get_purchase_register(company_id=str(active_company["id"]))
 
+    elif slug in ("sales", "sales-management"):
+        sls_areas = SalesMasterService.get_sales_areas(company_id=str(active_company["id"]))
+        sls_teams = SalesMasterService.get_sales_teams(company_id=str(active_company["id"]))
+        sls_reps = SalesMasterService.get_salespersons(company_id=str(active_company["id"]))
+        sls_profiles = SalesMasterService.get_price_profiles(company_id=str(active_company["id"]))
+        sls_prices = SalesMasterService.get_product_prices()
+        sls_discount_limits = SalesMasterService.get_discount_limits()
+
+        sls_quotes = SalesTransactionService.get_quotes(company_id=str(active_company["id"]))
+        sls_orders = SalesTransactionService.get_orders(company_id=str(active_company["id"]))
+        sls_do_list = SalesTransactionService.get_delivery_orders(company_id=str(active_company["id"]))
+        sls_invoices = SalesTransactionService.get_invoices(company_id=str(active_company["id"]))
+        sls_returns = db.query("SELECT * FROM sales_returns WHERE company_id = ? ORDER BY code DESC", (str(active_company["id"]),))
+        sls_budgets = db.query("SELECT b.*, sp.full_name AS salesperson_name FROM sales_budgets b LEFT JOIN salespersons sp ON b.salesperson_id = sp.id WHERE b.company_id = ? ORDER BY b.code ASC", (str(active_company["id"]),))
+
+        sls_doc_flow = SalesProcessService.get_document_flow()
+        sls_approvals = db.query("SELECT * FROM sales_approvals WHERE entity_type = 'SO' ORDER BY code DESC")
+
+        sls_pivot_data = SalesAnalysisService.get_sales_collection_pivot(company_id=str(active_company["id"]))
+        sls_hierarchy_data = SalesAnalysisService.get_hierarchical_performance(company_id=str(active_company["id"]))
+        sls_target_variance = SalesAnalysisService.get_target_vs_achievement(company_id=str(active_company["id"]))
+
+        sls_do_pending_report = SalesReportService.get_do_invoice_pending_report(company_id=str(active_company["id"]))
+        sls_consolidated_statement = SalesReportService.get_consolidated_statement()
+        sls_profitability_report = SalesReportService.get_profitability_report()
+
     current_tab = tab if tab else "overview"
 
     # Multi-level dynamic title, icon, breadcrumbs, and back navigation
-    all_sub_areas = {**GL_SUB_AREAS, **CB_SUB_AREAS, **AR_SUB_AREAS, **SOURCING_SUB_AREAS}
+    all_sub_areas = {**GL_SUB_AREAS, **CB_SUB_AREAS, **AR_SUB_AREAS, **SOURCING_SUB_AREAS, **SALES_SUB_AREAS}
     if current_tab in all_sub_areas and current_tab != "overview":
         sub_info = all_sub_areas[current_tab]
         current_page_title = sub_info["title"]
@@ -405,6 +490,18 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         "src_pr_count": len(src_requisitions),
         "src_rfq_count": len(src_rfqs),
         "src_po_count": len(src_purchase_orders),
+        "sls_teams_count": len(sls_teams),
+        "sls_reps_count": len(sls_reps),
+        "sls_areas_count": len(sls_areas),
+        "sls_profiles_count": len(sls_profiles),
+        "sls_prices_count": len(sls_prices),
+        "sls_quotes_count": len(sls_quotes),
+        "sls_orders_count": len(sls_orders),
+        "sls_do_count": len(sls_do_list),
+        "sls_inv_count": len(sls_invoices),
+        "sls_returns_count": len(sls_returns),
+        "sls_budgets_count": len(sls_budgets),
+        "sls_on_hold_count": len([o for o in sls_orders if o.get("is_on_hold") or o.get("status") == "ON_HOLD"]),
         "src_returns_count": len(src_goods_returns),
         "src_pending_approvals": len(src_pending_approvals),
         "src_lc_count": len(src_lc_list),
@@ -498,6 +595,26 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
             "src_cnf_dispatches": src_cnf_dispatches,
             "src_scorecards": src_scorecards,
             "src_match_matrix": src_match_matrix,
+        "sls_areas": sls_areas,
+        "sls_teams": sls_teams,
+        "sls_reps": sls_reps,
+        "sls_profiles": sls_profiles,
+        "sls_prices": sls_prices,
+        "sls_discount_limits": sls_discount_limits,
+        "sls_quotes": sls_quotes,
+        "sls_orders": sls_orders,
+        "sls_do_list": sls_do_list,
+        "sls_invoices": sls_invoices,
+        "sls_returns": sls_returns,
+        "sls_budgets": sls_budgets,
+        "sls_doc_flow": sls_doc_flow,
+        "sls_approvals": sls_approvals,
+        "sls_pivot_data": sls_pivot_data,
+        "sls_hierarchy_data": sls_hierarchy_data,
+        "sls_target_variance": sls_target_variance,
+        "sls_do_pending_report": sls_do_pending_report,
+        "sls_consolidated_statement": sls_consolidated_statement,
+        "sls_profitability_report": sls_profitability_report,
             "src_purchase_register": src_purchase_register,
             "src_kpi_summary": src_kpi_summary,
             "current_user": UserService.resolve_current_user(request),
@@ -2316,3 +2433,125 @@ async def print_purchase_order_page(request: Request, po_id: str):
 
 
 
+
+
+# =========================================================================
+# SALES DOCUMENT PRINT STUDIO ROUTES
+# =========================================================================
+@router.get("/modules/sales/print/quote/{quote_id}", response_class=HTMLResponse)
+async def print_sales_quote_page(request: Request, quote_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    quote = SalesTransactionService.get_quote_by_id(quote_id)
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quotation not found")
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/sales_print_document.html",
+        context={
+            "active_company": active_company,
+            "doc_type_title": f"Official Sales Quotation (Rev {quote.get('revision_no', 1)})",
+            "doc_number": quote["quote_number"],
+            "doc_date": str(quote["quote_date"]),
+            "doc_status": quote["status"],
+            "customer_name": quote["customer_name"],
+            "billing_address": "Corporate Address on File",
+            "shipping_address": "Destination Port / Facility",
+            "payment_terms": "As per quotation agreement",
+            "delivery_terms": "FOB Factory Gate",
+            "carrier_name": None,
+            "vehicle_no": None,
+            "items": quote.get("items", []),
+            "total_amount": quote["total_amount"]
+        }
+    )
+
+@router.get("/modules/sales/print/order/{order_id}", response_class=HTMLResponse)
+async def print_sales_order_page(request: Request, order_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    order = SalesTransactionService.get_order_by_id(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Sales Order not found")
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/sales_print_document.html",
+        context={
+            "active_company": active_company,
+            "doc_type_title": "Confirmed Sales Order (Confirmation Sheet)",
+            "doc_number": order["order_number"],
+            "doc_date": str(order["order_date"]),
+            "doc_status": order["status"],
+            "customer_name": order["customer_name"],
+            "billing_address": order.get("billing_address"),
+            "shipping_address": order.get("shipping_address"),
+            "payment_terms": order.get("payment_terms"),
+            "delivery_terms": order.get("delivery_terms"),
+            "carrier_name": None,
+            "vehicle_no": None,
+            "items": order.get("items", []),
+            "total_amount": order["total_amount"]
+        }
+    )
+
+@router.get("/modules/sales/print/do/{do_id}", response_class=HTMLResponse)
+async def print_delivery_order_page(request: Request, do_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    do_row = db.query_one(
+        """
+        SELECT do.*, so.order_number, so.customer_name, so.total_amount AS order_total
+        FROM sales_delivery_orders do
+        JOIN sales_orders so ON do.order_id = so.id
+        WHERE do.id = ?
+        """,
+        (do_id,)
+    )
+    if not do_row:
+        raise HTTPException(status_code=404, detail="Delivery Order not found")
+    items = db.query("SELECT * FROM sales_do_items WHERE do_id = ? ORDER BY code ASC", (do_id,))
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/sales_print_document.html",
+        context={
+            "active_company": active_company,
+            "doc_type_title": "Delivery Order (DO) & Gate Pass Challan",
+            "doc_number": do_row["do_number"],
+            "doc_date": str(do_row["do_date"]),
+            "doc_status": do_row["status"],
+            "customer_name": do_row["customer_name"],
+            "billing_address": f"Gate Pass Ref: {do_row.get('gate_pass_ref', 'N/A')}",
+            "shipping_address": do_row.get("delivery_address"),
+            "payment_terms": "Pre-Dispatched Delivery Challan",
+            "delivery_terms": "Official Outbound Gate Pass",
+            "carrier_name": do_row.get("carrier_name"),
+            "vehicle_no": do_row.get("vehicle_no"),
+            "items": items,
+            "total_amount": do_row.get("order_total", 0.0)
+        }
+    )
+
+@router.get("/modules/sales/print/invoice/{invoice_id}", response_class=HTMLResponse)
+async def print_sales_invoice_page(request: Request, invoice_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    inv = db.query_one("SELECT * FROM sales_invoices WHERE id = ?", (invoice_id,))
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    items = db.query("SELECT * FROM sales_invoice_items WHERE invoice_id = ? ORDER BY code ASC", (invoice_id,))
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/sales_print_document.html",
+        context={
+            "active_company": active_company,
+            "doc_type_title": "Commercial Tax Invoice (GL-Integrated)",
+            "doc_number": inv["invoice_number"],
+            "doc_date": str(inv["invoice_date"]),
+            "doc_status": inv["status"],
+            "customer_name": inv["customer_name"],
+            "billing_address": f"GL Journal Reference: {inv.get('gl_journal_ref', 'Auto-Posted')}",
+            "shipping_address": f"Payment Due Date: {inv.get('due_date')}",
+            "payment_terms": "Tax Invoice Settlement",
+            "delivery_terms": "Commercial Billing",
+            "carrier_name": None,
+            "vehicle_no": None,
+            "items": items,
+            "total_amount": inv["total_amount"]
+        }
+    )

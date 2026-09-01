@@ -406,6 +406,85 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             }
         ]
 
+
+    # 6. SALES MANAGEMENT MODERN 5-SUITE REGISTRY
+    if slug in ("sales", "sales-management"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Master Setup Suite",
+                "subtitle": "Sales Teams Hierarchy, Pricing Matrices & Discount Limits",
+                "icon": "settings-2",
+                "theme_color": "blue",
+                "count_label": "6 Sub-Areas",
+                "cards": [
+                    {"title": "Sales Teams (MM/ZM/TSM)", "subtitle": "Territory hierarchy & team targets", "badge": str(counts.get("sls_teams_count", 6)), "url": "/modules/sales?tab=sales-teams", "icon": "network", "color": "blue"},
+                    {"title": "Salespersons Master", "subtitle": "Reps, commission rates & monthly quotas", "badge": str(counts.get("sls_reps_count", 5)), "url": "/modules/sales?tab=salespersons", "icon": "users", "color": "indigo"},
+                    {"title": "Sales Areas & Zones", "subtitle": "Territories, distribution centers & depots", "badge": str(counts.get("sls_areas_count", 5)), "url": "/modules/sales?tab=sales-areas", "icon": "map-pin", "color": "cyan"},
+                    {"title": "Price Profiles & Lists", "subtitle": "Base, Wholesale, Retail & OEM contracts", "badge": str(counts.get("sls_profiles_count", 5)), "url": "/modules/sales?tab=price-profiles", "icon": "tag", "color": "emerald"},
+                    {"title": "Product Catalog Prices", "subtitle": "Item pricing, min floor prices & UOMs", "badge": str(counts.get("sls_prices_count", 6)), "url": "/modules/sales?tab=product-prices", "icon": "layers", "color": "amber"},
+                    {"title": "Discount Limit Matrix", "subtitle": "Role-based discount limits & sign-off rules", "badge": "4 Tiers", "url": "/modules/sales?tab=discount-limits", "icon": "sliders", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Transaction Processing & Automation Suite",
+                "subtitle": "Quotes, Proformas, Sales Orders, DOs, Invoices & Returns",
+                "icon": "arrow-left-right",
+                "theme_color": "emerald",
+                "count_label": "6 Operations",
+                "cards": [
+                    {"title": "Sales Quotes & Proformas", "subtitle": "Formal quotations, revisions & 1-click SO conversion", "badge": str(counts.get("sls_quotes_count", 5)), "url": "/modules/sales?tab=quotes", "icon": "file-text", "color": "blue"},
+                    {"title": "Sales Orders (SO)", "subtitle": "Multi-item orders, packing specs & stock reservations", "badge": str(counts.get("sls_orders_count", 6)), "url": "/modules/sales?tab=sales-orders", "icon": "shopping-cart", "color": "emerald"},
+                    {"title": "Delivery Orders (DO)", "subtitle": "Delivery orders, fleet dispatch & gate passes", "badge": str(counts.get("sls_do_count", 2)), "url": "/modules/sales?tab=delivery-orders", "icon": "truck", "color": "cyan"},
+                    {"title": "Sales Invoices", "subtitle": "Commercial tax invoices & export documentation", "badge": str(counts.get("sls_inv_count", 2)), "url": "/modules/sales?tab=invoices", "icon": "receipt", "color": "indigo"},
+                    {"title": "Sales Returns & Credits", "subtitle": "Goods return memos & reverse credit invoices", "badge": str(counts.get("sls_returns_count", 1)), "url": "/modules/sales?tab=returns", "icon": "rotate-ccw", "color": "rose"},
+                    {"title": "Sales Target Budgets", "subtitle": "Annual/Quarterly targets by rep and customer", "badge": str(counts.get("sls_budgets_count", 4)), "url": "/modules/sales?tab=budgets", "icon": "pie-chart", "color": "amber"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Process, e-Approval & DSS Suite",
+                "subtitle": "Document Flow, Multi-Tier e-Approval & Margin Simulator",
+                "icon": "check-check",
+                "theme_color": "purple",
+                "count_label": "4 Operations",
+                "cards": [
+                    {"title": "Document Flow Studio", "subtitle": "Visual lifecycle trace (Quote -> SO -> DO -> Invoice -> GL)", "badge": "Visual Flow", "url": "/modules/sales?tab=document-flow", "icon": "git-merge", "color": "purple"},
+                    {"title": "e-Approval Hub", "subtitle": "Executive validation for credit & discount limit breaches", "badge": "e-Sign Queue", "url": "/modules/sales?tab=e-approvals", "icon": "check-check", "color": "indigo"},
+                    {"title": "DSS Margin Simulator", "subtitle": "Decision Support: Gross profit & floor price checking", "badge": "DSS Engine", "url": "/modules/sales?tab=dss-simulator", "icon": "calculator", "color": "amber"},
+                    {"title": "On-Hold Orders Queue", "subtitle": "Manage orders blocked for credit or stock shortage", "badge": str(counts.get("sls_on_hold_count", 1)) + " On Hold", "url": "/modules/sales?tab=on-hold-orders", "icon": "pause-circle", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "Analytical & Dynamic Pivot Suite",
+                "subtitle": "Sales, Collection & AR Pivots, MM-ZM-TSM Drilldown",
+                "icon": "bar-chart-2",
+                "theme_color": "amber",
+                "count_label": "3 Operations",
+                "cards": [
+                    {"title": "Sales, Collection & AR Pivot", "subtitle": "Monthly & yearly billed vs collected analytics", "badge": "Live Matrix", "url": "/modules/sales?tab=sales-collection-pivot", "icon": "bar-chart-3", "color": "amber"},
+                    {"title": "MM > ZM > TSM Performance", "subtitle": "Hierarchical drilldown by management structure", "badge": "Hierarchy", "url": "/modules/sales?tab=hierarchy-performance", "icon": "trending-up", "color": "emerald"},
+                    {"title": "Target vs Achievement", "subtitle": "Rep-wise budget vs actual billing variance matrix", "badge": "Variance", "url": "/modules/sales?tab=target-achievement", "icon": "target", "color": "blue"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Reporting & Document Print Studio",
+                "subtitle": "DO Pending Reconciliation, Profitability & Formal Printouts",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "4 Sub-Areas",
+                "cards": [
+                    {"title": "DO-GI-Invoice Pending", "subtitle": "Reconciliation audit of uninvoiced delivery orders", "badge": "Reconcile", "url": "/modules/sales?tab=do-invoice-pending", "icon": "clock-4", "color": "rose"},
+                    {"title": "Consolidated Statement", "subtitle": "Multi-company gross turnover & net outstanding", "badge": "Consolidated", "url": "/modules/sales?tab=consolidated-statement", "icon": "file-spreadsheet", "color": "indigo"},
+                    {"title": "Profitability Analysis", "subtitle": "Item-wise gross margins & discount audit", "badge": "Margins", "url": "/modules/sales?tab=profitability-report", "icon": "file-text", "color": "emerald"},
+                    {"title": "Sales Print Studio", "subtitle": "Formal letterhead printouts for Quotes, SO, DO & Invoices", "badge": "Print Hub", "url": "/modules/sales?tab=sales-print-studio", "icon": "printer", "color": "teal"},
+                ]
+            }
+        ]
+
     # 6. DEFAULT DYNAMIC SUITE BUILDER FOR ALL OTHER 15 ENTERPRISE MODULES
     # Automatically generates the standardized 5 enterprise suites based on module domain!
     return _generate_default_enterprise_suites(slug)

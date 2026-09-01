@@ -723,6 +723,387 @@ def initialize_tables():
                 created_at DATETIME DEFAULT GETDATE()
             );
         END
+        """,
+
+        # 34. Sales: Sales Areas & Territories
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_areas')
+        BEGIN
+            CREATE TABLE sales_areas (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                area_code VARCHAR(30) NOT NULL UNIQUE,
+                area_name NVARCHAR(150) NOT NULL,
+                region_name NVARCHAR(100) NOT NULL,
+                head_of_area NVARCHAR(150),
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 35. Sales: Sales Teams & Management Hierarchy (MM > ZM > TSM)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_teams')
+        BEGIN
+            CREATE TABLE sales_teams (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(2001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                area_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES sales_areas(id),
+                team_code VARCHAR(30) NOT NULL UNIQUE,
+                team_name NVARCHAR(150) NOT NULL,
+                team_type VARCHAR(30) DEFAULT 'TSM_TEAM',
+                parent_team_id UNIQUEIDENTIFIER NULL,
+                manager_name NVARCHAR(150) NOT NULL,
+                target_annual_amount FLOAT DEFAULT 0.0,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 36. Sales: Salespersons Master
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'salespersons')
+        BEGIN
+            CREATE TABLE salespersons (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(3001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                team_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES sales_teams(id),
+                salesperson_code VARCHAR(30) NOT NULL UNIQUE,
+                full_name NVARCHAR(150) NOT NULL,
+                email VARCHAR(150),
+                phone VARCHAR(50),
+                designation NVARCHAR(100) NOT NULL,
+                max_discount_pct FLOAT DEFAULT 5.0,
+                monthly_target FLOAT DEFAULT 50000.0,
+                commission_pct FLOAT DEFAULT 2.5,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 37. Sales: Product Price Profiles & Price Lists
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_price_profiles')
+        BEGIN
+            CREATE TABLE sales_price_profiles (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(4001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                profile_code VARCHAR(30) NOT NULL UNIQUE,
+                profile_name NVARCHAR(150) NOT NULL,
+                currency VARCHAR(10) DEFAULT 'USD',
+                price_type VARCHAR(50) DEFAULT 'BASE_PRICE',
+                is_default BIT DEFAULT 0,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 38. Sales: Product Price List Items
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_product_prices')
+        BEGIN
+            CREATE TABLE sales_product_prices (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                profile_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES sales_price_profiles(id),
+                item_code VARCHAR(50) NOT NULL,
+                item_name NVARCHAR(200) NOT NULL,
+                uom VARCHAR(20) DEFAULT 'PCS',
+                base_price FLOAT NOT NULL,
+                min_selling_price FLOAT NOT NULL,
+                max_discount_pct FLOAT DEFAULT 15.0,
+                is_active BIT DEFAULT 1,
+                updated_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 39. Sales: Discount Limits Matrix
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_discount_limits')
+        BEGIN
+            CREATE TABLE sales_discount_limits (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                role_name NVARCHAR(100) NOT NULL,
+                max_discount_pct FLOAT NOT NULL,
+                requires_approval_above_pct FLOAT NOT NULL,
+                approver_role NVARCHAR(100) NOT NULL,
+                is_active BIT DEFAULT 1
+            );
+        END
+        """,
+
+        # 40. Sales: Sales Quotes & Revisions
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_quotes')
+        BEGIN
+            CREATE TABLE sales_quotes (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(10001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                quote_number VARCHAR(50) NOT NULL UNIQUE,
+                revision_no INT DEFAULT 1,
+                customer_name NVARCHAR(200) NOT NULL,
+                customer_id UNIQUEIDENTIFIER NULL,
+                salesperson_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES salespersons(id),
+                quote_date DATE NOT NULL,
+                valid_until DATE NOT NULL,
+                subtotal FLOAT NOT NULL,
+                discount_amount FLOAT DEFAULT 0.0,
+                tax_amount FLOAT DEFAULT 0.0,
+                total_amount FLOAT NOT NULL,
+                currency VARCHAR(10) DEFAULT 'USD',
+                status VARCHAR(30) DEFAULT 'SUBMITTED',
+                progress_notes NVARCHAR(500),
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 41. Sales: Sales Quote Items
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_quote_items')
+        BEGIN
+            CREATE TABLE sales_quote_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                quote_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES sales_quotes(id),
+                item_code VARCHAR(50) NOT NULL,
+                item_name NVARCHAR(200) NOT NULL,
+                uom VARCHAR(20) DEFAULT 'PCS',
+                quantity FLOAT NOT NULL,
+                unit_price FLOAT NOT NULL,
+                discount_pct FLOAT DEFAULT 0.0,
+                line_total FLOAT NOT NULL,
+                remarks NVARCHAR(250)
+            );
+        END
+        """,
+
+        # 42. Sales: Sales Orders (SO Header)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_orders')
+        BEGIN
+            CREATE TABLE sales_orders (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(20001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                quote_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES sales_quotes(id),
+                order_number VARCHAR(50) NOT NULL UNIQUE,
+                customer_name NVARCHAR(200) NOT NULL,
+                customer_id UNIQUEIDENTIFIER NULL,
+                salesperson_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES salespersons(id),
+                order_date DATE NOT NULL,
+                expected_delivery_date DATE NOT NULL,
+                payment_terms NVARCHAR(100) DEFAULT 'Net 30 Days',
+                delivery_terms NVARCHAR(100) DEFAULT 'FOB Plant Gate',
+                shipping_address NVARCHAR(300),
+                billing_address NVARCHAR(300),
+                currency VARCHAR(10) DEFAULT 'USD',
+                exchange_rate FLOAT DEFAULT 1.0,
+                subtotal FLOAT NOT NULL,
+                discount_amount FLOAT DEFAULT 0.0,
+                tax_amount FLOAT DEFAULT 0.0,
+                total_amount FLOAT NOT NULL,
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                hold_reason NVARCHAR(250) NULL,
+                is_on_hold BIT DEFAULT 0,
+                current_approval_tier INT DEFAULT 1,
+                max_approval_tier INT DEFAULT 2,
+                is_gl_posted BIT DEFAULT 0,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 43. Sales: Sales Order Items
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_order_items')
+        BEGIN
+            CREATE TABLE sales_order_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                order_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES sales_orders(id),
+                item_code VARCHAR(50) NOT NULL,
+                item_name NVARCHAR(200) NOT NULL,
+                uom VARCHAR(20) DEFAULT 'PCS',
+                quantity FLOAT NOT NULL,
+                unit_price FLOAT NOT NULL,
+                discount_pct FLOAT DEFAULT 0.0,
+                line_total FLOAT NOT NULL,
+                packing_spec NVARCHAR(200) DEFAULT 'Standard Heavy Corrugated Box',
+                delivered_qty FLOAT DEFAULT 0.0,
+                invoiced_qty FLOAT DEFAULT 0.0
+            );
+        END
+        """,
+
+        # 44. Sales: Delivery Orders (DO Header)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_delivery_orders')
+        BEGIN
+            CREATE TABLE sales_delivery_orders (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(30001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                order_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES sales_orders(id),
+                do_number VARCHAR(50) NOT NULL UNIQUE,
+                do_date DATE NOT NULL,
+                dispatch_date DATE NOT NULL,
+                carrier_name NVARCHAR(150),
+                vehicle_no VARCHAR(50),
+                tracking_ref VARCHAR(80),
+                delivery_address NVARCHAR(300),
+                status VARCHAR(30) DEFAULT 'DISPATCHED',
+                gate_pass_ref VARCHAR(80),
+                created_by NVARCHAR(100) DEFAULT 'Warehouse Dispatch Lead',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 45. Sales: Delivery Order Items
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_do_items')
+        BEGIN
+            CREATE TABLE sales_do_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                do_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES sales_delivery_orders(id),
+                order_item_id UNIQUEIDENTIFIER NULL,
+                item_code VARCHAR(50) NOT NULL,
+                item_name NVARCHAR(200) NOT NULL,
+                uom VARCHAR(20) DEFAULT 'PCS',
+                ordered_qty FLOAT NOT NULL,
+                dispatch_qty FLOAT NOT NULL,
+                unit_price FLOAT NOT NULL,
+                line_total FLOAT NOT NULL
+            );
+        END
+        """,
+
+        # 46. Sales: Sales Invoices (Commercial & Export Invoices)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_invoices')
+        BEGIN
+            CREATE TABLE sales_invoices (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(40001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                order_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES sales_orders(id),
+                do_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES sales_delivery_orders(id),
+                invoice_number VARCHAR(50) NOT NULL UNIQUE,
+                invoice_type VARCHAR(30) DEFAULT 'COMMERCIAL',
+                customer_name NVARCHAR(200) NOT NULL,
+                invoice_date DATE NOT NULL,
+                due_date DATE NOT NULL,
+                currency VARCHAR(10) DEFAULT 'USD',
+                exchange_rate FLOAT DEFAULT 1.0,
+                subtotal FLOAT NOT NULL,
+                discount_amount FLOAT DEFAULT 0.0,
+                tax_amount FLOAT DEFAULT 0.0,
+                total_amount FLOAT NOT NULL,
+                paid_amount FLOAT DEFAULT 0.0,
+                status VARCHAR(30) DEFAULT 'ISSUED',
+                is_gl_posted BIT DEFAULT 1,
+                gl_journal_ref VARCHAR(50) NULL,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 47. Sales: Sales Invoice Items
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_invoice_items')
+        BEGIN
+            CREATE TABLE sales_invoice_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(1, 1) NOT NULL,
+                invoice_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES sales_invoices(id),
+                item_code VARCHAR(50) NOT NULL,
+                item_name NVARCHAR(200) NOT NULL,
+                uom VARCHAR(20) DEFAULT 'PCS',
+                quantity FLOAT NOT NULL,
+                unit_price FLOAT NOT NULL,
+                discount_pct FLOAT DEFAULT 0.0,
+                line_total FLOAT NOT NULL
+            );
+        END
+        """,
+
+        # 48. Sales: Sales Returns & Credit Memos
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_returns')
+        BEGIN
+            CREATE TABLE sales_returns (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(50001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                order_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES sales_orders(id),
+                invoice_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES sales_invoices(id),
+                return_number VARCHAR(50) NOT NULL UNIQUE,
+                customer_name NVARCHAR(200) NOT NULL,
+                return_date DATE NOT NULL,
+                reason NVARCHAR(300) NOT NULL,
+                return_amount FLOAT NOT NULL,
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                credit_memo_ref VARCHAR(50) NULL,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 49. Sales: Sales Budgets & Targets
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_budgets')
+        BEGIN
+            CREATE TABLE sales_budgets (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(60001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
+                fiscal_year VARCHAR(20) NOT NULL,
+                salesperson_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES salespersons(id),
+                target_category NVARCHAR(100) NOT NULL,
+                annual_target FLOAT NOT NULL,
+                q1_target FLOAT NOT NULL,
+                q2_target FLOAT NOT NULL,
+                q3_target FLOAT NOT NULL,
+                q4_target FLOAT NOT NULL,
+                achieved_amount FLOAT DEFAULT 0.0,
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 50. Sales: Multi-Tier e-Approvals Tracking
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'sales_approvals')
+        BEGIN
+            CREATE TABLE sales_approvals (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(70001, 1) NOT NULL,
+                entity_type VARCHAR(30) NOT NULL,
+                entity_id UNIQUEIDENTIFIER NOT NULL,
+                tier_level INT NOT NULL,
+                tier_name NVARCHAR(100) NOT NULL,
+                approver_name NVARCHAR(100) NOT NULL,
+                approver_role NVARCHAR(100) NOT NULL,
+                action VARCHAR(30) DEFAULT 'PENDING',
+                comments NVARCHAR(300),
+                action_date DATETIME,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
         """
     ]
 
@@ -1353,6 +1734,318 @@ def seed_sourcing_master_and_transactions():
                 )
         logger.info("Seeded Sourcing LC, C&F Dispatches, Goods Returns, and Multi-Tier e-Approvals.")
 
+def seed_sales_master_and_transactions():
+    """Seeds comprehensive Sales Management master data, price lists, quotations, orders, delivery orders, and invoices."""
+    area_count = db.query_one("SELECT COUNT(*) AS cnt FROM sales_areas")["cnt"]
+    if area_count == 0:
+        apex = db.query_one("SELECT id FROM companies WHERE short_code = 'APEX'")
+        horizon = db.query_one("SELECT id FROM companies WHERE short_code = 'HORIZON'")
+        delta = db.query_one("SELECT id FROM companies WHERE short_code = 'DELTA'")
+        titan = db.query_one("SELECT id FROM companies WHERE short_code = 'TITAN'")
+        prime = db.query_one("SELECT id FROM companies WHERE short_code = 'PRIME'")
+
+        # 1. Sales Areas & Territories
+        areas = [
+            (apex["id"], "AREA-APX-01", "Northern Precision & Export Zone", "Industrial North", "Magnus Vance"),
+            (horizon["id"], "AREA-HRZ-01", "Metropolitan Real Estate District", "Capital Region", "Dr. Robert Vance"),
+            (delta["id"], "AREA-DLT-01", "Maritime Port Logistics Corridor", "Coastal Region", "Khorshed Alam"),
+            (titan["id"], "AREA-TTN-01", "Heavy Metallurgy & Structural Hub", "Industrial South", "Hiroshi Sato"),
+            (prime["id"], "AREA-PRM-01", "National Retail Supermarket Network", "Central Region", "Farhana Anis"),
+        ]
+        for a in areas:
+            db.execute(
+                """
+                INSERT INTO sales_areas (company_id, area_code, area_name, region_name, head_of_area, is_active)
+                VALUES (?, ?, ?, ?, ?, 1)
+                """,
+                a
+            )
+        logger.info("Seeded 5 Sales Areas.")
+
+        area_apx = db.query_one("SELECT id FROM sales_areas WHERE area_code = 'AREA-APX-01'")
+        area_hrz = db.query_one("SELECT id FROM sales_areas WHERE area_code = 'AREA-HRZ-01'")
+        area_dlt = db.query_one("SELECT id FROM sales_areas WHERE area_code = 'AREA-DLT-01'")
+        area_ttn = db.query_one("SELECT id FROM sales_areas WHERE area_code = 'AREA-TTN-01'")
+        area_prm = db.query_one("SELECT id FROM sales_areas WHERE area_code = 'AREA-PRM-01'")
+
+        # 2. Sales Teams (MM > ZM > TSM Hierarchy)
+        teams = [
+            (apex["id"], area_apx["id"] if area_apx else None, "TEAM-APX-MM", "Apex High-Tech & Precision Division", "MM_TEAM", "Alexander Vance", 5000000.0),
+            (apex["id"], area_apx["id"] if area_apx else None, "TEAM-APX-ZM1", "Automotive & Aerospace CNC Zone", "ZM_TEAM", "Marcus Sterling", 3000000.0),
+            (apex["id"], area_apx["id"] if area_apx else None, "TEAM-APX-TSM1", "Precision Fasteners Territory", "TSM_TEAM", "Mahmudur Rahman", 1500000.0),
+            (horizon["id"], area_hrz["id"] if area_hrz else None, "TEAM-HRZ-TSM", "Luxury High-Rise & Commercial Towers", "TSM_TEAM", "Tanvir Ahmed", 8000000.0),
+            (delta["id"], area_dlt["id"] if area_dlt else None, "TEAM-DLT-TSM", "Ocean Freight & Port Logistics Team", "TSM_TEAM", "Zahid Hasan", 4500000.0),
+            (prime["id"], area_prm["id"] if area_prm else None, "TEAM-PRM-TSM", "FMCG Supermarket Key Accounts", "TSM_TEAM", "Nusrat Jahan", 2500000.0),
+        ]
+        for t in teams:
+            db.execute(
+                """
+                INSERT INTO sales_teams (company_id, area_id, team_code, team_name, team_type, manager_name, target_annual_amount, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+                """,
+                t
+            )
+        logger.info("Seeded 6 Sales Teams across MM, ZM and TSM tiers.")
+
+        team_tsm_apx = db.query_one("SELECT id FROM sales_teams WHERE team_code = 'TEAM-APX-TSM1'")
+        team_tsm_hrz = db.query_one("SELECT id FROM sales_teams WHERE team_code = 'TEAM-HRZ-TSM'")
+        team_tsm_dlt = db.query_one("SELECT id FROM sales_teams WHERE team_code = 'TEAM-DLT-TSM'")
+        team_tsm_prm = db.query_one("SELECT id FROM sales_teams WHERE team_code = 'TEAM-PRM-TSM'")
+
+        # 3. Salespersons
+        salespersons_data = [
+            (apex["id"], team_tsm_apx["id"] if team_tsm_apx else None, "REP-101", "Mahmudur Rahman", "m.rahman@pyrix.internal", "+1 555 0192", "Territory Sales Lead (CNC)", 10.0, 125000.0, 3.0),
+            (apex["id"], team_tsm_apx["id"] if team_tsm_apx else None, "REP-102", "Alexander Vance", "alex.vance@pyrix.internal", "+1 555 0100", "Principal Systems & Key Accounts", 20.0, 250000.0, 4.0),
+            (horizon["id"], team_tsm_hrz["id"] if team_tsm_hrz else None, "REP-201", "Tanvir Ahmed", "t.ahmed@pyrix.internal", "+1 555 0244", "Commercial Real Estate Lead", 5.0, 500000.0, 2.0),
+            (delta["id"], team_tsm_dlt["id"] if team_tsm_dlt else None, "REP-301", "Zahid Hasan", "z.hasan@pyrix.internal", "+1 555 0311", "Intermodal Logistics Executive", 8.0, 300000.0, 2.5),
+            (prime["id"], team_tsm_prm["id"] if team_tsm_prm else None, "REP-401", "Farhana Anis", "f.anis@pyrix.internal", "+1 555 0489", "National Supermarket Account Exec", 12.0, 200000.0, 3.5),
+        ]
+        for sp in salespersons_data:
+            db.execute(
+                """
+                INSERT INTO salespersons (company_id, team_id, salesperson_code, full_name, email, phone, designation, max_discount_pct, monthly_target, commission_pct, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                """,
+                sp
+            )
+        logger.info("Seeded 5 Salespersons.")
+
+        rep_101 = db.query_one("SELECT id FROM salespersons WHERE salesperson_code = 'REP-101'")
+        rep_102 = db.query_one("SELECT id FROM salespersons WHERE salesperson_code = 'REP-102'")
+        rep_201 = db.query_one("SELECT id FROM salespersons WHERE salesperson_code = 'REP-201'")
+        rep_301 = db.query_one("SELECT id FROM salespersons WHERE salesperson_code = 'REP-301'")
+        rep_401 = db.query_one("SELECT id FROM salespersons WHERE salesperson_code = 'REP-401'")
+
+        # 4. Product Price Profiles
+        price_profiles = [
+            (apex["id"], "PRF-APX-STD", "Apex Standard Precision Tariff (Export)", "USD", "BASE_PRICE", 1),
+            (apex["id"], "PRF-APX-OEM", "Automotive OEM Contract Rate Matrix", "USD", "SPECIAL_CUSTOMER", 0),
+            (horizon["id"], "PRF-HRZ-RES", "Horizon Residential Penthouse Catalog", "USD", "BASE_PRICE", 1),
+            (delta["id"], "PRF-DLT-FRT", "Delta Global Freight Schedule 2026", "USD", "BASE_PRICE", 1),
+            (prime["id"], "PRF-PRM-WHL", "Prime FMCG National Wholesale Tier", "USD", "WHOLESALE", 1),
+        ]
+        for pp in price_profiles:
+            db.execute(
+                """
+                INSERT INTO sales_price_profiles (company_id, profile_code, profile_name, currency, price_type, is_default, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
+                """,
+                pp
+            )
+        logger.info("Seeded 5 Product Price Profiles.")
+
+        prof_apx_std = db.query_one("SELECT id FROM sales_price_profiles WHERE profile_code = 'PRF-APX-STD'")
+        prof_hrz_res = db.query_one("SELECT id FROM sales_price_profiles WHERE profile_code = 'PRF-HRZ-RES'")
+        prof_dlt_frt = db.query_one("SELECT id FROM sales_price_profiles WHERE profile_code = 'PRF-DLT-FRT'")
+        prof_prm_whl = db.query_one("SELECT id FROM sales_price_profiles WHERE profile_code = 'PRF-PRM-WHL'")
+
+        # 5. Product Prices Catalog
+        product_prices = [
+            (prof_apx_std["id"] if prof_apx_std else None, "ITM-CNC-M8", "M8 High-Tensile Precision Socket Screws (Box 1000)", "BOX", 145.0, 120.0, 15.0),
+            (prof_apx_std["id"] if prof_apx_std else None, "ITM-AERO-01", "Aerospace Titanium Bearing Bushings (Set 4)", "SET", 924.0, 800.0, 10.0),
+            (prof_apx_std["id"] if prof_apx_std else None, "ITM-SMT-PCB", "5-Axis Surface Mount PCB Motherboard Assembly", "PCS", 450.0, 380.0, 12.0),
+            (prof_hrz_res["id"] if prof_hrz_res else None, "UNIT-HRZ-PH", "Horizon Grand Tower Executive Penthouse Suite", "UNIT", 850000.0, 800000.0, 5.0),
+            (prof_dlt_frt["id"] if prof_dlt_frt else None, "FRT-TEU-200", "Intermodal Sea Freight Container Transport (200 TEU)", "TEU", 1550.0, 1350.0, 10.0),
+            (prof_prm_whl["id"] if prof_prm_whl else None, "FMCG-SUP-10", "FMCG Supermarket Fast-Moving Master Carton Pack", "CTN", 112.0, 95.0, 20.0),
+        ]
+        for p in product_prices:
+            if p[0]:
+                db.execute(
+                    """
+                    INSERT INTO sales_product_prices (profile_id, item_code, item_name, uom, base_price, min_selling_price, max_discount_pct, is_active)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+                    """,
+                    p
+                )
+        logger.info("Seeded Product Prices Catalog.")
+
+        # 6. Discount Limits Matrix
+        discount_limits = [
+            ("Field Sales Representative", 5.0, 5.0, "Territory Sales Manager"),
+            ("Territory Sales Manager (TSM)", 10.0, 10.0, "Zonal Sales Manager"),
+            ("Zonal Sales Manager (ZM)", 15.0, 15.0, "Commercial Director / CFO"),
+            ("Commercial Director / Sys Admin", 25.0, 25.0, "Executive Board"),
+        ]
+        for dl in discount_limits:
+            db.execute(
+                """
+                INSERT INTO sales_discount_limits (role_name, max_discount_pct, requires_approval_above_pct, approver_role, is_active)
+                VALUES (?, ?, ?, ?, 1)
+                """,
+                dl
+            )
+        logger.info("Seeded 4 Role-Based Discount Limits.")
+
+        # 7. Sales Quotes (with Items)
+        quotes = [
+            (apex["id"], "SQ-2026-APX-01", 1, "EuroAutomotive AG (Germany)", rep_101["id"] if rep_101 else None, "2026-08-10", "2026-09-30", 150000.0, 5000.0, 0.0, 145000.0, "USD", "CONVERTED_TO_SO", "Formal tender accepted and converted to SO-APX-8801"),
+            (apex["id"], "SQ-2026-APX-02", 2, "Boeing Subcontractor Aviation Corp", rep_102["id"] if rep_102 else None, "2026-08-15", "2026-10-15", 95000.0, 2600.0, 0.0, 92400.0, "USD", "CONVERTED_TO_SO", "Revision 2 with upgraded titanium specifications"),
+            (horizon["id"], "SQ-2026-HRZ-01", 1, "Dr. Robert Vance (Private Trust)", rep_201["id"] if rep_201 else None, "2026-08-01", "2026-09-15", 850000.0, 0.0, 0.0, 850000.0, "USD", "CONVERTED_TO_SO", "Penthouse #18A high-floor allotment quotation"),
+            (delta["id"], "SQ-2026-DLT-01", 1, "Maersk Line Alliance Intermodal", rep_301["id"] if rep_301 else None, "2026-08-20", "2026-10-01", 320000.0, 10000.0, 0.0, 310000.0, "USD", "ACCEPTED", "200 TEU Antwerp Hub clearing & transit quote"),
+            (prime["id"], "SQ-2026-PRM-01", 1, "Metro Hypermarkets National", rep_401["id"] if rep_401 else None, "2026-08-22", "2026-09-22", 115000.0, 3000.0, 0.0, 112000.0, "USD", "CONVERTED_TO_SO", "Quarterly supermarket stock replenishment"),
+        ]
+        for q in quotes:
+            db.execute(
+                """
+                INSERT INTO sales_quotes (company_id, quote_number, revision_no, customer_name, salesperson_id, quote_date, valid_until, subtotal, discount_amount, tax_amount, total_amount, currency, status, progress_notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                q
+            )
+        logger.info("Seeded 5 Multi-Status Sales Quotes.")
+
+        sq_1 = db.query_one("SELECT id FROM sales_quotes WHERE quote_number = 'SQ-2026-APX-01'")
+        sq_2 = db.query_one("SELECT id FROM sales_quotes WHERE quote_number = 'SQ-2026-APX-02'")
+
+        if sq_1:
+            db.execute(
+                """
+                INSERT INTO sales_quote_items (quote_id, item_code, item_name, uom, quantity, unit_price, discount_pct, line_total, remarks)
+                VALUES (?, 'ITM-CNC-M8', 'M8 High-Tensile Precision Socket Screws (Box 1000)', 'BOX', 1000, 145.0, 0.0, 145000.0, 'Batch 1 Export Grade')
+                """,
+                (sq_1["id"],)
+            )
+        if sq_2:
+            db.execute(
+                """
+                INSERT INTO sales_quote_items (quote_id, item_code, item_name, uom, quantity, unit_price, discount_pct, line_total, remarks)
+                VALUES (?, 'ITM-AERO-01', 'Aerospace Titanium Bearing Bushings (Set 4)', 'SET', 100, 924.0, 0.0, 92400.0, 'EN 9100 Certified')
+                """,
+                (sq_2["id"],)
+            )
+
+        # 8. Sales Orders (SO Header & Lines)
+        orders = [
+            (apex["id"], sq_1["id"] if sq_1 else None, "SO-APX-8801", "EuroAutomotive AG (Germany)", rep_101["id"] if rep_101 else None, "2026-08-12", "2026-09-25", "Net 45 Days", "FOB Plant Delta Dock", "Plant Delta 01 Receiving Dock", "EuroAutomotive HQ Frankfurt", "USD", 1.0, 150000.0, 5000.0, 0.0, 145000.0, "DO_ISSUED", 0, None, 2, 2, 1),
+            (apex["id"], sq_2["id"] if sq_2 else None, "SO-APX-8802", "Boeing Subcontractor Aviation Corp", rep_102["id"] if rep_102 else None, "2026-08-18", "2026-10-10", "Net 30 Days", "CIF Destination Port", "Boeing Receiving Facility Seattle", "Boeing Commercial Aviation", "USD", 1.0, 95000.0, 2600.0, 0.0, 92400.0, "APPROVED", 0, None, 2, 2, 0),
+            (horizon["id"], None, "SO-HRZ-9101", "Dr. Robert Vance (Private Trust)", rep_201["id"] if rep_201 else None, "2026-08-05", "2026-12-31", "Installment Schedule", "Handover Certificate", "Horizon Grand Tower Fl 18", "Horizon Landmark Tower", "USD", 1.0, 850000.0, 0.0, 0.0, 850000.0, "APPROVED", 0, None, 3, 3, 1),
+            (delta["id"], None, "SO-DLT-2040", "Maersk Line Alliance Intermodal", rep_301["id"] if rep_301 else None, "2026-08-25", "2026-09-30", "Net 30 Days", "Port Berth 4 Dispatch", "Berth #4 Ocean Terminal", "Maersk Line Copenhagen", "USD", 1.0, 320000.0, 10000.0, 0.0, 310000.0, "DO_ISSUED", 0, None, 2, 2, 1),
+            (prime["id"], None, "SO-PRM-9912", "Metro Hypermarkets National", rep_401["id"] if rep_401 else None, "2026-08-24", "2026-09-15", "Net 15 Days", "Central Hub Delivery", "Central Supermarket Depot #4", "Metro Retail HQ", "USD", 1.0, 115000.0, 3000.0, 0.0, 112000.0, "INVOICED", 0, None, 1, 1, 1),
+            (titan["id"], None, "SO-TTN-7701", "Nippon Steel Structural Fabrication", rep_101["id"] if rep_101 else None, "2026-08-28", "2026-10-30", "LC at Sight 60D", "FOB Steel Complex B", "Tokyo Steel Terminal Berth", "Nippon Steel Corp Tokyo", "USD", 1.0, 195000.0, 0.0, 0.0, 195000.0, "ON_HOLD", 1, "Credit limit review pending by CFO", 1, 2, 0),
+        ]
+        for o in orders:
+            db.execute(
+                """
+                INSERT INTO sales_orders 
+                (company_id, quote_id, order_number, customer_name, salesperson_id, order_date, expected_delivery_date, payment_terms, delivery_terms, shipping_address, billing_address, currency, exchange_rate, subtotal, discount_amount, tax_amount, total_amount, status, is_on_hold, hold_reason, current_approval_tier, max_approval_tier, is_gl_posted)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                o
+            )
+        logger.info("Seeded 6 Sales Orders across 5 subsidiaries.")
+
+        so_apx_1 = db.query_one("SELECT id FROM sales_orders WHERE order_number = 'SO-APX-8801'")
+        so_apx_2 = db.query_one("SELECT id FROM sales_orders WHERE order_number = 'SO-APX-8802'")
+        so_prm_1 = db.query_one("SELECT id FROM sales_orders WHERE order_number = 'SO-PRM-9912'")
+
+        if so_apx_1:
+            db.execute(
+                """
+                INSERT INTO sales_order_items (order_id, item_code, item_name, uom, quantity, unit_price, discount_pct, line_total, packing_spec, delivered_qty, invoiced_qty)
+                VALUES (?, 'ITM-CNC-M8', 'M8 High-Tensile Precision Socket Screws (Box 1000)', 'BOX', 1000, 145.0, 0.0, 145000.0, 'Heavy Wooden Export Pallet (x20 Boxes)', 1000.0, 1000.0)
+                """,
+                (so_apx_1["id"],)
+            )
+        if so_apx_2:
+            db.execute(
+                """
+                INSERT INTO sales_order_items (order_id, item_code, item_name, uom, quantity, unit_price, discount_pct, line_total, packing_spec, delivered_qty, invoiced_qty)
+                VALUES (?, 'ITM-AERO-01', 'Aerospace Titanium Bearing Bushings (Set 4)', 'SET', 100, 924.0, 0.0, 92400.0, 'Anti-Static Vacuum Sealed Aerospace Bags', 0.0, 0.0)
+                """,
+                (so_apx_2["id"],)
+            )
+        if so_prm_1:
+            db.execute(
+                """
+                INSERT INTO sales_order_items (order_id, item_code, item_name, uom, quantity, unit_price, discount_pct, line_total, packing_spec, delivered_qty, invoiced_qty)
+                VALUES (?, 'FMCG-SUP-10', 'FMCG Supermarket Fast-Moving Master Carton Pack', 'CTN', 1000, 112.0, 0.0, 112000.0, 'Shrink-wrapped Corrugated Master Carton', 1000.0, 1000.0)
+                """,
+                (so_prm_1["id"],)
+            )
+
+        # 9. Delivery Orders (DO)
+        if so_apx_1:
+            db.execute(
+                """
+                INSERT INTO sales_delivery_orders 
+                (company_id, order_id, do_number, do_date, dispatch_date, carrier_name, vehicle_no, tracking_ref, delivery_address, status, gate_pass_ref, created_by)
+                VALUES (?, ?, 'DO-APX-2026-001', '2026-08-20', '2026-08-20', 'DHL Global Forwarding Fleet', 'TRK-DH-8802', 'TRACK-DHL-991823', 'Plant Delta 01 Receiving Dock, Bay 04', 'DISPATCHED', 'GP-2026-APX-082', 'Plant Dispatch Manager')
+                """,
+                (apex["id"], so_apx_1["id"])
+            )
+            do_1 = db.query_one("SELECT id FROM sales_delivery_orders WHERE do_number = 'DO-APX-2026-001'")
+            if do_1:
+                db.execute(
+                    """
+                    INSERT INTO sales_do_items (do_id, order_item_id, item_code, item_name, uom, ordered_qty, dispatch_qty, unit_price, line_total)
+                    VALUES (?, NULL, 'ITM-CNC-M8', 'M8 High-Tensile Precision Socket Screws (Box 1000)', 'BOX', 1000, 1000, 145.0, 145000.0)
+                    """,
+                    (do_1["id"],)
+                )
+
+        # 10. Sales Invoices
+        if so_apx_1:
+            do_row = db.query_one("SELECT id FROM sales_delivery_orders WHERE do_number = 'DO-APX-2026-001'")
+            db.execute(
+                """
+                INSERT INTO sales_invoices 
+                (company_id, order_id, do_id, invoice_number, invoice_type, customer_name, invoice_date, due_date, currency, exchange_rate, subtotal, discount_amount, tax_amount, total_amount, paid_amount, status, is_gl_posted, gl_journal_ref)
+                VALUES (?, ?, ?, 'INV-APX-2026-8801', 'COMMERCIAL', 'EuroAutomotive AG (Germany)', '2026-08-20', '2026-10-04', 'USD', 1.0, 145000.0, 0.0, 0.0, 145000.0, 145000.0, 'PAID', 1, 'JV-APX-0820')
+                """,
+                (apex["id"], so_apx_1["id"], do_row["id"] if do_row else None)
+            )
+            inv_1 = db.query_one("SELECT id FROM sales_invoices WHERE invoice_number = 'INV-APX-2026-8801'")
+            if inv_1:
+                db.execute(
+                    """
+                    INSERT INTO sales_invoice_items (invoice_id, item_code, item_name, uom, quantity, unit_price, discount_pct, line_total)
+                    VALUES (?, 'ITM-CNC-M8', 'M8 High-Tensile Precision Socket Screws (Box 1000)', 'BOX', 1000, 145.0, 0.0, 145000.0)
+                    """,
+                    (inv_1["id"],)
+                )
+
+        # 11. Sales Returns
+        if so_apx_1:
+            db.execute(
+                """
+                INSERT INTO sales_returns (company_id, order_id, invoice_id, return_number, customer_name, return_date, reason, return_amount, status, credit_memo_ref)
+                VALUES (?, ?, NULL, 'RET-APX-2026-01', 'EuroAutomotive AG (Germany)', '2026-08-25', 'Surface passivation coating minor flaw on 30 sample boxes', 4350.0, 'CREDITED', 'CM-APX-9901')
+                """,
+                (apex["id"], so_apx_1["id"])
+            )
+
+        # 12. Sales Budgets
+        budgets = [
+            (apex["id"], "FY 2026-2027", rep_101["id"] if rep_101 else None, "Precision CNC & Aerospace", 1500000.0, 350000.0, 400000.0, 380000.0, 370000.0, 237400.0, "APPROVED"),
+            (apex["id"], "FY 2026-2027", rep_102["id"] if rep_102 else None, "Global Automotive OEM Key Accounts", 3000000.0, 750000.0, 800000.0, 720000.0, 730000.0, 1450000.0, "APPROVED"),
+            (horizon["id"], "FY 2026-2027", rep_201["id"] if rep_201 else None, "Commercial Real Estate & Towers", 8000000.0, 2000000.0, 2500000.0, 1800000.0, 1700000.0, 2050000.0, "APPROVED"),
+            (prime["id"], "FY 2026-2027", rep_401["id"] if rep_401 else None, "FMCG Supermarket Network", 2500000.0, 600000.0, 650000.0, 620000.0, 630000.0, 612000.0, "APPROVED"),
+        ]
+        for b in budgets:
+            db.execute(
+                """
+                INSERT INTO sales_budgets (company_id, fiscal_year, salesperson_id, target_category, annual_target, q1_target, q2_target, q3_target, q4_target, achieved_amount, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                b
+            )
+
+        # 13. Sales Approvals
+        if so_apx_1:
+            approvals = [
+                ("SO", so_apx_1["id"], 1, "Tier 1: Territory Sales Manager", "M. Rahman", "TSM Lead", "APPROVED", "Order price verified against Export tariff PRF-APX-STD", "2026-08-12 10:15:00"),
+                ("SO", so_apx_1["id"], 2, "Tier 2: CFO / Commercial Controller", "Sarah Jenkins", "Chief Financial Officer", "APPROVED", "Customer credit terms Net 45 validated", "2026-08-12 14:30:00"),
+            ]
+            for a in approvals:
+                db.execute(
+                    """
+                    INSERT INTO sales_approvals (entity_type, entity_id, tier_level, tier_name, approver_name, approver_role, action, comments, action_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    a
+                )
+        logger.info("Seeded Sales Management Master & Transactional Blueprint data.")
+
 def seed_appearance():
     """Seeds default appearance settings."""
     app_count = db.query_one("SELECT COUNT(*) AS cnt FROM appearance_settings")["cnt"]
@@ -1377,6 +2070,7 @@ def setup_database():
     seed_company_records()
     seed_gl_master_data()
     seed_sourcing_master_and_transactions()
+    seed_sales_master_and_transactions()
     seed_appearance()
     logger.info("PyrixDB multi-company initialization and seed complete.")
 
