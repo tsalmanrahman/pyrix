@@ -47,8 +47,9 @@
               <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ v.voucher_number }}</td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.voucher_date }}</td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.reference_number|default(v.batch_number|default('-')) }}</td>
-              <td class="py-2.5 px-3 max-w-xs truncate font-medium">{{ v.narration|default('General Accounting Journal') }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(v.total_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 max-w-xs truncate font-medium">{{ v.narration|default('General Accounting Journal') }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(v.total_amount|default(0.0)) }}</td>
               <td class="py-2.5 px-3 text-center font-mono">{{ v.line_count|default(2) }}</td>
               <td class="py-2.5 px-3 text-center">
                 <span class="px-2 py-0.5 text-[9px] font-bold rounded {% if v.status == 'POSTED' %}bg-emerald-500/15 text-emerald-600 border border-emerald-500/30{% else %}bg-amber-500/15 text-amber-600 border border-amber-500/30{% endif %}">
@@ -64,8 +65,14 @@
                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                   </a>
                 </div>
-              </td>
-            </tr>
+                    <button type="button" onclick="openDynamicEditModal('gl_vouchers', '{{ v.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('gl_vouchers', '{{ v.id }}', '{{ v.name or v.title or v.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -180,8 +187,9 @@
               <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ p.profile_code }}</td>
               <td class="py-2.5 px-3 font-medium">{{ p.profile_name }}</td>
               <td class="py-2.5 px-3 font-mono text-purple-600 font-semibold">{{ p.frequency }}</td>
-              <td class="py-2.5 px-3 font-mono">Day {{ p.day_of_period }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(p.default_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 font-mono">Day {{ p.day_of_period }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(p.default_amount|default(0.0)) }}</td>
               <td class="py-2.5 px-3 text-center">
                 <span class="px-2 py-0.5 text-[9px] font-bold rounded-full {% if p.is_auto_trigger %}bg-emerald-100 text-emerald-800{% else %}bg-slate-100 text-slate-700{% endif %}">
                   {% if p.is_auto_trigger %}AUTO RUN{% else %}MANUAL{% endif %}
@@ -191,8 +199,14 @@
                 <button onclick="deleteAutoProfile('{{ p.id }}')" class="p-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 transition" title="Delete Profile">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
-              </td>
-            </tr>
+                    <button type="button" onclick="openDynamicEditModal('gl_auto_profiles', '{{ p.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('gl_auto_profiles', '{{ p.id }}', '{{ p.name or p.title or p.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -235,8 +249,9 @@
             <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
               <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ b.batch_number }}</td>
               <td class="py-2.5 px-3 font-medium">{{ b.batch_title }}</td>
-              <td class="py-2.5 px-3 font-mono text-purple-600 font-semibold">{{ b.batch_type|default('MANUAL') }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(b.total_debit|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 font-mono text-purple-600 font-semibold">{{ b.batch_type|default('MANUAL') }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(b.total_debit|default(0.0)) }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(b.total_credit|default(0.0)) }}</td>
               <td class="py-2.5 px-3 text-center font-mono">{{ b.voucher_count|default(1) }}</td>
               <td class="py-2.5 px-3 text-center">
@@ -256,8 +271,14 @@
                     <span>Unpost</span>
                   </button>
                 {% endif %}
-              </td>
-            </tr>
+                    <button type="button" onclick="openDynamicEditModal('gl_vouchers', '{{ b.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('gl_vouchers', '{{ b.id }}', '{{ b.name or b.title or b.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -287,7 +308,8 @@
             <th class="py-2.5 px-3">Narration</th>
             <th class="py-2.5 px-3 text-right">Amount ($)</th>
             <th class="py-2.5 px-3 text-right">Action</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for v in gl_vouchers %}
@@ -295,15 +317,22 @@
               <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ v.voucher_number }}</td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.voucher_date }}</td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.reference_number|default('-') }}</td>
-              <td class="py-2.5 px-3 font-medium">{{ v.narration|default('General Accounting Journal Voucher') }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(v.total_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 font-medium">{{ v.narration|default('General Accounting Journal Voucher') }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(v.total_amount|default(0.0)) }}</td>
               <td class="py-2.5 px-3 text-right">
                 <button onclick="printGLVoucher('{{ v.id }}')" class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 text-[11px] font-bold inline-flex items-center gap-1.5 transition">
                   <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                   <span>Print Voucher</span>
                 </button>
-              </td>
-            </tr>
+                    <button type="button" onclick="openDynamicEditModal('gl_vouchers', '{{ v.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('gl_vouchers', '{{ v.id }}', '{{ v.name or v.title or v.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -652,7 +681,8 @@
             <th class="py-2.5 px-3">Line Memo</th>
             <th class="py-2.5 px-3 text-right">Debit ($)</th>
             <th class="py-2.5 px-3 text-right">Credit ($)</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for t in gl_transaction_details %}
@@ -667,7 +697,17 @@
               <td class="py-2.5 px-3 max-w-xs truncate">{{ t.line_narration|default('-') }}</td>
               <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{% if t.debit_amount > 0 %}${{ "{:,.2f}".format(t.debit_amount) }}{% else %}-{% endif %}</td>
               <td class="py-2.5 px-3 text-right font-mono text-rose-600">{% if t.credit_amount > 0 %}${{ "{:,.2f}".format(t.credit_amount) }}{% else %}-{% endif %}</td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('gl_vouchers', '{{ t.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('gl_vouchers', '{{ t.id }}', '{{ t.name or t.title or t.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -698,7 +738,8 @@
             <th class="py-2.5 px-3 text-right">Overheads ($)</th>
             <th class="py-2.5 px-3 text-right">Net Margin ($)</th>
             <th class="py-2.5 px-3 text-center">Margin %</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for p in gl_cost_centre_pnl %}
@@ -709,7 +750,17 @@
               <td class="py-2.5 px-3 text-right font-mono text-amber-500">${{ "{:,.2f}".format(p.overheads) }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(p.net_contribution) }}</td>
               <td class="py-2.5 px-3 text-center font-mono font-bold text-purple-600">{{ p.margin_pct }}%</td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_cost_centers', '{{ p.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_cost_centers', '{{ p.id }}', '{{ p.name or p.title or p.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>

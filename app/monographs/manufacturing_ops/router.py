@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Form
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from app.core.db import db
 from app.core.company_service import CompanyService
@@ -10,37 +10,10 @@ from app.monographs.manufacturing_ops.service import ManufacturingService
 router = APIRouter(tags=["Manufacturing Operations"])
 templates = Jinja2Templates(directory="app/templates")
 
-@router.get("/settings/manufacturing", response_class=HTMLResponse)
+@router.get("/settings/manufacturing")
 async def manufacturing_page(request: Request):
-    active_company = CompanyService.resolve_active_company(request)
-    companies_list = CompanyService.get_all_companies()
-    appearance = AppearanceService.get_appearance()
-    categories = DynamicOptionService.get_categories()
-    machines = ManufacturingService.get_all_machines()
-    plant_summary = ManufacturingService.get_plant_summary()
-    db_health = db.check_health()
-
-    breadcrumbs = [
-        {"title": "Home", "url": "/"},
-        {"title": "Plant Operations", "url": "/"},
-        {"title": "Line Telemetry", "url": None}
-    ]
-
-    return templates.TemplateResponse(
-        request=request,
-        name="pages/manufacturing.html",
-        context={
-            "active_company": active_company,
-            "companies_list": companies_list,
-            "appearance": appearance,
-            "categories": categories,
-            "machines": machines,
-            "plant_summary": plant_summary,
-            "db_health": db_health,
-            "breadcrumbs": breadcrumbs,
-            "active_tab": "manufacturing"
-        }
-    )
+    # Consolidated with Enterprise Production Operations Suite
+    return RedirectResponse(url="/modules/production?tab=resources", status_code=307)
 
 @router.post("/api/manufacturing/machine-status", response_class=JSONResponse)
 async def change_machine_status(

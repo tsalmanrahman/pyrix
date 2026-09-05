@@ -1,9 +1,11 @@
-<footer class="mt-8 pt-4 pb-6 border-t border-slate-200 dark:border-white/5 text-center text-xs text-slate-500 dark:text-slate-400">
-  <p>&copy; <span id="copyright-year">2026</span> Pyrix Enterprise Suite. All rights reserved.</p>
+<footer class="mt-auto pt-6 pb-6 border-t border-slate-200 dark:border-white/5 text-center text-xs font-medium text-slate-500 dark:text-slate-400 transition-colors duration-150">
+  <p>&copy; <span class="copyright-year">2026</span> Pyrix Enterprise Suite. All rights reserved.</p>
 </footer>
 <script>
   (function() {
-    const yrEl = document.getElementById('copyright-year');
-    if (yrEl) yrEl.textContent = new Date().getFullYear();
+    const yr = new Date().getFullYear();
+    document.querySelectorAll('.copyright-year').forEach(function(el) {
+      el.textContent = yr;
+    });
   })();
 </script>

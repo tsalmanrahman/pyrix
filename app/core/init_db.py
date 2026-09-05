@@ -310,7 +310,7 @@ def initialize_tables():
                 budget_title NVARCHAR(200) NOT NULL,
                 fiscal_year VARCHAR(20) NOT NULL,
                 company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
-                cost_centre_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES gl_cost_centres(id),
+                cost_centre_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES admin_cost_centers(id),
                 gl_account_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES gl_accounts(id),
                 allocated_amount FLOAT NOT NULL,
                 utilized_amount FLOAT DEFAULT 0.0,
@@ -491,7 +491,7 @@ def initialize_tables():
                 req_number VARCHAR(50) NOT NULL UNIQUE,
                 req_type VARCHAR(50) NOT NULL,
                 department_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES gl_departments(id),
-                cost_centre_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES gl_cost_centres(id),
+                cost_centre_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES admin_cost_centers(id),
                 title NVARCHAR(200) NOT NULL,
                 priority VARCHAR(20) DEFAULT 'MEDIUM',
                 requester_name NVARCHAR(100) NOT NULL,
@@ -2186,8 +2186,780 @@ def initialize_tables():
                 created_at DATETIME DEFAULT GETDATE()
             );
         END
-        """
+        """,
 
+
+        # 100. Production: Manufacturing Processes Master
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_processes')
+        BEGIN
+            CREATE TABLE prod_processes (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90001, 1) NOT NULL,
+                process_code VARCHAR(50) NOT NULL UNIQUE,
+                process_name NVARCHAR(150) NOT NULL,
+                stage_type VARCHAR(50) NOT NULL,
+                sequence_order INT NOT NULL,
+                default_cost_center VARCHAR(50) DEFAULT 'CC-PRD-01',
+                description NVARCHAR(300),
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 101. Production: Manufacturing Plants, Works & Bays
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_plants')
+        BEGIN
+            CREATE TABLE prod_plants (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90101, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                plant_code VARCHAR(50) NOT NULL,
+                plant_name NVARCHAR(150) NOT NULL,
+                location NVARCHAR(200) NOT NULL,
+                manager_name NVARCHAR(100) NOT NULL,
+                total_bays INT DEFAULT 6,
+                shift_mode VARCHAR(50) DEFAULT '3_SHIFTS_24_7',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 102. Production: Production Resources & Work Centers
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_resources')
+        BEGIN
+            CREATE TABLE prod_resources (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90201, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                plant_id UNIQUEIDENTIFIER NOT NULL,
+                resource_code VARCHAR(50) NOT NULL,
+                resource_name NVARCHAR(150) NOT NULL,
+                resource_type VARCHAR(50) DEFAULT 'CNC_MACHINE',
+                hourly_cost_rate DECIMAL(18, 2) NOT NULL,
+                capacity_hours_per_day DECIMAL(5, 2) DEFAULT 16.00,
+                efficiency_pct DECIMAL(5, 2) DEFAULT 92.50,
+                status VARCHAR(30) DEFAULT 'OPERATIONAL',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 103. Production: Operational Routing & Standard Time Matrix
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_routings')
+        BEGIN
+            CREATE TABLE prod_routings (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90301, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                routing_code VARCHAR(50) NOT NULL,
+                routing_name NVARCHAR(150) NOT NULL,
+                item_id UNIQUEIDENTIFIER NOT NULL,
+                process_id UNIQUEIDENTIFIER NOT NULL,
+                resource_id UNIQUEIDENTIFIER NOT NULL,
+                operation_sequence INT NOT NULL,
+                operation_description NVARCHAR(250) NOT NULL,
+                setup_time_mins INT DEFAULT 30,
+                run_time_mins INT DEFAULT 45,
+                labor_hours DECIMAL(6, 2) DEFAULT 1.50,
+                machine_hours DECIMAL(6, 2) DEFAULT 1.25,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 104. Production: Plant & Resource Capacity Parameters
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_capacity')
+        BEGIN
+            CREATE TABLE prod_capacity (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90401, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                plant_id UNIQUEIDENTIFIER NOT NULL,
+                resource_id UNIQUEIDENTIFIER NOT NULL,
+                period_month VARCHAR(20) NOT NULL,
+                shift_hours_per_day DECIMAL(5, 2) DEFAULT 16.00,
+                working_days INT DEFAULT 26,
+                total_available_hours DECIMAL(8, 2) NOT NULL,
+                planned_load_hours DECIMAL(8, 2) NOT NULL,
+                capacity_utilization_pct DECIMAL(5, 2) NOT NULL,
+                status VARCHAR(30) DEFAULT 'OPTIMAL',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 105. Production: Multi-Level Engineering Bill Of Materials (BOM) Headers
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_bom_headers')
+        BEGIN
+            CREATE TABLE prod_bom_headers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90501, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                bom_code VARCHAR(50) NOT NULL UNIQUE,
+                bom_type VARCHAR(30) DEFAULT 'STANDARD',
+                item_id UNIQUEIDENTIFIER NOT NULL,
+                revision_number VARCHAR(20) DEFAULT 'REV-1.0',
+                base_quantity FLOAT DEFAULT 1.0,
+                uom_code VARCHAR(20) DEFAULT 'PCS',
+                expected_yield_pct DECIMAL(5, 2) DEFAULT 98.50,
+                effective_from DATE NOT NULL,
+                is_approved BIT DEFAULT 1,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 106. Production: BOM Component Items & Scrap Allowances
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_bom_items')
+        BEGIN
+            CREATE TABLE prod_bom_items (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90601, 1) NOT NULL,
+                bom_id UNIQUEIDENTIFIER NOT NULL,
+                component_item_id UNIQUEIDENTIFIER NOT NULL,
+                quantity FLOAT NOT NULL,
+                uom_code VARCHAR(20) DEFAULT 'PCS',
+                scrap_allowance_pct DECIMAL(5, 2) DEFAULT 2.00,
+                is_critical BIT DEFAULT 1,
+                operation_seq INT DEFAULT 10,
+                remarks NVARCHAR(200),
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 107. Production: Demand Requisitions (from Sales Orders / Forecast)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_requisitions')
+        BEGIN
+            CREATE TABLE prod_requisitions (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90701, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                requisition_number VARCHAR(50) NOT NULL UNIQUE,
+                demand_source VARCHAR(50) DEFAULT 'SALES_ORDER',
+                item_id UNIQUEIDENTIFIER NOT NULL,
+                requested_qty FLOAT NOT NULL,
+                required_by_date DATE NOT NULL,
+                priority VARCHAR(20) DEFAULT 'HIGH',
+                requested_by NVARCHAR(100) NOT NULL,
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 108. Production: Master Production Orders (Discrete Work Orders)
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_orders')
+        BEGIN
+            CREATE TABLE prod_orders (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90801, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                plant_id UNIQUEIDENTIFIER NOT NULL,
+                order_number VARCHAR(50) NOT NULL UNIQUE,
+                requisition_id UNIQUEIDENTIFIER NULL,
+                item_id UNIQUEIDENTIFIER NOT NULL,
+                bom_id UNIQUEIDENTIFIER NOT NULL,
+                planned_qty FLOAT NOT NULL,
+                completed_qty FLOAT DEFAULT 0.0,
+                scrap_qty FLOAT DEFAULT 0.0,
+                planned_start_date DATE NOT NULL,
+                planned_end_date DATE NOT NULL,
+                actual_start_date DATE NULL,
+                actual_end_date DATE NULL,
+                status VARCHAR(30) DEFAULT 'IN_PROGRESS',
+                priority VARCHAR(20) DEFAULT 'HIGH',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 109. Production: Shop Floor Job Cards & Route Traveler Execution
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_job_cards')
+        BEGIN
+            CREATE TABLE prod_job_cards (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(90901, 1) NOT NULL,
+                order_id UNIQUEIDENTIFIER NOT NULL,
+                routing_id UNIQUEIDENTIFIER NOT NULL,
+                resource_id UNIQUEIDENTIFIER NOT NULL,
+                job_card_number VARCHAR(50) NOT NULL UNIQUE,
+                operation_seq INT NOT NULL,
+                operation_title NVARCHAR(150) NOT NULL,
+                scheduled_hours DECIMAL(6, 2) NOT NULL,
+                actual_hours DECIMAL(6, 2) NOT NULL,
+                planned_qty FLOAT NOT NULL,
+                completed_qty FLOAT NOT NULL,
+                rejected_qty FLOAT DEFAULT 0.0,
+                operator_name NVARCHAR(100) NOT NULL,
+                status VARCHAR(30) DEFAULT 'COMPLETED',
+                started_at DATETIME,
+                completed_at DATETIME,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 110. Production: Materials Requisition & Issue to WIP
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_material_issues')
+        BEGIN
+            CREATE TABLE prod_material_issues (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(91001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                order_id UNIQUEIDENTIFIER NOT NULL,
+                warehouse_id UNIQUEIDENTIFIER NOT NULL,
+                issue_number VARCHAR(50) NOT NULL UNIQUE,
+                issue_date DATE NOT NULL,
+                item_id UNIQUEIDENTIFIER NOT NULL,
+                required_qty FLOAT NOT NULL,
+                issued_qty FLOAT NOT NULL,
+                unit_cost DECIMAL(18, 2) NOT NULL,
+                total_cost DECIMAL(18, 2) NOT NULL,
+                issued_by NVARCHAR(100) NOT NULL,
+                status VARCHAR(30) DEFAULT 'ISSUED_TO_WIP',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 111. Production: Material-to-Material Conversions & Assembly Reversals
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_conversions')
+        BEGIN
+            CREATE TABLE prod_conversions (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(91101, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                conversion_number VARCHAR(50) NOT NULL UNIQUE,
+                conversion_type VARCHAR(30) DEFAULT 'ASSEMBLY_CONVERSION',
+                source_item_id UNIQUEIDENTIFIER NOT NULL,
+                target_item_id UNIQUEIDENTIFIER NOT NULL,
+                input_qty FLOAT NOT NULL,
+                output_qty FLOAT NOT NULL,
+                conversion_date DATE NOT NULL,
+                unit_cost DECIMAL(18, 2) NOT NULL,
+                total_value DECIMAL(18, 2) NOT NULL,
+                operator_name NVARCHAR(100) NOT NULL,
+                remarks NVARCHAR(300),
+                status VARCHAR(30) DEFAULT 'POSTED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 112. Production: Quality Control Inspections & Release Authorizations
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_qc_inspections')
+        BEGIN
+            CREATE TABLE prod_qc_inspections (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(91201, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                order_id UNIQUEIDENTIFIER NOT NULL,
+                inspection_number VARCHAR(50) NOT NULL UNIQUE,
+                inspection_stage VARCHAR(50) DEFAULT 'FINAL_INSPECTION',
+                sample_size_qty FLOAT NOT NULL,
+                passed_qty FLOAT NOT NULL,
+                rejected_qty FLOAT NOT NULL,
+                defect_category VARCHAR(100) DEFAULT 'MINOR_TOLERANCE',
+                inspection_date DATE NOT NULL,
+                inspector_name NVARCHAR(100) NOT NULL,
+                disposition VARCHAR(50) DEFAULT 'ACCEPTED_FOR_DISPATCH',
+                status VARCHAR(30) DEFAULT 'APPROVED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 113. Production: Machine Stoppage & Downtime Tracker
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_downtime_logs')
+        BEGIN
+            CREATE TABLE prod_downtime_logs (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(91301, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                resource_id UNIQUEIDENTIFIER NOT NULL,
+                log_number VARCHAR(50) NOT NULL UNIQUE,
+                downtime_date DATE NOT NULL,
+                duration_mins INT NOT NULL,
+                downtime_category VARCHAR(50) DEFAULT 'TOOLING_CHANGE',
+                root_cause NVARCHAR(250) NOT NULL,
+                technician_name NVARCHAR(100) NOT NULL,
+                estimated_cost_loss DECIMAL(18, 2) NOT NULL,
+                status VARCHAR(30) DEFAULT 'RESOLVED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 114. Production: Standard vs Actual Costing & Variance Records
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'prod_cost_records')
+        BEGIN
+            CREATE TABLE prod_cost_records (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(91401, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                order_id UNIQUEIDENTIFIER NOT NULL,
+                raw_material_cost DECIMAL(18, 2) NOT NULL,
+                direct_labor_cost DECIMAL(18, 2) NOT NULL,
+                machine_overhead_cost DECIMAL(18, 2) NOT NULL,
+                scrap_variance_cost DECIMAL(18, 2) NOT NULL,
+                total_actual_cost DECIMAL(18, 2) NOT NULL,
+                standard_cost DECIMAL(18, 2) NOT NULL,
+                variance_amount DECIMAL(18, 2) NOT NULL,
+                variance_pct DECIMAL(5, 2) NOT NULL,
+                cost_date DATE NOT NULL,
+                status VARCHAR(30) DEFAULT 'COMMITTED',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+# 1. Admin Company Configs
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_company_configs')
+        BEGIN
+            CREATE TABLE admin_company_configs (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95101, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                registration_no NVARCHAR(100) NOT NULL,
+                tax_id NVARCHAR(100) NOT NULL,
+                base_currency VARCHAR(10) DEFAULT 'USD',
+                fiscal_start_month INT DEFAULT 4,
+                multi_currency_enabled BIT DEFAULT 1,
+                address_line1 NVARCHAR(200) NOT NULL,
+                city NVARCHAR(100) NOT NULL,
+                state NVARCHAR(100) NOT NULL,
+                postal_code VARCHAR(20) NOT NULL,
+                country VARCHAR(50) DEFAULT 'United States',
+                phone VARCHAR(50) NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                website VARCHAR(150),
+                logo_path VARCHAR(255) DEFAULT '/static/img/brand/logo.svg',
+                default_locale VARCHAR(20) DEFAULT 'en_US',
+                status VARCHAR(30) DEFAULT 'ACTIVE',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 2. Business Units
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_business_units')
+        BEGIN
+            CREATE TABLE admin_business_units (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95201, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                unit_code VARCHAR(50) NOT NULL,
+                unit_name NVARCHAR(150) NOT NULL,
+                unit_type VARCHAR(50) DEFAULT 'OPERATING_DIVISION',
+                manager_name NVARCHAR(100) NOT NULL,
+                location NVARCHAR(200),
+                cost_center_count INT DEFAULT 0,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 3. Cost Centers
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_cost_centers')
+        BEGIN
+            CREATE TABLE admin_cost_centers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95301, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                business_unit_id UNIQUEIDENTIFIER NOT NULL,
+                cost_center_code VARCHAR(50) NOT NULL,
+                name NVARCHAR(150) NOT NULL,
+                department NVARCHAR(100) NOT NULL,
+                manager_name NVARCHAR(100) NOT NULL,
+                is_profit_center BIT DEFAULT 0,
+                budget_allocation DECIMAL(18, 2) DEFAULT 0.00,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 4. Countries
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_countries')
+        BEGIN
+            CREATE TABLE admin_countries (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95401, 1) NOT NULL,
+                country_code VARCHAR(10) NOT NULL UNIQUE,
+                country_name NVARCHAR(100) NOT NULL,
+                dial_code VARCHAR(10) NOT NULL,
+                currency_code VARCHAR(10) NOT NULL,
+                region VARCHAR(50) NOT NULL,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 5. States
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_states')
+        BEGIN
+            CREATE TABLE admin_states (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95501, 1) NOT NULL,
+                country_code VARCHAR(10) NOT NULL,
+                state_code VARCHAR(20) NOT NULL,
+                state_name NVARCHAR(100) NOT NULL,
+                tax_zone VARCHAR(50) DEFAULT 'STANDARD_ZONE',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 6. Currencies
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_currencies')
+        BEGIN
+            CREATE TABLE admin_currencies (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95601, 1) NOT NULL,
+                currency_code VARCHAR(10) NOT NULL UNIQUE,
+                currency_name NVARCHAR(100) NOT NULL,
+                symbol NVARCHAR(10) NOT NULL,
+                decimal_places INT DEFAULT 2,
+                is_base_currency BIT DEFAULT 0,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 7. Exchange Rates
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_exchange_rates')
+        BEGIN
+            CREATE TABLE admin_exchange_rates (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95701, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                currency_code VARCHAR(10) NOT NULL,
+                target_currency VARCHAR(10) DEFAULT 'USD',
+                exchange_rate DECIMAL(18, 6) NOT NULL,
+                effective_date DATE NOT NULL,
+                rate_type VARCHAR(30) DEFAULT 'SPOT_RATE',
+                entered_by NVARCHAR(100) NOT NULL,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 8. Fiscal Calendars
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_fiscal_calendars')
+        BEGIN
+            CREATE TABLE admin_fiscal_calendars (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95801, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                fiscal_year_name VARCHAR(50) NOT NULL,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                total_periods INT DEFAULT 12,
+                is_closed BIT DEFAULT 0,
+                opening_balance_locked BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 9. Fiscal Periods
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_fiscal_periods')
+        BEGIN
+            CREATE TABLE admin_fiscal_periods (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(95901, 1) NOT NULL,
+                calendar_id UNIQUEIDENTIFIER NOT NULL,
+                period_number INT NOT NULL,
+                period_name VARCHAR(50) NOT NULL,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                status VARCHAR(30) DEFAULT 'OPEN',
+                closed_at DATETIME,
+                closed_by NVARCHAR(100),
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 10. Printers
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_printers')
+        BEGIN
+            CREATE TABLE admin_printers (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                printer_name NVARCHAR(150) NOT NULL,
+                printer_type VARCHAR(50) DEFAULT 'NETWORK_PRINT_SERVER',
+                ip_address VARCHAR(50) NOT NULL,
+                port INT DEFAULT 9100,
+                paper_size VARCHAR(20) DEFAULT 'A4',
+                default_tray VARCHAR(30) DEFAULT 'Tray 1',
+                is_default BIT DEFAULT 0,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 11. Roles
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_roles')
+        BEGIN
+            CREATE TABLE admin_roles (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96101, 1) NOT NULL,
+                role_code VARCHAR(50) NOT NULL UNIQUE,
+                role_name NVARCHAR(100) NOT NULL,
+                description NVARCHAR(250),
+                security_level INT DEFAULT 1,
+                is_system_role BIT DEFAULT 0,
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 12. Role Permissions Matrix
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_role_permissions')
+        BEGIN
+            CREATE TABLE admin_role_permissions (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96201, 1) NOT NULL,
+                role_id UNIQUEIDENTIFIER NOT NULL,
+                module_code VARCHAR(50) NOT NULL,
+                sub_area_code VARCHAR(50) NOT NULL,
+                can_view BIT DEFAULT 1,
+                can_create BIT DEFAULT 0,
+                can_edit BIT DEFAULT 0,
+                can_delete BIT DEFAULT 0,
+                can_approve BIT DEFAULT 0,
+                can_export BIT DEFAULT 0,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 13. User Profiles
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_user_profiles')
+        BEGIN
+            CREATE TABLE admin_user_profiles (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96301, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                user_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES users(id),
+                user_code VARCHAR(50) NOT NULL,
+                full_name NVARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL,
+                phone VARCHAR(50),
+                role_id UNIQUEIDENTIFIER,
+                business_unit_id UNIQUEIDENTIFIER,
+                cost_center_id UNIQUEIDENTIFIER,
+                avatar_url VARCHAR(255) DEFAULT '/static/img/avatars/default.png',
+                mfa_enabled BIT DEFAULT 0,
+                status VARCHAR(30) DEFAULT 'ACTIVE',
+                last_login_at DATETIME,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 14. User Data Scopes
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_user_data_scopes')
+        BEGIN
+            CREATE TABLE admin_user_data_scopes (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96401, 1) NOT NULL,
+                user_id UNIQUEIDENTIFIER NOT NULL,
+                scope_type VARCHAR(50) DEFAULT 'COST_CENTER',
+                entity_id UNIQUEIDENTIFIER NOT NULL,
+                entity_name NVARCHAR(150) NOT NULL,
+                access_mode VARCHAR(20) DEFAULT 'READ_WRITE',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 15. Tax Authorities
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_tax_authorities')
+        BEGIN
+            CREATE TABLE admin_tax_authorities (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96501, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                authority_code VARCHAR(50) NOT NULL,
+                authority_name NVARCHAR(150) NOT NULL,
+                jurisdiction NVARCHAR(100) NOT NULL,
+                tax_office NVARCHAR(150) NOT NULL,
+                contact_person NVARCHAR(100),
+                phone VARCHAR(50),
+                reporting_cycle VARCHAR(30) DEFAULT 'MONTHLY',
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 16. Tax Categories
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_tax_categories')
+        BEGIN
+            CREATE TABLE admin_tax_categories (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96601, 1) NOT NULL,
+                category_code VARCHAR(50) NOT NULL UNIQUE,
+                category_name NVARCHAR(100) NOT NULL,
+                tax_type VARCHAR(50) DEFAULT 'VALUE_ADDED_TAX',
+                default_rate DECIMAL(5, 2) DEFAULT 15.00,
+                description NVARCHAR(250),
+                is_active BIT DEFAULT 1,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 17. Tax Profiles
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_tax_profiles')
+        BEGIN
+            CREATE TABLE admin_tax_profiles (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96701, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                profile_code VARCHAR(50) NOT NULL,
+                profile_name NVARCHAR(150) NOT NULL,
+                category_id UNIQUEIDENTIFIER NOT NULL,
+                authority_id UNIQUEIDENTIFIER NOT NULL,
+                rate_percent DECIMAL(5, 2) NOT NULL,
+                gl_account_code VARCHAR(50) DEFAULT '2150-TAX-PAYABLE',
+                is_recoverable BIT DEFAULT 1,
+                effective_date DATE NOT NULL,
+                status VARCHAR(30) DEFAULT 'ACTIVE',
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 18. Periodic Closures
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_periodic_closures')
+        BEGIN
+            CREATE TABLE admin_periodic_closures (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96801, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                fiscal_period_id UNIQUEIDENTIFIER NOT NULL,
+                module_code VARCHAR(50) NOT NULL,
+                module_name NVARCHAR(100) NOT NULL,
+                closing_date DATE NOT NULL,
+                closed_by NVARCHAR(100) NOT NULL,
+                status VARCHAR(30) DEFAULT 'CLOSED_VERIFIED',
+                reconciliation_notes NVARCHAR(250),
+                verified_balance DECIMAL(18, 2) DEFAULT 0.00,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 19. Integrity Scans
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_integrity_scans')
+        BEGIN
+            CREATE TABLE admin_integrity_scans (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(96901, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                scan_type VARCHAR(50) DEFAULT 'FULL_DATABASE_INTEGRITY',
+                scan_title NVARCHAR(150) NOT NULL,
+                items_checked INT DEFAULT 0,
+                anomalies_found INT DEFAULT 0,
+                auto_repaired INT DEFAULT 0,
+                scan_status VARCHAR(30) DEFAULT 'CLEAN_VERIFIED',
+                scan_duration_ms INT DEFAULT 1850,
+                log_details NVARCHAR(MAX),
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """,
+
+        # 20. Audit Vault
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_audit_vault')
+        BEGIN
+            CREATE TABLE admin_audit_vault (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(97001, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                event_timestamp DATETIME DEFAULT GETDATE(),
+                user_name NVARCHAR(100) NOT NULL,
+                user_ip VARCHAR(50) DEFAULT '192.168.1.10',
+                event_action VARCHAR(50) NOT NULL,
+                module_code VARCHAR(50) NOT NULL,
+                entity_name VARCHAR(100) NOT NULL,
+                record_ref VARCHAR(100) NOT NULL,
+                change_details NVARCHAR(500),
+                security_severity VARCHAR(20) DEFAULT 'INFO'
+            );
+        END
+        """,
+
+        # 21. Backup Points
+        """
+        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_backup_points')
+        BEGIN
+            CREATE TABLE admin_backup_points (
+                id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                code INT IDENTITY(97101, 1) NOT NULL,
+                company_id UNIQUEIDENTIFIER NOT NULL,
+                backup_number VARCHAR(50) NOT NULL,
+                backup_type VARCHAR(50) DEFAULT 'FULL_DATABASE_BACKUP',
+                file_path NVARCHAR(255) NOT NULL,
+                file_size_mb DECIMAL(10, 2) NOT NULL,
+                status VARCHAR(30) DEFAULT 'VERIFIED_HEALTHY',
+                verified_at DATETIME DEFAULT GETDATE(),
+                verified_by NVARCHAR(100) NOT NULL,
+                created_at DATETIME DEFAULT GETDATE()
+            );
+        END
+        """
     ]
 
     for ddl in ddl_scripts:
@@ -3950,6 +4722,821 @@ def seed_appearance():
         )
         logger.info("Seeded appearance_settings.")
 
+
+def seed_prod_master_and_transactions():
+    """Seeds multi-company Production Master, Plants, Resources, Routings, BOMs, Orders, Job Cards & QC."""
+    proc_cnt = db.query_one("SELECT COUNT(*) AS cnt FROM prod_processes")["cnt"]
+    if proc_cnt == 0:
+        processes = [
+            ("PROC-CUT-01", "Precision Laser & Plasma Cutting", "FABRICATION", 10, "CC-PRD-CUT", "CNC Fiber laser cutting and sheet metal profiling"),
+            ("PROC-MCH-02", "5-Axis High-Speed CNC Machining", "MACHINING", 20, "CC-PRD-CNC", "Milling, turning, contouring, and boring tolerances within +/- 5 microns"),
+            ("PROC-WLD-03", "Robotic Arc & TIG Welding", "FABRICATION", 30, "CC-PRD-WLD", "Automated multi-pass structural weld with Argon shielding"),
+            ("PROC-COAT-04", "Electrostatic Powder Coating & Anodizing", "SURFACE_FINISH", 40, "CC-PRD-FIN", "Anti-corrosion pre-treatment and thermal powder cure"),
+            ("PROC-ASY-05", "Sub-Assembly & Modular Kitting", "ASSEMBLY", 50, "CC-PRD-ASY", "Mechanical and electronic sub-component assembly"),
+            ("PROC-QC-06", "High-Precision Coordinate QA Inspection", "QUALITY_TESTING", 60, "CC-PRD-QC", "CMM 3D laser scanning, hardness test & ultrasonic non-destructive testing"),
+            ("PROC-BOX-07", "Final Enclosure Assembly & Packaging", "ASSEMBLY", 70, "CC-PRD-BOX", "Final product boxing, serial labeling & anti-static dispatch prep"),
+        ]
+        for p in processes:
+            db.execute(
+                """
+                INSERT INTO prod_processes (process_code, process_name, stage_type, sequence_order, default_cost_center, description, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
+                """,
+                p
+            )
+        logger.info("Seeded 7 Production Manufacturing Processes.")
+
+    prod_order_cnt = db.query_one("SELECT COUNT(*) AS cnt FROM prod_orders")["cnt"]
+    if prod_order_cnt == 0:
+        companies = db.query("SELECT id, short_code FROM companies ORDER BY sort_order")
+        item_rows = db.query("SELECT TOP 5 id, item_code, item_name, standard_cost FROM inv_items ORDER BY item_code")
+        wh_rows = db.query("SELECT TOP 2 id, warehouse_code FROM inv_warehouses ORDER BY code")
+        
+        fg_item_id = item_rows[0]["id"] if item_rows else None
+        comp_item1_id = item_rows[1]["id"] if len(item_rows) > 1 else fg_item_id
+        comp_item2_id = item_rows[2]["id"] if len(item_rows) > 2 else fg_item_id
+        wh_id = wh_rows[0]["id"] if wh_rows else None
+
+        for c in companies:
+            cid = str(c["id"])
+            code_prefix = c["short_code"]
+
+            # 1. Plants (2 per company)
+            plant1_id = str(uuid.uuid4())
+            plant2_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO prod_plants (id, company_id, plant_code, plant_name, location, manager_name, total_bays, shift_mode, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 8, '3_SHIFTS_24_7', 1)
+                """,
+                (plant1_id, cid, f"PLANT-{code_prefix}-01", f"{code_prefix} Advanced Heavy Fabrication Works", "Industrial Zone Sector 4, Bay 1-4", "Eng. Marcus Sterling")
+            )
+            db.execute(
+                """
+                INSERT INTO prod_plants (id, company_id, plant_code, plant_name, location, manager_name, total_bays, shift_mode, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 6, '2_SHIFTS_16H', 1)
+                """,
+                (plant2_id, cid, f"PLANT-{code_prefix}-02", f"{code_prefix} High-Precision CNC & Robotics Plant", "High-Tech Manufacturing Complex B", "Dr. Elena Rostova")
+            )
+
+            # 2. Resources / Work Centers (4 per company)
+            res1_id = str(uuid.uuid4())
+            res2_id = str(uuid.uuid4())
+            res3_id = str(uuid.uuid4())
+            res4_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO prod_resources (id, company_id, plant_id, resource_code, resource_name, resource_type, hourly_cost_rate, capacity_hours_per_day, efficiency_pct, status, is_active)
+                VALUES (?, ?, ?, ?, ?, 'CNC_MACHINE', 145.00, 18.00, 94.50, 'OPERATIONAL', 1)
+                """,
+                (res1_id, cid, plant2_id, f"WC-{code_prefix}-VMC01", "Mazak Integrex 5-Axis CNC Mill-Turn Center")
+            )
+            db.execute(
+                """
+                INSERT INTO prod_resources (id, company_id, plant_id, resource_code, resource_name, resource_type, hourly_cost_rate, capacity_hours_per_day, efficiency_pct, status, is_active)
+                VALUES (?, ?, ?, ?, ?, 'ROBOTIC_CELL', 95.00, 20.00, 96.00, 'OPERATIONAL', 1)
+                """,
+                (res2_id, cid, plant1_id, f"WC-{code_prefix}-ROB02", "KUKA 6-Axis Heavy Robotic Welding Cell")
+            )
+            db.execute(
+                """
+                INSERT INTO prod_resources (id, company_id, plant_id, resource_code, resource_name, resource_type, hourly_cost_rate, capacity_hours_per_day, efficiency_pct, status, is_active)
+                VALUES (?, ?, ?, ?, ?, 'SURFACE_FINISH', 65.00, 16.00, 91.00, 'OPERATIONAL', 1)
+                """,
+                (res3_id, cid, plant1_id, f"WC-{code_prefix}-COAT03", "Nordson Automated Electrostatic Powder Coat Line")
+            )
+            db.execute(
+                """
+                INSERT INTO prod_resources (id, company_id, plant_id, resource_code, resource_name, resource_type, hourly_cost_rate, capacity_hours_per_day, efficiency_pct, status, is_active)
+                VALUES (?, ?, ?, ?, ?, 'QUALITY_TESTING', 110.00, 16.00, 98.00, 'OPERATIONAL', 1)
+                """,
+                (res4_id, cid, plant2_id, f"WC-{code_prefix}-CMM04", "Zeiss Prismo 3D Coordinate Measuring Machine (CMM)")
+            )
+
+            # 3. Capacity Records (4 per company)
+            capacity_data = [
+                (cid, plant2_id, res1_id, "2026-08", 18.00, 26, 468.00, 420.00, 89.74, "OPTIMAL"),
+                (cid, plant1_id, res2_id, "2026-08", 20.00, 26, 520.00, 480.00, 92.31, "HIGH_LOAD"),
+                (cid, plant1_id, res3_id, "2026-08", 16.00, 26, 416.00, 310.00, 74.52, "BALANCED"),
+                (cid, plant2_id, res4_id, "2026-08", 16.00, 26, 416.00, 395.00, 94.95, "OPTIMAL"),
+            ]
+            for cap in capacity_data:
+                db.execute(
+                    """
+                    INSERT INTO prod_capacity (company_id, plant_id, resource_id, period_month, shift_hours_per_day, working_days, total_available_hours, planned_load_hours, capacity_utilization_pct, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    cap
+                )
+
+            # Process IDs lookup
+            proc1_id = db.query_one("SELECT id FROM prod_processes WHERE process_code = 'PROC-MCH-02'")["id"]
+            proc2_id = db.query_one("SELECT id FROM prod_processes WHERE process_code = 'PROC-WLD-03'")["id"]
+            proc3_id = db.query_one("SELECT id FROM prod_processes WHERE process_code = 'PROC-COAT-04'")["id"]
+            proc4_id = db.query_one("SELECT id FROM prod_processes WHERE process_code = 'PROC-QC-06'")["id"]
+
+            # 4. Standard Routings (4 steps for Finished Good)
+            rout1_id = str(uuid.uuid4())
+            rout2_id = str(uuid.uuid4())
+            rout3_id = str(uuid.uuid4())
+            rout4_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO prod_routings (id, company_id, routing_code, routing_name, item_id, process_id, resource_id, operation_sequence, operation_description, setup_time_mins, run_time_mins, labor_hours, machine_hours, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 10, '5-Axis Precision Surface Contouring & Boring', 45, 60, 1.75, 1.50, 1)
+                """,
+                (rout1_id, cid, f"RT-{code_prefix}-01", f"{code_prefix} High-Spec Precision Machining Route", fg_item_id, proc1_id, res1_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_routings (id, company_id, routing_code, routing_name, item_id, process_id, resource_id, operation_sequence, operation_description, setup_time_mins, run_time_mins, labor_hours, machine_hours, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 20, 'Robotic Shielded Argon Enclosure Welding', 30, 40, 1.25, 1.00, 1)
+                """,
+                (rout2_id, cid, f"RT-{code_prefix}-02", f"{code_prefix} Structural Enclosure Weld Route", fg_item_id, proc2_id, res2_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_routings (id, company_id, routing_code, routing_name, item_id, process_id, resource_id, operation_sequence, operation_description, setup_time_mins, run_time_mins, labor_hours, machine_hours, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 30, 'Electrostatic Primer & Thermal Powder Coating', 20, 30, 0.75, 0.50, 1)
+                """,
+                (rout3_id, cid, f"RT-{code_prefix}-03", f"{code_prefix} Protective Polymer Coating Route", fg_item_id, proc3_id, res3_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_routings (id, company_id, routing_code, routing_name, item_id, process_id, resource_id, operation_sequence, operation_description, setup_time_mins, run_time_mins, labor_hours, machine_hours, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 40, 'Zeiss 3D CMM Laser Coordinate QA & Defect Sign-off', 15, 20, 0.50, 0.35, 1)
+                """,
+                (rout4_id, cid, f"RT-{code_prefix}-04", f"{code_prefix} Metrology QA & Certification Route", fg_item_id, proc4_id, res4_id)
+            )
+
+            # 5. BOM Header & Items (Standard BOM & Assembly BOM)
+            bom_std_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO prod_bom_headers (id, company_id, bom_code, bom_type, item_id, revision_number, base_quantity, uom_code, expected_yield_pct, effective_from, is_approved, is_active)
+                VALUES (?, ?, ?, 'STANDARD', ?, 'REV-2.4', 1.0, 'PCS', 98.20, '2026-01-01', 1, 1)
+                """,
+                (bom_std_id, cid, f"BOM-{code_prefix}-ENG01", fg_item_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_bom_items (bom_id, component_item_id, quantity, uom_code, scrap_allowance_pct, is_critical, operation_seq, remarks)
+                VALUES (?, ?, 2.0, 'BOX', 1.50, 1, 10, 'Titanium carbide cutting tooling & inserts')
+                """,
+                (bom_std_id, comp_item1_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_bom_items (bom_id, component_item_id, quantity, uom_code, scrap_allowance_pct, is_critical, operation_seq, remarks)
+                VALUES (?, ?, 1.0, 'SET', 2.00, 1, 20, 'Precision aerospace structural bushings set')
+                """,
+                (bom_std_id, comp_item2_id)
+            )
+
+            # Assembly BOM (Fast Kitting)
+            bom_asy_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO prod_bom_headers (id, company_id, bom_code, bom_type, item_id, revision_number, base_quantity, uom_code, expected_yield_pct, effective_from, is_approved, is_active)
+                VALUES (?, ?, ?, 'ASSEMBLY', ?, 'REV-1.0', 1.0, 'KIT', 99.50, '2026-03-01', 1, 1)
+                """,
+                (bom_asy_id, cid, f"BOM-{code_prefix}-ASY02", comp_item2_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_bom_items (bom_id, component_item_id, quantity, uom_code, scrap_allowance_pct, is_critical, operation_seq, remarks)
+                VALUES (?, ?, 4.0, 'PCS', 0.50, 1, 50, 'Fastener hardware kit components')
+                """,
+                (bom_asy_id, comp_item1_id)
+            )
+
+            # 6. Production Requisitions (2 per company)
+            req1_id = str(uuid.uuid4())
+            req2_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO prod_requisitions (id, company_id, requisition_number, demand_source, item_id, requested_qty, required_by_date, priority, requested_by, status)
+                VALUES (?, ?, ?, 'SALES_ORDER', ?, 150.0, '2026-09-15', 'URGENT', 'Sales VP Arthur Pendelton', 'APPROVED')
+                """,
+                (req1_id, cid, f"PRQ-{code_prefix}-2026-001", fg_item_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_requisitions (id, company_id, requisition_number, demand_source, item_id, requested_qty, required_by_date, priority, requested_by, status)
+                VALUES (?, ?, ?, 'BUFFER_STOCK', ?, 80.0, '2026-09-25', 'MEDIUM', 'Inventory Planner Sarah Lin', 'APPROVED')
+                """,
+                (req2_id, cid, f"PRQ-{code_prefix}-2026-002", comp_item2_id)
+            )
+
+            # 7. Production Orders (2 per company: 1 COMPLETED, 1 IN_PROGRESS)
+            ord1_id = str(uuid.uuid4())
+            ord2_id = str(uuid.uuid4())
+            db.execute(
+                """
+                INSERT INTO prod_orders (id, company_id, plant_id, order_number, requisition_id, item_id, bom_id, planned_qty, completed_qty, scrap_qty, planned_start_date, planned_end_date, actual_start_date, actual_end_date, status, priority)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 150.0, 148.0, 2.0, '2026-08-01', '2026-08-20', '2026-08-02', '2026-08-19', 'COMPLETED', 'HIGH')
+                """,
+                (ord1_id, cid, plant2_id, f"WO-{code_prefix}-2026-001", req1_id, fg_item_id, bom_std_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_orders (id, company_id, plant_id, order_number, requisition_id, item_id, bom_id, planned_qty, completed_qty, scrap_qty, planned_start_date, planned_end_date, actual_start_date, actual_end_date, status, priority)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 80.0, 45.0, 1.0, '2026-08-15', '2026-09-05', '2026-08-16', NULL, 'IN_PROGRESS', 'NORMAL')
+                """,
+                (ord2_id, cid, plant1_id, f"WO-{code_prefix}-2026-002", req2_id, comp_item2_id, bom_asy_id)
+            )
+
+            # 8. Shop Floor Job Cards (3 for ord1)
+            db.execute(
+                """
+                INSERT INTO prod_job_cards (order_id, routing_id, resource_id, job_card_number, operation_seq, operation_title, scheduled_hours, actual_hours, planned_qty, completed_qty, rejected_qty, operator_name, status, started_at, completed_at)
+                VALUES (?, ?, ?, ?, 10, '5-Axis Precision Surface Contouring & Boring', 24.0, 23.5, 150.0, 150.0, 0.0, 'Viktor Vance (Lead Machinist)', 'COMPLETED', '2026-08-03 08:00', '2026-08-06 17:30')
+                """,
+                (ord1_id, rout1_id, res1_id, f"JC-{code_prefix}-1001")
+            )
+            db.execute(
+                """
+                INSERT INTO prod_job_cards (order_id, routing_id, resource_id, job_card_number, operation_seq, operation_title, scheduled_hours, actual_hours, planned_qty, completed_qty, rejected_qty, operator_name, status, started_at, completed_at)
+                VALUES (?, ?, ?, ?, 20, 'Robotic Shielded Argon Enclosure Welding', 18.0, 17.0, 150.0, 149.0, 1.0, 'David Chen (Robotics Tech)', 'COMPLETED', '2026-08-07 08:00', '2026-08-10 16:00')
+                """,
+                (ord1_id, rout2_id, res2_id, f"JC-{code_prefix}-1002")
+            )
+            db.execute(
+                """
+                INSERT INTO prod_job_cards (order_id, routing_id, resource_id, job_card_number, operation_seq, operation_title, scheduled_hours, actual_hours, planned_qty, completed_qty, rejected_qty, operator_name, status, started_at, completed_at)
+                VALUES (?, ?, ?, ?, 40, 'Zeiss 3D CMM Laser Coordinate QA & Defect Sign-off', 8.0, 7.5, 149.0, 148.0, 1.0, 'Rachel Adams (Metrologist)', 'COMPLETED', '2026-08-15 09:00', '2026-08-16 17:00')
+                """,
+                (ord1_id, rout4_id, res4_id, f"JC-{code_prefix}-1003")
+            )
+
+            # 9. Materials Requisitions & Issues to WIP
+            db.execute(
+                """
+                INSERT INTO prod_material_issues (company_id, order_id, warehouse_id, issue_number, issue_date, item_id, required_qty, issued_qty, unit_cost, total_cost, issued_by, status)
+                VALUES (?, ?, ?, ?, '2026-08-02', ?, 300.0, 300.0, 48.50, 14550.00, 'Warehouse Custodian Jack Miller', 'ISSUED_TO_WIP')
+                """,
+                (cid, ord1_id, wh_id, f"MRQ-ISS-{code_prefix}-001", comp_item1_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_material_issues (company_id, order_id, warehouse_id, issue_number, issue_date, item_id, required_qty, issued_qty, unit_cost, total_cost, issued_by, status)
+                VALUES (?, ?, ?, ?, '2026-08-02', ?, 150.0, 150.0, 800.00, 120000.00, 'Warehouse Custodian Jack Miller', 'ISSUED_TO_WIP')
+                """,
+                (cid, ord1_id, wh_id, f"MRQ-ISS-{code_prefix}-002", comp_item2_id)
+            )
+
+            # 10. Material-to-Material Conversions & Reversals (2 per company)
+            db.execute(
+                """
+                INSERT INTO prod_conversions (company_id, conversion_number, conversion_type, source_item_id, target_item_id, input_qty, output_qty, conversion_date, unit_cost, total_value, operator_name, remarks, status)
+                VALUES (?, ?, 'ASSEMBLY_CONVERSION', ?, ?, 40.0, 10.0, '2026-08-18', 380.00, 3800.00, 'Lead Tech Robert Gray', 'Direct kitted sub-assembly conversion batch for client delivery', 'POSTED')
+                """,
+                (cid, f"CONV-{code_prefix}-2026-01", comp_item1_id, fg_item_id)
+            )
+            db.execute(
+                """
+                INSERT INTO prod_conversions (company_id, conversion_number, conversion_type, source_item_id, target_item_id, input_qty, output_qty, conversion_date, unit_cost, total_value, operator_name, remarks, status)
+                VALUES (?, ?, 'ASSEMBLY_REVERSAL_DEKIT', ?, ?, 2.0, 8.0, '2026-08-20', 380.00, 760.00, 'Lead Tech Robert Gray', 'Disassembly of excess test units returning raw hardware to stock', 'POSTED')
+                """,
+                (cid, f"REV-{code_prefix}-2026-01", fg_item_id, comp_item1_id)
+            )
+
+            # 11. Quality Inspections (2 per company)
+            db.execute(
+                """
+                INSERT INTO prod_qc_inspections (company_id, order_id, inspection_number, inspection_stage, sample_size_qty, passed_qty, rejected_qty, defect_category, inspection_date, inspector_name, disposition, status)
+                VALUES (?, ?, ?, 'IN_PROCESS', 15.0, 15.0, 0.0, 'NONE_ZERO_DEFECT', '2026-08-08', 'Senior QA Inspector Michael Wu', 'PASSED_TO_NEXT_STAGE', 'APPROVED')
+                """,
+                (cid, ord1_id, f"QC-{code_prefix}-2026-01")
+            )
+            db.execute(
+                """
+                INSERT INTO prod_qc_inspections (company_id, order_id, inspection_number, inspection_stage, sample_size_qty, passed_qty, rejected_qty, defect_category, inspection_date, inspector_name, disposition, status)
+                VALUES (?, ?, ?, 'FINAL_INSPECTION', 148.0, 146.0, 2.0, 'MICRO_SURFACE_BLEMISH', '2026-08-17', 'Quality Director Rebecca Vance', 'ACCEPTED_FOR_DISPATCH', 'APPROVED')
+                """,
+                (cid, ord1_id, f"QC-{code_prefix}-2026-02")
+            )
+
+            # 12. Machine Downtime Logs (2 per company)
+            db.execute(
+                """
+                INSERT INTO prod_downtime_logs (company_id, resource_id, log_number, downtime_date, duration_mins, downtime_category, root_cause, technician_name, estimated_cost_loss, status)
+                VALUES (?, ?, ?, '2026-08-05', 45, 'TOOLING_CHANGE', 'Scheduled ceramic insert tip replacement and laser recalibration', 'Senior Tech Tom Novak', 108.75, 'RESOLVED')
+                """,
+                (cid, res1_id, f"DT-{code_prefix}-2026-01")
+            )
+            db.execute(
+                """
+                INSERT INTO prod_downtime_logs (company_id, resource_id, log_number, downtime_date, duration_mins, downtime_category, root_cause, technician_name, estimated_cost_loss, status)
+                VALUES (?, ?, ?, '2026-08-12', 30, 'PREVENTIVE_MAINT', 'Robot hydraulic actuator fluid flush and seal inspection', 'Field Service Eng. Lucas Brandt', 47.50, 'RESOLVED')
+                """,
+                (cid, res2_id, f"DT-{code_prefix}-2026-02")
+            )
+
+            # 13. Standard vs Actual Cost Records (1 per completed order)
+            db.execute(
+                """
+                INSERT INTO prod_cost_records (company_id, order_id, raw_material_cost, direct_labor_cost, machine_overhead_cost, scrap_variance_cost, total_actual_cost, standard_cost, variance_amount, variance_pct, cost_date, status)
+                VALUES (?, ?, 134550.00, 7200.00, 6850.00, 760.00, 149360.00, 148000.00, 1360.00, 0.92, '2026-08-20', 'COMMITTED')
+                """,
+                (cid, ord1_id)
+            )
+
+        logger.info("Seeded Production Master Plants, Resources, Routings, BOMs, Orders, Job Cards & QC.")
+
+def seed_admin_master_and_transactions():
+    print("Starting System Administration & Governance seeding...")
+
+    # 1. Global Countries
+    existing_countries = db.query("SELECT COUNT(*) AS cnt FROM admin_countries")[0]["cnt"]
+    if existing_countries == 0:
+        countries_data = [
+            ("US", "United States", "+1", "USD", "North America"),
+            ("GB", "United Kingdom", "+44", "GBP", "Europe"),
+            ("DE", "Germany", "+49", "EUR", "Europe"),
+            ("JP", "Japan", "+81", "JPY", "Asia-Pacific"),
+            ("SG", "Singapore", "+65", "SGD", "Asia-Pacific"),
+            ("BD", "Bangladesh", "+880", "BDT", "South Asia"),
+            ("CA", "Canada", "+1", "CAD", "North America"),
+            ("AU", "Australia", "+61", "AUD", "Oceania"),
+            ("AE", "United Arab Emirates", "+971", "AED", "Middle East"),
+        ]
+        for code, name, dial, cur, region in countries_data:
+            db.execute(
+                """
+                INSERT INTO admin_countries (id, country_code, country_name, dial_code, currency_code, region, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
+                """,
+                (str(uuid.uuid4()), code, name, dial, cur, region)
+            )
+        print("Seeded Global Countries.")
+
+    # 2. Global States
+    existing_states = db.query("SELECT COUNT(*) AS cnt FROM admin_states")[0]["cnt"]
+    if existing_states == 0:
+        states_data = [
+            ("US", "CA", "California", "US_WEST_TAX_ZONE"),
+            ("US", "NY", "New York", "US_EAST_TAX_ZONE"),
+            ("US", "TX", "Texas", "US_SOUTH_TAX_ZONE"),
+            ("US", "IL", "Illinois", "US_MIDWEST_TAX_ZONE"),
+            ("GB", "ENG", "England", "UK_VAT_STANDARD"),
+            ("DE", "BY", "Bavaria", "EU_DE_VAT_19"),
+            ("BD", "DH", "Dhaka Division", "BD_NBR_CENTRAL"),
+            ("SG", "SG-01", "Central Singapore", "SG_GST_9"),
+        ]
+        for country_code, state_code, state_name, tax_zone in states_data:
+            db.execute(
+                """
+                INSERT INTO admin_states (id, country_code, state_code, state_name, tax_zone, is_active)
+                VALUES (?, ?, ?, ?, ?, 1)
+                """,
+                (str(uuid.uuid4()), country_code, state_code, state_name, tax_zone)
+            )
+        print("Seeded Global States.")
+
+    # 3. Global Currencies
+    existing_currencies = db.query("SELECT COUNT(*) AS cnt FROM admin_currencies")[0]["cnt"]
+    if existing_currencies == 0:
+        currencies_data = [
+            ("USD", "US Dollar", "$", 2, 1),
+            ("EUR", "Euro", "€", 2, 0),
+            ("GBP", "British Pound", "£", 2, 0),
+            ("JPY", "Japanese Yen", "¥", 0, 0),
+            ("SGD", "Singapore Dollar", "S$", 2, 0),
+            ("BDT", "Bangladeshi Taka", "৳", 2, 0),
+            ("CAD", "Canadian Dollar", "C$", 2, 0),
+            ("AUD", "Australian Dollar", "A$", 2, 0),
+            ("AED", "UAE Dirham", "AED", 2, 0),
+        ]
+        for cur_code, name, sym, dec, is_base in currencies_data:
+            db.execute(
+                """
+                INSERT INTO admin_currencies (id, currency_code, currency_name, symbol, decimal_places, is_base_currency, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
+                """,
+                (str(uuid.uuid4()), cur_code, name, sym, dec, is_base)
+            )
+        print("Seeded Global Currencies.")
+
+    # 4. Global Roles & Permissions
+    existing_roles = db.query("SELECT COUNT(*) AS cnt FROM admin_roles")[0]["cnt"]
+    role_map = {}
+    if existing_roles == 0:
+        roles_data = [
+            ("ROLE_SUPER_ADMIN", "Enterprise Super Administrator", "Full unconstrained administrative privileges across all modules", 10, 1),
+            ("ROLE_FIN_CONTROLLER", "Chief Financial Controller", "Full authority over General Ledger, AR, AP, Fixed Assets and Period Closures", 8, 1),
+            ("ROLE_OPERATIONS_DIR", "Operations & Supply Chain Director", "Executive access to Inventory, Sourcing, and Production Manufacturing", 7, 1),
+            ("ROLE_HR_DIRECTOR", "Human Resources Director", "Authority over Employee Profiles, Payroll Runs, and Attendance Records", 6, 1),
+            ("ROLE_INTERNAL_AUDITOR", "Statutory Compliance Auditor", "Read-only ledger audit, log inspection, and verification access", 5, 1),
+        ]
+        for r_code, r_name, desc, level, is_sys in roles_data:
+            r_id = str(uuid.uuid4())
+            role_map[r_code] = r_id
+            db.execute(
+                """
+                INSERT INTO admin_roles (id, role_code, role_name, description, security_level, is_system_role, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
+                """,
+                (r_id, r_code, r_name, desc, level, is_sys)
+            )
+
+        # Permissions Matrix for Roles
+        modules = [
+            "system-admin", "general-ledger", "accounts-receivable", "accounts-payable",
+            "sales", "inventory", "fixed-assets", "human-resources", "production"
+        ]
+        for mod in modules:
+            # Super Admin: all permissions
+            db.execute(
+                """
+                INSERT INTO admin_role_permissions (id, role_id, module_code, sub_area_code, can_view, can_create, can_edit, can_delete, can_approve, can_export)
+                VALUES (?, ?, ?, '*', 1, 1, 1, 1, 1, 1)
+                """,
+                (str(uuid.uuid4()), role_map["ROLE_SUPER_ADMIN"], mod)
+            )
+            # Fin Controller: view/edit/approve on financial
+            is_fin = mod in ("general-ledger", "accounts-receivable", "accounts-payable", "fixed-assets", "system-admin")
+            db.execute(
+                """
+                INSERT INTO admin_role_permissions (id, role_id, module_code, sub_area_code, can_view, can_create, can_edit, can_delete, can_approve, can_export)
+                VALUES (?, ?, ?, '*', 1, ?, ?, 0, ?, 1)
+                """,
+                (str(uuid.uuid4()), role_map["ROLE_FIN_CONTROLLER"], mod, 1 if is_fin else 0, 1 if is_fin else 0, 1 if is_fin else 0)
+            )
+            # Auditor: read-only everywhere
+            db.execute(
+                """
+                INSERT INTO admin_role_permissions (id, role_id, module_code, sub_area_code, can_view, can_create, can_edit, can_delete, can_approve, can_export)
+                VALUES (?, ?, ?, '*', 1, 0, 0, 0, 0, 1)
+                """,
+                (str(uuid.uuid4()), role_map["ROLE_INTERNAL_AUDITOR"], mod)
+            )
+        print("Seeded Global Roles and Permissions Matrix.")
+    else:
+        for r in db.query("SELECT id, role_code FROM admin_roles"):
+            role_map[r["role_code"]] = r["id"]
+
+    # 5. Global Tax Categories
+    existing_tax_cat = db.query("SELECT COUNT(*) AS cnt FROM admin_tax_categories")[0]["cnt"]
+    tax_cat_map = {}
+    if existing_tax_cat == 0:
+        tax_categories = [
+            ("STANDARD_VAT", "Standard Value Added Tax", "VALUE_ADDED_TAX", 15.00, "Standard rate applied on taxable supplies of goods and services"),
+            ("REDUCED_RATE", "Reduced Essential Goods Tax", "VALUE_ADDED_TAX", 5.00, "Concession rate on foodstuffs, medical equipment and basic essentials"),
+            ("ZERO_RATED", "Zero-Rated Export Supplies", "ZERO_RATED_TAX", 0.00, "International export supplies and eligible customs free trade zones"),
+            ("WITHHOLDING_CORP", "Corporate Vendor Withholding Tax", "WITHHOLDING_TAX", 7.50, "Statutory withholding at source on vendor procurement invoices"),
+            ("SERVICE_SALES_TAX", "State / Provincial Sales Tax", "SALES_TAX", 8.25, "State-level consumption and point-of-sale municipal transactions"),
+        ]
+        for cat_code, cat_name, tax_type, def_rate, desc in tax_categories:
+            tc_id = str(uuid.uuid4())
+            tax_cat_map[cat_code] = tc_id
+            db.execute(
+                """
+                INSERT INTO admin_tax_categories (id, category_code, category_name, tax_type, default_rate, description, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, 1)
+                """,
+                (tc_id, cat_code, cat_name, tax_type, def_rate, desc)
+            )
+        print("Seeded Global Tax Categories.")
+    else:
+        for tc in db.query("SELECT id, category_code FROM admin_tax_categories"):
+            tax_cat_map[tc["category_code"]] = tc["id"]
+
+    # 6. Multi-Company Scoped Data
+    companies = db.query("SELECT id, name, short_code, currency FROM companies")
+    for comp in companies:
+        cid = comp["id"]
+        cname = comp["name"]
+        c_code = comp["short_code"]
+        base_cur = comp["currency"] or "USD"
+
+        # Check if already seeded
+        chk = db.query("SELECT COUNT(*) AS cnt FROM admin_company_configs WHERE company_id = ?", (cid,))[0]["cnt"]
+        if chk > 0:
+            continue
+
+        # 6a. Company Configuration Profile
+        db.execute(
+            """
+            INSERT INTO admin_company_configs (
+                id, company_id, registration_no, tax_id, base_currency, fiscal_start_month,
+                multi_currency_enabled, address_line1, city, state, postal_code, country,
+                phone, email, website, logo_path, default_locale, status
+            ) VALUES (
+                ?, ?, ?, ?, ?, 4,
+                1, ?, 'Metro City', 'CA', '90210', 'United States',
+                '+1 (800) 555-0199', ?, ?, '/static/img/brand/logo.svg', 'en_US', 'ACTIVE'
+            )
+            """,
+            (
+                str(uuid.uuid4()), cid, f"REG-{c_code}-2024-9988", f"TIN-{c_code}-88776655",
+                base_cur, f"Corporate Boulevard, Tech Tower #{c_code}",
+                f"admin@{c_code.lower()}-corp.com", f"https://www.{c_code.lower()}-corp.com"
+            )
+        )
+
+        # 6b. Business Units (3 per company)
+        bu1_id = str(uuid.uuid4())
+        bu2_id = str(uuid.uuid4())
+        bu3_id = str(uuid.uuid4())
+        db.execute(
+            """
+            INSERT INTO admin_business_units (id, company_id, unit_code, unit_name, unit_type, manager_name, location, cost_center_count, is_active)
+            VALUES (?, ?, ?, 'Corporate Headquarters & Executive Offices', 'EXECUTIVE_DIVISION', 'Arthur Vance, VP Operations', 'Floor 32, Horizon Plaza', 2, 1)
+            """,
+            (bu1_id, cid, f"BU-{c_code}-HQ")
+        )
+        db.execute(
+            """
+            INSERT INTO admin_business_units (id, company_id, unit_code, unit_name, unit_type, manager_name, location, cost_center_count, is_active)
+            VALUES (?, ?, ?, 'Manufacturing & Engineering Operations', 'OPERATING_DIVISION', 'Marcus Vance, Plant Director', 'Industrial Park Bay 4', 3, 1)
+            """,
+            (bu2_id, cid, f"BU-{c_code}-ENG")
+        )
+        db.execute(
+            """
+            INSERT INTO admin_business_units (id, company_id, unit_code, unit_name, unit_type, manager_name, location, cost_center_count, is_active)
+            VALUES (?, ?, ?, 'Commercial Sales & Distribution Logistics', 'COMMERCIAL_DIVISION', 'Elena Rostova, Commercial Lead', 'Logistics Terminal Berth 2', 2, 1)
+            """,
+            (bu3_id, cid, f"BU-{c_code}-SLS")
+        )
+
+        # 6c. Cost Centers (linking to business units)
+        cc1_id = str(uuid.uuid4())
+        cc2_id = str(uuid.uuid4())
+        cc3_id = str(uuid.uuid4())
+        cc4_id = str(uuid.uuid4())
+        db.execute(
+            """
+            INSERT INTO admin_cost_centers (id, company_id, business_unit_id, cost_center_code, name, department, manager_name, is_profit_center, budget_allocation, is_active)
+            VALUES (?, ?, ?, ?, 'Executive Administration & Legal', 'Executive Office', 'Arthur Vance', 0, 450000.00, 1)
+            """,
+            (cc1_id, cid, bu1_id, f"CC-{c_code}-101")
+        )
+        db.execute(
+            """
+            INSERT INTO admin_cost_centers (id, company_id, business_unit_id, cost_center_code, name, department, manager_name, is_profit_center, budget_allocation, is_active)
+            VALUES (?, ?, ?, ?, 'Precision CNC & Machining Cell', 'Production Machining', 'Marcus Vance', 1, 1250000.00, 1)
+            """,
+            (cc2_id, cid, bu2_id, f"CC-{c_code}-201")
+        )
+        db.execute(
+            """
+            INSERT INTO admin_cost_centers (id, company_id, business_unit_id, cost_center_code, name, department, manager_name, is_profit_center, budget_allocation, is_active)
+            VALUES (?, ?, ?, ?, 'Cleanroom Electronics Assembly', 'SMT Assembly', 'Dr. Aris Thorne', 1, 980000.00, 1)
+            """,
+            (cc3_id, cid, bu2_id, f"CC-{c_code}-202")
+        )
+        db.execute(
+            """
+            INSERT INTO admin_cost_centers (id, company_id, business_unit_id, cost_center_code, name, department, manager_name, is_profit_center, budget_allocation, is_active)
+            VALUES (?, ?, ?, ?, 'Global Key Accounts & Dispatch', 'Direct Sales', 'Elena Rostova', 1, 620000.00, 1)
+            """,
+            (cc4_id, cid, bu3_id, f"CC-{c_code}-301")
+        )
+
+        # 6d. Multi-Currency Daily Exchange Rates (USD base)
+        exchange_rates = [
+            ("EUR", 0.920000, "SPOT_RATE"),
+            ("GBP", 0.785000, "SPOT_RATE"),
+            ("JPY", 154.250000, "SPOT_RATE"),
+            ("SGD", 1.342000, "SPOT_RATE"),
+            ("BDT", 119.500000, "SPOT_RATE"),
+            ("CAD", 1.365000, "SPOT_RATE"),
+            ("AUD", 1.512000, "SPOT_RATE"),
+        ]
+        for cur, rate, r_type in exchange_rates:
+            db.execute(
+                """
+                INSERT INTO admin_exchange_rates (id, company_id, currency_code, target_currency, exchange_rate, effective_date, rate_type, entered_by)
+                VALUES (?, ?, ?, 'USD', ?, '2026-08-01', ?, 'Global Treasury Engine')
+                """,
+                (str(uuid.uuid4()), cid, cur, rate, r_type)
+            )
+
+        # 6e. Fiscal Calendar & 12 Periods (FY 2026-2027)
+        cal_id = str(uuid.uuid4())
+        db.execute(
+            """
+            INSERT INTO admin_fiscal_calendars (id, company_id, fiscal_year_name, start_date, end_date, total_periods, is_closed, opening_balance_locked)
+            VALUES (?, ?, 'FY 2026-2027', '2026-04-01', '2027-03-31', 12, 0, 1)
+            """,
+            (cal_id, cid)
+        )
+        periods = [
+            (1, "Period 01 - Apr 2026", "2026-04-01", "2026-04-30", "HARD_CLOSED", "2026-05-02 18:00:00", "Chief Financial Controller"),
+            (2, "Period 02 - May 2026", "2026-05-01", "2026-05-31", "HARD_CLOSED", "2026-06-02 17:30:00", "Chief Financial Controller"),
+            (3, "Period 03 - Jun 2026", "2026-06-01", "2026-06-30", "HARD_CLOSED", "2026-07-03 19:15:00", "Chief Financial Controller"),
+            (4, "Period 04 - Jul 2026", "2026-07-01", "2026-07-31", "SOFT_LOCKED", "2026-08-03 16:45:00", "Chief Financial Controller"),
+            (5, "Period 05 - Aug 2026", "2026-08-01", "2026-08-31", "OPEN", None, None),
+            (6, "Period 06 - Sep 2026", "2026-09-01", "2026-09-30", "OPEN", None, None),
+            (7, "Period 07 - Oct 2026", "2026-10-01", "2026-10-31", "OPEN", None, None),
+            (8, "Period 08 - Nov 2026", "2026-11-01", "2026-11-30", "OPEN", None, None),
+            (9, "Period 09 - Dec 2026", "2026-12-01", "2026-12-31", "OPEN", None, None),
+            (10, "Period 10 - Jan 2027", "2027-01-01", "2027-01-31", "OPEN", None, None),
+            (11, "Period 11 - Feb 2027", "2027-02-01", "2027-02-28", "OPEN", None, None),
+            (12, "Period 12 - Mar 2027", "2027-03-01", "2027-03-31", "OPEN", None, None),
+        ]
+        period_ids = []
+        for p_num, p_name, s_date, e_date, status, c_at, c_by in periods:
+            p_id = str(uuid.uuid4())
+            period_ids.append(p_id)
+            db.execute(
+                """
+                INSERT INTO admin_fiscal_periods (id, calendar_id, period_number, period_name, start_date, end_date, status, closed_at, closed_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (p_id, cal_id, p_num, p_name, s_date, e_date, status, c_at, c_by)
+            )
+
+        # 6f. Network Print Servers & Letterhead Setup
+        db.execute(
+            """
+            INSERT INTO admin_printers (id, company_id, printer_name, printer_type, ip_address, port, paper_size, default_tray, is_default, is_active)
+            VALUES (?, ?, 'Central HP LaserJet Enterprise MFP M725', 'NETWORK_PRINT_SERVER', '192.168.1.180', 9100, 'A4', 'Tray 2 (Letterhead)', 1, 1)
+            """,
+            (str(uuid.uuid4()), cid)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_printers (id, company_id, printer_name, printer_type, ip_address, port, paper_size, default_tray, is_default, is_active)
+            VALUES (?, ?, 'Warehouse Zebra ZT411 Thermal Slip Printer', 'THERMAL_RECEIPT_SLIP', '192.168.1.182', 9100, 'ROLL_4INCH', 'Roll Feeder', 0, 1)
+            """,
+            (str(uuid.uuid4()), cid)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_printers (id, company_id, printer_name, printer_type, ip_address, port, paper_size, default_tray, is_default, is_active)
+            VALUES (?, ?, 'Pyrix High-Res PDF Virtual Spooler', 'PDF_VIRTUAL_SPOOLER', '127.0.0.1', 631, 'A4', 'Auto-Select', 0, 1)
+            """,
+            (str(uuid.uuid4()), cid)
+        )
+
+        # 6g. Enterprise Users Directory & Data Access Scopes
+        user1_id = str(uuid.uuid4())
+        user2_id = str(uuid.uuid4())
+        user3_id = str(uuid.uuid4())
+        db.execute(
+            """
+            INSERT INTO admin_user_profiles (id, company_id, user_code, full_name, email, phone, role_id, business_unit_id, cost_center_id, avatar_url, mfa_enabled, status, last_login_at)
+            VALUES (?, ?, ?, 'Alexander Wright', ?, '+1 (555) 234-5678', ?, ?, ?, '/static/img/avatars/alexander.jpg', 1, 'ACTIVE', '2026-08-25 09:14:22')
+            """,
+            (user1_id, cid, f"USR-{c_code}-01", f"awright@{c_code.lower()}.com", role_map["ROLE_SUPER_ADMIN"], bu1_id, cc1_id)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_user_profiles (id, company_id, user_code, full_name, email, phone, role_id, business_unit_id, cost_center_id, avatar_url, mfa_enabled, status, last_login_at)
+            VALUES (?, ?, ?, 'Claire Sterling', ?, '+1 (555) 345-6789', ?, ?, ?, '/static/img/avatars/claire.jpg', 1, 'ACTIVE', '2026-08-24 16:40:11')
+            """,
+            (user2_id, cid, f"USR-{c_code}-02", f"csterling@{c_code.lower()}.com", role_map["ROLE_FIN_CONTROLLER"], bu1_id, cc1_id)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_user_profiles (id, company_id, user_code, full_name, email, phone, role_id, business_unit_id, cost_center_id, avatar_url, mfa_enabled, status, last_login_at)
+            VALUES (?, ?, ?, 'Marcus Vance', ?, '+1 (555) 456-7890', ?, ?, ?, '/static/img/avatars/marcus.jpg', 0, 'ACTIVE', '2026-08-25 08:30:00')
+            """,
+            (user3_id, cid, f"USR-{c_code}-03", f"mvance@{c_code.lower()}.com", role_map["ROLE_OPERATIONS_DIR"], bu2_id, cc2_id)
+        )
+
+        # Scopes for Alexander (All units), Claire (HQ & Finance), Marcus (Engineering)
+        db.execute(
+            """
+            INSERT INTO admin_user_data_scopes (id, user_id, scope_type, entity_id, entity_name, access_mode)
+            VALUES (?, ?, 'SUBSIDIARY_ALL', ?, ?, 'READ_WRITE')
+            """,
+            (str(uuid.uuid4()), user1_id, cid, cname)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_user_data_scopes (id, user_id, scope_type, entity_id, entity_name, access_mode)
+            VALUES (?, ?, 'BUSINESS_UNIT', ?, 'Corporate Headquarters & Executive Offices', 'READ_WRITE')
+            """,
+            (str(uuid.uuid4()), user2_id, bu1_id)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_user_data_scopes (id, user_id, scope_type, entity_id, entity_name, access_mode)
+            VALUES (?, ?, 'COST_CENTER', ?, 'Precision CNC & Machining Cell', 'READ_WRITE')
+            """,
+            (str(uuid.uuid4()), user3_id, cc2_id)
+        )
+
+        # 6h. Tax Authorities & Tax Profiles
+        auth1_id = str(uuid.uuid4())
+        auth2_id = str(uuid.uuid4())
+        db.execute(
+            """
+            INSERT INTO admin_tax_authorities (id, company_id, authority_code, authority_name, jurisdiction, tax_office, contact_person, phone, reporting_cycle, is_active)
+            VALUES (?, ?, ?, 'Internal Revenue Service (Federal Large Business Division)', 'Federal Jurisdiction', 'Ogden Service Center, UT 84201', 'Tax Compliance Officer', '+1 (800) 829-4933', 'QUARTERLY', 1)
+            """,
+            (auth1_id, cid, f"TAX-AUTH-{c_code}-FED")
+        )
+        db.execute(
+            """
+            INSERT INTO admin_tax_authorities (id, company_id, authority_code, authority_name, jurisdiction, tax_office, contact_person, phone, reporting_cycle, is_active)
+            VALUES (?, ?, ?, 'State Department of Revenue & Taxation', 'State Jurisdiction', 'Sacramento District Office', 'Revenue Inspector', '+1 (800) 400-7115', 'MONTHLY', 1)
+            """,
+            (auth2_id, cid, f"TAX-AUTH-{c_code}-STE")
+        )
+
+        # Tax Profiles
+        db.execute(
+            """
+            INSERT INTO admin_tax_profiles (id, company_id, profile_code, profile_name, category_id, authority_id, rate_percent, gl_account_code, is_recoverable, effective_date, status)
+            VALUES (?, ?, ?, 'Standard Enterprise Goods VAT 15%', ?, ?, 15.00, '2150-TAX-PAYABLE-VAT', 1, '2026-04-01', 'ACTIVE')
+            """,
+            (str(uuid.uuid4()), cid, f"TP-{c_code}-VAT15", tax_cat_map["STANDARD_VAT"], auth1_id)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_tax_profiles (id, company_id, profile_code, profile_name, category_id, authority_id, rate_percent, gl_account_code, is_recoverable, effective_date, status)
+            VALUES (?, ?, ?, 'Commercial Procurement Withholding 7.5%', ?, ?, 7.50, '2160-TAX-WITHHOLDING', 0, '2026-04-01', 'ACTIVE')
+            """,
+            (str(uuid.uuid4()), cid, f"TP-{c_code}-WHT75", tax_cat_map["WITHHOLDING_CORP"], auth1_id)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_tax_profiles (id, company_id, profile_code, profile_name, category_id, authority_id, rate_percent, gl_account_code, is_recoverable, effective_date, status)
+            VALUES (?, ?, ?, 'Zero-Rated Export Sales & Free Trade Zone', ?, ?, 0.00, '2170-TAX-EXEMPT-SALES', 1, '2026-04-01', 'ACTIVE')
+            """,
+            (str(uuid.uuid4()), cid, f"TP-{c_code}-ZERO", tax_cat_map["ZERO_RATED"], auth2_id)
+        )
+
+        # 6i. Periodic Closures (Month-end closures for Period 1, 2, 3)
+        close_modules = [
+            ("CASH", "Cash & Bank Sub-Ledger Reconciliation", 1845200.50),
+            ("AR", "Accounts Receivable Customer Ledger Close", 3420800.00),
+            ("AP", "Accounts Payable Supplier Ledger Close", 2980450.00),
+            ("INVENTORY", "Sales & Inventory Perpetual Valuation Close", 5460200.00),
+            ("PAYROLL", "Gross Payroll, Statutory Deductions & Net Disbursals", 420500.00),
+            ("FIXED_ASSETS", "Fixed Assets Monthly Depreciation Amortization Run", 168400.00),
+        ]
+        for m_code, m_name, bal in close_modules:
+            db.execute(
+                """
+                INSERT INTO admin_periodic_closures (id, company_id, fiscal_period_id, module_code, module_name, closing_date, closed_by, status, reconciliation_notes, verified_balance)
+                VALUES (?, ?, ?, ?, ?, '2026-06-30', 'Claire Sterling, Financial Controller', 'CLOSED_VERIFIED', 'All sub-ledger control accounts matched 100% against General Ledger trial balance.', ?)
+                """,
+                (str(uuid.uuid4()), cid, period_ids[2], m_code, m_name, bal)
+            )
+
+        # 6j. Database Integrity Scans
+        db.execute(
+            """
+            INSERT INTO admin_integrity_scans (id, company_id, scan_type, scan_title, items_checked, anomalies_found, auto_repaired, scan_status, scan_duration_ms, log_details)
+            VALUES (?, ?, 'FULL_DATABASE_INTEGRITY', 'Weekly Automated Database Integrity & Parity Scan', 18420, 0, 0, 'CLEAN_VERIFIED', 1420, 'Checked 18,420 relational integrity constraints across GL, AR, AP, Inventory, Assets and HR. 0 orphan records found. 100% foreign key parity.')
+            """,
+            (str(uuid.uuid4()), cid)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_integrity_scans (id, company_id, scan_type, scan_title, items_checked, anomalies_found, auto_repaired, scan_status, scan_duration_ms, log_details)
+            VALUES (?, ?, 'BALANCE_RECALCULATION', 'General Ledger & Sub-Ledger Balance Recalculation', 4210, 0, 0, 'CLEAN_VERIFIED', 850, 'Recalculated customer AR balances, vendor AP open vouchers and perpetual inventory FIFO lots. Ledgers in perfect equilibrium.')
+            """,
+            (str(uuid.uuid4()), cid)
+        )
+
+        # 6k. Tamper-Evident Audit Vault
+        db.execute(
+            """
+            INSERT INTO admin_audit_vault (id, company_id, event_timestamp, user_name, user_ip, event_action, module_code, entity_name, record_ref, change_details, security_severity)
+            VALUES (?, ?, '2026-08-25 09:15:04', 'Alexander Wright', '192.168.1.10', 'AUTHENTICATION', 'system-admin', 'UserSession', 'SES-98214', 'Multi-factor biometric MFA token validated for Enterprise Super Admin.', 'INFO')
+            """,
+            (str(uuid.uuid4()), cid)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_audit_vault (id, company_id, event_timestamp, user_name, user_ip, event_action, module_code, entity_name, record_ref, change_details, security_severity)
+            VALUES (?, ?, '2026-08-24 17:02:11', 'Claire Sterling', '192.168.1.15', 'PERIOD_LOCK', 'system-admin', 'FiscalPeriod', 'Period 03 - Jun 2026', 'Soft lock applied to Period 03 pending final external auditor signoff.', 'WARNING')
+            """,
+            (str(uuid.uuid4()), cid)
+        )
+        db.execute(
+            """
+            INSERT INTO admin_audit_vault (id, company_id, event_timestamp, user_name, user_ip, event_action, module_code, entity_name, record_ref, change_details, security_severity)
+            VALUES (?, ?, '2026-08-20 11:45:30', 'Alexander Wright', '192.168.1.10', 'EXCHANGE_RATE_UPDATE', 'system-admin', 'ExchangeRate', 'USD/EUR', 'Spot rate updated to 0.920000 by Treasury feed.', 'INFO')
+            """,
+            (str(uuid.uuid4()), cid)
+        )
+
+        # 6l. Backup Points
+        db.execute(
+            """
+            INSERT INTO admin_backup_points (id, company_id, backup_number, backup_type, file_path, file_size_mb, status, verified_at, verified_by)
+            VALUES (?, ?, ?, 'FULL_DATABASE_BACKUP', 'D:\\PyrixDB_Backups\\PyrixDB_Full_20260824_230000.bak', 1420.50, 'VERIFIED_HEALTHY', '2026-08-24 23:45:00', 'Automated SQL Server Agent')
+            """,
+            (str(uuid.uuid4()), cid, f"BAK-{c_code}-20260824-01")
+        )
+        db.execute(
+            """
+            INSERT INTO admin_backup_points (id, company_id, backup_number, backup_type, file_path, file_size_mb, status, verified_at, verified_by)
+            VALUES (?, ?, ?, 'TRANSACTION_LOG_BACKUP', 'D:\\PyrixDB_Backups\\PyrixDB_Log_20260825_120000.trn', 85.20, 'VERIFIED_HEALTHY', '2026-08-25 12:15:00', 'Automated SQL Server Agent')
+            """,
+            (str(uuid.uuid4()), cid, f"BAK-{c_code}-20260825-02")
+        )
+
+    print("Completed System Administration & Governance seeding across all companies.")
+
 def setup_database():
     """Main database setup orchestrator."""
     ensure_database_exists()
@@ -3965,6 +5552,8 @@ def setup_database():
     seed_inventory_master_and_transactions()
     seed_fixed_assets_master_and_transactions()
     seed_appearance()
+    seed_prod_master_and_transactions()
+    seed_admin_master_and_transactions()
     logger.info("PyrixDB multi-company initialization and seed complete.")
 
 if __name__ == "__main__":

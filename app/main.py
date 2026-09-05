@@ -25,6 +25,7 @@ from app.monographs.audit_logs.router import router as audit_router
 from app.monographs.enterprise_modules.router import router as enterprise_modules_router
 from app.monographs.company_switcher.router import router as company_switcher_router
 from app.monographs.auth.router import router as auth_router
+from app.core.dynamic_crud_router import crud_router
 
 settings = get_settings()
 logging.basicConfig(level=logging.INFO)
@@ -128,6 +129,7 @@ app.include_router(audit_router)
 app.include_router(enterprise_modules_router)
 app.include_router(company_switcher_router)
 app.include_router(auth_router)
+app.include_router(crud_router)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

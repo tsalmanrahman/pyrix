@@ -31,6 +31,7 @@
               <th class="py-2.5 px-3">Credit Terms</th>
               <th class="py-2.5 px-3 text-center">Rating</th>
               <th class="py-2.5 px-3 text-center">Active POs</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-300">
@@ -65,7 +66,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono font-bold text-[11px]">{{ v.po_count }} PO</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sourcing_vendors', '{{ v.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sourcing_vendors', '{{ v.id }}', '{{ v.name or v.title or v.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -103,6 +114,7 @@
               <th class="py-2.5 px-3">Estimated Total</th>
               <th class="py-2.5 px-3 text-center">Priority</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-300">
@@ -129,7 +141,17 @@
                     {{ r.status }}
                   </span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sourcing_requisitions', '{{ r.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sourcing_requisitions', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -266,7 +288,17 @@
                     <span>Print PO</span>
                   </a>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sourcing_purchase_orders', '{{ po.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sourcing_purchase_orders', '{{ po.id }}', '{{ po.name or po.title or po.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -365,6 +397,7 @@
               <th class="py-2.5 px-3">GRN Received</th>
               <th class="py-2.5 px-3">Unit Price / Total</th>
               <th class="py-2.5 px-3 text-center">Match Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-300">
@@ -390,7 +423,17 @@
                     {{ m.match_status }}
                   </span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sourcing_purchase_orders', '{{ m.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sourcing_purchase_orders', '{{ m.id }}', '{{ m.name or m.title or m.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>

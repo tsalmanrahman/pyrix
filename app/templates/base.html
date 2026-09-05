@@ -84,24 +84,27 @@
   {% include "components/sidebar.html" %}
 
   <!-- Main Application Area -->
-  <main class="main-wrapper">
+  <main class="main-wrapper flex flex-col min-h-screen">
     <!-- Top Header & Search -->
     {% include "components/header.html" %}
 
     <!-- Windows 11 Fluent Clickable Breadcrumb Navigation -->
     {% include "components/breadcrumbs.html" %}
 
-    <!-- Page Dynamic Content -->
-    <div class="mt-4 w-full max-w-[2560px] 4xl:max-w-[3440px] mx-auto transition-all duration-150">
+    <!-- Page Dynamic Content (Expands to fill vertical height on short pages) -->
+    <div class="mt-4 w-full max-w-[2560px] 4xl:max-w-[3440px] mx-auto transition-all duration-150 flex-1 flex flex-col">
       {% block content %}{% endblock %}
     </div>
 
-    <!-- Dynamic Copyright Footer -->
+    <!-- Dynamic Modern Sticky Footer -->
     {% include "components/footer.html" %}
   </main>
 
   <!-- Global Company Switcher Modal -->
   {% include "components/company_modal.html" %}
+
+  <!-- Universal Dynamic Edit & Delete Action Modals -->
+  {% include "components/dynamic_crud_modals.html" %}
 
   <!-- Global Client App Script -->
   <script src="/static/js/app.js"></script>

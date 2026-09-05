@@ -168,18 +168,21 @@ class GLMasterService:
         )
 
     # =========================================================================
-    # 5. Cost Centres
+    # 5. Cost Centres (Unified on Authoritative admin_cost_centers Master)
     # =========================================================================
     @staticmethod
     def get_cost_centres_for_company(company_id: str) -> List[Dict[str, Any]]:
         return db.query(
             """
-            SELECT cc.*, d.dept_code, d.dept_name, c.short_code AS company_code
-            FROM gl_cost_centres cc
-            LEFT JOIN gl_departments d ON cc.department_id = d.id
+            SELECT cc.id, cc.code, cc.company_id, cc.business_unit_id,
+                   cc.cost_center_code, cc.cost_center_code AS cost_centre_code,
+                   cc.name AS cost_centre_name, cc.name, cc.department, cc.manager_name,
+                   cc.is_profit_center, cc.budget_allocation, cc.is_active,
+                   c.short_code AS company_code
+            FROM admin_cost_centers cc
             JOIN companies c ON cc.company_id = c.id
-            WHERE cc.company_id = ? AND COALESCE(cc.isDelete, 0) = 0
-            ORDER BY cc.cost_centre_code ASC
+            WHERE cc.company_id = ?
+            ORDER BY cc.cost_center_code ASC
             """,
             (company_id,)
         )
@@ -188,34 +191,39 @@ class GLMasterService:
     def get_cost_centre_by_id(cost_centre_id: str) -> Optional[Dict[str, Any]]:
         return db.query_one(
             """
-            SELECT cc.*, d.dept_code, d.dept_name, c.short_code AS company_code
-            FROM gl_cost_centres cc
-            LEFT JOIN gl_departments d ON cc.department_id = d.id
+            SELECT cc.id, cc.code, cc.company_id, cc.business_unit_id,
+                   cc.cost_center_code, cc.cost_center_code AS cost_centre_code,
+                   cc.name AS cost_centre_name, cc.name, cc.department, cc.manager_name,
+                   cc.is_profit_center, cc.budget_allocation, cc.is_active,
+                   c.short_code AS company_code
+            FROM admin_cost_centers cc
             JOIN companies c ON cc.company_id = c.id
-            WHERE cc.id = ? AND COALESCE(cc.isDelete, 0) = 0
+            WHERE cc.id = ?
             """,
             (cost_centre_id,)
         )
 
     @staticmethod
     def create_cost_centre(cost_centre_code: str, cost_centre_name: str, department_id: Optional[str], company_id: str) -> None:
+        bu = db.query_one("SELECT TOP 1 id FROM admin_business_units WHERE company_id = ?", (company_id,))
+        bu_id = bu["id"] if bu else None
         db.execute(
             """
-            INSERT INTO gl_cost_centres (cost_centre_code, cost_centre_name, department_id, company_id, is_active, isDelete)
-            VALUES (?, ?, ?, ?, 1, 0)
+            INSERT INTO admin_cost_centers (id, company_id, business_unit_id, cost_center_code, name, department, manager_name, is_profit_center, budget_allocation, is_active)
+            VALUES (NEWID(), ?, ?, ?, ?, 'General Ledger CC', 'Finance Lead', 0, 500000.00, 1)
             """,
-            (cost_centre_code.strip(), cost_centre_name.strip(), department_id if department_id else None, company_id)
+            (company_id, bu_id, cost_centre_code.strip(), cost_centre_name.strip())
         )
 
     @staticmethod
     def update_cost_centre(cost_centre_id: str, cost_centre_code: str, cost_centre_name: str, department_id: Optional[str], company_id: str) -> None:
         db.execute(
             """
-            UPDATE gl_cost_centres 
-            SET cost_centre_code = ?, cost_centre_name = ?, department_id = ?, company_id = ?
+            UPDATE admin_cost_centers 
+            SET cost_center_code = ?, name = ?, company_id = ?
             WHERE id = ?
             """,
-            (cost_centre_code.strip(), cost_centre_name.strip(), department_id if department_id else None, company_id, cost_centre_id)
+            (cost_centre_code.strip(), cost_centre_name.strip(), company_id, cost_centre_id)
         )
 
     # =========================================================================
@@ -225,10 +233,12 @@ class GLMasterService:
     def get_budgets_for_company(company_id: str) -> List[Dict[str, Any]]:
         return db.query(
             """
-            SELECT b.*, a.account_number, a.account_name, cc.cost_centre_code, cc.cost_centre_name, c.short_code AS company_code
+            SELECT b.*, a.account_number, a.account_name, 
+                   cc.cost_center_code AS cost_centre_code, cc.name AS cost_centre_name, 
+                   c.short_code AS company_code
             FROM gl_budget_sets b
             JOIN gl_accounts a ON b.gl_account_id = a.id
-            LEFT JOIN gl_cost_centres cc ON b.cost_centre_id = cc.id
+            LEFT JOIN admin_cost_centers cc ON b.cost_centre_id = cc.id
             JOIN companies c ON b.company_id = c.id
             WHERE b.company_id = ? AND COALESCE(b.isDelete, 0) = 0
             ORDER BY b.budget_code ASC
@@ -240,10 +250,12 @@ class GLMasterService:
     def get_budget_set_by_id(budget_id: str) -> Optional[Dict[str, Any]]:
         return db.query_one(
             """
-            SELECT b.*, a.account_number, a.account_name, cc.cost_centre_code, cc.cost_centre_name, c.short_code AS company_code
+            SELECT b.*, a.account_number, a.account_name, 
+                   cc.cost_center_code AS cost_centre_code, cc.name AS cost_centre_name, 
+                   c.short_code AS company_code
             FROM gl_budget_sets b
             JOIN gl_accounts a ON b.gl_account_id = a.id
-            LEFT JOIN gl_cost_centres cc ON b.cost_centre_id = cc.id
+            LEFT JOIN admin_cost_centers cc ON b.cost_centre_id = cc.id
             JOIN companies c ON b.company_id = c.id
             WHERE b.id = ? AND COALESCE(b.isDelete, 0) = 0
             """,
@@ -281,7 +293,7 @@ class GLMasterService:
             "company-mappings": "gl_company_mappings",
             "sub-accounts": "gl_sub_accounts",
             "departments": "gl_departments",
-            "cost-centres": "gl_cost_centres",
+            "cost-centres": "admin_cost_centers",
             "budget-sets": "gl_budget_sets",
         }
         table_name = entity_table_map.get(entity)

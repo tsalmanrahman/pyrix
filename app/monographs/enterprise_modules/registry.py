@@ -729,6 +729,168 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             }
         ]
 
+
+    # =========================================================================
+    # 8. PRODUCTION & MANUFACTURING MANAGEMENT (5-SUITE ENTERPRISE ARCHITECTURE)
+    # =========================================================================
+    if slug in ("production", "manufacturing", "production-management"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Engineering Masters, BOM & Plant Routing Setup Suite",
+                "subtitle": "Manufacturing Processes, Plants, Work Centers, Multi-Step Routings, Capacity & Engineering BOMs",
+                "icon": "settings-2",
+                "theme_color": "blue",
+                "count_label": "7 Setup Areas",
+                "cards": [
+                    {"title": "Manufacturing Processes", "subtitle": "Cutting, Machining, Welding, Coating & Testing stages", "badge": "Processes", "url": "/modules/production?tab=prod-processes", "icon": "layers", "color": "blue"},
+                    {"title": "Production Plants & Works", "subtitle": "Fabrication plants, machine shops & bay locations", "badge": "Plants", "url": "/modules/production?tab=prod-plants", "icon": "building-2", "color": "indigo"},
+                    {"title": "Work Centers & Resources", "subtitle": "5-Axis CNC, Robotic cells, Coating lines & CMM stations", "badge": "Work Centers", "url": "/modules/production?tab=prod-resources", "icon": "cpu", "color": "purple"},
+                    {"title": "Operational Routings", "subtitle": "Standard sequence, setup & run times per unit", "badge": "Routings", "url": "/modules/production?tab=prod-routings", "icon": "git-commit", "color": "amber"},
+                    {"title": "Plant Capacity Profiles", "subtitle": "Shift hours, monthly capacity & load utilization limits", "badge": "Capacity", "url": "/modules/production?tab=prod-capacity", "icon": "sliders", "color": "emerald"},
+                    {"title": "Standard Engineering BOM", "subtitle": "Multi-level bill of materials with scrap % & revision history", "badge": "BOM Standard", "url": "/modules/production?tab=prod-bom-standard", "icon": "folder-tree", "color": "cyan"},
+                    {"title": "Assembly BOM & Kitting", "subtitle": "Fast modular assembly recipes & kitted packaging sets", "badge": "Assembly BOM", "url": "/modules/production?tab=prod-bom-assembly", "icon": "box", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Production Orders, Job Cards & Floor Execution Suite",
+                "subtitle": "Demand Requisitions, Discrete Work Orders, Job Travelers, WIP Issues & Direct Assembly",
+                "icon": "factory",
+                "theme_color": "emerald",
+                "count_label": "6 Operational Areas",
+                "cards": [
+                    {"title": "Production Requisitions", "subtitle": "Demand-driven job requests from Sales Orders & buffer stock", "badge": "Requisitions", "url": "/modules/production?tab=prod-requisitions", "icon": "file-text", "color": "blue"},
+                    {"title": "Master Production Orders", "subtitle": "Discrete manufacturing work orders with planned vs completed", "badge": "Work Orders", "url": "/modules/production?tab=prod-orders", "icon": "clipboard-list", "color": "emerald"},
+                    {"title": "Shop Floor Job Cards", "subtitle": "Operation-level travelers, operator clock-in & actual hours", "badge": "Job Cards", "url": "/modules/production?tab=prod-job-cards", "icon": "wrench", "color": "purple"},
+                    {"title": "Material Issues to WIP", "subtitle": "Warehouse raw material and parts issue linked to BOM lines", "badge": "WIP Issues", "url": "/modules/production?tab=prod-mat-issues", "icon": "arrow-up-right", "color": "amber"},
+                    {"title": "Assembly Conversions", "subtitle": "Material-to-material instant batch assembly transformation", "badge": "Conversions", "url": "/modules/production?tab=prod-conversions", "icon": "repeat", "color": "cyan"},
+                    {"title": "Assembly Reversals & De-Kits", "subtitle": "Disassembly reversal returning component parts to warehouse", "badge": "Reversals", "url": "/modules/production?tab=prod-reversals", "icon": "rotate-ccw", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Quality Control, Downtime & Process Suite",
+                "subtitle": "In-Process QA Inspections, Machine Downtime Tracker, Data Import Hub & Year-End Process",
+                "icon": "shield-check",
+                "theme_color": "purple",
+                "count_label": "4 Control Areas",
+                "cards": [
+                    {"title": "Quality Inspection Hub", "subtitle": "First-piece, in-process & final QA tolerance test sign-offs", "badge": "Quality QA", "url": "/modules/production?tab=prod-qc-inspections", "icon": "check-circle", "color": "emerald"},
+                    {"title": "Machine Downtime Tracker", "subtitle": "Stoppage logging, tool change, breakdown & idle analytics", "badge": "Downtime Log", "url": "/modules/production?tab=prod-downtime", "icon": "alert-triangle", "color": "amber"},
+                    {"title": "External Data Import Hub", "subtitle": "Import opening stock, monthly sales forecast & BOM profiles", "badge": "Data Import", "url": "/modules/production?tab=prod-import-data", "icon": "download", "color": "blue"},
+                    {"title": "Year-End WIP Process", "subtitle": "Annual production WIP valuation rollover & cost variance close", "badge": "Year-End", "url": "/modules/production?tab=prod-year-end", "icon": "calendar-check", "color": "purple"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "Manufacturing Costing & Floor Analytics Suite",
+                "subtitle": "Actual vs Standard Costing, OEE Cockpit & Work Center Capacity Heatmap",
+                "icon": "calculator",
+                "theme_color": "amber",
+                "count_label": "3 Analytics Areas",
+                "cards": [
+                    {"title": "Manufacturing Cost Records", "subtitle": "Actual vs standard costing (Materials, Labor, Overhead, Scrap)", "badge": "Cost Engine", "url": "/modules/production?tab=prod-costing", "icon": "coins", "color": "emerald"},
+                    {"title": "OEE Effectiveness Cockpit", "subtitle": "Live Availability x Performance x Quality metrics per machine", "badge": "OEE Cockpit", "url": "/modules/production?tab=prod-oee-monitor", "icon": "gauge", "color": "amber"},
+                    {"title": "Capacity Load vs Availability", "subtitle": "Resource load factor, bottleneck identification & shift planning", "badge": "Capacity Load", "url": "/modules/production?tab=prod-capacity-planning", "icon": "bar-chart-2", "color": "blue"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Statements, Statutory Registers & Production Print Studio Suite",
+                "subtitle": "Executive KPIs, WIP Stage Ledger, Yield & Scrap Statements & Manufacturing Print Studio",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "4 Reporting Areas",
+                "cards": [
+                    {"title": "Executive Production KPIs", "subtitle": "Throughput volume, scrap rate %, average OEE & WIP valuation", "badge": "Executive Hub", "url": "/modules/production?tab=prod-summary", "icon": "pie-chart", "color": "blue"},
+                    {"title": "WIP Stage Balance Ledger", "subtitle": "Stage-by-stage Work-In-Progress balance & completed ops", "badge": "WIP Ledger", "url": "/modules/production?tab=prod-wip-ledger", "icon": "layers", "color": "emerald"},
+                    {"title": "Yield & Scrap Variance Report", "subtitle": "Production output yield %, scrap variance & material efficiency", "badge": "Yield Audit", "url": "/modules/production?tab=prod-yield-report", "icon": "scale", "color": "purple"},
+                    {"title": "Manufacturing Print Studio", "subtitle": "Official Work Orders, BOM Explosion Sheets, Pick Slips & QA Certs", "badge": "Print Hub", "url": "/modules/production?tab=prod-print-studio", "icon": "printer", "color": "rose"},
+                ]
+            }
+        ]
+
+
+    # =========================================================================
+    # 9. SYSTEM ADMINISTRATION & ENTERPRISE GOVERNANCE (5-SUITE ENTERPRISE ARCHITECTURE)
+    # =========================================================================
+    if slug in ("system-admin", "system_admin", "admin", "system-administration"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Global Organization, Locales & Currencies Setup Suite",
+                "subtitle": "Multi-Entity Companies, Business Units, Cost Centers, Geo Locales, Multi-Currency Board & Printers",
+                "icon": "globe",
+                "theme_color": "blue",
+                "count_label": "6 Setup Areas",
+                "cards": [
+                    {"title": "Company Profile & Multi-Entity Setup", "subtitle": "Subsidiaries, legal entity, registration & tax ID", "badge": "Companies", "url": "/modules/system-admin?tab=admin-companies", "icon": "building-2", "color": "blue"},
+                    {"title": "Business Units & Cost Centers", "subtitle": "Divisional hierarchy, operating branches & profit centers", "badge": "Units & CC", "url": "/modules/system-admin?tab=admin-units", "icon": "network", "color": "indigo"},
+                    {"title": "Countries, States & Locales", "subtitle": "ISO geographic directory, currency codes & locale formats", "badge": "Geo Locales", "url": "/modules/system-admin?tab=admin-geo", "icon": "map-pin", "color": "cyan"},
+                    {"title": "Multi-Currency & Daily Rates", "subtitle": "ISO currency profiles & real-time exchange rate table", "badge": "Currencies", "url": "/modules/system-admin?tab=admin-currencies", "icon": "coins", "color": "amber"},
+                    {"title": "Fiscal Calendars & Periods", "subtitle": "12-period fiscal calendar & opening balance lock", "badge": "Calendars", "url": "/modules/system-admin?tab=admin-calendars", "icon": "calendar-range", "color": "emerald"},
+                    {"title": "Network Printers & Spoolers", "subtitle": "Print servers, thermal slip drivers & default trays", "badge": "Printers", "url": "/modules/system-admin?tab=admin-printers", "icon": "printer", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Access Control, Roles & Security Governance Suite",
+                "subtitle": "User Profiles, Granular RBAC Permissions Matrix, Data Scopes, Password Policies & Live Sessions",
+                "icon": "shield-check",
+                "theme_color": "emerald",
+                "count_label": "5 Security Areas",
+                "cards": [
+                    {"title": "Enterprise User Profiles", "subtitle": "User credentials directory, departments & MFA status", "badge": "Users", "url": "/modules/system-admin?tab=admin-users", "icon": "users", "color": "emerald"},
+                    {"title": "Role-Based Access Control (RBAC)", "subtitle": "Function access matrix (View/Create/Edit/Delete/Approve)", "badge": "Roles & RBAC", "url": "/modules/system-admin?tab=admin-roles", "icon": "key-round", "color": "purple"},
+                    {"title": "Cost & Profit Center Scopes", "subtitle": "Subsidiary, business unit & cost center data restrictions", "badge": "Data Scopes", "url": "/modules/system-admin?tab=admin-auth-scope", "icon": "lock", "color": "blue"},
+                    {"title": "Password Vault & Security Policy", "subtitle": "Complexity rules, password renewal, reset & MFA keys", "badge": "Pass Vault", "url": "/modules/system-admin?tab=admin-passwords", "icon": "key", "color": "amber"},
+                    {"title": "Live Sessions & Security Telemetry", "subtitle": "Real-time active logins, device IP & session management", "badge": "Live Sessions", "url": "/modules/system-admin?tab=admin-sessions", "icon": "radio", "color": "cyan"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Tax Engine & Statutory Authorities Suite",
+                "subtitle": "Statutory Revenue Boards, Tax Categories, VAT/GST Profiles & Standard GL Account Linkages",
+                "icon": "landmark",
+                "theme_color": "purple",
+                "count_label": "3 Statutory Areas",
+                "cards": [
+                    {"title": "Statutory Tax Authorities", "subtitle": "Federal IRS, State Revenue & National Board of Revenue", "badge": "Authorities", "url": "/modules/system-admin?tab=admin-tax-authorities", "icon": "landmark", "color": "purple"},
+                    {"title": "Tax Classification Categories", "subtitle": "Standard VAT, Reduced, Zero-Rated, Withholding & Sales Tax", "badge": "Categories", "url": "/modules/system-admin?tab=admin-tax-categories", "icon": "tags", "color": "blue"},
+                    {"title": "Tax Rates & Profile Slabs", "subtitle": "Active calculation rates %, GL account mapping & recovery", "badge": "Tax Profiles", "url": "/modules/system-admin?tab=admin-tax-profiles", "icon": "receipt", "color": "emerald"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "System Diagnostics, Periodic Process & Integrity Suite",
+                "subtitle": "Database Integrity Scanner, Recalculate Ledgers, Month-End Module Closures & Backup Points",
+                "icon": "cpu",
+                "theme_color": "amber",
+                "count_label": "4 Maintenance Areas",
+                "cards": [
+                    {"title": "Database Integrity & Scanner", "subtitle": "Foreign key parity, orphan checks & ledger recalculation", "badge": "Integrity", "url": "/modules/system-admin?tab=admin-integrity", "icon": "activity", "color": "amber"},
+                    {"title": "Consolidated Month-End Close", "subtitle": "Periodic close for Cash, AR, AP, Inventory, HR & Assets", "badge": "Month-End", "url": "/modules/system-admin?tab=admin-periodic", "icon": "check-square", "color": "emerald"},
+                    {"title": "Year-End Processing & Balance Sync", "subtitle": "Retained earnings roll-forward & annual balance sync", "badge": "Year-End", "url": "/modules/system-admin?tab=admin-year-end", "icon": "calendar-check-2", "color": "purple"},
+                    {"title": "Database Backup Snapshots", "subtitle": "Automated full backups, transaction logs & restore points", "badge": "Backups", "url": "/modules/system-admin?tab=admin-backups", "icon": "hard-drive", "color": "blue"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Audit Vault, System Telemetry & Print Studio Suite",
+                "subtitle": "Tamper-Evident System Audit Trail, IT Infrastructure KPIs, License Telemetry & Print Studio",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "4 Telemetry Areas",
+                "cards": [
+                    {"title": "Tamper-Evident Audit Vault", "subtitle": "Immutable security timeline, entity mutations & IP logs", "badge": "Audit Vault", "url": "/modules/system-admin?tab=admin-audit-log", "icon": "shield-alert", "color": "rose"},
+                    {"title": "Executive Administration KPIs", "subtitle": "System health, database score, active nodes & periods", "badge": "Admin KPIs", "url": "/modules/system-admin?tab=admin-kpis", "icon": "pie-chart", "color": "blue"},
+                    {"title": "Enterprise Client License", "subtitle": "Autonomous Edition 2026, node limits & support SLA", "badge": "License", "url": "/modules/system-admin?tab=admin-license", "icon": "award", "color": "purple"},
+                    {"title": "System Admin Print Studio", "subtitle": "Security Audit Certs, Entity Specs, Tax Schedules & Health", "badge": "Print Studio", "url": "/modules/system-admin?tab=admin-print-studio", "icon": "printer", "color": "emerald"},
+                ]
+            }
+        ]
+
     # Automatically generates the standardized 5 enterprise suites based on module domain!
     return _generate_default_enterprise_suites(slug)
 

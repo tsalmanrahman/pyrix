@@ -30,6 +30,7 @@
               <th class="py-2.5 px-3">Subsidiary</th>
               <th class="py-2.5 px-3 text-center">Bins</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -45,7 +46,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ w.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ w.id }}', '{{ w.name or w.title or w.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -76,6 +87,7 @@
               <th class="py-2.5 px-3">Shelf</th>
               <th class="py-2.5 px-3">Bin Number</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -90,7 +102,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Operational</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ b.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ b.id }}', '{{ b.name or b.title or b.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -120,6 +142,7 @@
               <th class="py-2.5 px-3">Subsidiary</th>
               <th class="py-2.5 px-3 text-center">Items Assigned</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -133,7 +156,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ g.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ g.id }}', '{{ g.name or g.title or g.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -162,6 +195,7 @@
               <th class="py-2.5 px-3">Base Unit</th>
               <th class="py-2.5 px-3 text-center">Conversion Ratio</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -174,7 +208,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Standard</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ u.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ u.id }}', '{{ u.name or u.title or u.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -206,6 +250,7 @@
               <th class="py-2.5 px-3 text-right">On-Hand Qty</th>
               <th class="py-2.5 px-3 text-center">Serialized</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -230,7 +275,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ it.item_status }}</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ it.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ it.id }}', '{{ it.name or it.title or it.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -267,6 +322,7 @@
               <th class="py-2.5 px-3 text-center">QC Status</th>
               <th class="py-2.5 px-3 text-center">Status</th>
               <th class="py-2.5 px-3 text-center">Print</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -276,8 +332,9 @@
                 <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ grn.grn_type }}</span></td>
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ grn.supplier_name }}</td>
                 <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ grn.warehouse_name }}</td>
-                <td class="py-3 px-3 font-mono text-slate-500">{{ grn.grn_date }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(grn.total_received_value) }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ grn.grn_date }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(grn.total_received_value) }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ grn.qc_status }}</span>
                 </td>
@@ -289,8 +346,14 @@
                     <i data-lucide="printer" class="w-3 h-3"></i>
                     <span>Print GRN</span>
                   </a>
-                </td>
-              </tr>
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ grn.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ grn.id }}', '{{ grn.name or grn.title or grn.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -322,6 +385,7 @@
               <th class="py-2.5 px-3 text-right">Issued Value</th>
               <th class="py-2.5 px-3 text-center">Status</th>
               <th class="py-2.5 px-3 text-center">Print</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -331,8 +395,9 @@
                 <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ iss.issue_type }}</span></td>
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ iss.recipient_name }}</td>
                 <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ iss.warehouse_name }}</td>
-                <td class="py-3 px-3 font-mono text-indigo-500">{{ iss.gate_pass_ref }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(iss.total_issue_value) }}</td>
+                <td class="py-3 px-3 font-mono text-indigo-500">{{ iss.gate_pass_ref }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(iss.total_issue_value) }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">{{ iss.status }}</span>
                 </td>
@@ -341,8 +406,14 @@
                     <i data-lucide="printer" class="w-3 h-3"></i>
                     <span>Print Challan</span>
                   </a>
-                </td>
-              </tr>
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ iss.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ iss.id }}', '{{ iss.name or iss.title or iss.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -374,6 +445,7 @@
               <th class="py-2.5 px-3 text-right">Transfer Value</th>
               <th class="py-2.5 px-3 text-center">Status</th>
               <th class="py-2.5 px-3 text-center">Print</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -383,8 +455,9 @@
                 <td class="py-3 px-3 font-medium">{{ st.from_warehouse }}</td>
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ st.to_warehouse }}</td>
                 <td class="py-3 px-3 font-mono text-slate-500">{{ st.dispatch_date }}</td>
-                <td class="py-3 px-3">{{ st.carrier_name }} ({{ st.vehicle_no }})</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(st.total_transfer_value) }}</td>
+                <td class="py-3 px-3">{{ st.carrier_name }} ({{ st.vehicle_no }})</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(st.total_transfer_value) }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">{{ st.status }}</span>
                 </td>
@@ -393,8 +466,14 @@
                     <i data-lucide="printer" class="w-3 h-3"></i>
                     <span>Print STO</span>
                   </a>
-                </td>
-              </tr>
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ st.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ st.id }}', '{{ st.name or st.title or st.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -425,6 +504,7 @@
               <th class="py-2.5 px-3">Adjusted By</th>
               <th class="py-2.5 px-3 text-right">Variance Impact</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -439,7 +519,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ adj.status }}</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ adj.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ adj.id }}', '{{ adj.name or adj.title or adj.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -474,6 +564,7 @@
               <th class="py-2.5 px-3">Role</th>
               <th class="py-2.5 px-3">Inspection Comments</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -488,7 +579,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ a.action }}</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -519,6 +620,7 @@
               <th class="py-2.5 px-3 text-right">Pick Qty</th>
               <th class="py-2.5 px-3">Destination Facility</th>
               <th class="py-2.5 px-3 text-center">Pick Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -533,7 +635,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">{{ pl.pick_status }}</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ pl.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ pl.id }}', '{{ pl.name or pl.title or pl.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -610,6 +722,7 @@
               <th class="py-2.5 px-3 text-center">Period</th>
               <th class="py-2.5 px-3 text-center">Status</th>
               <th class="py-2.5 px-3 text-center">Print Certificate</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -634,7 +747,17 @@
                     <span>Certificate</span>
                   </a>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ w.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ w.id }}', '{{ w.name or w.title or w.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -735,6 +858,7 @@
               <th class="py-2.5 px-3 text-right">In-Transit Qty</th>
               <th class="py-2.5 px-3 text-right">Available (ATP)</th>
               <th class="py-2.5 px-3 text-right">Total Valuation</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -749,7 +873,17 @@
                 <td class="py-3 px-3 text-right font-mono text-cyan-600 dark:text-cyan-400">{{ "{:,.0f}".format(sb.in_transit_qty) }}</td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(sb.available_to_promise) }}</td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(sb.total_valuation) }}</td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ sb.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ sb.id }}', '{{ sb.name or sb.title or sb.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -781,6 +915,7 @@
               <th class="py-2.5 px-3">Carrier / Vehicle #</th>
               <th class="py-2.5 px-3">Tracking Ref</th>
               <th class="py-2.5 px-3 text-right">Value</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -794,7 +929,17 @@
                 <td class="py-3 px-3">{{ git.carrier_name }} ({{ git.vehicle_no }})</td>
                 <td class="py-3 px-3 font-mono text-indigo-500">{{ git.tracking_ref }}</td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(git.line_total) }}</td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ git.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ git.id }}', '{{ git.name or git.title or git.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -825,6 +970,7 @@
               <th class="py-2.5 px-3 text-right">Total Inventory Value</th>
               <th class="py-2.5 px-3 text-center">ABC Class</th>
               <th class="py-2.5 px-3 text-center">Replenishment Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -845,7 +991,17 @@
                     {{ it.replenishment_status }}
                   </span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ it.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ it.id }}', '{{ it.name or it.title or it.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -947,6 +1103,7 @@
               <th class="py-2.5 px-3 text-right">Outward Qty (-)</th>
               <th class="py-2.5 px-3 text-right">Rate</th>
               <th class="py-2.5 px-3 text-right">Total Amount</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -972,7 +1129,17 @@
                 </td>
                 <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(row.unit_cost) }}</td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(row.amount) }}</td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -1061,6 +1228,7 @@
               <th class="py-2.5 px-3 text-right">Actual Dispatched</th>
               <th class="py-2.5 px-3 text-right">Pending Dispatch</th>
               <th class="py-2.5 px-3 text-center">Fulfillment Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -1081,7 +1249,17 @@
                     <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">PENDING DISPATCH</span>
                   {% endif %}
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -1112,6 +1290,7 @@
               <th class="py-2.5 px-3 text-right">Issued Qty</th>
               <th class="py-2.5 px-3 text-right">Unit Standard Rate</th>
               <th class="py-2.5 px-3 text-right">Material Cost</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -1124,7 +1303,17 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ "{:,.0f}".format(row.issued_qty) }} {{ row.uom_code }}</td>
                 <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(row.unit_cost) }}</td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(row.total_material_cost) }}</td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -1155,6 +1344,7 @@
               <th class="py-2.5 px-3 text-center">Challans Processed</th>
               <th class="py-2.5 px-3 text-right">Units Consumed</th>
               <th class="py-2.5 px-3 text-right">Total Consumption Value</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -1167,7 +1357,17 @@
                 <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ row.issue_challan_count }} Dispatches</td>
                 <td class="py-3 px-3 text-right font-mono font-bold">{{ "{:,.0f}".format(row.total_units_consumed) }}</td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(row.total_consumption_value) }}</td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -1199,6 +1399,7 @@
               <th class="py-2.5 px-3">Carrier / Vehicle #</th>
               <th class="py-2.5 px-3 text-right">Transfer Value</th>
               <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
@@ -1214,7 +1415,17 @@
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">{{ row.transfer_status }}</span>
                 </td>
-              </tr>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
             {% endfor %}
           </tbody>
         </table>

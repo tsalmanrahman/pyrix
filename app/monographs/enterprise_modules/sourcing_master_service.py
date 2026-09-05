@@ -269,15 +269,22 @@ class SourcingMasterService:
     # =========================================================================
     @staticmethod
     def get_exchange_rates() -> List[Dict[str, Any]]:
-        return db.query("SELECT * FROM sourcing_exchange_rates ORDER BY foreign_currency ASC")
+        return db.query(
+            """
+            SELECT id, currency_code AS foreign_currency, target_currency AS base_currency,
+                   exchange_rate, effective_date, rate_type
+            FROM admin_exchange_rates
+            ORDER BY currency_code ASC
+            """
+        )
 
     @staticmethod
     def update_exchange_rate(foreign_currency: str, exchange_rate: float) -> None:
         db.execute(
             """
-            UPDATE sourcing_exchange_rates
+            UPDATE admin_exchange_rates
             SET exchange_rate = ?, effective_date = CAST(GETDATE() AS DATE)
-            WHERE foreign_currency = ?
+            WHERE currency_code = ?
             """,
             (exchange_rate, foreign_currency)
         )

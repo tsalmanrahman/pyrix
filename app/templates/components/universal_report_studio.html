@@ -1,0 +1,529 @@
+<!-- ==========================================================================
+     PYRIX ENTERPRISE UNIVERSAL A4 REPORT & DOCUMENT PRINT STUDIO ENGINE
+     Features: Dynamic Orientation (Portrait / Landscape), Multi-Format Exports
+     (PDF, Word, Excel, Print), Zoom Scaling, Security Watermark & Word Converter
+     ========================================================================== -->
+
+<!-- External High-Performance Client Libraries for Vector PDF & SheetJS Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Universal Dynamic Print & Screen Stylesheet -->
+<style>
+  /* Base Studio Stage */
+  .studio-viewport-stage {
+    background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 100%);
+    min-height: 100vh;
+    padding: 76px 20px 48px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Physical Paper Simulation Container */
+  .a4-document-sheet {
+    background-color: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    box-sizing: border-box;
+    position: relative;
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease;
+    transform-origin: top center;
+  }
+
+  /* True A4 Physical Dimensions: Portrait (210mm x 297mm) */
+  .a4-document-sheet.a4-portrait {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 16mm 18mm;
+    margin: 0 auto;
+  }
+
+  /* True A4 Physical Dimensions: Landscape (297mm x 210mm) */
+  .a4-document-sheet.a4-landscape {
+    width: 297mm;
+    min-height: 210mm;
+    padding: 14mm 18mm;
+    margin: 0 auto;
+  }
+
+  /* Dynamic Watermark Overlay */
+  .watermark-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 10;
+  }
+  .watermark-overlay span {
+    font-size: 6rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    color: rgba(148, 163, 184, 0.08);
+    transform: rotate(-35deg);
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  /* Strict Print Media Isolation */
+  @media print {
+    body {
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .studio-viewport-stage {
+      background: transparent !important;
+      padding: 0 !important;
+      min-height: auto !important;
+      display: block !important;
+    }
+    .no-print {
+      display: none !important;
+    }
+    .a4-document-sheet {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      width: 100% !important;
+      min-height: auto !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      transform: none !important;
+    }
+    .page-break {
+      page-break-after: always;
+    }
+  }
+</style>
+
+<!-- Dynamic Injected Orientation @page Rule Holder -->
+<style id="dynamic-orientation-style">
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+</style>
+
+<!-- ==========================================================================
+     UNIVERSAL FLOATING TOP COMMAND RIBBON
+     ========================================================================== -->
+<header class="fixed top-3 left-1/2 -translate-x-1/2 w-[96%] max-w-6xl z-50 no-print">
+  <div class="glass-card bg-slate-900/85 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3 flex-wrap">
+    
+    <!-- Left: Navigation & Document Badge -->
+    <div class="flex items-center gap-3 min-w-0">
+      <a 
+        href="{{ back_url|default('/modules/hris?tab=hr-print-studio') }}" 
+        class="h-8 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0"
+        title="Return to Workspace"
+      >
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span>{{ back_title|default('Back') }}</span>
+      </a>
+
+      <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
+
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="px-2 py-0.5 rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/30 text-[10px] font-mono font-bold uppercase tracking-wider shrink-0">
+          A4 {{ doc_type|default('REPORT') }}
+        </span>
+        <span class="text-xs font-bold text-white tracking-tight truncate hidden md:inline">
+          {{ doc_number|default('DOC-REF-001') }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Center: Dynamic Orientation Switcher & Zoom Slider -->
+    <div class="flex items-center gap-2">
+      <!-- Orientation Pill Switcher -->
+      <div class="flex items-center bg-black/40 p-1 rounded-xl border border-white/5">
+        <button 
+          id="btn-orientation-portrait"
+          onclick="changeReportOrientation('portrait')" 
+          type="button"
+          class="h-7 px-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition bg-blue-600 text-white shadow-sm cursor-pointer"
+          title="Portrait Orientation (Vertical A4: 210mm x 297mm)"
+        >
+          <i data-lucide="file" class="w-3.5 h-3.5"></i>
+          <span>Portrait</span>
+        </button>
+        <button 
+          id="btn-orientation-landscape"
+          onclick="changeReportOrientation('landscape')" 
+          type="button"
+          class="h-7 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1.5 transition cursor-pointer"
+          title="Landscape Orientation (Horizontal A4: 297mm x 210mm)"
+        >
+          <i data-lucide="file-text" class="w-3.5 h-3.5 rotate-90"></i>
+          <span>Landscape</span>
+        </button>
+      </div>
+
+      <!-- Zoom Controls -->
+      <div class="hidden lg:flex items-center bg-black/40 px-2 py-1 rounded-xl border border-white/5 text-xs text-slate-300 gap-1.5">
+        <button onclick="stepReportZoom(-0.1)" class="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center cursor-pointer text-slate-400 hover:text-white" title="Zoom Out">
+          <i data-lucide="zoom-out" class="w-3.5 h-3.5"></i>
+        </button>
+        <span id="zoom-percentage-label" class="font-mono text-[11px] font-semibold w-10 text-center">100%</span>
+        <button onclick="stepReportZoom(0.1)" class="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center cursor-pointer text-slate-400 hover:text-white" title="Zoom In">
+          <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+        </button>
+        <button onclick="resetReportZoom()" class="text-[10px] text-blue-400 hover:underline px-1 cursor-pointer">Reset</button>
+      </div>
+    </div>
+
+    <!-- Right: Multi-Format Export Action Hub -->
+    <div class="flex items-center gap-2">
+      <!-- Watermark Dropdown -->
+      <select 
+        id="report-watermark-select" 
+        onchange="applyReportWatermark(this.value)" 
+        class="mac-input hidden xl:block bg-black/40 text-[11px] h-8 px-2 rounded-xl border border-white/10 text-slate-300 font-medium"
+      >
+        <option value="OFFICIAL DOCUMENT">Official Seal</option>
+        <option value="CONFIDENTIAL">Confidential</option>
+        <option value="PAID & DISBURSED">Paid & Disbursed</option>
+        <option value="APPROVED">Approved</option>
+        <option value="NONE">No Watermark</option>
+      </select>
+
+      <!-- 1. Export PDF (Primary Action) -->
+      <button 
+        id="btn-export-pdf"
+        onclick="executeReportExport('pdf')" 
+        type="button"
+        class="h-8 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/20 flex items-center gap-1.5 transition cursor-pointer"
+        title="Download Official PDF Document"
+      >
+        <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+        <span>PDF</span>
+      </button>
+
+      <!-- 2. Export Word (.doc) -->
+      <button 
+        id="btn-export-word"
+        onclick="executeReportExport('word')" 
+        type="button"
+        class="h-8 px-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 hover:text-blue-300 border border-blue-500/30 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+        title="Export to Microsoft Word (.doc)"
+      >
+        <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-400"></i>
+        <span class="hidden sm:inline">Word</span>
+      </button>
+
+      <!-- 3. Export Excel (.xlsx) -->
+      <button 
+        id="btn-export-excel"
+        onclick="executeReportExport('excel')" 
+        type="button"
+        class="h-8 px-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+        title="Export Tabular Data to Microsoft Excel (.xlsx)"
+      >
+        <i data-lucide="sheet" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span class="hidden sm:inline">Excel</span>
+      </button>
+
+      <!-- 4. Direct Print -->
+      <button 
+        onclick="window.print()" 
+        type="button"
+        class="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/10 flex items-center gap-1.5 transition cursor-pointer"
+        title="Print Official Document"
+      >
+        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+        <span class="hidden md:inline">Print</span>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- ==========================================================================
+     UNIVERSAL JAVASCRIPT CONTROLLERS FOR ALL SYSTEM REPORTS
+     ========================================================================== -->
+<script>
+  let currentReportZoom = 1.0;
+  let currentOrientation = 'portrait';
+
+  // 1. Dynamic Orientation Switcher
+  function changeReportOrientation(mode) {
+    currentOrientation = mode;
+    const sheet = document.getElementById('printable-document');
+    const styleEl = document.getElementById('dynamic-orientation-style');
+    const btnPortrait = document.getElementById('btn-orientation-portrait');
+    const btnLandscape = document.getElementById('btn-orientation-landscape');
+
+    if (!sheet) return;
+
+    if (mode === 'landscape') {
+      sheet.classList.remove('a4-portrait');
+      sheet.classList.add('a4-landscape');
+      styleEl.innerHTML = `@page { size: A4 landscape; margin: 10mm; }`;
+      
+      btnLandscape.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+      btnLandscape.classList.remove('text-slate-400');
+      btnPortrait.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+      btnPortrait.classList.add('text-slate-400');
+    } else {
+      sheet.classList.remove('a4-landscape');
+      sheet.classList.add('a4-portrait');
+      styleEl.innerHTML = `@page { size: A4 portrait; margin: 10mm; }`;
+
+      btnPortrait.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+      btnPortrait.classList.remove('text-slate-400');
+      btnLandscape.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+      btnLandscape.classList.add('text-slate-400');
+    }
+
+    // Dispatch event for specialized page layouts that need dual-column expansion
+    window.dispatchEvent(new CustomEvent('reportOrientationChange', { detail: { orientation: mode } }));
+  }
+
+  // 2. Zoom Controllers
+  function stepReportZoom(delta) {
+    currentReportZoom = Math.min(Math.max(0.5, currentReportZoom + delta), 1.6);
+    applyReportZoom();
+  }
+
+  function resetReportZoom() {
+    currentReportZoom = 1.0;
+    applyReportZoom();
+  }
+
+  function applyReportZoom() {
+    const sheet = document.getElementById('printable-document');
+    const label = document.getElementById('zoom-percentage-label');
+    if (sheet) sheet.style.transform = `scale(${currentReportZoom})`;
+    if (label) label.textContent = `${Math.round(currentReportZoom * 100)}%`;
+  }
+
+  // 3. Security Watermark Toggle
+  function applyReportWatermark(val) {
+    const textEl = document.getElementById('report-watermark-text');
+    if (!textEl) return;
+    if (val === 'NONE') {
+      textEl.textContent = '';
+    } else {
+      textEl.textContent = val;
+    }
+  }
+
+  // 4. Multi-Format Export Dispatcher
+  async function executeReportExport(format) {
+    const docTitle = "{{ doc_type_title|default('Pyrix_Report') }}".replace(/[^a-zA-Z0-9_-]/g, '_');
+    const docRef = "{{ doc_number|default('001') }}".replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filename = `${docTitle}_${docRef}`;
+
+    if (format === 'pdf') {
+      await exportReportToPdf(filename);
+    } else if (format === 'word') {
+      exportReportToWord(filename);
+    } else if (format === 'excel') {
+      exportReportToExcel(filename);
+    }
+  }
+
+  // PDF Generation via html2pdf
+  async function exportReportToPdf(filename) {
+    const sheet = document.getElementById('printable-document');
+    if (!sheet) return;
+
+    const btn = document.getElementById('btn-export-pdf');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Generating...</span>`;
+
+    // Temporarily reset zoom to 1.0 for perfect 300 DPI canvas capture
+    const savedTransform = sheet.style.transform;
+    sheet.style.transform = 'none';
+
+    const isLandscape = sheet.classList.contains('a4-landscape');
+    const opt = {
+      margin: [8, 8, 8, 8],
+      filename: `${filename}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: isLandscape ? 'landscape' : 'portrait' }
+    };
+
+    try {
+      await html2pdf().set(opt).from(sheet).save();
+    } catch (err) {
+      console.error('PDF export failed:', err);
+      alert('Unable to generate PDF automatically. You can use Print -> Save as PDF.');
+    } finally {
+      sheet.style.transform = savedTransform;
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  // Word Export (.doc MIME Blob)
+  function exportReportToWord(filename) {
+    const sheet = document.getElementById('printable-document');
+    if (!sheet) return;
+
+    const isLandscape = sheet.classList.contains('a4-landscape');
+    const sheetHtml = sheet.innerHTML;
+
+    const wordHtml = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="utf-8">
+        <title>${filename}</title>
+        <style>
+          @page {
+            size: ${isLandscape ? '29.7cm 21.0cm' : '21.0cm 29.7cm'};
+            margin: 1.5cm;
+            mso-page-orientation: ${isLandscape ? 'landscape' : 'portrait'};
+          }
+          body {
+            font-family: Calibri, Arial, sans-serif;
+            font-size: 10pt;
+            color: #0f172a;
+            line-height: 1.4;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+          }
+          th, td {
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            font-size: 9.5pt;
+          }
+          th {
+            background-color: #f1f5f9;
+            font-weight: bold;
+          }
+          .font-bold { font-weight: bold; }
+          .font-mono { font-family: Courier New, monospace; }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .text-emerald-600 { color: #059669; }
+          .text-rose-600 { color: #e11d48; }
+          .text-blue-600 { color: #2563eb; }
+        </style>
+      </head>
+      <body>
+        ${sheetHtml}
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Excel Export (.xlsx via SheetJS)
+  function exportReportToExcel(filename) {
+    const sheet = document.getElementById('printable-document');
+    if (!sheet) return;
+
+    const tables = sheet.querySelectorAll('table');
+    const wb = XLSX.utils.book_new();
+
+    if (tables.length > 0) {
+      tables.forEach((table, index) => {
+        const sheetName = table.getAttribute('data-sheet-name') || `Table_${index + 1}`;
+        const ws = XLSX.utils.table_to_sheet(table);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName.substring(0, 31));
+      });
+    } else {
+      // Fallback: parse text blocks into a clean structured sheet
+      const rows = [];
+      sheet.querySelectorAll('p, div, h1, h2, h3').forEach(el => {
+        const text = el.innerText.trim();
+        if (text) rows.push([text]);
+      });
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, 'Summary');
+    }
+
+    XLSX.writeFile(wb, `${filename}.xlsx`);
+  }
+
+  // 5. Utility: Currency Number to Words Converter
+  function formatNumberToWords(amount, currency = 'USD') {
+    const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const scales = ['', 'Thousand', 'Million', 'Billion'];
+
+    function convertGroup(num) {
+      let out = '';
+      if (num >= 100) {
+        out += units[Math.floor(num / 100)] + ' Hundred ';
+        num %= 100;
+      }
+      if (num >= 10 && num <= 19) {
+        out += teens[num - 10] + ' ';
+      } else if (num >= 20) {
+        out += tens[Math.floor(num / 10)] + ' ';
+        if (num % 10) out += units[num % 10] + ' ';
+      } else if (num > 0) {
+        out += units[num] + ' ';
+      }
+      return out;
+    }
+
+    const n = parseFloat(amount) || 0;
+    const dollars = Math.floor(n);
+    const cents = Math.round((n - dollars) * 100);
+
+    if (dollars === 0) return 'Zero Dollars Only';
+
+    let parts = [];
+    let d = dollars;
+    let scaleIndex = 0;
+    while (d > 0) {
+      const chunk = d % 1000;
+      if (chunk > 0) {
+        parts.unshift(convertGroup(chunk) + scales[scaleIndex]);
+      }
+      d = Math.floor(d / 1000);
+      scaleIndex++;
+    }
+
+    let words = parts.join(' ').trim();
+    if (currency === 'USD') {
+      words += ' Dollars';
+    } else {
+      words += ` ${currency}`;
+    }
+
+    if (cents > 0) {
+      words += ` and ${convertGroup(cents).trim()} Cents`;
+    }
+    return words + ' Only';
+  }
+
+  // Auto-initialize Lucide icons on load
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) window.lucide.createIcons();
+    
+    // Auto-populate any element requesting data-in-words
+    document.querySelectorAll('[data-in-words]').forEach(el => {
+      const num = el.getAttribute('data-in-words');
+      const curr = el.getAttribute('data-currency') || 'USD';
+      el.textContent = formatNumberToWords(num, curr);
+    });
+  });
+</script>

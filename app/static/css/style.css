@@ -183,9 +183,11 @@ body {
 
 .main-wrapper {
   margin-left: 310px;
-  padding: 20px 28px 60px 0;
+  padding: 20px 28px 0 0;
   position: relative;
   z-index: 10;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   transition: margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1), padding 0.25s ease;
 }
@@ -226,7 +228,7 @@ body {
   .main-wrapper {
     margin-left: 16px !important;
     margin-right: 16px !important;
-    padding: 16px 0 60px 0 !important;
+    padding: 16px 0 0 0 !important;
     width: auto !important;
   }
 
@@ -238,7 +240,7 @@ body {
 
 @media (min-width: 2560px) {
   .main-wrapper {
-    padding: 24px 48px 80px 0;
+    padding: 24px 48px 0 0;
   }
   .sidebar-collapsed .main-wrapper {
     padding-left: 48px !important;

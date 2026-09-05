@@ -21,13 +21,13 @@
   <!-- Custom Design Stylesheet -->
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex items-center justify-center p-4 relative overflow-hidden selection:bg-blue-600/30 selection:text-white">
+<body class="bg-[#F8FAFC] text-[#0F172A] min-h-screen flex flex-col justify-between p-4 relative overflow-x-hidden selection:bg-blue-600/30 selection:text-white">
 
   <!-- Background Ambient Glow Accents -->
   <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
   <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-  <div class="w-full max-w-md space-y-6 relative z-10">
+  <div class="w-full max-w-md space-y-6 relative z-10 my-auto mx-auto py-6">
 
     <!-- Top Brand Logo -->
     <div class="text-center space-y-2">
@@ -153,19 +153,21 @@
 
     </div>
 
-    <!-- Dynamic Copyright Footer -->
-    <div class="text-center text-xs text-slate-500 font-medium pt-2">
-      <p>&copy; <span id="copyright-year">2026</span> Pyrix Enterprise Suite. All rights reserved.</p>
-    </div>
-
   </div>
+
+  <!-- Dynamic Modern Sticky Footer -->
+  <footer class="mt-auto py-4 text-center text-xs font-medium text-slate-500 w-full relative z-10">
+    <p>&copy; <span class="copyright-year">2026</span> Pyrix Enterprise Suite. All rights reserved.</p>
+  </footer>
 
   <script>
     lucide.createIcons();
 
     (function() {
-      const yrEl = document.getElementById('copyright-year');
-      if (yrEl) yrEl.textContent = new Date().getFullYear();
+      const yr = new Date().getFullYear();
+      document.querySelectorAll('.copyright-year').forEach(function(el) {
+        el.textContent = yr;
+      });
     })();
 
     function togglePasswordVisibility() {

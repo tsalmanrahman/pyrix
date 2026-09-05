@@ -2,40 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{{ doc_type_title }} - {{ doc_number }} | Pyrix Enterprise</title>
+  <title>{{ doc_type_title }} - {{ doc_number }} | Pyrix Fixed Assets</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @media print {
-      body {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      .no-print {
-        display: none !important;
-      }
-      .page-break {
-        page-break-after: always;
-      }
-    }
-  </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 p-6 min-h-screen font-sans text-slate-800 dark:text-slate-200">
+<body class="bg-slate-950 text-slate-900 antialiased selection:bg-blue-500 selection:text-white min-h-screen">
 
-  <!-- Print Action Toolbar -->
-  <div class="max-w-4xl mx-auto mb-4 flex items-center justify-between no-print">
-    <a href="/modules/fixed-assets?tab=fa-print-studio" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-300 transition">
-      &larr; Back to Fixed Assets Workspace
-    </a>
-    <button onclick="window.print()" class="px-5 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs shadow-lg hover:bg-blue-700 transition flex items-center gap-2">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-      Print Official Document
-    </button>
-  </div>
+  {% set back_url = '/modules/fixed-assets?tab=fa-print-studio' %}
+  {% set back_title = 'Fixed Assets' %}
+  {% include "components/universal_report_studio.html" %}
 
-  <!-- A4 Document Sheet -->
-  <div class="max-w-4xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl p-8 space-y-6">
-    
-    <!-- Letterhead Header -->
+  <main class="studio-viewport-stage">
+    <article id="printable-document" class="a4-document-sheet a4-portrait flex flex-col justify-between">
+      
+      <div class="watermark-overlay">
+        <span id="report-watermark-text">OFFICIAL DOCUMENT</span>
+      </div>
+
+      <div class="space-y-5 relative z-20">
+        <!-- Letterhead Header -->
+        <header class="border-b-2 border-slate-900/80 pb-4 flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center text-base shadow-sm shrink-0">
+                FA
+              </div>
+              <div>
+                <h1 class="text-lg font-black text-slate-950 tracking-tight leading-tight">{{ active_company.name|default('Apex Precision Manufacturing Group Ltd') }}</h1>
+                <p class="text-[11px] font-semibold text-slate-600">{{ active_company.industry|default('Capital Asset Management & Plant Maintenance') }}</p>
+              </div>
+            </div>
+            <div class="pt-1 text-[10px] text-slate-500 font-medium">
+              <p>Corporate Fixed Asset Ledger &bull; Depreciation & Equipment Verification</p>
+            </div>
+          </div>
+
+          <div class="text-right flex flex-col items-end shrink-0">
+            <span class="px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded bg-slate-100 text-blue-700 border border-slate-300">
+              {{ doc_type_title }}
+            </span>
+            <p class="text-base font-black font-mono text-slate-950 mt-1.5 tracking-tight">{{ doc_number }}</p>
+            <p class="text-[11px] text-slate-500 font-medium">Date: <span class="font-mono font-bold text-slate-800">{{ doc_date }}</span></p>
+          </div>
+        </header>
+
+
     <div class="flex items-start justify-between border-b border-slate-200 dark:border-white/10 pb-6">
       <div class="space-y-1">
         <div class="flex items-center gap-2">
@@ -143,5 +153,34 @@
 
   </div>
 
+</body>
+</html>
+
+      </div>
+
+      <!-- Footer & Signatures -->
+      <footer class="pt-6 border-t-2 border-slate-900/80 space-y-4 relative z-20">
+        <div class="grid grid-cols-3 gap-6 text-center text-xs">
+          <div class="space-y-4">
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-slate-400 italic">Prepared</span></div>
+            <p class="font-bold text-slate-950">Asset Custodian</p>
+          </div>
+          <div class="space-y-4">
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-slate-400 italic">Verified</span></div>
+            <p class="font-bold text-slate-950">Maintenance Lead</p>
+          </div>
+          <div class="space-y-4">
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">REGISTERED</span></div>
+            <p class="font-bold text-slate-950">Financial Controller</p>
+          </div>
+        </div>
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[9px] text-slate-400 font-mono">
+          <span>Pyrix Fixed Assets Management &bull; Generated: {{ doc_date }}</span>
+          <span>Security Hash: SHA-256 &bull; Page 1 of 1</span>
+        </div>
+      </footer>
+
+    </article>
+  </main>
 </body>
 </html>

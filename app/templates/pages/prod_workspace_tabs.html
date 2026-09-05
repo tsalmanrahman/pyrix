@@ -1,0 +1,1398 @@
+{% if module.route_slug in ['production', 'manufacturing', 'production-management'] %}
+
+  <!-- =========================================================================
+       SUITE 1: ENGINEERING MASTERS, BOM & PLANT ROUTING SETUP SUITE (7 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 1.1 Manufacturing Processes -->
+  {% if current_tab == 'prod-processes' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-blue-500"></i>
+            <span>Manufacturing Processes Master</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Standard manufacturing production stages, operational sequences, and cost centers</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Process Code</th>
+              <th class="py-2.5 px-3">Process Name</th>
+              <th class="py-2.5 px-3">Stage Type</th>
+              <th class="py-2.5 px-3 text-center">Seq Order</th>
+              <th class="py-2.5 px-3">Cost Center</th>
+              <th class="py-2.5 px-3">Process Description</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for p in prod_processes %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ p.process_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ p.process_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ p.stage_type }}</span></td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">Step {{ p.sequence_order }}</td>
+                <td class="py-3 px-3 font-mono text-purple-600 dark:text-purple-400">{{ p.default_cost_center }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400 max-w-xs truncate">{{ p.description }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">ACTIVE</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_plants', '{{ p.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_plants', '{{ p.id }}', '{{ p.name or p.title or p.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.2 Production Plants & Works -->
+  {% elif current_tab == 'prod-plants' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="building-2" class="w-4 h-4 text-indigo-500"></i>
+            <span>Production Plants, Works &amp; Bay Locations</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Heavy fabrication plants, precision machine shops, workshops, and bay allocations</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Plant Code</th>
+              <th class="py-2.5 px-3">Plant Facility Name</th>
+              <th class="py-2.5 px-3">Facility Location</th>
+              <th class="py-2.5 px-3">Plant Director / GM</th>
+              <th class="py-2.5 px-3 text-center">Total Bays</th>
+              <th class="py-2.5 px-3">Shift Operating Mode</th>
+              <th class="py-2.5 px-3 text-center">Work Centers</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for pl in prod_plants %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ pl.plant_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ pl.plant_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ pl.location }}</td>
+                <td class="py-3 px-3 font-medium">{{ pl.manager_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ pl.total_bays }} Bays</td>
+                <td class="py-3 px-3 font-mono text-purple-600 dark:text-purple-400">{{ pl.shift_mode }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ pl.resource_count }} Units</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">OPERATIONAL</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_plants', '{{ pl.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_plants', '{{ pl.id }}', '{{ pl.name or pl.title or pl.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.3 Production Resources & Work Centers -->
+  {% elif current_tab == 'prod-resources' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="cpu" class="w-4 h-4 text-purple-500"></i>
+            <span>Production Resources &amp; Work Centers</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">5-Axis CNC machining centers, robotic welding cells, powder coating lines, and coordinate inspection metrology</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Resource Code</th>
+              <th class="py-2.5 px-3">Resource Name</th>
+              <th class="py-2.5 px-3">Plant Facility</th>
+              <th class="py-2.5 px-3">Type</th>
+              <th class="py-2.5 px-3 text-right">Hourly Cost Rate</th>
+              <th class="py-2.5 px-3 text-center">Daily Capacity</th>
+              <th class="py-2.5 px-3 text-center">Efficiency Rating</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for r in prod_resources %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ r.resource_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ r.resource_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ r.plant_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ r.resource_type }}</span></td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(r.hourly_cost_rate|float) }}/hr</td>
+                <td class="py-3 px-3 text-center font-mono">{{ "{:,.1f}".format(r.capacity_hours_per_day|float) }} hrs/day</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.1f}".format(r.efficiency_pct|float) }}%</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ r.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_work_centers', '{{ r.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_work_centers', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.4 Operational Routings -->
+  {% elif current_tab == 'prod-routings' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="git-commit" class="w-4 h-4 text-amber-500"></i>
+            <span>Multi-Step Operational Routings</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Operation sequences, assigned work centers, setup times, and standard machine/labor hours per unit</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Routing Code</th>
+              <th class="py-2.5 px-3">Finished Good Item</th>
+              <th class="py-2.5 px-3 text-center">Sequence</th>
+              <th class="py-2.5 px-3">Operation Description</th>
+              <th class="py-2.5 px-3">Assigned Work Center</th>
+              <th class="py-2.5 px-3 text-center">Setup Mins</th>
+              <th class="py-2.5 px-3 text-center">Run Mins</th>
+              <th class="py-2.5 px-3 text-right">Labor Hrs</th>
+              <th class="py-2.5 px-3 text-right">Machine Hrs</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for rt in prod_routings %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ rt.routing_code }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ rt.item_name }}</span>
+                  <p class="text-[10px] font-mono text-slate-500">{{ rt.item_code }}</p>
+                </td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">Op {{ rt.operation_sequence }}</td>
+                <td class="py-3 px-3 font-medium">{{ rt.operation_description }}</td>
+                <td class="py-3 px-3 text-purple-600 dark:text-purple-400 font-medium">{{ rt.resource_name }}</td>
+                <td class="py-3 px-3 text-center font-mono">{{ rt.setup_time_mins }}m</td>
+                <td class="py-3 px-3 text-center font-mono">{{ rt.run_time_mins }}m</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ "{:,.2f}".format(rt.labor_hours|float) }}h</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.2f}".format(rt.machine_hours|float) }}h</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ rt.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ rt.id }}', '{{ rt.name or rt.title or rt.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.5 Plant Capacity Profiles -->
+  {% elif current_tab == 'prod-capacity' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i>
+            <span>Plant &amp; Machine Capacity Profiles</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Work center shift hours, available calendar hours, planned load, and capacity utilization %</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Period</th>
+              <th class="py-2.5 px-3">Plant Facility</th>
+              <th class="py-2.5 px-3">Work Center Resource</th>
+              <th class="py-2.5 px-3 text-center">Daily Shift</th>
+              <th class="py-2.5 px-3 text-center">Working Days</th>
+              <th class="py-2.5 px-3 text-right">Available Hours</th>
+              <th class="py-2.5 px-3 text-right">Planned Load</th>
+              <th class="py-2.5 px-3 text-center">Utilization Rate</th>
+              <th class="py-2.5 px-3 text-center">Capacity Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for cap in prod_capacity %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ cap.period_month }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ cap.plant_name }}</td>
+                <td class="py-3 px-3 font-bold text-purple-600 dark:text-purple-400">{{ cap.resource_name }}</td>
+                <td class="py-3 px-3 text-center font-mono">{{ "{:,.1f}".format(cap.shift_hours_per_day|float) }}h</td>
+                <td class="py-3 px-3 text-center font-mono">{{ cap.working_days }} Days</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ "{:,.1f}".format(cap.total_available_hours|float) }}h</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{{ "{:,.1f}".format(cap.planned_load_hours|float) }}h</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.1f}".format(cap.capacity_utilization_pct|float) }}%</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ cap.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_work_centers', '{{ cap.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_work_centers', '{{ cap.id }}', '{{ cap.name or cap.title or cap.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.6 Standard Engineering BOM -->
+  {% elif current_tab == 'prod-bom-standard' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="folder-tree" class="w-4 h-4 text-cyan-500"></i>
+            <span>Standard Engineering Bill of Materials (BOM)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Multi-level engineering BOMs with revision history, expected yields, and raw material costing</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">BOM Code</th>
+              <th class="py-2.5 px-3">Parent Finished Good</th>
+              <th class="py-2.5 px-3 text-center">Revision</th>
+              <th class="py-2.5 px-3 text-center">Components</th>
+              <th class="py-2.5 px-3 text-center">Expected Yield</th>
+              <th class="py-2.5 px-3 text-right">Total Material Cost</th>
+              <th class="py-2.5 px-3">Effective Date</th>
+              <th class="py-2.5 px-3 text-center">Print BOM</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for b in prod_boms_std %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ b.bom_code }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ b.item_name }}</span>
+                  <p class="text-[10px] font-mono text-slate-500">{{ b.item_code }}</p>
+                </td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-purple-600 dark:text-purple-400">{{ b.revision_number }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ b.total_components }} Items</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.1f}".format(b.expected_yield_pct|float) }}%</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(b.total_bom_material_cost|float) }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ b.effective_from }}</td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/production/print/bom-explosion/{{ b.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 rounded transition">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>BOM Explosion</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ b.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ b.id }}', '{{ b.name or b.title or b.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.7 Assembly BOM & Kitting -->
+  {% elif current_tab == 'prod-bom-assembly' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="box" class="w-4 h-4 text-rose-500"></i>
+            <span>Assembly BOM &amp; Modular Kitting Recipes</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Fast modular assembly recipes, packaging kits, and phantom assembly structures</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Assembly BOM Code</th>
+              <th class="py-2.5 px-3">Assembled Kit Item</th>
+              <th class="py-2.5 px-3 text-center">Revision</th>
+              <th class="py-2.5 px-3 text-center">Kit Components</th>
+              <th class="py-2.5 px-3 text-center">Yield</th>
+              <th class="py-2.5 px-3 text-right">Kit Material Cost</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for ab in prod_boms_asy %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ ab.bom_code }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ ab.item_name }}</span>
+                  <p class="text-[10px] font-mono text-slate-500">{{ ab.item_code }}</p>
+                </td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ ab.revision_number }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ ab.total_components }} Items</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.1f}".format(ab.expected_yield_pct|float) }}%</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(ab.total_bom_material_cost|float) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">READY_FOR_KITTING</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ ab.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ ab.id }}', '{{ ab.name or ab.title or ab.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 2: PRODUCTION ORDERS, JOB CARDS & FLOOR EXECUTION (6 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 2.1 Production Demand Requisitions -->
+  {% elif current_tab == 'prod-requisitions' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i>
+            <span>Production Demand Requisitions</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Demand-driven manufacturing requests triggered from confirmed Sales Orders or MRP safety buffers</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Requisition #</th>
+              <th class="py-2.5 px-3">Demand Origin</th>
+              <th class="py-2.5 px-3">Target Finished Good</th>
+              <th class="py-2.5 px-3 text-right">Requested Quantity</th>
+              <th class="py-2.5 px-3">Required By Date</th>
+              <th class="py-2.5 px-3 text-center">Priority</th>
+              <th class="py-2.5 px-3">Requested By</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for req in prod_requisitions %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ req.requisition_number }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ req.demand_source }}</span></td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ req.item_name }}</span>
+                  <p class="text-[10px] font-mono text-slate-500">{{ req.item_code }}</p>
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ "{:,.1f}".format(req.requested_qty|float) }} {{ req.uom_code }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ req.required_by_date }}</td>
+                <td class="py-3 px-3 text-center">
+                  {% if req.priority == 'URGENT' %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">URGENT</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">{{ req.priority }}</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ req.requested_by }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ req.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ req.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ req.id }}', '{{ req.name or req.title or req.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.2 Master Production Orders -->
+  {% elif current_tab == 'prod-orders' or current_tab is none %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="clipboard-list" class="w-4 h-4 text-emerald-500"></i>
+            <span>Master Production Orders (Discrete Work Orders)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Discrete shop floor work orders, scheduled vs actual run dates, completion quantities, and scrap tracking</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Order Number</th>
+              <th class="py-2.5 px-3">Item to Manufacture</th>
+              <th class="py-2.5 px-3">Plant Facility</th>
+              <th class="py-2.5 px-3">BOM Revision</th>
+              <th class="py-2.5 px-3 text-right">Planned Qty</th>
+              <th class="py-2.5 px-3 text-right">Completed Qty</th>
+              <th class="py-2.5 px-3 text-right">Scrap Qty</th>
+              <th class="py-2.5 px-3 text-center">Schedule</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Print</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for o in prod_orders %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ o.order_number }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ o.item_name }}</span>
+                  <p class="text-[10px] font-mono text-slate-500">{{ o.item_code }}</p>
+                </td>
+                <td class="py-3 px-3 text-slate-500">{{ o.plant_name }}</td>
+                <td class="py-3 px-3 font-mono text-purple-600 dark:text-purple-400">{{ o.bom_code }} ({{ o.revision_number }})</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    {{ "{:,.1f}".format(o.planned_qty|float) }} {{ o.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.1f}".format(o.completed_qty|float) }} {{ o.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ "{:,.1f}".format(o.scrap_qty|float) }}</td>
+                <td class="py-3 px-3 text-center font-mono text-[11px] text-slate-500">{{ o.planned_start_date }} &rarr; {{ o.planned_end_date }}</td>
+                <td class="py-3 px-3 text-center">
+                  {% if o.status == 'COMPLETED' %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">COMPLETED</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">IN_PROGRESS</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <a href="/modules/production/print/work-order/{{ o.id }}" target="_blank" class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition" title="Print Work Order Traveler">
+                      <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                    </a>
+                    <a href="/modules/production/print/pick-slip/{{ o.id }}" target="_blank" class="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition" title="Print Material Pick Slip">
+                      <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                    </a>
+                  </div>
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ o.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ o.id }}', '{{ o.name or o.title or o.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.3 Shop Floor Job Cards -->
+  {% elif current_tab == 'prod-job-cards' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="wrench" class="w-4 h-4 text-purple-500"></i>
+            <span>Shop Floor Job Cards &amp; Route Travelers</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Operation-level traveler execution: scheduled vs actual operator hours, completed pieces, and scrap</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Job Card #</th>
+              <th class="py-2.5 px-3">Parent Work Order</th>
+              <th class="py-2.5 px-3 text-center">Sequence</th>
+              <th class="py-2.5 px-3">Operation Title</th>
+              <th class="py-2.5 px-3">Machine Resource</th>
+              <th class="py-2.5 px-3 text-right">Scheduled Hrs</th>
+              <th class="py-2.5 px-3 text-right">Actual Hrs</th>
+              <th class="py-2.5 px-3 text-right">Completed Qty</th>
+              <th class="py-2.5 px-3">Operator</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for jc in prod_job_cards %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ jc.job_card_number }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ jc.order_number }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">Op {{ jc.operation_seq }}</td>
+                <td class="py-3 px-3 font-medium">{{ jc.operation_title }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ jc.resource_name }}</td>
+                <td class="py-3 px-3 text-right font-mono">{{ "{:,.1f}".format(jc.scheduled_hours|float) }}h</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{{ "{:,.1f}".format(jc.actual_hours|float) }}h</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(jc.completed_qty|float) }} pcs</td>
+                <td class="py-3 px-3 font-medium">{{ jc.operator_name }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ jc.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_job_cards', '{{ jc.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_job_cards', '{{ jc.id }}', '{{ jc.name or jc.title or jc.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.4 Material Issues to WIP -->
+  {% elif current_tab == 'prod-mat-issues' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="arrow-up-right" class="w-4 h-4 text-amber-500"></i>
+            <span>Materials Requisitions &amp; Issues to WIP</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Warehouse raw material disbursements directly linked to work orders and bill of materials</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Issue Voucher #</th>
+              <th class="py-2.5 px-3">Work Order #</th>
+              <th class="py-2.5 px-3">Source Warehouse</th>
+              <th class="py-2.5 px-3">Material Issued</th>
+              <th class="py-2.5 px-3 text-right">Required Qty</th>
+              <th class="py-2.5 px-3 text-right">Issued Qty</th>
+              <th class="py-2.5 px-3 text-right">Total Material Cost</th>
+              <th class="py-2.5 px-3">Custodian</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for mi in prod_mat_issues %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ mi.issue_number }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ mi.order_number }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ mi.warehouse_name }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ mi.item_name }}</span>
+                  <p class="text-[10px] font-mono text-slate-500">{{ mi.item_code }}</p>
+                </td>
+                <td class="py-3 px-3 text-right font-mono">{{ "{:,.1f}".format(mi.required_qty|float) }} {{ mi.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{{ "{:,.1f}".format(mi.issued_qty|float) }} {{ mi.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(mi.total_cost|float) }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ mi.issued_by }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ mi.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ mi.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ mi.id }}', '{{ mi.name or mi.title or mi.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.5 Assembly Conversions -->
+  {% elif current_tab == 'prod-conversions' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="repeat" class="w-4 h-4 text-cyan-500"></i>
+            <span>Materials to Materials Conversion by Assembly</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Instant batch assembly conversion consuming raw components and producing finished inventory stock</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Conversion #</th>
+              <th class="py-2.5 px-3">Source Raw Component</th>
+              <th class="py-2.5 px-3 text-center">Input Qty</th>
+              <th class="py-2.5 px-3">Target Finished Product</th>
+              <th class="py-2.5 px-3 text-center">Output Qty</th>
+              <th class="py-2.5 px-3 text-right">Batch Value</th>
+              <th class="py-2.5 px-3">Date &amp; Lead Tech</th>
+              <th class="py-2.5 px-3 text-center">Print Voucher</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for conv in prod_conversions %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ conv.conversion_number }}</td>
+                <td class="py-3 px-3 font-medium">{{ conv.source_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">{{ "{:,.0f}".format(conv.input_qty|float) }} in</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ conv.target_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(conv.output_qty|float) }} out</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(conv.total_value|float) }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ conv.conversion_date }} &bull; {{ conv.operator_name }}</td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/production/print/conversion-voucher/{{ conv.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 rounded transition">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Voucher</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ conv.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ conv.id }}', '{{ conv.name or conv.title or conv.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.6 Assembly Reversals & De-Kits -->
+  {% elif current_tab == 'prod-reversals' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="rotate-ccw" class="w-4 h-4 text-rose-500"></i>
+            <span>Materials Conversion by Assembly &ndash; Reversal</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Disassembly and de-kitting: reversing assembled goods back into individual raw materials and spares</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Reversal #</th>
+              <th class="py-2.5 px-3">Disassembled Assembly Item</th>
+              <th class="py-2.5 px-3 text-center">Reversal Qty</th>
+              <th class="py-2.5 px-3">Recovered Raw Component</th>
+              <th class="py-2.5 px-3 text-center">Recovered Qty</th>
+              <th class="py-2.5 px-3 text-right">Salvage Value</th>
+              <th class="py-2.5 px-3">Reason &amp; Remarks</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for rev in prod_reversals %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ rev.conversion_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ rev.source_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-rose-600 dark:text-rose-400">{{ "{:,.0f}".format(rev.input_qty|float) }} dismantled</td>
+                <td class="py-3 px-3 font-medium">{{ rev.target_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(rev.output_qty|float) }} returned</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(rev.total_value|float) }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400 max-w-xs truncate">{{ rev.remarks }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ rev.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ rev.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ rev.id }}', '{{ rev.name or rev.title or rev.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 3: QUALITY CONTROL, DOWNTIME & PROCESS SUITE (4 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 3.1 Quality Inspection Hub -->
+  {% elif current_tab == 'prod-qc-inspections' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>
+            <span>Quality Inspection Hub &amp; QA Release</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">First-piece, in-process, and pre-dispatch QA inspection gates, defect logging, and release authorization</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Inspection #</th>
+              <th class="py-2.5 px-3">Work Order #</th>
+              <th class="py-2.5 px-3">Product Inspected</th>
+              <th class="py-2.5 px-3">Stage</th>
+              <th class="py-2.5 px-3 text-center">Sample Size</th>
+              <th class="py-2.5 px-3 text-center">Passed</th>
+              <th class="py-2.5 px-3 text-center">Rejected</th>
+              <th class="py-2.5 px-3">QA Disposition</th>
+              <th class="py-2.5 px-3">Inspector</th>
+              <th class="py-2.5 px-3 text-center">QA Cert</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for qc in prod_qc_inspections %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ qc.inspection_number }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ qc.order_number }}</td>
+                <td class="py-3 px-3 font-medium">{{ qc.item_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ qc.inspection_stage }}</span></td>
+                <td class="py-3 px-3 text-center font-mono">{{ "{:,.0f}".format(qc.sample_size_qty|float) }} pcs</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(qc.passed_qty|float) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-rose-600 dark:text-rose-400">{{ "{:,.0f}".format(qc.rejected_qty|float) }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">{{ qc.disposition }}</span></td>
+                <td class="py-3 px-3 text-slate-500">{{ qc.inspector_name }}</td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/production/print/qa-certificate/{{ qc.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded transition">
+                    <i data-lucide="shield-check" class="w-3 h-3"></i>
+                    <span>QA Cert</span>
+                  </a>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ qc.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ qc.id }}', '{{ qc.name or qc.title or qc.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.2 Machine Downtime Tracker -->
+  {% elif current_tab == 'prod-downtime' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+            <span>Machine Downtime &amp; Breakdown Log</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Machine stoppage logging, tooling changeovers, mechanical/electrical breakdown analytics, and estimated financial loss</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Log #</th>
+              <th class="py-2.5 px-3">Date</th>
+              <th class="py-2.5 px-3">Work Center Resource</th>
+              <th class="py-2.5 px-3">Plant</th>
+              <th class="py-2.5 px-3 text-center">Downtime Duration</th>
+              <th class="py-2.5 px-3">Category</th>
+              <th class="py-2.5 px-3">Root Cause Description</th>
+              <th class="py-2.5 px-3 text-right">Cost Impact</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for dt in prod_downtime %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ dt.log_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ dt.downtime_date }}</td>
+                <td class="py-3 px-3 font-bold text-purple-600 dark:text-purple-400">{{ dt.resource_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ dt.plant_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-rose-600 dark:text-rose-400">{{ dt.duration_mins }} mins</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ dt.downtime_category }}</span></td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ dt.root_cause }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(dt.estimated_cost_loss|float) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ dt.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_downtime', '{{ dt.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_downtime', '{{ dt.id }}', '{{ dt.name or dt.title or dt.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.3 External Data Import Hub -->
+  {% elif current_tab == 'prod-import-data' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4 text-blue-500"></i>
+            <span>External Data Import Hub &amp; Migration Profiles</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automated batch import pipelines for Opening Stock, Monthly Sales Forecasts, and Engineering BOM Profiles</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {% for prf in prod_import_profiles %}
+          <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">{{ prf.file_type }}</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">{{ prf.status }}</span>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">{{ prf.profile_name }}</h4>
+            <p class="text-xs text-slate-500">Entity Destination: <strong>{{ prf.entity_target }}</strong></p>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/5 text-[11px] text-slate-400">
+              <span>Last Sync: {{ prf.last_imported }}</span>
+              <span class="font-mono font-bold text-slate-900 dark:text-white">{{ prf.records_count }} Records</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  <!-- 3.4 Year-End WIP Process -->
+  {% elif current_tab == 'prod-year-end' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="calendar-check" class="w-4 h-4 text-purple-500"></i>
+            <span>Year-End WIP Rollover &amp; Variance Closing Engine</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Annual manufacturing closing: carries forward live WIP work orders and commits production variances to GL Cost of Goods Sold (COGS)</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Closing Fiscal Period</span>
+          <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">{{ prod_year_end_data.fiscal_year|default('FY 2026-2027') }}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">WIP Orders Rolled Forward</span>
+          <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ prod_year_end_data.wip_orders_carried_forward|default(4) }} Orders</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Carried WIP Value</span>
+          <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(prod_year_end_data.total_wip_value|default(245800.00, true)) }}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">COGS Variance Absorption</span>
+          <p class="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">${{ "{:,.2f}".format(prod_year_end_data.cost_variance_closed_to_cogs|default(4850.00, true)) }}</p>
+        </div>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 4: MANUFACTURING COSTING & FLOOR ANALYTICS (3 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 4.1 Manufacturing Cost Records -->
+  {% elif current_tab == 'prod-costing' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="coins" class="w-4 h-4 text-emerald-500"></i>
+            <span>Actual vs Standard Manufacturing Costing</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Itemized absorption: Raw Materials + Direct Labor + Machine Overhead + Scrap Variance vs Standard Cost</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Work Order #</th>
+              <th class="py-2.5 px-3">Item Produced</th>
+              <th class="py-2.5 px-3 text-right">Raw Materials</th>
+              <th class="py-2.5 px-3 text-right">Direct Labor</th>
+              <th class="py-2.5 px-3 text-right">Machine Overhead</th>
+              <th class="py-2.5 px-3 text-right">Scrap Cost</th>
+              <th class="py-2.5 px-3 text-right">Total Actual Cost</th>
+              <th class="py-2.5 px-3 text-right">Standard Cost</th>
+              <th class="py-2.5 px-3 text-right">Variance</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for cr in prod_cost_records %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ cr.order_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ cr.item_name }}</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(cr.raw_material_cost|float) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(cr.direct_labor_cost|float) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-blue-600 dark:text-blue-400">${{ "{:,.2f}".format(cr.machine_overhead_cost|float) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(cr.scrap_variance_cost|float) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(cr.total_actual_cost|float) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-500">${{ "{:,.2f}".format(cr.standard_cost|float) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400">+${{ "{:,.2f}".format(cr.variance_amount|float) }} ({{ "{:,.2f}".format(cr.variance_pct|float) }}%)</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ cr.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ cr.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ cr.id }}', '{{ cr.name or cr.title or cr.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.2 OEE Effectiveness Cockpit -->
+  {% elif current_tab == 'prod-oee-monitor' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="gauge" class="w-4 h-4 text-amber-500"></i>
+            <span>Overall Equipment Effectiveness (OEE) Cockpit</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Live shop floor productivity metrics: $$OEE = 	ext{Availability} 	imes 	ext{Performance} 	imes 	ext{Quality}$$ per manufacturing machine</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Resource Code</th>
+              <th class="py-2.5 px-3">Machine Resource Name</th>
+              <th class="py-2.5 px-3">Plant Facility</th>
+              <th class="py-2.5 px-3 text-right">Availability (A)</th>
+              <th class="py-2.5 px-3 text-right">Performance (P)</th>
+              <th class="py-2.5 px-3 text-right">Quality (Q)</th>
+              <th class="py-2.5 px-3 text-center">Overall OEE %</th>
+              <th class="py-2.5 px-3 text-center">OEE Benchmark</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for oee in prod_oee_metrics %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ oee.resource_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ oee.resource_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ oee.plant_name }}</td>
+                <td class="py-3 px-3 text-right font-mono text-blue-600 dark:text-blue-400">{{ oee.availability_pct }}%</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">{{ oee.performance_pct }}%</td>
+                <td class="py-3 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">{{ oee.quality_pct }}%</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-lg text-emerald-600 dark:text-emerald-400">{{ oee.oee_pct }}%</td>
+                <td class="py-3 px-3 text-center">
+                  {% if oee.status == 'WORLD_CLASS' %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">WORLD_CLASS (>85%)</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">OPTIMAL</span>
+                  {% endif %}
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_work_centers', '{{ oee.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_work_centers', '{{ oee.id }}', '{{ oee.name or oee.title or oee.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.3 Capacity Load vs Availability -->
+  {% elif current_tab == 'prod-capacity-planning' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-500"></i>
+            <span>Capacity Load vs Availability Matrix</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Machine bottleneck identification, scheduled hours load factor, and plant capacity smoothing</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Work Center Resource</th>
+              <th class="py-2.5 px-3">Plant Facility</th>
+              <th class="py-2.5 px-3 text-right">Available Hours</th>
+              <th class="py-2.5 px-3 text-right">Scheduled Load</th>
+              <th class="py-2.5 px-3 text-center">Capacity Load Factor</th>
+              <th class="py-2.5 px-3 text-center">Bottleneck Risk</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for cp in prod_capacity_planning %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-purple-600 dark:text-purple-400">{{ cp.resource_name }} ({{ cp.resource_code }})</td>
+                <td class="py-3 px-3 text-slate-500">{{ cp.plant_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ "{:,.1f}".format(cp.total_available_hours|float) }}h</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{{ "{:,.1f}".format(cp.planned_load_hours|float) }}h</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.1f}".format(cp.capacity_utilization_pct|float) }}%</td>
+                <td class="py-3 px-3 text-center">
+                  {% if cp.capacity_utilization_pct|float > 90.0 %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">HIGH LOAD</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">OPTIMAL</span>
+                  {% endif %}
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_work_centers', '{{ cp.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_work_centers', '{{ cp.id }}', '{{ cp.name or cp.title or cp.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 5: STATEMENTS, STATUTORY REGISTERS & PRINT STUDIO (4 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 5.1 Executive Production KPIs -->
+  {% elif current_tab == 'prod-summary' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-blue-500"></i>
+            <span>Executive Production &amp; Manufacturing KPIs</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">High-level manufacturing throughput metrics, OEE effectiveness, scrap rates, and WIP valuation</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Units Produced</span>
+          <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(prod_summary.total_units_manufactured|default(965, true)|float) }} Units</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Average Plant OEE</span>
+          <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ prod_summary.average_plant_oee_pct|default(86.8, true) }}%</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Overall Scrap Rate</span>
+          <p class="text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">{{ prod_summary.overall_scrap_rate_pct|default(1.53, true) }}%</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Work-In-Progress (WIP) Value</span>
+          <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(prod_summary.wip_valuation_usd|default(149360.00, true)|float) }}</p>
+        </div>
+      </div>
+    </div>
+
+  <!-- 5.2 WIP Stage Balance Ledger -->
+  {% elif current_tab == 'prod-wip-ledger' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-emerald-500"></i>
+            <span>Work-In-Progress (WIP) Stage Balance Ledger</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Active shop floor orders, accumulated material issue values, and operational stage completion progress</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Work Order #</th>
+              <th class="py-2.5 px-3">Item in Production</th>
+              <th class="py-2.5 px-3">Plant Facility</th>
+              <th class="py-2.5 px-3 text-right">Planned Qty</th>
+              <th class="py-2.5 px-3 text-right">Completed Qty</th>
+              <th class="py-2.5 px-3 text-right">Material Value in WIP</th>
+              <th class="py-2.5 px-3 text-center">Stage Progress</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for wip in prod_wip_ledger %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ wip.order_number }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ wip.item_name }}</span>
+                  <p class="text-[10px] font-mono text-slate-500">{{ wip.item_code }}</p>
+                </td>
+                <td class="py-3 px-3 text-slate-500">{{ wip.plant_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ "{:,.0f}".format(wip.planned_qty|float) }} pcs</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{{ "{:,.0f}".format(wip.completed_qty|float) }} pcs</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(wip.issued_material_value|float) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-purple-600 dark:text-purple-400">{{ wip.completed_ops_count }} / {{ wip.total_ops_count }} Ops</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ wip.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ wip.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ wip.id }}', '{{ wip.name or wip.title or wip.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.3 Yield & Scrap Variance Report -->
+  {% elif current_tab == 'prod-yield-report' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="scale" class="w-4 h-4 text-purple-500"></i>
+            <span>Production Yield &amp; Scrap Variance Statement</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Finished goods recovery percentage, manufacturing scrap variance, and yield performance</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Work Order #</th>
+              <th class="py-2.5 px-3">Product Name</th>
+              <th class="py-2.5 px-3">Plant</th>
+              <th class="py-2.5 px-3 text-right">Planned Input</th>
+              <th class="py-2.5 px-3 text-right">Finished Output</th>
+              <th class="py-2.5 px-3 text-right">Scrapped Units</th>
+              <th class="py-2.5 px-3 text-center">Recovery Yield %</th>
+              <th class="py-2.5 px-3 text-center">Scrap %</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for yr in prod_yield_report %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ yr.order_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ yr.item_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ yr.plant_name }}</td>
+                <td class="py-3 px-3 text-right font-mono">{{ "{:,.0f}".format(yr.planned_qty|float) }} pcs</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(yr.completed_qty|float) }} pcs</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ "{:,.0f}".format(yr.scrap_qty|float) }} pcs</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.2f}".format(yr.yield_pct|float) }}%</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-rose-600 dark:text-rose-400">{{ "{:,.2f}".format(yr.scrap_pct|float) }}%</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('prod_orders', '{{ yr.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('prod_orders', '{{ yr.id }}', '{{ yr.name or yr.title or yr.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.4 Manufacturing Print Studio -->
+  {% elif current_tab == 'prod-print-studio' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-rose-500"></i>
+            <span>Manufacturing Official Document Print Studio</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Standardized corporate letterhead prints for Production Work Orders, BOM Explosions, Pick Slips, and QA Release Certificates</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Production Work Order &amp; Traveler</h4>
+          <p class="text-xs text-slate-500">Official shop floor job traveler card with sequential routing operations, scheduled times, and sign-offs</p>
+          {% if prod_orders %}
+            <a href="/modules/production/print/work-order/{{ prod_orders[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print Sample Traveler</span>
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold">
+            <i data-lucide="folder-tree" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Multi-Level BOM Explosion Sheet</h4>
+          <p class="text-xs text-slate-500">Complete engineering bill of materials specification with scrap allowances and component cost breakdown</p>
+          {% if prod_boms_std %}
+            <a href="/modules/production/print/bom-explosion/{{ prod_boms_std[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print Sample BOM</span>
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Certificate of QA Inspection</h4>
+          <p class="text-xs text-slate-500">Official metrology coordinate inspection certificate authorizing final product packaging and customer dispatch</p>
+          {% if prod_qc_inspections %}
+            <a href="/modules/production/print/qa-certificate/{{ prod_qc_inspections[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print QA Certificate</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+{% endif %}

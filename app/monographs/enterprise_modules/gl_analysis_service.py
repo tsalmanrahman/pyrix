@@ -14,14 +14,14 @@ class GLAnalysisService:
         and derives variance % and budget utilization status.
         """
         cost_centres = db.query("""
-            SELECT cc.id, cc.cost_centre_code, cc.cost_centre_name,
+            SELECT cc.id, cc.cost_center_code AS cost_centre_code, cc.name AS cost_centre_name,
                    COALESCE(SUM(l.debit_amount - l.credit_amount), 0.0) AS total_expense
-            FROM gl_cost_centres cc
+            FROM admin_cost_centers cc
             LEFT JOIN gl_journal_voucher_lines l ON l.cost_centre_id = cc.id
             LEFT JOIN gl_journal_vouchers v ON l.voucher_id = v.id AND COALESCE(v.isDelete, 0) = 0
-            WHERE COALESCE(cc.isDelete, 0) = 0
-            GROUP BY cc.id, cc.cost_centre_code, cc.cost_centre_name
-            ORDER BY cc.cost_centre_code ASC
+            WHERE cc.is_active = 1
+            GROUP BY cc.id, cc.cost_center_code, cc.name
+            ORDER BY cc.cost_center_code ASC
         """)
 
         records = []

@@ -44,12 +44,94 @@ from app.monographs.enterprise_modules.hr_recruitment_service import HRRecruitme
 from app.monographs.enterprise_modules.hr_attendance_service import HRAttendanceService
 from app.monographs.enterprise_modules.hr_payroll_service import HRPayrollService
 from app.monographs.enterprise_modules.hr_report_service import HRReportService
+from app.monographs.enterprise_modules.prod_master_service import ProdMasterService
+from app.monographs.enterprise_modules.prod_execution_service import ProdExecutionService
+from app.monographs.enterprise_modules.prod_quality_service import ProdQualityService
+from app.monographs.enterprise_modules.prod_costing_service import ProdCostingService
+from app.monographs.enterprise_modules.prod_report_service import ProdReportService
+from app.monographs.enterprise_modules.admin_master_service import AdminMasterService
+from app.monographs.enterprise_modules.admin_security_service import AdminSecurityService
+from app.monographs.enterprise_modules.admin_tax_service import AdminTaxService
+from app.monographs.enterprise_modules.admin_maintenance_service import AdminMaintenanceService
+from app.monographs.enterprise_modules.admin_report_service import AdminReportService
 from app.monographs.enterprise_modules.registry import get_module_suites_registry, get_active_suite_context
 from app.core.user_service import UserService
 
 router = APIRouter(tags=["Enterprise Modules"])
 templates = Jinja2Templates(directory="app/templates")
 
+
+
+
+ADMIN_SUB_AREAS = {
+    # 1. Global Organization, Locales & Currencies Setup Suite (6 Sub-Areas)
+    "admin-companies": {"title": "Company Profile & Multi-Entity Setup", "icon": "building-2", "entity": "admin-companies"},
+    "admin-units": {"title": "Business Units & Cost Centers", "icon": "network", "entity": "admin-units"},
+    "admin-geo": {"title": "Countries, States & Locales", "icon": "map-pin", "entity": "admin-geo"},
+    "admin-currencies": {"title": "Multi-Currency & Daily Rates", "icon": "coins", "entity": "admin-currencies"},
+    "admin-calendars": {"title": "Fiscal Calendars & Periods", "icon": "calendar-range", "entity": "admin-calendars"},
+    "admin-printers": {"title": "Network Printers & Spoolers", "icon": "printer", "entity": "admin-printers"},
+
+    # 2. Access Control, Roles & Security Governance Suite (5 Sub-Areas)
+    "admin-users": {"title": "Enterprise User Profiles", "icon": "users", "entity": "admin-users"},
+    "admin-roles": {"title": "Role-Based Access Control (RBAC)", "icon": "key-round", "entity": "admin-roles"},
+    "admin-auth-scope": {"title": "Cost & Profit Center Scopes", "icon": "lock", "entity": "admin-auth-scope"},
+    "admin-passwords": {"title": "Password Vault & Security Policy", "icon": "key", "entity": "admin-passwords"},
+    "admin-sessions": {"title": "Live Sessions & Security Telemetry", "icon": "radio", "entity": "admin-sessions"},
+
+    # 3. Tax Engine & Statutory Authorities Suite (3 Sub-Areas)
+    "admin-tax-authorities": {"title": "Statutory Tax Authorities", "icon": "landmark", "entity": "admin-tax-authorities"},
+    "admin-tax-categories": {"title": "Tax Classification Categories", "icon": "tags", "entity": "admin-tax-categories"},
+    "admin-tax-profiles": {"title": "Tax Rates & Profile Slabs", "icon": "receipt", "entity": "admin-tax-profiles"},
+
+    # 4. System Diagnostics, Periodic Process & Integrity Suite (4 Sub-Areas)
+    "admin-integrity": {"title": "Database Integrity & Scanner", "icon": "activity", "entity": "admin-integrity"},
+    "admin-periodic": {"title": "Consolidated Month-End Close", "icon": "check-square", "entity": "admin-periodic"},
+    "admin-year-end": {"title": "Year-End Processing & Balance Sync", "icon": "calendar-check-2", "entity": "admin-year-end"},
+    "admin-backups": {"title": "Database Backup Snapshots", "icon": "hard-drive", "entity": "admin-backups"},
+
+    # 5. Audit Vault, System Telemetry & Print Studio Suite (4 Sub-Areas)
+    "admin-audit-log": {"title": "Tamper-Evident Audit Vault", "icon": "shield-alert", "entity": "admin-audit-log"},
+    "admin-kpis": {"title": "Executive Administration KPIs", "icon": "pie-chart", "entity": "admin-kpis"},
+    "admin-license": {"title": "Enterprise Client License", "icon": "award", "entity": "admin-license"},
+    "admin-print-studio": {"title": "System Admin Print Studio", "icon": "printer", "entity": "admin-print-studio"},
+}
+
+PROD_SUB_AREAS = {
+    # 1. Engineering Masters, BOM & Plant Routing Setup Suite (7 Sub-Areas)
+    "prod-processes": {"title": "Manufacturing Processes", "icon": "layers", "entity": "prod-processes"},
+    "prod-plants": {"title": "Production Plants & Works", "icon": "building-2", "entity": "prod-plants"},
+    "prod-resources": {"title": "Work Centers & Resources", "icon": "cpu", "entity": "prod-resources"},
+    "prod-routings": {"title": "Operational Routings", "icon": "git-commit", "entity": "prod-routings"},
+    "prod-capacity": {"title": "Plant Capacity Profiles", "icon": "sliders", "entity": "prod-capacity"},
+    "prod-bom-standard": {"title": "Standard Engineering BOM", "icon": "folder-tree", "entity": "prod-bom-standard"},
+    "prod-bom-assembly": {"title": "Assembly BOM & Kitting", "icon": "box", "entity": "prod-bom-assembly"},
+
+    # 2. Production Orders, Job Cards & Floor Execution Suite (6 Sub-Areas)
+    "prod-requisitions": {"title": "Production Requisitions", "icon": "file-text", "entity": "prod-requisitions"},
+    "prod-orders": {"title": "Master Production Orders", "icon": "clipboard-list", "entity": "prod-orders"},
+    "prod-job-cards": {"title": "Shop Floor Job Cards", "icon": "wrench", "entity": "prod-job-cards"},
+    "prod-mat-issues": {"title": "Material Issues to WIP", "icon": "arrow-up-right", "entity": "prod-mat-issues"},
+    "prod-conversions": {"title": "Assembly Conversions", "icon": "repeat", "entity": "prod-conversions"},
+    "prod-reversals": {"title": "Assembly Reversals & De-Kits", "icon": "rotate-ccw", "entity": "prod-reversals"},
+
+    # 3. Quality Control, Downtime & Process Suite (4 Sub-Areas)
+    "prod-qc-inspections": {"title": "Quality Inspection Hub", "icon": "check-circle", "entity": "prod-qc-inspections"},
+    "prod-downtime": {"title": "Machine Downtime Tracker", "icon": "alert-triangle", "entity": "prod-downtime"},
+    "prod-import-data": {"title": "External Data Import Hub", "icon": "download", "entity": "prod-import-data"},
+    "prod-year-end": {"title": "Year-End WIP Process", "icon": "calendar-check", "entity": "prod-year-end"},
+
+    # 4. Manufacturing Costing & Floor Analytics Suite (3 Sub-Areas)
+    "prod-costing": {"title": "Manufacturing Cost Records", "icon": "coins", "entity": "prod-costing"},
+    "prod-oee-monitor": {"title": "OEE Effectiveness Cockpit", "icon": "gauge", "entity": "prod-oee-monitor"},
+    "prod-capacity-planning": {"title": "Capacity Load vs Availability", "icon": "bar-chart-2", "entity": "prod-capacity-planning"},
+
+    # 5. Statements, Statutory Registers & Production Print Studio Suite (4 Sub-Areas)
+    "prod-summary": {"title": "Executive Production KPIs", "icon": "pie-chart", "entity": "prod-summary"},
+    "prod-wip-ledger": {"title": "WIP Stage Balance Ledger", "icon": "layers", "entity": "prod-wip-ledger"},
+    "prod-yield-report": {"title": "Yield & Scrap Variance Report", "icon": "scale", "entity": "prod-yield-report"},
+    "prod-print-studio": {"title": "Manufacturing Print Studio", "icon": "printer", "entity": "prod-print-studio"},
+}
 
 HR_SUB_AREAS = {
     # 1. Personnel & Organization Master Setup Suite (7 Sub-Areas)
@@ -497,6 +579,59 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
     hr_bank_advice = []
     hr_pf_ledger = []
 
+    # Production Masters, BOM, Orders, Job Cards, QC & Cost Collections
+    prod_processes = []
+    prod_plants = []
+    prod_resources = []
+    prod_routings = []
+    prod_capacity = []
+    prod_boms_std = []
+    prod_boms_asy = []
+    prod_requisitions = []
+    prod_orders = []
+    prod_job_cards = []
+    prod_mat_issues = []
+    prod_conversions = []
+    prod_reversals = []
+    prod_qc_inspections = []
+    prod_downtime = []
+    prod_import_profiles = []
+    prod_year_end_data = {}
+    prod_cost_records = []
+    prod_oee_metrics = []
+    prod_capacity_planning = []
+    prod_summary = {}
+    prod_wip_ledger = []
+    prod_yield_report = []
+
+    # Admin Collections
+    admin_companies = []
+    admin_business_units = []
+    admin_cost_centers = []
+    admin_countries = []
+    admin_states = []
+    admin_currencies = []
+    admin_exchange_rates = []
+    admin_fiscal_calendars = []
+    admin_fiscal_periods = []
+    admin_printers = []
+    admin_roles = []
+    admin_role_permissions = []
+    admin_user_profiles = []
+    admin_user_data_scopes = []
+    admin_sessions = []
+    admin_security_policies = {}
+    admin_tax_authorities = []
+    admin_tax_categories = []
+    admin_tax_profiles = []
+    admin_integrity_scans = []
+    admin_periodic_closures = []
+    admin_backup_points = []
+    admin_audit_logs = []
+    admin_kpis = {}
+    admin_license = {}
+
+
     fa_movement_log = []
 
     if slug == "general-ledger":
@@ -622,6 +757,62 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         inv_prod_costing_report = InvReportService.get_production_costing_report(active_cid)
         inv_plant_consumption = InvReportService.get_plant_wise_consumption(active_cid)
         inv_sto_reports = InvReportService.get_sto_transfer_statement(active_cid)
+
+    elif module["route_slug"] in ("system-admin", "system_admin", "admin", "system-administration"):
+        admin_companies = AdminMasterService.get_companies()
+        admin_business_units = AdminMasterService.get_business_units(active_cid)
+        admin_cost_centers = AdminMasterService.get_cost_centers(active_cid)
+        admin_countries = AdminMasterService.get_countries()
+        admin_states = AdminMasterService.get_states()
+        admin_currencies = AdminMasterService.get_currencies()
+        admin_exchange_rates = AdminMasterService.get_exchange_rates(active_cid)
+        admin_fiscal_calendars = AdminMasterService.get_fiscal_calendars(active_cid)
+        admin_fiscal_periods = AdminMasterService.get_fiscal_periods(active_cid)
+        admin_printers = AdminMasterService.get_printers(active_cid)
+        admin_roles = AdminSecurityService.get_roles()
+        admin_role_permissions = AdminSecurityService.get_role_permissions()
+        admin_user_profiles = AdminSecurityService.get_user_profiles(active_cid)
+        admin_user_data_scopes = AdminSecurityService.get_user_data_scopes()
+        admin_sessions = AdminSecurityService.get_active_sessions(active_cid)
+        admin_security_policies = AdminSecurityService.get_security_policies()
+        admin_tax_authorities = AdminTaxService.get_tax_authorities(active_cid)
+        admin_tax_categories = AdminTaxService.get_tax_categories()
+        admin_tax_profiles = AdminTaxService.get_tax_profiles(active_cid)
+        admin_integrity_scans = AdminMaintenanceService.get_integrity_scans(active_cid)
+        admin_periodic_closures = AdminMaintenanceService.get_periodic_closures(active_cid)
+        admin_backup_points = AdminMaintenanceService.get_backup_points(active_cid)
+        admin_audit_logs = AdminReportService.get_audit_vault_logs(active_cid)
+        admin_kpis = AdminReportService.get_executive_kpis(active_cid)
+        admin_license = AdminReportService.get_system_license_info(active_cid)
+
+    elif module["route_slug"] in ("production", "manufacturing", "production-management"):
+        prod_processes = ProdMasterService.get_processes()
+        prod_plants = ProdMasterService.get_plants(active_cid)
+        prod_resources = ProdMasterService.get_resources(active_cid)
+        prod_routings = ProdMasterService.get_routings(active_cid)
+        prod_capacity = ProdMasterService.get_capacity(active_cid)
+        prod_boms_std = ProdMasterService.get_bom_headers(active_cid, bom_type="STANDARD")
+        prod_boms_asy = ProdMasterService.get_bom_headers(active_cid, bom_type="ASSEMBLY")
+
+        prod_requisitions = ProdExecutionService.get_requisitions(active_cid)
+        prod_orders = ProdExecutionService.get_orders(active_cid)
+        prod_job_cards = ProdExecutionService.get_job_cards(company_id=active_cid)
+        prod_mat_issues = ProdExecutionService.get_material_issues(active_cid)
+        prod_conversions = ProdExecutionService.get_conversions(active_cid, conversion_type="ASSEMBLY_CONVERSION")
+        prod_reversals = ProdExecutionService.get_conversions(active_cid, conversion_type="ASSEMBLY_REVERSAL_DEKIT")
+
+        prod_qc_inspections = ProdQualityService.get_qc_inspections(active_cid)
+        prod_downtime = ProdQualityService.get_downtime_logs(active_cid)
+        prod_import_profiles = ProdQualityService.get_import_data_profiles()
+        prod_year_end_data = ProdQualityService.execute_year_end_process(active_cid)
+
+        prod_cost_records = ProdCostingService.get_cost_records(active_cid)
+        prod_oee_metrics = ProdCostingService.get_oee_metrics(active_cid)
+        prod_capacity_planning = ProdCostingService.get_capacity_planning(active_cid)
+
+        prod_summary = ProdReportService.get_executive_summary(active_cid)
+        prod_wip_ledger = ProdReportService.get_wip_ledger(active_cid)
+        prod_yield_report = ProdReportService.get_yield_report(active_cid)
 
     elif module["route_slug"] in ("hris", "hr", "human-resources", "human-capital"):
         hr_grades = HRMasterService.get_grades(active_cid)
@@ -972,6 +1163,54 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
             "hr_salary_register": hr_salary_register,
             "hr_bank_advice": hr_bank_advice,
             "hr_pf_ledger": hr_pf_ledger,
+            "prod_processes": prod_processes,
+            "prod_plants": prod_plants,
+            "prod_resources": prod_resources,
+            "prod_routings": prod_routings,
+            "prod_capacity": prod_capacity,
+            "prod_boms_std": prod_boms_std,
+            "prod_boms_asy": prod_boms_asy,
+            "prod_requisitions": prod_requisitions,
+            "prod_orders": prod_orders,
+            "prod_job_cards": prod_job_cards,
+            "prod_mat_issues": prod_mat_issues,
+            "prod_conversions": prod_conversions,
+            "prod_reversals": prod_reversals,
+            "prod_qc_inspections": prod_qc_inspections,
+            "prod_downtime": prod_downtime,
+            "prod_import_profiles": prod_import_profiles,
+            "prod_year_end_data": prod_year_end_data,
+            "prod_cost_records": prod_cost_records,
+            "prod_oee_metrics": prod_oee_metrics,
+            "prod_capacity_planning": prod_capacity_planning,
+            "prod_summary": prod_summary,
+            "prod_wip_ledger": prod_wip_ledger,
+            "prod_yield_report": prod_yield_report,
+            "admin_companies": admin_companies,
+            "admin_business_units": admin_business_units,
+            "admin_cost_centers": admin_cost_centers,
+            "admin_countries": admin_countries,
+            "admin_states": admin_states,
+            "admin_currencies": admin_currencies,
+            "admin_exchange_rates": admin_exchange_rates,
+            "admin_fiscal_calendars": admin_fiscal_calendars,
+            "admin_fiscal_periods": admin_fiscal_periods,
+            "admin_printers": admin_printers,
+            "admin_roles": admin_roles,
+            "admin_role_permissions": admin_role_permissions,
+            "admin_user_profiles": admin_user_profiles,
+            "admin_user_data_scopes": admin_user_data_scopes,
+            "admin_sessions": admin_sessions,
+            "admin_security_policies": admin_security_policies,
+            "admin_tax_authorities": admin_tax_authorities,
+            "admin_tax_categories": admin_tax_categories,
+            "admin_tax_profiles": admin_tax_profiles,
+            "admin_integrity_scans": admin_integrity_scans,
+            "admin_periodic_closures": admin_periodic_closures,
+            "admin_backup_points": admin_backup_points,
+            "admin_audit_logs": admin_audit_logs,
+            "admin_kpis": admin_kpis,
+            "admin_license": admin_license,
             "src_purchase_register": src_purchase_register,
             "src_kpi_summary": src_kpi_summary,
             "current_user": UserService.resolve_current_user(request),
@@ -3255,3 +3494,160 @@ async def print_hr_document(request: Request, doc_type: str, doc_id: str):
         )
     else:
         raise HTTPException(status_code=400, detail="Invalid HR document print type")
+
+
+# =========================================================================
+# OFFICIAL MANUFACTURING & PRODUCTION DOCUMENT PRINT STUDIO ROUTE
+# =========================================================================
+@router.get("/modules/production/print/{doc_type}/{doc_id}", response_class=HTMLResponse)
+async def print_prod_document(request: Request, doc_type: str, doc_id: str):
+    """
+    Renders standardized, printable corporate letterhead documents for:
+    - work-order: Official Production Work Order / Job Traveler
+    - bom-explosion: Multi-Level Engineering BOM Explosion Sheet
+    - pick-slip: Materials Requisition & Warehouse Pick Slip
+    - qa-certificate: In-Process / Pre-Dispatch QA Inspection Certificate
+    - conversion-voucher: Assembly Conversion Transaction Voucher
+    """
+    active_company = CompanyService.resolve_active_company(request)
+    doc_type = doc_type.strip().lower()
+
+    if doc_type == "work-order":
+        order = ProdExecutionService.get_order_by_id(doc_id)
+        if not order:
+            raise HTTPException(status_code=404, detail="Production order record not found")
+        job_cards = ProdExecutionService.get_job_cards(order_id=doc_id)
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/prod_print_document.html",
+            context={
+                "doc_type": "work-order",
+                "doc_type_title": "OFFICIAL PRODUCTION WORK ORDER & ROUTE TRAVELER",
+                "doc_number": order["order_number"],
+                "doc_date": str(order["planned_start_date"]),
+                "order": order,
+                "job_cards": job_cards,
+                "active_company": active_company
+            }
+        )
+
+    elif doc_type == "bom-explosion":
+        bom = ProdMasterService.get_bom_by_id(doc_id)
+        if not bom:
+            raise HTTPException(status_code=404, detail="BOM record not found")
+        bom_items = ProdMasterService.get_bom_items(doc_id)
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/prod_print_document.html",
+            context={
+                "doc_type": "bom-explosion",
+                "doc_type_title": "MULTI-LEVEL ENGINEERING BILL OF MATERIALS (BOM)",
+                "doc_number": bom["bom_code"],
+                "doc_date": str(bom["effective_from"]),
+                "bom": bom,
+                "bom_items": bom_items,
+                "active_company": active_company
+            }
+        )
+
+    elif doc_type == "pick-slip":
+        order = ProdExecutionService.get_order_by_id(doc_id)
+        if not order:
+            raise HTTPException(status_code=404, detail="Production order record not found")
+        bom_items = ProdMasterService.get_bom_items(str(order["bom_id"]))
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/prod_print_document.html",
+            context={
+                "doc_type": "pick-slip",
+                "doc_type_title": "MATERIALS REQUISITION & WAREHOUSE PICK SLIP",
+                "doc_number": f"PICK-{order['order_number']}",
+                "doc_date": str(order["planned_start_date"]),
+                "order": order,
+                "bom_items": bom_items,
+                "active_company": active_company
+            }
+        )
+
+    elif doc_type == "qa-certificate":
+        qc = ProdQualityService.get_qc_by_id(doc_id)
+        if not qc:
+            raise HTTPException(status_code=404, detail="Quality inspection record not found")
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/prod_print_document.html",
+            context={
+                "doc_type": "qa-certificate",
+                "doc_type_title": "CERTIFICATE OF QUALITY INSPECTION & DISPATCH RELEASE",
+                "doc_number": qc["inspection_number"],
+                "doc_date": str(qc["inspection_date"]),
+                "qc": qc,
+                "active_company": active_company
+            }
+        )
+
+    elif doc_type == "conversion-voucher":
+        conv = ProdExecutionService.get_conversion_by_id(doc_id)
+        if not conv:
+            raise HTTPException(status_code=404, detail="Assembly conversion record not found")
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/prod_print_document.html",
+            context={
+                "doc_type": "conversion-voucher",
+                "doc_type_title": "MATERIAL-TO-MATERIAL ASSEMBLY CONVERSION VOUCHER",
+                "doc_number": conv["conversion_number"],
+                "doc_date": str(conv["conversion_date"]),
+                "conversion": conv,
+                "active_company": active_company
+            }
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Invalid production document print type")
+
+
+# =========================================================================
+# System Administration Document Print Studio & Operational Actions
+# =========================================================================
+@router.get("/modules/system-admin/print/{doc_type}", response_class=HTMLResponse)
+@router.get("/modules/system-admin/print/{doc_type}/{doc_id}", response_class=HTMLResponse)
+async def print_admin_document(request: Request, doc_type: str, doc_id: Optional[str] = "DEFAULT"):
+    active_company = CompanyService.resolve_active_company(request)
+    active_cid = str(active_company["id"]) if active_company else None
+    doc_data = AdminReportService.get_document_for_print(doc_type, doc_id, active_cid)
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/admin_print_document.html",
+        context={
+            "doc_type": doc_type,
+            "doc_data": doc_data,
+            "active_company": active_company
+        }
+    )
+
+@router.post("/api/system-admin/recalculate")
+async def api_admin_recalculate(request: Request):
+    active_company = CompanyService.resolve_active_company(request)
+    active_cid = str(active_company["id"]) if active_company else None
+    if not active_cid:
+        raise HTTPException(status_code=400, detail="Active company context required")
+    res = AdminMaintenanceService.execute_recalculate_balances(active_cid)
+    return res
+
+@router.post("/api/system-admin/integrity-scan")
+async def api_admin_integrity_scan(request: Request):
+    active_company = CompanyService.resolve_active_company(request)
+    active_cid = str(active_company["id"]) if active_company else None
+    if not active_cid:
+        raise HTTPException(status_code=400, detail="Active company context required")
+    res = AdminMaintenanceService.execute_integrity_scan(active_cid)
+    return res
+
+@router.post("/api/system-admin/year-end-sync")
+async def api_admin_year_end_sync(request: Request):
+    active_company = CompanyService.resolve_active_company(request)
+    active_cid = str(active_company["id"]) if active_company else None
+    if not active_cid:
+        raise HTTPException(status_code=400, detail="Active company context required")
+    res = AdminMaintenanceService.execute_year_end_sync(active_cid)
+    return res

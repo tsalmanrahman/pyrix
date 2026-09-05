@@ -1511,3 +1511,259 @@ function initDragToScroll() {
 }
 
 
+
+
+/* ==========================================================================
+   ⚡ UNIVERSAL DYNAMIC CRUD MODAL CONTROLLER (Edit & Delete)
+   ========================================================================== */
+let currentDeleteTarget = { entity: null, id: null, rowElement: null };
+
+function showDynamicToast(message, type = 'success') {
+  const container = document.getElementById('dynamic-toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  const isSuccess = type === 'success';
+  toast.className = `px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold flex items-center gap-2.5 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto ${
+    isSuccess 
+      ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-300' 
+      : 'bg-rose-950/90 border-rose-500/30 text-rose-300'
+  }`;
+  toast.innerHTML = `
+    <i data-lucide="${isSuccess ? 'check-circle' : 'alert-triangle'}" class="w-4 h-4 ${isSuccess ? 'text-emerald-400' : 'text-rose-400'}"></i>
+    <span>${message}</span>
+  `;
+  container.appendChild(toast);
+  if (window.lucide) window.lucide.createIcons();
+
+  requestAnimationFrame(() => {
+    toast.classList.remove('translate-y-4', 'opacity-0');
+  });
+
+  setTimeout(() => {
+    toast.classList.add('opacity-0', 'translate-y-2');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+async function openDynamicEditModal(entity, id) {
+  const modal = document.getElementById('modal-dynamic-edit');
+  const loading = document.getElementById('dynamic-edit-loading');
+  const fieldsContainer = document.getElementById('dynamic-fields-container');
+  const titleEl = document.getElementById('dynamic-edit-title');
+  const entityInput = document.getElementById('dynamic-edit-entity');
+  const idInput = document.getElementById('dynamic-edit-id');
+
+  if (!modal) return;
+
+  entityInput.value = entity;
+  idInput.value = id;
+
+  modal.classList.remove('hidden');
+  loading.classList.remove('hidden');
+  fieldsContainer.classList.add('hidden');
+  fieldsContainer.innerHTML = '';
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}`);
+    const json = await res.json();
+    if (!json.success || !json.payload) throw new Error(json.error || 'Failed to load record');
+
+    const { title, fields, data } = json.payload;
+    titleEl.textContent = `Edit ${title}`;
+
+    fields.forEach(f => {
+      const fieldWrapper = document.createElement('div');
+      fieldWrapper.className = 'space-y-1.5';
+
+      const label = document.createElement('label');
+      label.className = 'text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between';
+      label.innerHTML = `<span>${f.label}</span> ${f.required ? '<span class="text-rose-500 text-[10px]">*</span>' : ''}`;
+      fieldWrapper.appendChild(label);
+
+      const val = data[f.field] !== undefined && data[f.field] !== null ? data[f.field] : '';
+
+      if (f.type === 'select') {
+        const select = document.createElement('select');
+        select.name = f.field;
+        select.required = !!f.required;
+        select.className = 'mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none';
+        f.options.forEach(opt => {
+          const optEl = document.createElement('option');
+          optEl.value = opt;
+          optEl.textContent = opt;
+          if (String(opt).toUpperCase() === String(val).toUpperCase()) optEl.selected = true;
+          select.appendChild(optEl);
+        });
+        fieldWrapper.appendChild(select);
+      } else if (f.type === 'checkbox') {
+        const checkWrap = document.createElement('label');
+        checkWrap.className = 'flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 cursor-pointer';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = f.field;
+        checkbox.checked = !!val && val !== 0 && val !== '0';
+        checkbox.className = 'w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300';
+        const span = document.createElement('span');
+        span.className = 'text-xs font-semibold text-slate-700 dark:text-slate-200';
+        span.textContent = f.label;
+        checkWrap.appendChild(checkbox);
+        checkWrap.appendChild(span);
+        fieldWrapper.appendChild(checkWrap);
+      } else {
+        const input = document.createElement('input');
+        input.type = f.type || 'text';
+        input.name = f.field;
+        input.value = val;
+        if (f.step) input.step = f.step;
+        input.required = !!f.required;
+        input.className = 'mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none';
+        fieldWrapper.appendChild(input);
+      }
+
+      fieldsContainer.appendChild(fieldWrapper);
+    });
+
+    loading.classList.add('hidden');
+    fieldsContainer.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  } catch (err) {
+    showDynamicToast(err.message || 'Error loading record', 'error');
+    closeDynamicEditModal();
+  }
+}
+
+function closeDynamicEditModal() {
+  const modal = document.getElementById('modal-dynamic-edit');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function submitDynamicEditForm(e) {
+  e.preventDefault();
+  const form = e.target;
+  const entity = document.getElementById('dynamic-edit-entity').value;
+  const id = document.getElementById('dynamic-edit-id').value;
+  const btn = document.getElementById('btn-save-dynamic-edit');
+
+  const formData = {};
+  new FormData(form).forEach((val, key) => {
+    formData[key] = val;
+  });
+
+  form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    formData[cb.name] = cb.checked;
+  });
+
+  const originalBtnText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Saving...</span>`;
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}/update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) throw new Error(json.detail || json.error || 'Update failed');
+
+    showDynamicToast(json.message || 'Record updated successfully!', 'success');
+    closeDynamicEditModal();
+
+    // Dynamically update corresponding row in DOM if present
+    const row = document.querySelector(`tr[data-id="${id}"], tr[data-record-id="${id}"]`);
+    if (row) {
+      Object.keys(formData).forEach(k => {
+        const cell = row.querySelector(`[data-field="${k}"]`);
+        if (cell) cell.textContent = formData[k];
+      });
+    } else {
+      setTimeout(() => window.location.reload(), 600);
+    }
+  } catch (err) {
+    showDynamicToast(err.message || 'Failed to update record', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalBtnText;
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+async function confirmDynamicDelete(entity, id, title = 'Record', clickedButton = null) {
+  const modal = document.getElementById('modal-dynamic-delete');
+  const titleEl = document.getElementById('dynamic-delete-title');
+  const blockedBox = document.getElementById('dynamic-delete-blocked');
+  const blockedMsg = document.getElementById('dynamic-delete-blocked-msg');
+  const deleteBtn = document.getElementById('btn-execute-delete');
+
+  if (!modal) return;
+
+  currentDeleteTarget = {
+    entity,
+    id,
+    rowElement: clickedButton ? clickedButton.closest('tr') : (document.querySelector(`tr[data-id="${id}"], tr[data-record-id="${id}"]`))
+  };
+
+  titleEl.textContent = `"${title}"`;
+  blockedBox.classList.add('hidden');
+  deleteBtn.disabled = false;
+  deleteBtn.classList.remove('opacity-50', 'pointer-events-none');
+  modal.classList.remove('hidden');
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}/precheck-delete`);
+    const json = await res.json();
+    if (!json.can_delete) {
+      blockedMsg.textContent = json.reason;
+      blockedBox.classList.remove('hidden');
+      deleteBtn.disabled = true;
+      deleteBtn.classList.add('opacity-50', 'pointer-events-none');
+    }
+  } catch (err) {
+    console.warn('Dependency pre-check warning:', err);
+  }
+}
+
+function closeDynamicDeleteModal() {
+  const modal = document.getElementById('modal-dynamic-delete');
+  if (modal) modal.classList.add('hidden');
+  currentDeleteTarget = { entity: null, id: null, rowElement: null };
+}
+
+async function executeDynamicDelete() {
+  if (!currentDeleteTarget.entity || !currentDeleteTarget.id) return;
+
+  const { entity, id, rowElement } = currentDeleteTarget;
+  const deleteBtn = document.getElementById('btn-execute-delete');
+  const origHtml = deleteBtn.innerHTML;
+
+  deleteBtn.disabled = true;
+  deleteBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Deleting...</span>`;
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}/delete`, {
+      method: 'POST'
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) throw new Error(json.detail || json.error || 'Deletion failed');
+
+    showDynamicToast(json.message || 'Record successfully deleted.', 'success');
+    closeDynamicDeleteModal();
+
+    // Smooth row fade-out and collapse animation
+    if (rowElement) {
+      rowElement.style.transition = 'all 0.35s ease';
+      rowElement.style.opacity = '0';
+      rowElement.style.transform = 'scale(0.95)';
+      setTimeout(() => rowElement.remove(), 350);
+    } else {
+      setTimeout(() => window.location.reload(), 600);
+    }
+  } catch (err) {
+    showDynamicToast(err.message || 'Failed to delete record', 'error');
+  } finally {
+    deleteBtn.disabled = false;
+    deleteBtn.innerHTML = origHtml;
+    if (window.lucide) window.lucide.createIcons();
+  }
+}

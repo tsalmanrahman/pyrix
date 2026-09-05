@@ -60,9 +60,9 @@
               <td class="py-2.5 px-3">
                 <div>{{ c.contact_person|default('-') }}</div>
                 <div class="text-[10px] text-slate-400 font-mono">{{ c.email|default('-') }}</div>
-              </td>
-              <td class="py-2.5 px-3 text-right font-mono font-medium">
-                ${{ "{:,.2f}".format(c.credit_limit) }}
+              </td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(c.credit_limit) }}
                 <div class="text-[9px] text-slate-400">{{ c.payment_terms_days }} Days Net</div>
               </td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
@@ -97,8 +97,14 @@
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                   </button>
                 </div>
-              </td>
-            </tr>
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ c.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ c.id }}', '{{ c.name or c.title or c.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -139,8 +145,9 @@
             <tr id="row-arg-{{ g.id }}" class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
               <td class="py-2.5 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ g.group_code }}</td>
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ g.group_name }}</td>
-              <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500">{{ g.control_set_name|default('Default Control Set') }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-medium">${{ "{:,.2f}".format(g.default_credit_limit) }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500">{{ g.control_set_name|default('Default Control Set') }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(g.default_credit_limit) }}</td>
               <td class="py-2.5 px-3 text-center font-mono">{{ g.grace_period_days }} Days</td>
               <td class="py-2.5 px-3 text-right">
                 <div class="flex items-center justify-end gap-1">
@@ -151,8 +158,14 @@
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                   </button>
                 </div>
-              </td>
-            </tr>
+                    <button type="button" onclick="openDynamicEditModal('ar_customer_groups', '{{ g.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customer_groups', '{{ g.id }}', '{{ g.name or g.title or g.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -193,9 +206,9 @@
               <td class="py-2.5 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ cg.group_code }}</td>
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ cg.group_name }}</td>
               <td class="py-2.5 px-3 font-medium text-slate-600 dark:text-slate-300">{{ cg.region|default('Global') }}</td>
-              <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400">{{ cg.description|default('-') }}</td>
-              <td class="py-2.5 px-3 text-right">
-                <div class="flex items-center justify-end gap-1">
+              <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400">{{ cg.description|default('-') }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <div class="flex items-center justify-end gap-1">
                   <a href="/modules/accounts-receivable/master/customer-groups/{{ cg.id }}/edit" class="p-1.5 rounded-lg hover:bg-cyan-50 text-slate-400 hover:text-cyan-600 transition" title="Edit Customer Group">
                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                   </a>
@@ -203,8 +216,14 @@
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                   </button>
                 </div>
-              </td>
-            </tr>
+                    <button type="button" onclick="openDynamicEditModal('ar_customer_groups', '{{ cg.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customer_groups', '{{ cg.id }}', '{{ cg.name or cg.title or cg.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -253,7 +272,17 @@
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                 </a>
               </td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customer_groups', '{{ cat.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customer_groups', '{{ cat.id }}', '{{ cat.name or cat.title or cat.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -304,7 +333,17 @@
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                 </a>
               </td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ m.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ m.id }}', '{{ m.name or m.title or m.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -355,7 +394,17 @@
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                 </a>
               </td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ s.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ s.id }}', '{{ s.name or s.title or s.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -404,7 +453,17 @@
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                 </a>
               </td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ cs.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ cs.id }}', '{{ cs.name or cs.title or cs.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -455,7 +514,17 @@
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                 </a>
               </td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ r.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -510,7 +579,17 @@
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                 </a>
               </td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ ap.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ ap.id }}', '{{ ap.name or ap.title or ap.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -563,7 +642,17 @@
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                 </a>
               </td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ t.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ t.id }}', '{{ t.name or t.title or t.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -604,7 +693,8 @@
             <th class="py-2.5 px-3 text-right">Adjusted Amount</th>
             <th class="py-2.5 px-3 text-right">Remaining Balance</th>
             <th class="py-2.5 px-3 text-center">Status</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for a in ar_advance_adjustments %}
@@ -618,7 +708,17 @@
               <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600">${{ "{:,.2f}".format(a.adjusted_amount) }}</td>
               <td class="py-2.5 px-3 text-right font-mono">${{ "{:,.2f}".format(a.unadjusted_balance) }}</td>
               <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700">{{ a.status }}</span></td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -650,7 +750,8 @@
             <th class="py-2.5 px-3 text-right">Amount</th>
             <th class="py-2.5 px-3">Approved By</th>
             <th class="py-2.5 px-3 text-center">Status</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for g in ar_general_adjustments %}
@@ -665,7 +766,17 @@
               <td class="py-2.5 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(g.amount) }}</td>
               <td class="py-2.5 px-3 text-slate-500">{{ g.approved_by }}</td>
               <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700">{{ g.status }}</span></td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ g.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ g.id }}', '{{ g.name or g.title or g.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -701,7 +812,8 @@
             <th class="py-2.5 px-3 text-right">Total ($)</th>
             <th class="py-2.5 px-3">Reason</th>
             <th class="py-2.5 px-3 text-center">Status</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for n in notes_list %}
@@ -715,7 +827,17 @@
               <td class="py-2.5 px-3 text-right font-mono font-bold {% if 'debit' in current_tab %}text-rose-600{% else %}text-emerald-600{% endif %}">${{ "{:,.2f}".format(n.total_amount) }}</td>
               <td class="py-2.5 px-3 text-slate-600 dark:text-slate-300 truncate max-w-xs">{{ n.reason }}</td>
               <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700">{{ n.status }}</span></td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ n.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ n.id }}', '{{ n.name or n.title or n.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -747,7 +869,8 @@
             <th class="py-2.5 px-3 text-right">Receipt Amount</th>
             <th class="py-2.5 px-3">Allocated Invoices</th>
             <th class="py-2.5 px-3 text-center">Status</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for r in ar_receipts %}
@@ -760,7 +883,17 @@
               <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600">${{ "{:,.2f}".format(r.receipt_amount) }}</td>
               <td class="py-2.5 px-3 font-mono text-[11px] text-blue-600">{{ r.allocated_invoices|default('Unallocated') }}</td>
               <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700">CLEARED</span></td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ r.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -790,7 +923,8 @@
             <th class="py-2.5 px-3 text-right">Voided Amount</th>
             <th class="py-2.5 px-3">Cancellation Reason</th>
             <th class="py-2.5 px-3 text-center">Status</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for r in ar_cancelled_receipts %}
@@ -801,7 +935,17 @@
               <td class="py-2.5 px-3 text-right font-mono font-bold text-rose-600">${{ "{:,.2f}".format(r.receipt_amount) }}</td>
               <td class="py-2.5 px-3 text-slate-600 dark:text-slate-300 font-medium">{{ r.cancelled_reason|default('Voided') }}</td>
               <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700">CANCELLED</span></td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ r.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -845,7 +989,8 @@
             <th class="py-2.5 px-3 text-right">Penalty ($)</th>
             <th class="py-2.5 px-3 text-right">Total Demand</th>
             <th class="py-2.5 px-3 text-center">Status</th>
-          </tr>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for l in ar_reminder_letters %}
@@ -859,7 +1004,17 @@
               <td class="py-2.5 px-3 text-right font-mono text-slate-400">${{ "{:,.2f}".format(l.penalty_amount) }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-rose-600">${{ "{:,.2f}".format(l.total_demand_amount) }}</td>
               <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-slate-100 text-slate-600">{{ l.delivery_status }}</span></td>
-            </tr>
+            
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('ar_customers', '{{ l.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('ar_customers', '{{ l.id }}', '{{ l.name or l.title or l.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
           {% endfor %}
         </tbody>
       </table>

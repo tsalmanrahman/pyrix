@@ -61,9 +61,13 @@ class UserService:
     def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
         user = db.query_one(
             """
-            SELECT u.*, c.name AS company_name, c.short_code AS company_code, c.currency
+            SELECT u.*, c.name AS company_name, c.short_code AS company_code, c.currency,
+                   p.user_code AS admin_user_code, p.role_id AS admin_role_id, p.cost_center_id,
+                   e.id AS hr_employee_id
             FROM users u
             LEFT JOIN companies c ON u.primary_company_id = c.id
+            LEFT JOIN admin_user_profiles p ON p.user_id = u.id
+            LEFT JOIN hr_employees e ON e.employee_code = u.employee_id
             WHERE LOWER(u.email) = LOWER(?) AND COALESCE(u.isDelete, 0) = 0
             """,
             (email.strip(),)
@@ -74,9 +78,13 @@ class UserService:
     def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
         user = db.query_one(
             """
-            SELECT u.*, c.name AS company_name, c.short_code AS company_code, c.currency
+            SELECT u.*, c.name AS company_name, c.short_code AS company_code, c.currency,
+                   p.user_code AS admin_user_code, p.role_id AS admin_role_id, p.cost_center_id,
+                   e.id AS hr_employee_id
             FROM users u
             LEFT JOIN companies c ON u.primary_company_id = c.id
+            LEFT JOIN admin_user_profiles p ON p.user_id = u.id
+            LEFT JOIN hr_employees e ON e.employee_code = u.employee_id
             WHERE u.id = ? AND COALESCE(u.isDelete, 0) = 0
             """,
             (user_id,)
