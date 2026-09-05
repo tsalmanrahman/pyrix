@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional
 import uuid
 from app.core.db import db
+from app.core.cache import cache
 
 MODULE_SHORT_CODES = {
     "general-ledger": "GL",
@@ -36,17 +37,22 @@ class EnterpriseModuleService:
 
     @staticmethod
     def get_all_modules() -> List[Dict[str, Any]]:
+        cached = cache.get("all_modules")
+        if cached is not None:
+            return cached
         modules = db.query(
             "SELECT * FROM enterprise_modules WHERE is_enabled = 1 ORDER BY sort_order ASC, code ASC"
         )
-        return [EnterpriseModuleService._enrich_module(m) for m in modules]
+        res = [EnterpriseModuleService._enrich_module(m) for m in modules]
+        cache.set("all_modules", res, ttl=300.0)
+        return res
 
     @staticmethod
-    def get_modules_by_domain() -> Dict[str, List[Dict[str, Any]]]:
-        modules = EnterpriseModuleService.get_all_modules()
+    def get_modules_by_domain(modules: Optional[List[Dict[str, Any]]] = None) -> Dict[str, List[Dict[str, Any]]]:
+        module_list = modules if modules is not None else EnterpriseModuleService.get_all_modules()
         grouped: Dict[str, List[Dict[str, Any]]] = {}
-        for m in modules:
-            domain = m["domain_group"]
+        for m in module_list:
+            domain = m.get("domain_group", "Other")
             if domain not in grouped:
                 grouped[domain] = []
             grouped[domain].append(m)

@@ -59,14 +59,19 @@ class DatabaseManager:
 
     @staticmethod
     def check_health() -> Dict[str, Any]:
-        """Checks connection latency and server status."""
+        """Checks connection latency and server status with short-lived cache."""
+        from app.core.cache import cache
+        cached = cache.get("db_health")
+        if cached is not None:
+            return cached
+
         start_time = time.time()
         try:
             info = DatabaseManager.query_one(
                 "SELECT @@VERSION AS [version], @@SERVERNAME AS [servername], DB_NAME() AS [current_db]"
             )
             latency_ms = round((time.time() - start_time) * 1000, 2)
-            return {
+            res = {
                 "status": "online",
                 "latency_ms": latency_ms,
                 "server": info["servername"] if info else settings.DB_SERVER,
@@ -75,6 +80,8 @@ class DatabaseManager:
                 "driver": settings.resolved_driver,
                 "error": None
             }
+            cache.set("db_health", res, ttl=30.0)
+            return res
         except Exception as e:
             latency_ms = round((time.time() - start_time) * 1000, 2)
             return {

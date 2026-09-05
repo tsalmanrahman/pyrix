@@ -14,14 +14,14 @@ router = APIRouter(tags=["System Overview"])
 
 @router.get("/", response_class=HTMLResponse)
 async def dashboard_page(request: Request):
-    active_company = CompanyService.resolve_active_company(request)
-    current_user = UserService.resolve_current_user(request)
     companies_list = CompanyService.get_all_companies()
+    active_company = CompanyService.resolve_active_company(request, companies=companies_list)
+    current_user = UserService.resolve_current_user(request)
     appearance = AppearanceService.get_appearance()
     categories = DynamicOptionService.get_categories()
     options = DynamicOptionService.get_options_by_category()
     all_modules = EnterpriseModuleService.get_all_modules()
-    grouped_modules = EnterpriseModuleService.get_modules_by_domain()
+    grouped_modules = EnterpriseModuleService.get_modules_by_domain(modules=all_modules)
     db_health = db.check_health()
     plant_summary = ManufacturingService.get_plant_summary()
     
