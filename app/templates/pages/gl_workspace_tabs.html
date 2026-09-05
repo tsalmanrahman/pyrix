@@ -369,15 +369,15 @@
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
         <span class="text-xs text-slate-400 font-medium">Total Lines Verified</span>
-        <div class="text-xl font-bold font-mono text-blue-600">{{ gl_integrity.total_lines_checked }}</div>
+        <div class="text-xl font-bold font-mono text-blue-600">{{ gl_integrity.total_lines_checked|default(0) }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
         <span class="text-xs text-slate-400 font-medium">Out-of-Balance Entries</span>
-        <div class="text-xl font-bold font-mono {% if gl_integrity.unbalanced_count == 0 %}text-emerald-600{% else %}text-rose-600{% endif %}">{{ gl_integrity.unbalanced_count }}</div>
+        <div class="text-xl font-bold font-mono {% if (gl_integrity.unbalanced_count|default(0)) == 0 %}text-emerald-600{% else %}text-rose-600{% endif %}">{{ gl_integrity.unbalanced_count|default(0) }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
         <span class="text-xs text-slate-400 font-medium">Orphans / Invalid Accts</span>
-        <div class="text-xl font-bold font-mono text-emerald-600">{{ gl_integrity.orphan_count + gl_integrity.unmapped_count }}</div>
+        <div class="text-xl font-bold font-mono text-emerald-600">{{ (gl_integrity.orphan_count|default(0)) + (gl_integrity.unmapped_count|default(0)) }}</div>
       </div>
     </div>
 
