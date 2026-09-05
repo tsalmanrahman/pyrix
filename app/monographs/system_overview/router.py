@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 import psutil
+from app.core.templates import templates
 from app.core.db import db
 from app.core.company_service import CompanyService
 from app.monographs.appearance.service import AppearanceService
@@ -11,7 +11,6 @@ from app.monographs.enterprise_modules.service import EnterpriseModuleService
 from app.core.user_service import UserService
 
 router = APIRouter(tags=["System Overview"])
-templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def dashboard_page(request: Request):

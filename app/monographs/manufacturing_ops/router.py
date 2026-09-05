@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from app.core.templates import templates
 from app.core.db import db
 from app.core.company_service import CompanyService
 from app.monographs.appearance.service import AppearanceService
@@ -8,7 +8,6 @@ from app.monographs.dynamic_builder.service import DynamicOptionService
 from app.monographs.manufacturing_ops.service import ManufacturingService
 
 router = APIRouter(tags=["Manufacturing Operations"])
-templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/settings/manufacturing")
 async def manufacturing_page(request: Request):

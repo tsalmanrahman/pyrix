@@ -1,17 +1,18 @@
 from fastapi import APIRouter, Request, Form, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from typing import Optional
 import uuid
+import logging
 
 from app.core.company_service import CompanyService
 from app.core.user_service import UserService
 from app.monographs.appearance.service import AppearanceService
+from app.core.templates import templates
 
 import time
 
+logger = logging.getLogger("Pyrix-Auth")
 router = APIRouter(tags=["Authentication & User Profile"])
-templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(
@@ -19,9 +20,12 @@ async def login_page(
     error: Optional[str] = None,
     next_url: Optional[str] = "/"
 ):
-    current_user = UserService.resolve_current_user(request)
-    if current_user:
-        return RedirectResponse(url=next_url if next_url and next_url != "/login" else "/", status_code=303)
+    try:
+        current_user = UserService.resolve_current_user(request)
+        if current_user:
+            return RedirectResponse(url=next_url if next_url and next_url != "/login" else "/", status_code=303)
+    except Exception as exc:
+        logger.warning(f"Could not resolve session on login page: {exc}")
 
     return templates.TemplateResponse(
         request=request,
@@ -40,7 +44,20 @@ async def login_submit(
     next_url: Optional[str] = Form("/"),
     remember: Optional[str] = Form(None)
 ):
-    user = UserService.authenticate(email, password)
+    try:
+        user = UserService.authenticate(email, password)
+    except Exception as exc:
+        logger.error(f"Login database authentication error: {exc}")
+        return templates.TemplateResponse(
+            request=request,
+            name="pages/login.html",
+            context={
+                "error": f"Database Error: {str(exc)}. Please verify that Microsoft SQL Server is running and the ODBC driver is installed.",
+                "next_url": next_url or "/"
+            },
+            status_code=500
+        )
+
     if not user:
         return templates.TemplateResponse(
             request=request,

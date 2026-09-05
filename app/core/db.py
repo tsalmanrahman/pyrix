@@ -72,6 +72,7 @@ class DatabaseManager:
                 "server": info["servername"] if info else settings.DB_SERVER,
                 "database": info["current_db"] if info else settings.DB_NAME,
                 "version": info["version"] if info else "Unknown",
+                "driver": settings.resolved_driver,
                 "error": None
             }
         except Exception as e:
@@ -82,6 +83,7 @@ class DatabaseManager:
                 "server": settings.DB_SERVER,
                 "database": settings.DB_NAME,
                 "version": None,
+                "driver": settings.resolved_driver,
                 "error": str(e)
             }
 
