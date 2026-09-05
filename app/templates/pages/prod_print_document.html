@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ doc_type_title }} - {{ doc_number }} | Pyrix Manufacturing Suite</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-900 antialiased selection:bg-blue-500 selection:text-white min-h-screen">
+
+  {% set back_url = '/modules/production?tab=prod-print-studio' %}
+  {% set back_title = 'Production Workspace' %}
+  {% include "components/universal_report_studio.html" %}
+
+  <main class="studio-viewport-stage">
+    <article id="printable-document" class="a4-document-sheet a4-portrait flex flex-col justify-between">
+      
+      <div class="watermark-overlay">
+        <span id="report-watermark-text">OFFICIAL DOCUMENT</span>
+      </div>
+
+      <div class="space-y-5 relative z-20">
+        <!-- Letterhead Header -->
+        <header class="border-b-2 border-slate-900/80 pb-4 flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-600 text-white font-black flex items-center justify-center text-base shadow-sm shrink-0">
+                PROD
+              </div>
+              <div>
+                <h1 class="text-lg font-black text-slate-950 tracking-tight leading-tight">{{ active_company.name|default('Apex Precision Manufacturing Group Ltd') }}</h1>
+                <p class="text-[11px] font-semibold text-slate-600">{{ active_company.industry|default('Heavy Capital Machinery & Production Operations') }}</p>
+              </div>
+            </div>
+            <div class="pt-1 text-[10px] text-slate-500 font-medium">
+              <p>Shop Floor Operations Control &bull; Autonomous Manufacturing Execution</p>
+            </div>
+          </div>
+
+          <div class="text-right flex flex-col items-end shrink-0">
+            <span class="px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded bg-slate-100 text-blue-700 border border-slate-300">
+              {{ doc_type_title }}
+            </span>
+            <p class="text-base font-black font-mono text-slate-950 mt-1.5 tracking-tight">{{ doc_number }}</p>
+            <p class="text-[11px] text-slate-500 font-medium">Date: <span class="font-mono font-bold text-slate-800">{{ doc_date }}</span></p>
+          </div>
+        </header>
+
+
+    <div class="flex items-start justify-between border-b border-slate-200 dark:border-white/10 pb-6">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center text-sm shadow">
+            {{ active_company.short_code|default('PYX') }}
+          </div>
+          <h1 class="text-xl font-bold text-slate-900 dark:text-white">{{ active_company.name|default('Apex Precision Manufacturing Group Ltd') }}</h1>
+        </div>
+        <p class="text-xs text-slate-500 font-medium">{{ active_company.industry|default('Precision Metallurgy & Heavy Capital Plant Engineering') }}</p>
+        <p class="text-[11px] text-slate-400">Manufacturing Execution System &bull; Shop Floor Operations Control</p>
+      </div>
+
+      <div class="text-right space-y-1">
+        <span class="px-3 py-1 text-xs font-mono font-bold uppercase rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+          {{ doc_type_title }}
+        </span>
+        <p class="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">{{ doc_number }}</p>
+        <p class="text-xs text-slate-500">Date: <span class="font-mono font-semibold">{{ doc_date }}</span></p>
+      </div>
+    </div>
+
+    {% if doc_type == 'work-order' %}
+      <!-- WORK ORDER TRAVELER BODY -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-xs">
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Product to Manufacture</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ order.item_name }}</p>
+          <p class="font-mono text-[11px] text-blue-600 dark:text-blue-400">{{ order.item_code }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Plant Facility</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ order.plant_name }}</p>
+          <p class="text-[11px] text-slate-500">{{ order.plant_location }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Planned Quantity</span>
+          <p class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-0.5">{{ "{:,.0f}".format(order.planned_qty|float) }} {{ order.uom_code }}</p>
+          <p class="text-[11px] text-slate-500">Status: {{ order.status }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">BOM Specification</span>
+          <p class="font-mono font-bold text-purple-600 dark:text-purple-400 mt-0.5">{{ order.bom_code }}</p>
+          <p class="text-[11px] text-slate-500">Revision: {{ order.revision_number }}</p>
+        </div>
+      </div>
+
+      <!-- Job Cards Routing Steps -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white border-b border-slate-200 dark:border-white/10 pb-2">Sequential Routing Operations &amp; Station Sign-offs</h3>
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2 px-2">Seq</th>
+              <th class="py-2 px-2">Job Card #</th>
+              <th class="py-2 px-2">Operation Description</th>
+              <th class="py-2 px-2">Work Center Machine</th>
+              <th class="py-2 px-2 text-right">Standard Hrs</th>
+              <th class="py-2 px-2">Operator</th>
+              <th class="py-2 px-2 text-center">Quality Sign-off</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for jc in job_cards %}
+              <tr>
+                <td class="py-2.5 px-2 font-mono font-bold text-indigo-600 dark:text-indigo-400">Op {{ jc.operation_seq }}</td>
+                <td class="py-2.5 px-2 font-mono text-blue-600 dark:text-blue-400">{{ jc.job_card_number }}</td>
+                <td class="py-2.5 px-2 font-medium">{{ jc.operation_title }}</td>
+                <td class="py-2.5 px-2 text-purple-600 dark:text-purple-400">{{ jc.resource_name }}</td>
+                <td class="py-2.5 px-2 text-right font-mono">{{ "{:,.1f}".format(jc.scheduled_hours|float) }}h</td>
+                <td class="py-2.5 px-2 font-medium">{{ jc.operator_name }}</td>
+                <td class="py-2.5 px-2 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">PASSED</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    {% elif doc_type == 'bom-explosion' %}
+      <!-- BOM EXPLOSION BODY -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-xs">
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Parent Assembly</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ bom.item_name }}</p>
+          <p class="font-mono text-[11px] text-blue-600 dark:text-blue-400">{{ bom.item_code }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">BOM Type &amp; Rev</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ bom.bom_type }} ({{ bom.revision_number }})</p>
+          <p class="text-[11px] text-slate-500">Base: 1.0 {{ bom.uom_code }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Expected Recovery Yield</span>
+          <p class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-0.5">{{ "{:,.1f}".format(bom.expected_yield_pct|float) }}%</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Standard Unit Cost</span>
+          <p class="font-mono font-bold text-slate-900 dark:text-white text-sm mt-0.5">${{ "{:,.2f}".format(bom.standard_cost|float) }}</p>
+        </div>
+      </div>
+
+      <!-- Component Line Items -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white border-b border-slate-200 dark:border-white/10 pb-2">Exploded Engineering Component Structure</h3>
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2 px-2">Op Seq</th>
+              <th class="py-2 px-2">Component Code</th>
+              <th class="py-2 px-2">Component Description</th>
+              <th class="py-2 px-2 text-right">Required Quantity</th>
+              <th class="py-2 px-2 text-center">Scrap %</th>
+              <th class="py-2 px-2 text-right">Unit Cost</th>
+              <th class="py-2 px-2 text-right">Line Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for bi in bom_items %}
+              <tr>
+                <td class="py-2.5 px-2 font-mono font-bold text-indigo-600 dark:text-indigo-400">Op {{ bi.operation_seq }}</td>
+                <td class="py-2.5 px-2 font-mono text-blue-600 dark:text-blue-400">{{ bi.item_code }}</td>
+                <td class="py-2.5 px-2 font-bold text-slate-900 dark:text-white">{{ bi.item_name }}</td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold">{{ "{:,.2f}".format(bi.quantity|float) }} {{ bi.uom_code }}</td>
+                <td class="py-2.5 px-2 text-center font-mono">{{ "{:,.1f}".format(bi.scrap_allowance_pct|float) }}%</td>
+                <td class="py-2.5 px-2 text-right font-mono">${{ "{:,.2f}".format(bi.standard_cost|float) }}</td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(bi.component_line_cost|float) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    {% elif doc_type == 'pick-slip' %}
+      <!-- PICK SLIP BODY -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-xs">
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Target Work Order</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ order.order_number }}</p>
+          <p class="font-mono text-[11px] text-blue-600 dark:text-blue-400">{{ order.item_code }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Production Plant</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ order.plant_name }}</p>
+          <p class="text-[11px] text-slate-500">{{ order.plant_location }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Order Batch Size</span>
+          <p class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-0.5">{{ "{:,.0f}".format(order.planned_qty|float) }} {{ order.uom_code }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Pick Date</span>
+          <p class="font-mono font-bold text-slate-900 dark:text-white text-sm mt-0.5">{{ doc_date }}</p>
+        </div>
+      </div>
+
+      <!-- Pick List Table -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white border-b border-slate-200 dark:border-white/10 pb-2">Warehouse Bill of Materials Picking Manifest</h3>
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2 px-2">#</th>
+              <th class="py-2 px-2">Item Code</th>
+              <th class="py-2 px-2">Component Specification</th>
+              <th class="py-2 px-2 text-right">Required Qty</th>
+              <th class="py-2 px-2 text-center">Bin Location</th>
+              <th class="py-2 px-2 text-center">Verified Pick Qty</th>
+              <th class="py-2 px-2 text-center">Custodian Sign</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for bi in bom_items %}
+              <tr>
+                <td class="py-2.5 px-2 font-mono text-slate-400">{{ loop.index }}</td>
+                <td class="py-2.5 px-2 font-mono font-bold text-blue-600 dark:text-blue-400">{{ bi.item_code }}</td>
+                <td class="py-2.5 px-2 font-bold text-slate-900 dark:text-white">{{ bi.item_name }}</td>
+                <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-900 dark:text-white">{{ "{:,.2f}".format((bi.quantity|float) * (order.planned_qty|float)) }} {{ bi.uom_code }}</td>
+                <td class="py-2.5 px-2 text-center font-mono text-purple-600 dark:text-purple-400">BIN-A{{ loop.index }}-01</td>
+                <td class="py-2.5 px-2 text-center font-mono text-emerald-600 dark:text-emerald-400 font-bold">[ &check; ] Verified</td>
+                <td class="py-2.5 px-2 text-center border-b border-slate-300 dark:border-white/20"></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    {% elif doc_type == 'qa-certificate' %}
+      <!-- QA CERTIFICATE BODY -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-xs">
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Work Order Number</span>
+          <p class="font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{{ qc.order_number }}</p>
+          <p class="text-[11px] text-slate-500">Inspection: {{ qc.inspection_stage }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Product Tested</span>
+          <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ qc.item_name }}</p>
+          <p class="font-mono text-[11px] text-blue-600 dark:text-blue-400">{{ qc.item_code }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Inspection Lot Result</span>
+          <p class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-0.5">{{ "{:,.0f}".format(qc.passed_qty|float) }} Passed / {{ "{:,.0f}".format(qc.sample_size_qty|float) }} Tested</p>
+          <p class="text-[11px] text-rose-500">Rejected: {{ "{:,.0f}".format(qc.rejected_qty|float) }}</p>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Authorized Disposition</span>
+          <p class="font-mono font-bold text-purple-600 dark:text-purple-400 mt-0.5">{{ qc.disposition }}</p>
+          <p class="text-[11px] text-slate-500">Inspector: {{ qc.inspector_name }}</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+        <p>This certifies that the manufacturing batch under Work Order <strong>{{ qc.order_number }}</strong> has undergone metrology coordinate measuring machine (CMM) dimensional tolerance verification, hardness testing, and visual surface defect inspection.</p>
+        <p>The inspected lot complies with all quality specifications under ISO 9001:2015 and Aerospace AS9100 quality standards and is formally released for final customer delivery.</p>
+      </div>
+
+    {% elif doc_type == 'conversion-voucher' %}
+      <!-- CONVERSION VOUCHER BODY -->
+      <div class="space-y-4 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+        <p class="text-sm font-bold text-slate-900 dark:text-white">Subject: Materials Conversion by Assembly Authorization Voucher</p>
+        <div class="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5">
+          <div><span class="font-bold">Conversion Type:</span> {{ conversion.conversion_type }}</div>
+          <div><span class="font-bold">Transaction Date:</span> {{ conversion.conversion_date }}</div>
+          <div><span class="font-bold">Source Raw Item:</span> {{ conversion.source_name }} ({{ "{:,.0f}".format(conversion.input_qty|float) }} in)</div>
+          <div><span class="font-bold">Produced Target Item:</span> {{ conversion.target_name }} ({{ "{:,.0f}".format(conversion.output_qty|float) }} out)</div>
+          <div><span class="font-bold">Unit Conversion Cost:</span> ${{ "{:,.2f}".format(conversion.unit_cost|float) }}</div>
+          <div><span class="font-bold">Total Batch Value:</span> ${{ "{:,.2f}".format(conversion.total_value|float) }}</div>
+        </div>
+        <p><strong>Remarks:</strong> {{ conversion.remarks }}</p>
+      </div>
+    {% endif %}
+
+    
+      </div>
+
+      <!-- Footer & Signatures -->
+      <footer class="pt-6 border-t-2 border-slate-900/80 space-y-4 relative z-20">
+        <div class="grid grid-cols-3 gap-6 text-center text-xs">
+          <div class="space-y-4">
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-slate-400 italic">Generated</span></div>
+            <p class="font-bold text-slate-950">Production Planner</p>
+          </div>
+          <div class="space-y-4">
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-slate-400 italic">Inspected</span></div>
+            <p class="font-bold text-slate-950">Shop Floor Supervisor</p>
+          </div>
+          <div class="space-y-4">
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">RELEASED</span></div>
+            <p class="font-bold text-slate-950">Plant Operations Director</p>
+          </div>
+        </div>
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[9px] text-slate-400 font-mono">
+          <span>Pyrix Shop Floor Execution Engine &bull; Generated: {{ doc_date }}</span>
+          <span>Security Hash: SHA-256 &bull; Page 1 of 1</span>
+        </div>
+      </footer>
+
+    </article>
+  </main>
+</body>
+</html>

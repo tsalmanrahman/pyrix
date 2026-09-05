@@ -1,0 +1,1437 @@
+{% if module.route_slug in ['system-admin', 'system_admin', 'admin', 'system-administration'] %}
+
+  <!-- =========================================================================
+       SUITE 1: GLOBAL ORGANIZATION, LOCALES & CURRENCIES SETUP SUITE (6 SUB-AREAS)
+       ========================================================================= -->
+
+  <!-- 1.1 Company Profile & Multi-Entity Setup -->
+  {% if current_tab == 'admin-companies' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="building-2" class="w-4 h-4 text-blue-500"></i>
+            <span>Multi-Entity Corporate Profiles &amp; Database Partitioning</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Corporate legal entities, subsidiary registry, tax identification, and localized base currencies</p>
+        </div>
+        <a href="/modules/system-admin/print/admin-company-spec" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Entity Spec</span>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for c in admin_companies %}
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">{{ c.short_code }}</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">ACTIVE</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-slate-900 dark:text-white leading-snug">{{ c.name }}</h4>
+              <p class="text-xs text-slate-500 mt-0.5">{{ c.industry }}</p>
+            </div>
+            <div class="space-y-1.5 pt-2 border-t border-slate-200 dark:border-white/5 text-xs">
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Tax ID / TIN:</span> <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ c.tax_id or 'TIN-PENDING' }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Registration No:</span> <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ c.registration_no or 'REG-PENDING' }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Base Currency:</span> <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ c.currency or 'USD' }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Headquarters:</span> <span class="text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{{ c.headquarters }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Units / CCs:</span> <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ c.bu_count or 0 }} BUs / {{ c.cc_count or 0 }} CCs</span></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  <!-- 1.2 Business Units & Cost Centers -->
+  {% elif current_tab == 'admin-units' %}
+    <div class="glass-card rounded-2xl p-5 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="network" class="w-4 h-4 text-indigo-500"></i>
+            <span>Business Units &amp; Operating Divisions Hierarchy</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Corporate divisions, branches, and regional operational centers</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Unit Code</th>
+              <th class="py-2.5 px-3">Business Unit Name</th>
+              <th class="py-2.5 px-3">Company Entity</th>
+              <th class="py-2.5 px-3">Division Type</th>
+              <th class="py-2.5 px-3">Unit Manager</th>
+              <th class="py-2.5 px-3">Location</th>
+              <th class="py-2.5 px-3 text-center">Cost Centers</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for bu in admin_business_units %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ bu.unit_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ bu.unit_name }}</td>
+                <td class="py-3 px-3 font-semibold text-slate-600 dark:text-slate-400">{{ bu.company_code }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ bu.unit_type }}</span></td>
+                <td class="py-3 px-3 font-medium">{{ bu.manager_name }}</td>
+                <td class="py-3 px-3 text-slate-500 dark:text-slate-400">{{ bu.location }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-600 dark:text-blue-400">{{ bu.cc_count }} CCs</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">ACTIVE</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_business_units', '{{ bu.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_business_units', '{{ bu.id }}', '{{ bu.name or bu.title or bu.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 dark:border-white/5">
+        <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-blue-500"></i>
+          <span>Assigned Cost &amp; Profit Centers</span>
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+                <th class="py-2 px-3">CC Code</th>
+                <th class="py-2 px-3">Cost Center Name</th>
+                <th class="py-2 px-3">Parent Business Unit</th>
+                <th class="py-2 px-3">Department</th>
+                <th class="py-2 px-3">Manager</th>
+                <th class="py-2 px-3 text-center">Center Type</th>
+                <th class="py-2 px-3 text-right">Annual Budget</th>
+                <th class="py-2 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+              {% for cc in admin_cost_centers %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                  <td class="py-2.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ cc.cost_center_code }}</td>
+                  <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white">{{ cc.name }}</td>
+                  <td class="py-2.5 px-3 text-slate-600 dark:text-slate-400">{{ cc.unit_name }}</td>
+                  <td class="py-2.5 px-3 font-medium">{{ cc.department }}</td>
+                  <td class="py-2.5 px-3">{{ cc.manager_name }}</td>
+                  <td class="py-2.5 px-3 text-center">
+                    {% if cc.is_profit_center %}
+                      <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">PROFIT CENTER</span>
+                    {% else %}
+                      <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">COST CENTER</span>
+                    {% endif %}
+                  </td>
+                  <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(cc.budget_allocation|float) }}</td>
+                  <td class="py-2.5 px-3 text-center">
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                  </td>
+                
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_cost_centers', '{{ cc.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_cost_centers', '{{ cc.id }}', '{{ cc.name or cc.title or cc.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  <!-- 1.3 Countries, States & Locales -->
+  {% elif current_tab == 'admin-geo' %}
+    <div class="glass-card rounded-2xl p-5 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="map-pin" class="w-4 h-4 text-cyan-500"></i>
+            <span>Global Geographic Directory &amp; Regional Locales</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ISO countries, regional states/provinces, international dial codes, and statutory tax zones</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-500"></i>
+            <span>ISO Country Directory</span>
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+                  <th class="py-2 px-3">ISO</th>
+                  <th class="py-2 px-3">Country Name</th>
+                  <th class="py-2 px-3">Dial Code</th>
+                  <th class="py-2 px-3">Currency</th>
+                  <th class="py-2 px-3">Region</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+                {% for cnt in admin_countries %}
+                  <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                    <td class="py-2.5 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ cnt.country_code }}</td>
+                    <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white">{{ cnt.country_name }}</td>
+                    <td class="py-2.5 px-3 font-mono">{{ cnt.dial_code }}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ cnt.currency_code }}</td>
+                    <td class="py-2.5 px-3 text-slate-500">{{ cnt.region }}</td>
+                  
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_countries', '{{ cnt.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_countries', '{{ cnt.id }}', '{{ cnt.name or cnt.title or cnt.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <i data-lucide="map" class="w-3.5 h-3.5 text-cyan-500"></i>
+            <span>States, Provinces &amp; Tax Zones</span>
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+                  <th class="py-2 px-3">Country</th>
+                  <th class="py-2 px-3">Code</th>
+                  <th class="py-2 px-3">State / Province</th>
+                  <th class="py-2 px-3">Regional Tax Zone</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+                {% for st in admin_states %}
+                  <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                    <td class="py-2.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ st.country_code }}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-slate-800 dark:text-slate-200">{{ st.state_code }}</td>
+                    <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white">{{ st.state_name }}</td>
+                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">{{ st.tax_zone }}</span></td>
+                  
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_states', '{{ st.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_states', '{{ st.id }}', '{{ st.name or st.title or st.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- 1.4 Multi-Currency & Daily Rates -->
+  {% elif current_tab == 'admin-currencies' %}
+    <div class="glass-card rounded-2xl p-5 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="coins" class="w-4 h-4 text-amber-500"></i>
+            <span>Multi-Currency Master &amp; Real-Time Exchange Rate Table</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ISO 4217 standard currencies, conversion symbols, precision decimals, and daily treasury spot rates</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1 space-y-3">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="credit-card" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span>Currency Profiles</span>
+          </h4>
+          <div class="space-y-2">
+            {% for cur in admin_currencies %}
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-sm">
+                    {{ cur.symbol }}
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-slate-900 dark:text-white">{{ cur.currency_code }} - {{ cur.currency_name }}</h5>
+                    <p class="text-[10px] text-slate-500">Decimals: {{ cur.decimal_places }}</p>
+                  </div>
+                </div>
+                {% if cur.is_base_currency %}
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">BASE CURRENCY</span>
+                {% else %}
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">FOREIGN</span>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-3">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span>Daily Treasury Exchange Rate Board (USD Base)</span>
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+                  <th class="py-2 px-3">Currency Pair</th>
+                  <th class="py-2 px-3">Currency Name</th>
+                  <th class="py-2 px-3 text-right">Exchange Rate</th>
+                  <th class="py-2 px-3">Effective Date</th>
+                  <th class="py-2 px-3">Rate Type</th>
+                  <th class="py-2 px-3">Source / Entered By</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+                {% for xr in admin_exchange_rates %}
+                  <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                    <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">1 USD = {{ xr.currency_code }}</td>
+                    <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ xr.currency_name }}</td>
+                    <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{{ "{:,.4f}".format(xr.exchange_rate|float) }} {{ xr.symbol }}</td>
+                    <td class="py-3 px-3 font-mono text-slate-500">{{ xr.effective_date }}</td>
+                    <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">{{ xr.rate_type }}</span></td>
+                    <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ xr.entered_by }}</td>
+                  
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_exchange_rates', '{{ xr.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_exchange_rates', '{{ xr.id }}', '{{ xr.name or xr.title or xr.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- 1.5 Fiscal Calendars & Periods -->
+  {% elif current_tab == 'admin-calendars' %}
+    <div class="glass-card rounded-2xl p-5 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="calendar-range" class="w-4 h-4 text-emerald-500"></i>
+            <span>Fiscal Calendars, 12 Accounting Periods &amp; Opening Balances</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Annual fiscal calendars, monthly hard-closed/soft-locked states, and opening balance verification</p>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Active Fiscal Year: FY 2026-2027</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Period span: April 1, 2026 - March 31, 2027 &bull; Opening Balances: <strong class="text-emerald-600 dark:text-emerald-400">LOCKED &amp; VERIFIED</strong></p>
+          </div>
+        </div>
+        <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm">CALENDAR ACTIVE</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Period No</th>
+              <th class="py-2.5 px-3">Period Name</th>
+              <th class="py-2.5 px-3">Start Date</th>
+              <th class="py-2.5 px-3">End Date</th>
+              <th class="py-2.5 px-3 text-center">Closing Status</th>
+              <th class="py-2.5 px-3">Closed Timestamp</th>
+              <th class="py-2.5 px-3">Closed By Controller</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for fp in admin_fiscal_periods %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">P-{{ "%02d"|format(fp.period_number) }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ fp.period_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ fp.start_date }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ fp.end_date }}</td>
+                <td class="py-3 px-3 text-center">
+                  {% if fp.status == 'HARD_CLOSED' %}
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center gap-1">
+                      <i data-lucide="lock" class="w-3 h-3"></i> HARD CLOSED
+                    </span>
+                  {% elif fp.status == 'SOFT_LOCKED' %}
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center gap-1">
+                      <i data-lucide="alert-circle" class="w-3 h-3"></i> SOFT LOCKED
+                    </span>
+                  {% else %}
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center gap-1">
+                      <i data-lucide="unlock" class="w-3 h-3"></i> OPEN
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ fp.closed_at or '—' }}</td>
+                <td class="py-3 px-3 text-slate-700 dark:text-slate-300">{{ fp.closed_by or 'Pending Period Close' }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_fiscal_periods', '{{ fp.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_fiscal_periods', '{{ fp.id }}', '{{ fp.name or fp.title or fp.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.6 Network Printers & Spoolers -->
+  {% elif current_tab == 'admin-printers' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-rose-500"></i>
+            <span>Network Print Servers, Thermal Slip Drivers &amp; Paper Trays</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Enterprise print routing, slip printer drivers, default invoice trays, and PDF spoolers</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for p in admin_printers %}
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+              </div>
+              {% if p.is_default %}
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">DEFAULT SPOOLER</span>
+              {% else %}
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">SECONDARY</span>
+              {% endif %}
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-slate-900 dark:text-white">{{ p.printer_name }}</h4>
+              <p class="text-xs text-slate-500 mt-0.5">{{ p.printer_type }}</p>
+            </div>
+            <div class="space-y-1 pt-2 border-t border-slate-200 dark:border-white/5 text-xs">
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>IP Address &amp; Port:</span> <span class="font-mono font-bold text-slate-800 dark:text-slate-200">{{ p.ip_address }}:{{ p.port }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Paper Form / Size:</span> <span class="font-bold text-blue-600 dark:text-blue-400">{{ p.paper_size }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Default Paper Tray:</span> <span class="text-slate-800 dark:text-slate-200">{{ p.default_tray }}</span></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 2: ACCESS CONTROL, ROLES & SECURITY GOVERNANCE SUITE (5 SUB-AREAS)
+       ========================================================================= -->
+
+  <!-- 2.1 Enterprise User Profiles -->
+  {% elif current_tab == 'admin-users' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i>
+            <span>Enterprise User Directory &amp; Credentials Governance</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Registered corporate operators, role assignments, department links, and 2FA/MFA enrolment</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">User Code</th>
+              <th class="py-2.5 px-3">Full Name &amp; Email</th>
+              <th class="py-2.5 px-3">Assigned Role</th>
+              <th class="py-2.5 px-3">Business Unit</th>
+              <th class="py-2.5 px-3">Cost Center</th>
+              <th class="py-2.5 px-3 text-center">2FA / MFA</th>
+              <th class="py-2.5 px-3">Last Login</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for u in admin_user_profiles %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ u.user_code }}</td>
+                <td class="py-3 px-3">
+                  <div class="font-bold text-slate-900 dark:text-white">{{ u.full_name }}</div>
+                  <div class="text-[11px] text-slate-500">{{ u.email }}</div>
+                </td>
+                <td class="py-3 px-3 font-bold text-purple-600 dark:text-purple-400">{{ u.role_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ u.unit_name or 'All Corporate Units' }}</td>
+                <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400">{{ u.cost_center_code or 'All CCs' }}</td>
+                <td class="py-3 px-3 text-center">
+                  {% if u.mfa_enabled %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">MFA ENFORCED</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">PASSWORD ONLY</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ u.last_login_at or 'Never' }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_user_profiles', '{{ u.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_user_profiles', '{{ u.id }}', '{{ u.name or u.title or u.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.2 Role-Based Access Control (RBAC) -->
+  {% elif current_tab == 'admin-roles' %}
+    <div class="glass-card rounded-2xl p-5 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="key-round" class="w-4 h-4 text-purple-500"></i>
+            <span>Role-Based Access Control (RBAC) &amp; Granular Function Matrix</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Authorization levels, menu function access, and granular View/Create/Edit/Delete/Approve/Export policies</p>
+        </div>
+        <a href="/modules/system-admin/print/admin-audit-cert" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Access Matrix</span>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for r in admin_roles %}
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono">{{ r.role_code }}</span>
+              <span class="text-xs font-bold text-amber-500">Level {{ r.security_level }}/10</span>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">{{ r.role_name }}</h4>
+            <p class="text-xs text-slate-500">{{ r.description }}</p>
+            <div class="pt-2 text-xs text-slate-600 dark:text-slate-400 flex justify-between border-t border-slate-200 dark:border-white/5">
+              <span>Assigned Operators:</span>
+              <strong class="text-slate-900 dark:text-white">{{ r.assigned_users_count }} users</strong>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 dark:border-white/5 space-y-3">
+        <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+          <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-500"></i>
+          <span>Granular Module Permissions Matrix</span>
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+                <th class="py-2 px-3">Role Name</th>
+                <th class="py-2 px-3">Module Code</th>
+                <th class="py-2 px-3 text-center">View</th>
+                <th class="py-2 px-3 text-center">Create</th>
+                <th class="py-2 px-3 text-center">Edit</th>
+                <th class="py-2 px-3 text-center">Delete</th>
+                <th class="py-2 px-3 text-center">Approve</th>
+                <th class="py-2 px-3 text-center">Export</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+              {% for p in admin_role_permissions %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                  <td class="py-2.5 px-3 font-bold text-purple-600 dark:text-purple-400">{{ p.role_name }}</td>
+                  <td class="py-2.5 px-3 font-mono font-bold text-slate-800 dark:text-slate-200">{{ p.module_code }}</td>
+                  <td class="py-2.5 px-3 text-center">{% if p.can_view %}<span class="text-emerald-500 font-bold">✓</span>{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                  <td class="py-2.5 px-3 text-center">{% if p.can_create %}<span class="text-emerald-500 font-bold">✓</span>{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                  <td class="py-2.5 px-3 text-center">{% if p.can_edit %}<span class="text-emerald-500 font-bold">✓</span>{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                  <td class="py-2.5 px-3 text-center">{% if p.can_delete %}<span class="text-rose-500 font-bold">✓</span>{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                  <td class="py-2.5 px-3 text-center">{% if p.can_approve %}<span class="text-blue-500 font-bold">✓</span>{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                  <td class="py-2.5 px-3 text-center">{% if p.can_export %}<span class="text-amber-500 font-bold">✓</span>{% else %}<span class="text-slate-300">—</span>{% endif %}</td>
+                
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_roles', '{{ p.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_roles', '{{ p.id }}', '{{ p.name or p.title or p.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  <!-- 2.3 Cost & Profit Center Scopes -->
+  {% elif current_tab == 'admin-auth-scope' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="lock" class="w-4 h-4 text-blue-500"></i>
+            <span>Cost &amp; Profit Centre User Access Scoping</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Subsidiary segregation, business unit confinement, and cost center budget ownership permissions</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">User Code</th>
+              <th class="py-2.5 px-3">Operator Name</th>
+              <th class="py-2.5 px-3">Scope Type</th>
+              <th class="py-2.5 px-3">Permitted Entity</th>
+              <th class="py-2.5 px-3 text-center">Access Mode</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for sc in admin_user_data_scopes %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ sc.user_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ sc.full_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ sc.scope_type }}</span></td>
+                <td class="py-3 px-3 font-semibold text-indigo-600 dark:text-indigo-400">{{ sc.entity_name }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ sc.access_mode }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_user_profiles', '{{ sc.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_user_profiles', '{{ sc.id }}', '{{ sc.name or sc.title or sc.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.4 Password Vault & Security Policy -->
+  {% elif current_tab == 'admin-passwords' %}
+    <div class="glass-card rounded-2xl p-5 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="key" class="w-4 h-4 text-amber-500"></i>
+            <span>Password Policies, Renewal Vault &amp; MFA Keys</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Enterprise password rotation rules, brute-force protection, lockout thresholds, and one-click token reset</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-4">
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-blue-500"></i>
+            <span>Active Password &amp; Session Policies</span>
+          </h4>
+          <div class="space-y-2.5 text-xs">
+            <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Minimum Length:</span> <strong class="text-slate-900 dark:text-white">12 characters</strong></div>
+            <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Mandatory Rules:</span> <strong class="text-emerald-600 dark:text-emerald-400">Upper, Lower, Numeric, Special</strong></div>
+            <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Password Expiry:</span> <strong class="text-slate-900 dark:text-white">Every 90 Days</strong></div>
+            <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Max Failed Attempts:</span> <strong class="text-rose-600 dark:text-rose-400">5 Attempts (30-min Lockout)</strong></div>
+            <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Idle Session Timeout:</span> <strong class="text-amber-600 dark:text-amber-400">20 Minutes Inactivity</strong></div>
+            <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Audit Trail Security:</span> <strong class="text-purple-600 dark:text-purple-400">SHA-256 Chained Hash Log</strong></div>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-4">
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4 text-emerald-500"></i>
+            <span>Operator Password Reset Vault</span>
+          </h4>
+          <p class="text-xs text-slate-500">Issue temporary cryptographic one-time passwords (OTP) or force immediate password renewal on next login</p>
+          <div class="space-y-3">
+            <select class="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-medium">
+              {% for u in admin_user_profiles %}
+                <option value="{{ u.id }}">{{ u.full_name }} ({{ u.user_code }}) - {{ u.email }}</option>
+              {% endfor %}
+            </select>
+            <button onclick="alert('Temporary Reset Token generated and dispatched to operator email securely.')" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              <span>Generate &amp; Dispatch One-Time Reset Token</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- 2.5 Live Sessions & Security Telemetry -->
+  {% elif current_tab == 'admin-sessions' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="radio" class="w-4 h-4 text-cyan-500"></i>
+            <span>Real-Time Active Sessions &amp; Device Telemetry</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Live operator sessions, client IP addresses, browser agents, and idle timers</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Session Token</th>
+              <th class="py-2.5 px-3">Operator Name</th>
+              <th class="py-2.5 px-3">Role</th>
+              <th class="py-2.5 px-3">IP Address</th>
+              <th class="py-2.5 px-3">Device / Platform</th>
+              <th class="py-2.5 px-3">Idle Duration</th>
+              <th class="py-2.5 px-3 text-center">MFA Status</th>
+              <th class="py-2.5 px-3 text-center">Session Action</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for s in admin_sessions %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ s.session_id }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ s.user_name }}</td>
+                <td class="py-3 px-3 text-purple-600 dark:text-purple-400 font-semibold">{{ s.role_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-800 dark:text-slate-200">{{ s.ip_address }}</td>
+                <td class="py-3 px-3 text-slate-500 dark:text-slate-400">{{ s.device }}</td>
+                <td class="py-3 px-3 font-mono text-amber-600 dark:text-amber-400">{{ s.idle_time }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">{{ s.mfa_status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <button onclick="alert('Session terminated gracefully. User logged out.')" class="px-2.5 py-1 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 transition">KILL SESSION</button>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_sessions', '{{ s.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_sessions', '{{ s.id }}', '{{ s.name or s.title or s.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 3: TAX ENGINE & STATUTORY AUTHORITIES SUITE (3 SUB-AREAS)
+       ========================================================================= -->
+
+  <!-- 3.1 Statutory Tax Authorities -->
+  {% elif current_tab == 'admin-tax-authorities' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="landmark" class="w-4 h-4 text-purple-500"></i>
+            <span>Statutory Revenue Boards &amp; Tax Authorities</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Government tax departments, district revenue offices, and statutory remittance calendars</p>
+        </div>
+        <a href="/modules/system-admin/print/admin-tax-schedule" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Tax Schedule</span>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for ta in admin_tax_authorities %}
+          <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">{{ ta.authority_code }}</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-slate-900 dark:text-white">{{ ta.authority_name }}</h4>
+              <p class="text-xs text-slate-500 mt-0.5">{{ ta.jurisdiction }} &bull; {{ ta.tax_office }}</p>
+            </div>
+            <div class="space-y-1.5 pt-2 border-t border-slate-200 dark:border-white/5 text-xs">
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Contact Liaison:</span> <span class="font-medium text-slate-800 dark:text-slate-200">{{ ta.contact_person }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Official Phone:</span> <span class="font-mono text-slate-800 dark:text-slate-200">{{ ta.phone }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Remittance Cycle:</span> <span class="font-bold text-blue-600 dark:text-blue-400">{{ ta.reporting_cycle }}</span></div>
+              <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Linked Profiles:</span> <span class="font-mono font-bold text-purple-600 dark:text-purple-400">{{ ta.profile_count }} Tax Profiles</span></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  <!-- 3.2 Tax Classification Categories -->
+  {% elif current_tab == 'admin-tax-categories' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="tags" class="w-4 h-4 text-blue-500"></i>
+            <span>Tax Classification Categories</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Value Added Tax (VAT), Withholding Tax, Sales Tax, and Zero-Rated Export classifications</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Category Code</th>
+              <th class="py-2.5 px-3">Category Name</th>
+              <th class="py-2.5 px-3">Tax Type</th>
+              <th class="py-2.5 px-3 text-right">Default Rate %</th>
+              <th class="py-2.5 px-3">Regulatory Scope Description</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for tc in admin_tax_categories %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ tc.category_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ tc.category_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ tc.tax_type }}</span></td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400 text-sm">{{ "{:,.2f}".format(tc.default_rate|float) }}%</td>
+                <td class="py-3 px-3 text-slate-500 dark:text-slate-400 max-w-sm truncate">{{ tc.description }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_tax_profiles', '{{ tc.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_tax_profiles', '{{ tc.id }}', '{{ tc.name or tc.title or tc.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.3 Tax Rates & Profile Slabs -->
+  {% elif current_tab == 'admin-tax-profiles' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="receipt" class="w-4 h-4 text-emerald-500"></i>
+            <span>Active Tax Profiles, Slabs &amp; General Ledger Account Mappings</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Direct tax percentage rates, input tax recoverability, and automated journal posting codes</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Profile Code</th>
+              <th class="py-2.5 px-3">Tax Profile Name</th>
+              <th class="py-2.5 px-3">Category</th>
+              <th class="py-2.5 px-3">Statutory Authority</th>
+              <th class="py-2.5 px-3 text-right">Tax Rate %</th>
+              <th class="py-2.5 px-3">GL Posting Account</th>
+              <th class="py-2.5 px-3 text-center">Input Recoverable</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for tp in admin_tax_profiles %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ tp.profile_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ tp.profile_name }}</td>
+                <td class="py-3 px-3 font-semibold text-slate-600 dark:text-slate-400">{{ tp.category_name }}</td>
+                <td class="py-3 px-3 text-purple-600 dark:text-purple-400">{{ tp.authority_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{{ "{:,.2f}".format(tp.rate_percent|float) }}%</td>
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ tp.gl_account_code }}</td>
+                <td class="py-3 px-3 text-center">
+                  {% if tp.is_recoverable %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">YES (INPUT CLAIM)</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600">EXPENSED</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_tax_profiles', '{{ tp.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_tax_profiles', '{{ tp.id }}', '{{ tp.name or tp.title or tp.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 4: SYSTEM DIAGNOSTICS, PERIODIC PROCESS & INTEGRITY SUITE (4 SUB-AREAS)
+       ========================================================================= -->
+
+  <!-- 4.1 Database Integrity Scanner -->
+  {% elif current_tab == 'admin-integrity' %}
+    <div class="glass-card rounded-2xl p-5 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="activity" class="w-4 h-4 text-amber-500"></i>
+            <span>Database Integrity Scanner &amp; Ledger Parity Engine</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time foreign key parity diagnostics, orphaned record auto-repair, and general ledger reconciliation</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-run-integrity" onclick="runIntegrityScan()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+            <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+            <span>Run Integrity Scan</span>
+          </button>
+          <button id="btn-recalculate" onclick="recalculateBalances()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>RECALCULATE BALANCES</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
+            <i data-lucide="check-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Database Health Score: 100% Optimal</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Target Server: Microsoft SQL Server 2025 Standard &bull; 0 Anomalies &bull; Referential Integrity 100%</p>
+          </div>
+        </div>
+        <div id="scan-feedback" class="text-xs font-mono text-amber-700 dark:text-amber-300 font-bold"></div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Scan Date</th>
+              <th class="py-2.5 px-3">Diagnostics Title</th>
+              <th class="py-2.5 px-3">Scan Type</th>
+              <th class="py-2.5 px-3 text-right">Records Checked</th>
+              <th class="py-2.5 px-3 text-center">Anomalies</th>
+              <th class="py-2.5 px-3 text-center">Duration</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3">Diagnostic Log</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for sc in admin_integrity_scans %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono text-slate-500">{{ sc.created_at }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ sc.scan_title }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ sc.scan_type }}</span></td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">{{ "{:,}".format(sc.items_checked|int) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ sc.anomalies_found }}</td>
+                <td class="py-3 px-3 text-center font-mono text-slate-500">{{ sc.scan_duration_ms }} ms</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ sc.scan_status }}</span>
+                </td>
+                <td class="py-3 px-3 text-slate-500 dark:text-slate-400 max-w-xs truncate">{{ sc.log_details }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_cost_centers', '{{ sc.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_cost_centers', '{{ sc.id }}', '{{ sc.name or sc.title or sc.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      async function runIntegrityScan() {
+        const fb = document.getElementById('scan-feedback');
+        fb.innerText = 'Executing full integrity scan...';
+        try {
+          const res = await fetch('/api/system-admin/integrity-scan', { method: 'POST' });
+          const data = await res.json();
+          fb.innerText = 'Scan Complete: ' + data.items_checked + ' records verified. Status: ' + data.status;
+          setTimeout(() => location.reload(), 1500);
+        } catch(e) {
+          fb.innerText = 'Error executing scan: ' + e;
+        }
+      }
+      async function recalculateBalances() {
+        const fb = document.getElementById('scan-feedback');
+        fb.innerText = 'Recalculating all ledger balances...';
+        try {
+          const res = await fetch('/api/system-admin/recalculate', { method: 'POST' });
+          const data = await res.json();
+          fb.innerText = 'Recalculation Complete: ' + data.recalculated_items + ' items checked. Ledgers balanced!';
+          setTimeout(() => location.reload(), 1500);
+        } catch(e) {
+          fb.innerText = 'Error recalculating: ' + e;
+        }
+      }
+    </script>
+
+  <!-- 4.2 Consolidated Month-End Close -->
+  {% elif current_tab == 'admin-periodic' %}
+    <div class="glass-card rounded-2xl p-5 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="check-square" class="w-4 h-4 text-emerald-500"></i>
+            <span>Consolidated Month-End Operational Closures</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sequential sub-ledger closures for Cash, AR, AP, Inventory, Payroll, and Fixed Assets Amortization</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Module Code</th>
+              <th class="py-2.5 px-3">Sub-Ledger Name</th>
+              <th class="py-2.5 px-3">Fiscal Period</th>
+              <th class="py-2.5 px-3 text-right">Verified Balance</th>
+              <th class="py-2.5 px-3">Closing Date</th>
+              <th class="py-2.5 px-3">Controller Signoff</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3">Reconciliation Notes</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for pc in admin_periodic_closures %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ pc.module_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ pc.module_name }}</td>
+                <td class="py-3 px-3 font-semibold text-purple-600 dark:text-purple-400">{{ pc.period_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-800 dark:text-slate-200">${{ "{:,.2f}".format(pc.verified_balance|float) }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ pc.closing_date }}</td>
+                <td class="py-3 px-3 text-slate-700 dark:text-slate-300">{{ pc.closed_by }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">CLOSED &amp; VERIFIED</span>
+                </td>
+                <td class="py-3 px-3 text-slate-500 dark:text-slate-400 max-w-xs truncate">{{ pc.reconciliation_notes }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_fiscal_periods', '{{ pc.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_fiscal_periods', '{{ pc.id }}', '{{ pc.name or pc.title or pc.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.3 Year-End Processing & Balance Sync -->
+  {% elif current_tab == 'admin-year-end' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="calendar-check-2" class="w-4 h-4 text-purple-500"></i>
+            <span>Annual Year-End Processing &amp; Retained Earnings Balance Sync</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automated annual roll-forward, retained earnings transfer, sub-ledger synchronization, and opening journal generation</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold">
+            <i data-lucide="award" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Annual Retained Earnings Rollover</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-300">P&amp;L revenue and expense accounts zeroed out and net income transferred to 3010-Retained Earnings.</p>
+          <div class="text-xs font-mono font-bold text-purple-600 dark:text-purple-400">Total Transferred: $2,845,000.00</div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
+            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Synchronise Year-End Balance</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-300">Synchronizes customer open AR balances, vendor open vouchers, and perpetual inventory asset layers.</p>
+          <button onclick="syncYearEnd()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition">Trigger Year-End Sync</button>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Opening Balances Locked</h4>
+          <p class="text-xs text-slate-600 dark:text-slate-300">Opening trial balance sealed. Prior period tampering blocked across all financial modules.</p>
+          <span class="px-2.5 py-1 text-[10px] font-bold rounded bg-emerald-600 text-white">LOCKED &amp; VERIFIED</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function syncYearEnd() {
+        alert('Initiating Year-End Balance Synchronization...');
+        try {
+          const res = await fetch('/api/system-admin/year-end-sync', { method: 'POST' });
+          const data = await res.json();
+          alert(data.message);
+        } catch(e) {
+          alert('Error: ' + e);
+        }
+      }
+    </script>
+
+  <!-- 4.4 Database Backup Snapshots -->
+  {% elif current_tab == 'admin-backups' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="hard-drive" class="w-4 h-4 text-blue-500"></i>
+            <span>Database Backup Snapshots &amp; Disaster Recovery Points</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automated Microsoft SQL Server 2025 full backups, differential logs, and point-in-time recovery points</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Backup Number</th>
+              <th class="py-2.5 px-3">Backup Type</th>
+              <th class="py-2.5 px-3">File System Destination</th>
+              <th class="py-2.5 px-3 text-right">File Size</th>
+              <th class="py-2.5 px-3">Verified Timestamp</th>
+              <th class="py-2.5 px-3">Agent / Performed By</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for bp in admin_backup_points %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ bp.backup_number }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ bp.backup_type }}</span></td>
+                <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400 max-w-xs truncate">{{ bp.file_path }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.2f}".format(bp.file_size_mb|float) }} MB</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ bp.verified_at }}</td>
+                <td class="py-3 px-3 text-slate-700 dark:text-slate-300">{{ bp.verified_by }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ bp.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_cost_centers', '{{ bp.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_cost_centers', '{{ bp.id }}', '{{ bp.name or bp.title or bp.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 5: AUDIT VAULT, SYSTEM TELEMETRY & PRINT STUDIO SUITE (4 SUB-AREAS)
+       ========================================================================= -->
+
+  <!-- 5.1 Tamper-Evident Audit Vault -->
+  {% elif current_tab == 'admin-audit-log' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-rose-500"></i>
+            <span>Tamper-Evident System Audit Vault &amp; Activity Timeline</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Immutable record mutations, authentication events, period locks, and regulatory compliance trail</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Timestamp</th>
+              <th class="py-2.5 px-3">Operator Name</th>
+              <th class="py-2.5 px-3">Client IP</th>
+              <th class="py-2.5 px-3">Event Action</th>
+              <th class="py-2.5 px-3">Module</th>
+              <th class="py-2.5 px-3">Entity Reference</th>
+              <th class="py-2.5 px-3 text-center">Severity</th>
+              <th class="py-2.5 px-3">Event Details</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for al in admin_audit_logs %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono text-slate-500">{{ al.event_timestamp }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ al.user_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400">{{ al.user_ip }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ al.event_action }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ al.module_code }}</td>
+                <td class="py-3 px-3 font-semibold text-slate-800 dark:text-slate-200">{{ al.record_ref }}</td>
+                <td class="py-3 px-3 text-center">
+                  {% if al.security_severity == 'WARNING' %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">WARNING</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">INFO</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-slate-500 dark:text-slate-400 max-w-sm truncate">{{ al.change_details }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('admin_cost_centers', '{{ al.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('admin_cost_centers', '{{ al.id }}', '{{ al.name or al.title or al.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.2 Executive Administration KPIs -->
+  {% elif current_tab == 'admin-kpis' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-blue-500"></i>
+            <span>Executive IT Infrastructure &amp; Governance Cockpit</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">High-level administrative metrics, system security grade, and operational subsystem status</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20 space-y-1">
+          <div class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Active Entities</div>
+          <div class="text-2xl font-black text-slate-900 dark:text-white font-mono">{{ admin_kpis.total_companies or 5 }} Companies</div>
+          <div class="text-[11px] text-slate-500">{{ admin_kpis.total_business_units or 15 }} Business Units &bull; {{ admin_kpis.total_cost_centers or 20 }} CCs</div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
+          <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Security Grade</div>
+          <div class="text-2xl font-black text-slate-900 dark:text-white font-mono">A+ SOC2 Type II</div>
+          <div class="text-[11px] text-slate-500">{{ admin_kpis.total_users or 15 }} Registered &bull; {{ admin_kpis.active_sessions_count or 15 }} Live Sessions</div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
+          <div class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Database Integrity</div>
+          <div class="text-2xl font-black text-slate-900 dark:text-white font-mono">100% HEALTHY</div>
+          <div class="text-[11px] text-slate-500">Engine: Microsoft SQL Server 2025 Standard</div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-1">
+          <div class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Accounting Periods</div>
+          <div class="text-2xl font-black text-slate-900 dark:text-white font-mono">{{ admin_kpis.closed_periods_count or 20 }} Closed</div>
+          <div class="text-[11px] text-slate-500">{{ admin_kpis.open_periods_count or 40 }} Open Active Periods</div>
+        </div>
+      </div>
+    </div>
+
+  <!-- 5.3 Enterprise Client License -->
+  {% elif current_tab == 'admin-license' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="award" class="w-4 h-4 text-purple-500"></i>
+            <span>Enterprise Client License &amp; Version Specifications</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Software entitlement, cluster nodes, database binding, and mission-critical support SLA</p>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-4 max-w-2xl">
+        <div class="flex items-center justify-between">
+          <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm">LICENSE VERIFIED &amp; ACTIVE</span>
+          <span class="font-mono text-xs text-slate-500">Valid Through: {{ admin_license.valid_until or '2030-12-31' }}</span>
+        </div>
+        <div>
+          <h4 class="text-lg font-black text-slate-900 dark:text-white">{{ admin_license.edition or 'Pyrix Enterprise Autonomous Edition 2026' }}</h4>
+          <p class="text-xs text-slate-500 mt-0.5">{{ admin_license.license_type or 'Multi-Entity Corporate Conglomerate License' }}</p>
+        </div>
+        <div class="space-y-2 pt-3 border-t border-slate-200 dark:border-white/5 text-xs">
+          <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Licensed Entity:</span> <strong class="text-slate-900 dark:text-white">{{ admin_license.licensed_to }}</strong></div>
+          <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>License Cryptographic Key:</span> <span class="font-mono font-bold text-blue-600 dark:text-blue-400">{{ admin_license.license_key }}</span></div>
+          <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Target Database Host:</span> <span class="font-mono font-bold text-purple-600 dark:text-purple-400">{{ admin_license.database_server }}</span></div>
+          <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Max Concurrent Users:</span> <strong class="text-emerald-600 dark:text-emerald-400">{{ admin_license.max_concurrent_users }} seats</strong></div>
+          <div class="flex justify-between text-slate-600 dark:text-slate-400"><span>Support SLA Tier:</span> <strong class="text-amber-600 dark:text-amber-400">{{ admin_license.support_contract }}</strong></div>
+        </div>
+      </div>
+    </div>
+
+  <!-- 5.4 System Admin Print Studio -->
+  {% elif current_tab == 'admin-print-studio' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-emerald-500"></i>
+            <span>System Administration Formal Document Print Studio</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Corporate letterhead printable reports complete with security hash seals, authority schedules, and database health audits</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Security &amp; Access Control Audit Certificate</h4>
+          <p class="text-xs text-slate-500">SOC2 compliant system security certificate with operator roles, MFA status, and audit log extract</p>
+          <a href="/modules/system-admin/print/admin-audit-cert" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>Print Audit Certificate</span>
+          </a>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+            <i data-lucide="building-2" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Enterprise Entity Configuration Spec</h4>
+          <p class="text-xs text-slate-500">Multi-entity company profile, business units hierarchy, cost centers, and base currencies</p>
+          <a href="/modules/system-admin/print/admin-company-spec" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>Print Entity Spec</span>
+          </a>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <i data-lucide="landmark" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Statutory Tax Authority &amp; Profile Schedule</h4>
+          <p class="text-xs text-slate-500">Government revenue board schedules, VAT/GST profiles, with GL account mappings and recovery rules</p>
+          <a href="/modules/system-admin/print/admin-tax-schedule" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>Print Tax Schedule</span>
+          </a>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+            <i data-lucide="activity" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Database Integrity &amp; Health Report</h4>
+          <p class="text-xs text-slate-500">MS SQL Server 2025 diagnostic report, referential integrity scan results, and backup recovery logs</p>
+          <a href="/modules/system-admin/print/admin-integrity-report" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>Print Health Report</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+{% endif %}

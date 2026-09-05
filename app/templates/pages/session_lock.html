@@ -10,13 +10,13 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-[#0F1117] text-slate-100 min-h-screen flex items-center justify-center p-4 relative selection:bg-blue-600/30 selection:text-white">
+<body class="bg-[#0F1117] text-slate-100 min-h-screen flex flex-col justify-between p-4 relative selection:bg-blue-600/30 selection:text-white">
 
   <!-- Ambient Glow -->
   <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
   <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-  <div class="w-full max-w-sm space-y-6 text-center relative z-10">
+  <div class="w-full max-w-sm space-y-6 text-center relative z-10 my-auto mx-auto py-6">
 
     <!-- User Lock Info -->
     <div class="space-y-3">
@@ -29,7 +29,6 @@
 
       <div>
         <h2 class="text-lg font-bold text-white tracking-tight">{{ user.full_name }}</h2>
-        <p class="text-xs text-slate-400 font-mono mt-0.5">Terminal Locked &bull; [{{ active_company.short_code }}]</p>
       </div>
     </div>
 
@@ -70,8 +69,19 @@
 
   </div>
 
+  <!-- Dynamic Modern Sticky Footer -->
+  <footer class="mt-auto py-4 text-center text-xs font-medium text-slate-500 w-full relative z-10">
+    <p>&copy; <span class="copyright-year">2026</span> Pyrix Enterprise Suite. All rights reserved.</p>
+  </footer>
+
   <script>
     lucide.createIcons();
+    (function() {
+      const yr = new Date().getFullYear();
+      document.querySelectorAll('.copyright-year').forEach(function(el) {
+        el.textContent = yr;
+      });
+    })();
   </script>
 </body>
 </html>

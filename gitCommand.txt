@@ -1,0 +1,21 @@
+# 1. Check which files were modified
+git status
+# 2. Stage all changed files
+git add .
+# 3. Create a commit with a descriptive message
+git commit -m "Message"
+# 4. Push your commit to GitHub on branch salman
+git push origin salman
+
+
+
+
+
+
+# On Another PC - To Get all the Updates from salman Branch
+
+# 1. Switch to the salman branch (if not already on it)
+git checkout salman
+
+# 2. Pull all latest changes from GitHub
+git pull origin salman

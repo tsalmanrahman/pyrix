@@ -41,11 +41,11 @@ class GLJournalService:
         return db.query(
             """
             SELECT l.*, a.account_number, a.account_name, a.account_type, 
-                   cc.cost_centre_code, cc.cost_centre_name,
+                   cc.cost_center_code AS cost_centre_code, cc.name AS cost_centre_name,
                    d.dept_code, d.dept_name
             FROM gl_journal_voucher_lines l
             JOIN gl_accounts a ON l.gl_account_id = a.id
-            LEFT JOIN gl_cost_centres cc ON l.cost_centre_id = cc.id
+            LEFT JOIN admin_cost_centers cc ON l.cost_centre_id = cc.id
             LEFT JOIN gl_departments d ON l.department_id = d.id
             WHERE l.voucher_id = ?
             ORDER BY l.sort_order ASC, l.debit_amount DESC
@@ -221,10 +221,11 @@ class GLJournalService:
     def get_template_lines(template_id: str) -> List[Dict[str, Any]]:
         return db.query(
             """
-            SELECT l.*, a.account_number, a.account_name, cc.cost_centre_code, cc.cost_centre_name
+            SELECT l.*, a.account_number, a.account_name, 
+                   cc.cost_center_code AS cost_centre_code, cc.name AS cost_centre_name
             FROM gl_batch_template_lines l
             JOIN gl_accounts a ON l.gl_account_id = a.id
-            LEFT JOIN gl_cost_centres cc ON l.cost_centre_id = cc.id
+            LEFT JOIN admin_cost_centers cc ON l.cost_centre_id = cc.id
             WHERE l.template_id = ?
             ORDER BY l.id ASC
             """,

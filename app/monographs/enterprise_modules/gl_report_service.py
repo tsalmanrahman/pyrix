@@ -181,8 +181,8 @@ class GLReportService:
                 v.status,
                 a.account_number,
                 a.account_name,
-                cc.cost_centre_code,
-                cc.cost_centre_name,
+                cc.cost_center_code AS cost_centre_code,
+                cc.name AS cost_centre_name,
                 d.dept_code,
                 d.dept_name,
                 l.line_narration,
@@ -191,7 +191,7 @@ class GLReportService:
             FROM gl_journal_voucher_lines l
             JOIN gl_journal_vouchers v ON l.voucher_id = v.id
             JOIN gl_accounts a ON l.gl_account_id = a.id
-            LEFT JOIN gl_cost_centres cc ON l.cost_centre_id = cc.id
+            LEFT JOIN admin_cost_centers cc ON l.cost_centre_id = cc.id
             LEFT JOIN gl_departments d ON l.department_id = d.id
             WHERE COALESCE(v.isDelete, 0) = 0
             ORDER BY v.voucher_date DESC, v.created_at DESC
@@ -199,7 +199,7 @@ class GLReportService:
 
     @staticmethod
     def get_cost_centre_pnl(company_id: Optional[str] = None) -> List[Dict[str, Any]]:
-        cost_centres = db.query("SELECT * FROM gl_cost_centres WHERE COALESCE(isDelete, 0) = 0 ORDER BY cost_centre_code ASC")
+        cost_centres = db.query("SELECT id, cost_center_code AS cost_centre_code, name AS cost_centre_name FROM admin_cost_centers WHERE is_active = 1 ORDER BY cost_center_code ASC")
         results = []
 
         for idx, cc in enumerate(cost_centres):

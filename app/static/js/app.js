@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initDynamicInputs();
   initShortcuts();
   initUserMenu();
+  initSmartTables();
+  initDragToScroll();
 });
 
 function initLucide() {
@@ -131,46 +133,133 @@ function applyTheme(theme) {
 }
 
 /* ==========================================================================
-   🗂️ SIDEBAR HIDE / UNHIDE (COLLAPSE / EXPAND) CONTROLLER
+   🗂️ RESPONSIVE SIDEBAR & OFF-CANVAS DRAWER CONTROLLER
    ========================================================================== */
+function isSmallScreen() {
+  return window.innerWidth < 1024;
+}
+
 function initSidebar() {
-  const isCollapsed = localStorage.getItem('pyrix_sidebar_collapsed') === 'true';
-  if (isCollapsed) {
-    document.documentElement.classList.add('sidebar-collapsed');
+  const htmlEl = document.documentElement;
+  
+  if (isSmallScreen()) {
+    htmlEl.classList.add('sidebar-collapsed');
+    htmlEl.classList.remove('sidebar-open-mobile');
   } else {
-    document.documentElement.classList.remove('sidebar-collapsed');
+    const isCollapsed = localStorage.getItem('pyrix_sidebar_collapsed') === 'true';
+    if (isCollapsed) {
+      htmlEl.classList.add('sidebar-collapsed');
+    } else {
+      htmlEl.classList.remove('sidebar-collapsed');
+    }
   }
-  updateSidebarIcon(isCollapsed);
+
+  updateSidebarIcon();
+
+  // 1. Click/Touch outside backdrop listener
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (backdrop) {
+    backdrop.addEventListener('click', closeSidebarMobile);
+    backdrop.addEventListener('touchstart', closeSidebarMobile, { passive: true });
+  }
+
+  // 2. Escape key listener to close mobile drawer
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.documentElement.classList.contains('sidebar-open-mobile')) {
+      closeSidebarMobile();
+    }
+  });
+
+  // 3. Auto-close mobile drawer when user clicks any navigation link inside sidebar
+  const sidebar = document.querySelector('.floating-sidebar');
+  if (sidebar) {
+    sidebar.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link && isSmallScreen()) {
+        closeSidebarMobile();
+      }
+    });
+  }
+
+  // 4. Smart window resize listener
+  window.addEventListener('resize', handleSidebarResize);
+}
+
+function handleSidebarResize() {
+  const htmlEl = document.documentElement;
+  if (isSmallScreen()) {
+    // If resized to mobile, make sure docked desktop open state doesn't cause overlap
+    if (!htmlEl.classList.contains('sidebar-open-mobile')) {
+      htmlEl.classList.add('sidebar-collapsed');
+    }
+  } else {
+    // If resized to desktop, remove mobile drawer open state and restore desktop preference
+    htmlEl.classList.remove('sidebar-open-mobile');
+    const isCollapsed = localStorage.getItem('pyrix_sidebar_collapsed') === 'true';
+    if (isCollapsed) {
+      htmlEl.classList.add('sidebar-collapsed');
+    } else {
+      htmlEl.classList.remove('sidebar-collapsed');
+    }
+  }
+  updateSidebarIcon();
 }
 
 function toggleSidebar() {
-  const isCurrentlyCollapsed = document.documentElement.classList.contains('sidebar-collapsed');
-  const newCollapsedState = !isCurrentlyCollapsed;
+  const htmlEl = document.documentElement;
 
-  if (newCollapsedState) {
-    document.documentElement.classList.add('sidebar-collapsed');
+  if (isSmallScreen()) {
+    const isCurrentlyOpen = htmlEl.classList.contains('sidebar-open-mobile');
+    if (isCurrentlyOpen) {
+      closeSidebarMobile();
+    } else {
+      openSidebarMobile();
+    }
   } else {
-    document.documentElement.classList.remove('sidebar-collapsed');
-  }
+    const isCurrentlyCollapsed = htmlEl.classList.contains('sidebar-collapsed');
+    const newCollapsedState = !isCurrentlyCollapsed;
 
-  localStorage.setItem('pyrix_sidebar_collapsed', String(newCollapsedState));
-  updateSidebarIcon(newCollapsedState);
-  showToast(newCollapsedState ? 'Sidebar collapsed (Full width view)' : 'Sidebar expanded');
+    if (newCollapsedState) {
+      htmlEl.classList.add('sidebar-collapsed');
+    } else {
+      htmlEl.classList.remove('sidebar-collapsed');
+    }
+
+    localStorage.setItem('pyrix_sidebar_collapsed', String(newCollapsedState));
+    updateSidebarIcon();
+    showToast(newCollapsedState ? 'Sidebar collapsed (Full width view)' : 'Sidebar expanded');
+  }
 }
 
-function updateSidebarIcon(isCollapsed) {
+function openSidebarMobile() {
+  document.documentElement.classList.add('sidebar-open-mobile');
+  updateSidebarIcon();
+}
+
+function closeSidebarMobile() {
+  document.documentElement.classList.remove('sidebar-open-mobile');
+  updateSidebarIcon();
+}
+
+function updateSidebarIcon() {
   const icon = document.getElementById('sidebar-toggle-icon');
   const btn = document.getElementById('sidebar-toggle-btn');
   if (!icon || !btn) return;
 
-  if (isCollapsed) {
-    icon.setAttribute('data-lucide', 'panel-left-open');
-    icon.className = 'w-4 h-4 text-slate-400';
-    btn.setAttribute('title', 'Unhide Side Navigation (Ctrl + B)');
-  } else {
-    icon.setAttribute('data-lucide', 'panel-left');
+  const htmlEl = document.documentElement;
+  const isMobile = isSmallScreen();
+  const isOpen = isMobile 
+    ? htmlEl.classList.contains('sidebar-open-mobile') 
+    : !htmlEl.classList.contains('sidebar-collapsed');
+
+  if (isOpen) {
+    icon.setAttribute('data-lucide', isMobile ? 'x' : 'panel-left');
     icon.className = 'w-4 h-4 text-blue-400';
     btn.setAttribute('title', 'Hide Side Navigation (Ctrl + B)');
+  } else {
+    icon.setAttribute('data-lucide', isMobile ? 'menu' : 'panel-left-open');
+    icon.className = 'w-4 h-4 text-slate-400';
+    btn.setAttribute('title', 'Unhide Side Navigation (Ctrl + B)');
   }
   initLucide();
 }
@@ -524,7 +613,7 @@ async function saveOptionValue(key, value) {
 }
 
 /* ==========================================================================
-   ⚡ DYNAMIC TABLE RECORD ACTIONS (EDIT & DELETE)
+   DYNAMIC TABLE RECORD ACTIONS (EDIT & DELETE)
    ========================================================================== */
 async function deleteMasterRecord(entity, recordId, label, rowId) {
   if (!confirm(`Are you sure you want to delete "${label}"? This action will permanently remove it from SQL Server.`)) {
@@ -721,3 +810,960 @@ async function generateFromTemplate(templateId, templateName) {
   }
 }
 
+/* ==========================================================================
+   📊 UNIVERSAL UNIFIED COLUMN MENU & CONTENT-AWARE PAGINATION ENGINE
+   ========================================================================== */
+function initSmartTables() {
+  const tables = document.querySelectorAll('table');
+  const totalTables = tables.length;
+
+  tables.forEach((table, tableIdx) => {
+    setupSmartTable(table, tableIdx, totalTables);
+  });
+
+  // Global click outside to dismiss all column popovers
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.table-filter-popover') && !e.target.closest('.btn-col-menu-trigger')) {
+      closeAllTablePopovers();
+    }
+  });
+
+  // Global Escape key to dismiss popovers
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeAllTablePopovers();
+    }
+  });
+
+  // Close on scroll to keep alignment clean
+  window.addEventListener('scroll', closeAllTablePopovers, { passive: true });
+
+  // On Window Resize: recalculate optimal page size for all auto-fitting tables
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    closeAllTablePopovers();
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      tables.forEach(table => {
+        if (table._pagination && table._pagination.customMode === 'auto') {
+          renderTablePage(table);
+        }
+      });
+    }, 150);
+  }, { passive: true });
+}
+
+function getVisibleTableCount() {
+  const visible = Array.from(document.querySelectorAll('table')).filter(t => {
+    return t.offsetParent !== null && window.getComputedStyle(t).display !== 'none';
+  });
+  return Math.max(1, visible.length);
+}
+
+function calculateOptimalPageSize(table) {
+  const n = getVisibleTableCount();
+  // Available height for table area after top navigation and card header
+  const availHeight = Math.max(320, window.innerHeight - 220);
+  const shareHeight = availHeight / n;
+  const rawRows = Math.floor(shareHeight / 40);
+  // Strictly enforce minimum 10 rows rule when space is divided among multiple tables!
+  return Math.max(10, rawRows);
+}
+
+function closeAllTablePopovers() {
+  document.querySelectorAll('.table-filter-popover').forEach(p => p.classList.add('hidden'));
+}
+
+function setupSmartTable(table, tableIdx, totalTables) {
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+  if (!thead || !tbody) return;
+
+  const headerRow = thead.querySelector('tr');
+  if (!headerRow) return;
+
+  const ths = Array.from(headerRow.querySelectorAll('th'));
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  if (rows.length === 0) return;
+
+  // Active filters & sorting registry for this table
+  table._activeFilters = {};
+  table._sortState = { colIndex: -1, asc: true };
+
+  // Setup Pagination state on table
+  table._pagination = {
+    currentPage: 1,
+    customMode: 'auto',
+    allRows: rows,
+    matchingRows: rows
+  };
+
+  // Create or identify Active Filter Chips Container above table container
+  let tableCard = table.closest('.glass-card') || table.parentElement;
+  let chipsContainer = tableCard ? tableCard.querySelector('.table-active-chips-bar') : null;
+  if (!chipsContainer && tableCard) {
+    chipsContainer = document.createElement('div');
+    chipsContainer.className = 'table-active-chips-bar flex items-center gap-2 flex-wrap min-h-[24px] mb-2 hidden text-xs';
+    table.parentElement.insertBefore(chipsContainer, table);
+  }
+
+  // Create Modern Dynamic Pagination Toolbar below table if records exist
+  let paginationToolbar = tableCard ? tableCard.querySelector('.table-pagination-toolbar') : null;
+  if (!paginationToolbar && tableCard) {
+    paginationToolbar = document.createElement('div');
+    paginationToolbar.className = 'table-pagination-toolbar pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400 select-none';
+    paginationToolbar.innerHTML = `
+      <!-- Left: Record Counter & Page info -->
+      <div class="flex items-center gap-2">
+        <span class="page-summary-text text-xs text-slate-600 dark:text-slate-400"></span>
+        <span class="h-3 w-[1px] bg-slate-300 dark:bg-white/10"></span>
+        <span class="page-current-badge text-[11px] font-mono text-slate-400 dark:text-slate-500"></span>
+      </div>
+
+      <!-- Center: Unified Segmented Capsule -->
+      <div class="table-segmented-pager inline-flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-white/10 shadow-sm">
+        <button type="button" class="btn-prev-page px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/5 transition flex items-center gap-1 text-xs font-medium cursor-pointer disabled:opacity-30 disabled:pointer-events-none">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          <span>Prev</span>
+        </button>
+
+        <div class="h-3 w-[1px] bg-slate-300 dark:bg-white/10 mx-0.5"></div>
+
+        <div class="page-pills-container flex items-center gap-0.5"></div>
+
+        <div class="h-3 w-[1px] bg-slate-300 dark:bg-white/10 mx-0.5"></div>
+
+        <button type="button" class="btn-next-page px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/5 transition flex items-center gap-1 text-xs font-medium cursor-pointer disabled:opacity-30 disabled:pointer-events-none">
+          <span>Next</span>
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Right: Custom View Popover Trigger -->
+      <div class="relative">
+        <button type="button" class="btn-view-size-trigger px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-900/90 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+          <span class="text-slate-400">View:</span>
+          <span class="current-view-label font-semibold text-slate-800 dark:text-white">Auto</span>
+          <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+
+        <!-- View Popover Menu -->
+        <div class="view-size-popover absolute right-0 bottom-9 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/15 p-1 shadow-2xl z-50 hidden space-y-0.5 text-xs backdrop-blur-xl">
+          <button type="button" data-val="auto" class="size-opt-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition cursor-pointer">
+            <span>Auto (Screen Fit)</span>
+            <span class="check-mark font-bold text-blue-500">✓</span>
+          </button>
+          <button type="button" data-val="10" class="size-opt-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition cursor-pointer">
+            <span>10 per page</span>
+            <span class="check-mark font-bold text-blue-500 hidden">✓</span>
+          </button>
+          <button type="button" data-val="25" class="size-opt-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition cursor-pointer">
+            <span>25 per page</span>
+            <span class="check-mark font-bold text-blue-500 hidden">✓</span>
+          </button>
+          <button type="button" data-val="50" class="size-opt-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition cursor-pointer">
+            <span>50 per page</span>
+            <span class="check-mark font-bold text-blue-500 hidden">✓</span>
+          </button>
+          <button type="button" data-val="all" class="size-opt-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition cursor-pointer">
+            <span>All records</span>
+            <span class="check-mark font-bold text-blue-500 hidden">✓</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    table.parentElement.appendChild(paginationToolbar);
+
+    const btnPrev = paginationToolbar.querySelector('.btn-prev-page');
+    const btnNext = paginationToolbar.querySelector('.btn-next-page');
+    const viewTrigger = paginationToolbar.querySelector('.btn-view-size-trigger');
+    const viewPopover = paginationToolbar.querySelector('.view-size-popover');
+    const optButtons = paginationToolbar.querySelectorAll('.size-opt-btn');
+
+    btnPrev.addEventListener('click', () => {
+      if (table._pagination.currentPage > 1) {
+        table._pagination.currentPage--;
+        renderTablePage(table);
+      }
+    });
+
+    btnNext.addEventListener('click', () => {
+      table._pagination.currentPage++;
+      renderTablePage(table);
+    });
+
+    viewTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeAllTablePopovers();
+      viewPopover.classList.toggle('hidden');
+    });
+
+    optButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const val = btn.getAttribute('data-val');
+        table._pagination.customMode = val;
+        table._pagination.currentPage = 1;
+        viewPopover.classList.add('hidden');
+        renderTablePage(table);
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.view-size-popover') && !e.target.closest('.btn-view-size-trigger')) {
+        viewPopover.classList.add('hidden');
+      }
+    });
+
+    table._paginationToolbar = paginationToolbar;
+  }
+
+  ths.forEach((th, colIdx) => {
+    const headerText = th.textContent.trim();
+    if (headerText.toLowerCase() === 'actions') return;
+
+    // Collect distinct values for this column
+    const distinctValues = new Map();
+    rows.forEach(r => {
+      const cell = r.cells[colIdx];
+      if (cell) {
+        const val = cell.textContent.trim();
+        if (val) {
+          distinctValues.set(val, (distinctValues.get(val) || 0) + 1);
+        }
+      }
+    });
+
+    th.classList.add('relative');
+    
+    // Wrap header content
+    const originalHtml = th.innerHTML;
+    th.innerHTML = '';
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex items-center justify-between gap-1.5 select-none';
+    
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'font-semibold text-slate-300';
+    labelSpan.innerHTML = originalHtml;
+    wrapper.appendChild(labelSpan);
+
+    // Create Unified Menu Button
+    const menuBtn = document.createElement('button');
+    menuBtn.type = 'button';
+    menuBtn.className = 'btn-col-menu-trigger w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-blue-400 transition cursor-pointer';
+    menuBtn.title = `Sort & Filter ${headerText}`;
+    menuBtn.innerHTML = `<i data-lucide="filter" class="w-3 h-3"></i>`;
+
+    // Create Unified Popover
+    const popover = document.createElement('div');
+    popover.className = 'table-filter-popover hidden text-xs w-60';
+    
+    // Check if we should show value checkboxes (if there are categorical values)
+    const hasCategoryValues = distinctValues.size >= 2 && distinctValues.size <= 20;
+
+    let optionsHtml = '';
+    if (hasCategoryValues) {
+      optionsHtml = `
+        <div class="space-y-1 max-h-36 overflow-y-auto text-slate-700 dark:text-slate-300 border-t border-slate-200 dark:border-white/10 pt-1.5 mt-1.5 popover-options-list">
+          <div class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Filter by value:</div>
+        </div>
+      `;
+    }
+
+    popover.innerHTML = `
+      <div class="font-bold text-slate-900 dark:text-white text-[11px] border-b border-slate-200 dark:border-white/10 pb-1.5 mb-1.5 flex justify-between items-center">
+        <span>${headerText}</span>
+        <button type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-white btn-popover-close text-sm leading-none">&times;</button>
+      </div>
+
+      <!-- Sort Controls -->
+      <div class="space-y-0.5 border-b border-slate-200 dark:border-white/10 pb-1.5 mb-1.5">
+        <button type="button" class="btn-sort-asc w-full flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 text-left text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
+          <span>Sort A &rarr; Z (Lowest first)</span>
+        </button>
+        <button type="button" class="btn-sort-desc w-full flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 text-left text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/></svg>
+          <span>Sort Z &rarr; A (Highest first)</span>
+        </button>
+      </div>
+
+      <!-- Quick Search Filter -->
+      <div class="space-y-1">
+        <div class="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Search in ${headerText}:</div>
+        <input 
+          type="text" 
+          placeholder="Type to filter..." 
+          class="col-search-input w-full px-2.5 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
+        >
+      </div>
+
+      ${optionsHtml}
+
+      <!-- Bottom Actions -->
+      <div class="pt-2 mt-1.5 border-t border-slate-200 dark:border-white/10 flex justify-between text-[10px]">
+        <button type="button" class="btn-clear-col text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white">Clear</button>
+        <button type="button" class="btn-popover-close text-blue-600 dark:text-blue-400 hover:underline font-semibold">Done</button>
+      </div>
+    `;
+
+    // Populate distinct value checkboxes if applicable
+    if (hasCategoryValues) {
+      const optionsList = popover.querySelector('.popover-options-list');
+      distinctValues.forEach((count, val) => {
+        const item = document.createElement('label');
+        item.className = 'table-filter-popover-item';
+        item.innerHTML = `
+          <input type="checkbox" value="${val}" class="filter-chk rounded text-blue-600 bg-slate-800 border-white/10">
+          <span class="truncate flex-1">${val}</span>
+          <span class="text-[9px] font-mono text-slate-400">(${count})</span>
+        `;
+        optionsList.appendChild(item);
+      });
+    }
+
+    // Sort Handlers
+    popover.querySelector('.btn-sort-asc').addEventListener('click', (e) => {
+      e.stopPropagation();
+      sortSmartTableColumn(table, colIdx, true, totalTables);
+      closeAllTablePopovers();
+    });
+
+    popover.querySelector('.btn-sort-desc').addEventListener('click', (e) => {
+      e.stopPropagation();
+      sortSmartTableColumn(table, colIdx, false, totalTables);
+      closeAllTablePopovers();
+    });
+
+    // Search Input Keystroke Handler
+    const searchInput = popover.querySelector('.col-search-input');
+    searchInput.addEventListener('input', () => {
+      applySmartTableFilters(table, chipsContainer, totalTables);
+    });
+
+    // Checkbox Handlers
+    const checkboxes = popover.querySelectorAll('.filter-chk');
+    checkboxes.forEach(chk => {
+      chk.addEventListener('change', () => {
+        applySmartTableFilters(table, chipsContainer, totalTables);
+      });
+    });
+
+    // Clear Button Handler
+    popover.querySelector('.btn-clear-col').addEventListener('click', () => {
+      searchInput.value = '';
+      checkboxes.forEach(c => c.checked = false);
+      applySmartTableFilters(table, chipsContainer, totalTables);
+    });
+
+    // Close Button Handlers
+    popover.querySelectorAll('.btn-popover-close').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popover.classList.add('hidden');
+      });
+    });
+
+    // Toggle Popover Trigger
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = popover.classList.contains('hidden');
+      closeAllTablePopovers();
+      if (isHidden) {
+        const rect = menuBtn.getBoundingClientRect();
+        popover.style.position = 'fixed';
+        popover.style.top = `${rect.bottom + 6}px`;
+        popover.style.left = `${Math.min(Math.max(10, rect.left), window.innerWidth - 260)}px`;
+        popover.style.zIndex = '99999';
+        popover.classList.remove('hidden');
+        setTimeout(() => searchInput.focus(), 50);
+      }
+    });
+
+    wrapper.appendChild(menuBtn);
+    th.appendChild(wrapper);
+    document.body.appendChild(popover);
+    table._colPopovers = table._colPopovers || [];
+    table._colPopovers.push({ colIdx, popover, menuBtn, th });
+  });
+
+  // Initial page render
+  renderTablePage(table);
+  initLucide();
+}
+
+function renderTablePage(table) {
+  if (!table._pagination) return;
+
+  const { customMode, allRows, matchingRows } = table._pagination;
+  const optimalSize = calculateOptimalPageSize(table);
+  const pageSize = customMode === 'auto' ? optimalSize : (customMode === 'all' ? (matchingRows.length || 1) : parseInt(customMode) || 10);
+
+  const totalRecords = matchingRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
+
+  if (table._pagination.currentPage > totalPages) table._pagination.currentPage = totalPages;
+  if (table._pagination.currentPage < 1) table._pagination.currentPage = 1;
+  const currentPage = table._pagination.currentPage;
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalRecords);
+  const visibleSlice = matchingRows.slice(startIndex, endIndex);
+
+  // Hide all rows, display slice rows
+  allRows.forEach(r => r.style.display = 'none');
+  visibleSlice.forEach(r => r.style.display = '');
+
+  // Update Toolbar UI
+  const toolbar = table._paginationToolbar;
+  if (toolbar) {
+    const summaryEl = toolbar.querySelector('.page-summary-text');
+    const badgeEl = toolbar.querySelector('.page-current-badge');
+    const viewLabel = toolbar.querySelector('.current-view-label');
+    const viewPopover = toolbar.querySelector('.view-size-popover');
+
+    if (summaryEl) {
+      if (totalRecords === 0) {
+        summaryEl.innerHTML = 'Showing <span class="font-semibold text-slate-700 dark:text-slate-300">0</span> records';
+      } else {
+        summaryEl.innerHTML = `<span class="font-semibold text-slate-800 dark:text-slate-200">${startIndex + 1}–${endIndex}</span> of <span class="font-semibold text-slate-800 dark:text-slate-200">${totalRecords}</span> records`;
+      }
+    }
+
+    if (badgeEl) {
+      badgeEl.textContent = `Page ${currentPage} / ${totalPages}`;
+    }
+
+    if (viewLabel) {
+      const labelMap = {
+        'auto': 'Auto (Adaptive)',
+        '10': '10 / page',
+        '25': '25 / page',
+        '50': '50 / page',
+        'all': 'All records'
+      };
+      viewLabel.textContent = labelMap[customMode] || customMode;
+    }
+
+    if (viewPopover) {
+      viewPopover.querySelectorAll('.size-opt-btn').forEach(btn => {
+        const val = btn.getAttribute('data-val');
+        const check = btn.querySelector('.check-mark');
+        if (val === customMode) {
+          btn.classList.add('bg-blue-500/10', 'text-blue-500', 'font-semibold');
+          if (check) check.classList.remove('hidden');
+        } else {
+          btn.classList.remove('bg-blue-500/10', 'text-blue-500', 'font-semibold');
+          if (check) check.classList.add('hidden');
+        }
+      });
+    }
+
+    const btnPrev = toolbar.querySelector('.btn-prev-page');
+    const btnNext = toolbar.querySelector('.btn-next-page');
+    if (btnPrev) btnPrev.disabled = (currentPage === 1);
+    if (btnNext) btnNext.disabled = (currentPage === totalPages || totalRecords === 0);
+
+    const pillsContainer = toolbar.querySelector('.page-pills-container');
+    if (pillsContainer) {
+      pillsContainer.innerHTML = '';
+      for (let p = 1; p <= totalPages; p++) {
+        if (p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `w-7 h-7 rounded-lg text-xs font-semibold transition cursor-pointer ${p === currentPage ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/5'}`;
+          btn.textContent = p;
+          btn.onclick = () => {
+            table._pagination.currentPage = p;
+            renderTablePage(table);
+          };
+          pillsContainer.appendChild(btn);
+        } else if (p === currentPage - 2 || p === currentPage + 2) {
+          const span = document.createElement('span');
+          span.className = 'text-slate-400 px-1 text-xs select-none';
+          span.textContent = '…';
+          pillsContainer.appendChild(span);
+        }
+      }
+    }
+  }
+}
+
+function applySmartTableFilters(table, chipsContainer, totalTables) {
+  const allRows = table._pagination ? table._pagination.allRows : Array.from(table.querySelectorAll('tbody tr'));
+  const colPopovers = table._colPopovers || [];
+
+  const activeFilters = [];
+
+  colPopovers.forEach(({ colIdx, popover, menuBtn, th }) => {
+    const searchVal = popover.querySelector('.col-search-input')?.value.toLowerCase().trim() || '';
+    const checked = Array.from(popover.querySelectorAll('.filter-chk:checked')).map(c => c.value);
+    const headerTitle = th.querySelector('span')?.textContent.trim() || `Col ${colIdx}`;
+
+    if (searchVal || checked.length > 0) {
+      if (menuBtn) {
+        menuBtn.classList.add('text-blue-400', 'bg-blue-500/20');
+        menuBtn.classList.remove('text-slate-400');
+      }
+      activeFilters.push({
+        colIdx,
+        title: headerTitle,
+        searchText: searchVal,
+        checkedValues: checked,
+        popover,
+        menuBtn
+      });
+    } else {
+      if (menuBtn) {
+        menuBtn.classList.remove('text-blue-400', 'bg-blue-500/20');
+        menuBtn.classList.add('text-slate-400');
+      }
+    }
+  });
+
+  // Filter rows into matchingRows array
+  const matchingRows = allRows.filter(r => {
+    for (const f of activeFilters) {
+      const cellText = r.cells[f.colIdx]?.textContent.trim() || '';
+      
+      // Search query match
+      if (f.searchText && !cellText.toLowerCase().includes(f.searchText)) {
+        return false;
+      }
+
+      // Checkbox match
+      if (f.checkedValues.length > 0 && !f.checkedValues.some(v => cellText.includes(v))) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // Update pagination state with filtered subset
+  if (table._pagination) {
+    table._pagination.matchingRows = matchingRows;
+    table._pagination.currentPage = 1;
+    renderTablePage(table);
+  }
+
+  // Render active filter chips toolbar
+  if (chipsContainer) {
+    chipsContainer.innerHTML = '';
+    if (activeFilters.length > 0) {
+      chipsContainer.classList.remove('hidden');
+
+      const label = document.createElement('span');
+      label.className = 'text-xs text-slate-400 font-medium flex items-center gap-1.5';
+      label.innerHTML = `<i data-lucide="filter" class="w-3.5 h-3.5 text-blue-400"></i> Active Filters:`;
+      chipsContainer.appendChild(label);
+
+      activeFilters.forEach(f => {
+        const chipEl = document.createElement('span');
+        chipEl.className = 'filter-chip';
+        
+        let desc = f.searchText ? `"${f.searchText}"` : f.checkedValues.join(', ');
+        chipEl.innerHTML = `<span>${f.title}: <strong>${desc}</strong></span><button type="button" title="Clear filter">&times;</button>`;
+        chipEl.querySelector('button').addEventListener('click', () => {
+          const input = f.popover.querySelector('.col-search-input');
+          if (input) input.value = '';
+          f.popover.querySelectorAll('.filter-chk').forEach(c => c.checked = false);
+          applySmartTableFilters(table, chipsContainer, totalTables);
+        });
+        chipsContainer.appendChild(chipEl);
+      });
+
+      const clearAllBtn = document.createElement('button');
+      clearAllBtn.type = 'button';
+      clearAllBtn.className = 'text-[11px] text-slate-400 hover:text-white underline ml-auto';
+      clearAllBtn.textContent = 'Clear all filters';
+      clearAllBtn.addEventListener('click', () => {
+        colPopovers.forEach(({ popover }) => {
+          const input = popover.querySelector('.col-search-input');
+          if (input) input.value = '';
+          popover.querySelectorAll('.filter-chk').forEach(c => c.checked = false);
+        });
+        applySmartTableFilters(table, chipsContainer, totalTables);
+      });
+      chipsContainer.appendChild(clearAllBtn);
+    } else {
+      chipsContainer.classList.add('hidden');
+    }
+    initLucide();
+  }
+}
+
+function sortSmartTableColumn(table, colIdx, asc, totalTables) {
+  const tbody = table.querySelector('tbody');
+  const allRows = table._pagination ? table._pagination.allRows : Array.from(tbody.querySelectorAll('tr'));
+  table._sortState = { colIndex: colIdx, asc: asc };
+
+  allRows.sort((a, b) => {
+    const textA = a.cells[colIdx]?.textContent.trim() || '';
+    const textB = b.cells[colIdx]?.textContent.trim() || '';
+
+    // Check if numeric or currency
+    const numA = parseFloat(textA.replace(/[^0-9.-]/g, ''));
+    const numB = parseFloat(textB.replace(/[^0-9.-]/g, ''));
+
+    if (!isNaN(numA) && !isNaN(numB) && !textA.includes('-') && !textB.includes('-')) {
+      return asc ? numA - numB : numB - numA;
+    }
+    return asc ? textA.localeCompare(textB) : textB.localeCompare(textA);
+  });
+
+  allRows.forEach(r => tbody.appendChild(r));
+  
+  if (table._pagination) {
+    table._pagination.currentPage = 1;
+    renderTablePage(table);
+  }
+
+  showToast(`Sorted by column ${asc ? '(Ascending)' : '(Descending)'}`);
+}
+
+/* ==========================================================================
+   🖱️ UNIVERSAL CLICK-AND-DRAG (GRAB & PAN) + CHEVRON SCROLL ENGINE
+   ========================================================================== */
+function initDragToScroll() {
+  const scrollContainers = document.querySelectorAll('.overflow-x-auto, .table-responsive');
+
+  scrollContainers.forEach(container => {
+    // Hide ugly native scrollbar
+    container.classList.add('no-scrollbar');
+
+    let isDown = false;
+    let startX, scrollLeft;
+    let hasMoved = false;
+
+    container.addEventListener('mousedown', (e) => {
+      // Don't drag if clicking interactive controls
+      if (e.target.closest('button, a, input, select, textarea, .btn-col-menu-trigger, .table-filter-popover')) return;
+      isDown = true;
+      hasMoved = false;
+      container.classList.add('grab-scroll-active');
+      startX = e.pageX - container.offsetLeft;
+      scrollLeft = container.scrollLeft;
+    });
+
+    container.addEventListener('mouseleave', () => {
+      isDown = false;
+      container.classList.remove('grab-scroll-active');
+    });
+
+    container.addEventListener('mouseup', () => {
+      isDown = false;
+      container.classList.remove('grab-scroll-active');
+    });
+
+    container.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - container.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      if (Math.abs(walk) > 3) hasMoved = true;
+      container.scrollLeft = scrollLeft - walk;
+    });
+
+    // Add floating chevrons if not already present
+    const parentWrapper = container.parentElement;
+    if (parentWrapper && !parentWrapper.querySelector('.btn-table-scroll-left')) {
+      parentWrapper.classList.add('relative', 'group');
+
+      const btnLeft = document.createElement('button');
+      btnLeft.type = 'button';
+      btnLeft.className = 'btn-table-scroll-left absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-900/90 hover:bg-blue-600 border border-white/15 text-white shadow-xl flex items-center justify-center transition-all opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto hover:scale-110 cursor-pointer';
+      btnLeft.title = 'Scroll Left';
+      btnLeft.innerHTML = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>`;
+
+      const btnRight = document.createElement('button');
+      btnRight.type = 'button';
+      btnRight.className = 'btn-table-scroll-right absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-900/90 hover:bg-blue-600 border border-white/15 text-white shadow-xl flex items-center justify-center transition-all opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto hover:scale-110 cursor-pointer';
+      btnRight.title = 'Scroll Right';
+      btnRight.innerHTML = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>`;
+
+      btnLeft.addEventListener('click', (e) => {
+        e.stopPropagation();
+        container.scrollBy({ left: -260, behavior: 'smooth' });
+      });
+
+      btnRight.addEventListener('click', (e) => {
+        e.stopPropagation();
+        container.scrollBy({ left: 260, behavior: 'smooth' });
+      });
+
+      const updateChevronVisibility = () => {
+        const canScrollLeft = container.scrollLeft > 5;
+        const canScrollRight = container.scrollLeft < (container.scrollWidth - container.clientWidth - 5);
+        btnLeft.style.display = canScrollLeft ? 'flex' : 'none';
+        btnRight.style.display = canScrollRight ? 'flex' : 'none';
+      };
+
+      container.addEventListener('scroll', updateChevronVisibility, { passive: true });
+      window.addEventListener('resize', updateChevronVisibility, { passive: true });
+      setTimeout(updateChevronVisibility, 100);
+
+      parentWrapper.insertBefore(btnLeft, container);
+      parentWrapper.appendChild(btnRight);
+    }
+  });
+}
+
+
+
+
+/* ==========================================================================
+   ⚡ UNIVERSAL DYNAMIC CRUD MODAL CONTROLLER (Edit & Delete)
+   ========================================================================== */
+let currentDeleteTarget = { entity: null, id: null, rowElement: null };
+
+function showDynamicToast(message, type = 'success') {
+  const container = document.getElementById('dynamic-toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  const isSuccess = type === 'success';
+  toast.className = `px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold flex items-center gap-2.5 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-auto ${
+    isSuccess 
+      ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-300' 
+      : 'bg-rose-950/90 border-rose-500/30 text-rose-300'
+  }`;
+  toast.innerHTML = `
+    <i data-lucide="${isSuccess ? 'check-circle' : 'alert-triangle'}" class="w-4 h-4 ${isSuccess ? 'text-emerald-400' : 'text-rose-400'}"></i>
+    <span>${message}</span>
+  `;
+  container.appendChild(toast);
+  if (window.lucide) window.lucide.createIcons();
+
+  requestAnimationFrame(() => {
+    toast.classList.remove('translate-y-4', 'opacity-0');
+  });
+
+  setTimeout(() => {
+    toast.classList.add('opacity-0', 'translate-y-2');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+async function openDynamicEditModal(entity, id) {
+  const modal = document.getElementById('modal-dynamic-edit');
+  const loading = document.getElementById('dynamic-edit-loading');
+  const fieldsContainer = document.getElementById('dynamic-fields-container');
+  const titleEl = document.getElementById('dynamic-edit-title');
+  const entityInput = document.getElementById('dynamic-edit-entity');
+  const idInput = document.getElementById('dynamic-edit-id');
+
+  if (!modal) return;
+
+  entityInput.value = entity;
+  idInput.value = id;
+
+  modal.classList.remove('hidden');
+  loading.classList.remove('hidden');
+  fieldsContainer.classList.add('hidden');
+  fieldsContainer.innerHTML = '';
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}`);
+    const json = await res.json();
+    if (!json.success || !json.payload) throw new Error(json.error || 'Failed to load record');
+
+    const { title, fields, data } = json.payload;
+    titleEl.textContent = `Edit ${title}`;
+
+    fields.forEach(f => {
+      const fieldWrapper = document.createElement('div');
+      fieldWrapper.className = 'space-y-1.5';
+
+      const label = document.createElement('label');
+      label.className = 'text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between';
+      label.innerHTML = `<span>${f.label}</span> ${f.required ? '<span class="text-rose-500 text-[10px]">*</span>' : ''}`;
+      fieldWrapper.appendChild(label);
+
+      const val = data[f.field] !== undefined && data[f.field] !== null ? data[f.field] : '';
+
+      if (f.type === 'select') {
+        const select = document.createElement('select');
+        select.name = f.field;
+        select.required = !!f.required;
+        select.className = 'mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none';
+        f.options.forEach(opt => {
+          const optEl = document.createElement('option');
+          optEl.value = opt;
+          optEl.textContent = opt;
+          if (String(opt).toUpperCase() === String(val).toUpperCase()) optEl.selected = true;
+          select.appendChild(optEl);
+        });
+        fieldWrapper.appendChild(select);
+      } else if (f.type === 'checkbox') {
+        const checkWrap = document.createElement('label');
+        checkWrap.className = 'flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 cursor-pointer';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = f.field;
+        checkbox.checked = !!val && val !== 0 && val !== '0';
+        checkbox.className = 'w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300';
+        const span = document.createElement('span');
+        span.className = 'text-xs font-semibold text-slate-700 dark:text-slate-200';
+        span.textContent = f.label;
+        checkWrap.appendChild(checkbox);
+        checkWrap.appendChild(span);
+        fieldWrapper.appendChild(checkWrap);
+      } else {
+        const input = document.createElement('input');
+        input.type = f.type || 'text';
+        input.name = f.field;
+        input.value = val;
+        if (f.step) input.step = f.step;
+        input.required = !!f.required;
+        input.className = 'mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-800 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none';
+        fieldWrapper.appendChild(input);
+      }
+
+      fieldsContainer.appendChild(fieldWrapper);
+    });
+
+    loading.classList.add('hidden');
+    fieldsContainer.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  } catch (err) {
+    showDynamicToast(err.message || 'Error loading record', 'error');
+    closeDynamicEditModal();
+  }
+}
+
+function closeDynamicEditModal() {
+  const modal = document.getElementById('modal-dynamic-edit');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function submitDynamicEditForm(e) {
+  e.preventDefault();
+  const form = e.target;
+  const entity = document.getElementById('dynamic-edit-entity').value;
+  const id = document.getElementById('dynamic-edit-id').value;
+  const btn = document.getElementById('btn-save-dynamic-edit');
+
+  const formData = {};
+  new FormData(form).forEach((val, key) => {
+    formData[key] = val;
+  });
+
+  form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    formData[cb.name] = cb.checked;
+  });
+
+  const originalBtnText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Saving...</span>`;
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}/update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) throw new Error(json.detail || json.error || 'Update failed');
+
+    showDynamicToast(json.message || 'Record updated successfully!', 'success');
+    closeDynamicEditModal();
+
+    // Dynamically update corresponding row in DOM if present
+    const row = document.querySelector(`tr[data-id="${id}"], tr[data-record-id="${id}"]`);
+    if (row) {
+      Object.keys(formData).forEach(k => {
+        const cell = row.querySelector(`[data-field="${k}"]`);
+        if (cell) cell.textContent = formData[k];
+      });
+    } else {
+      setTimeout(() => window.location.reload(), 600);
+    }
+  } catch (err) {
+    showDynamicToast(err.message || 'Failed to update record', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalBtnText;
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+async function confirmDynamicDelete(entity, id, title = 'Record', clickedButton = null) {
+  const modal = document.getElementById('modal-dynamic-delete');
+  const titleEl = document.getElementById('dynamic-delete-title');
+  const blockedBox = document.getElementById('dynamic-delete-blocked');
+  const blockedMsg = document.getElementById('dynamic-delete-blocked-msg');
+  const deleteBtn = document.getElementById('btn-execute-delete');
+
+  if (!modal) return;
+
+  currentDeleteTarget = {
+    entity,
+    id,
+    rowElement: clickedButton ? clickedButton.closest('tr') : (document.querySelector(`tr[data-id="${id}"], tr[data-record-id="${id}"]`))
+  };
+
+  titleEl.textContent = `"${title}"`;
+  blockedBox.classList.add('hidden');
+  deleteBtn.disabled = false;
+  deleteBtn.classList.remove('opacity-50', 'pointer-events-none');
+  modal.classList.remove('hidden');
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}/precheck-delete`);
+    const json = await res.json();
+    if (!json.can_delete) {
+      blockedMsg.textContent = json.reason;
+      blockedBox.classList.remove('hidden');
+      deleteBtn.disabled = true;
+      deleteBtn.classList.add('opacity-50', 'pointer-events-none');
+    }
+  } catch (err) {
+    console.warn('Dependency pre-check warning:', err);
+  }
+}
+
+function closeDynamicDeleteModal() {
+  const modal = document.getElementById('modal-dynamic-delete');
+  if (modal) modal.classList.add('hidden');
+  currentDeleteTarget = { entity: null, id: null, rowElement: null };
+}
+
+async function executeDynamicDelete() {
+  if (!currentDeleteTarget.entity || !currentDeleteTarget.id) return;
+
+  const { entity, id, rowElement } = currentDeleteTarget;
+  const deleteBtn = document.getElementById('btn-execute-delete');
+  const origHtml = deleteBtn.innerHTML;
+
+  deleteBtn.disabled = true;
+  deleteBtn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Deleting...</span>`;
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}/delete`, {
+      method: 'POST'
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) throw new Error(json.detail || json.error || 'Deletion failed');
+
+    showDynamicToast(json.message || 'Record successfully deleted.', 'success');
+    closeDynamicDeleteModal();
+
+    // Smooth row fade-out and collapse animation
+    if (rowElement) {
+      rowElement.style.transition = 'all 0.35s ease';
+      rowElement.style.opacity = '0';
+      rowElement.style.transform = 'scale(0.95)';
+      setTimeout(() => rowElement.remove(), 350);
+    } else {
+      setTimeout(() => window.location.reload(), 600);
+    }
+  } catch (err) {
+    showDynamicToast(err.message || 'Failed to delete record', 'error');
+  } finally {
+    deleteBtn.disabled = false;
+    deleteBtn.innerHTML = origHtml;
+    if (window.lucide) window.lucide.createIcons();
+  }
+}

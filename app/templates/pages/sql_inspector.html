@@ -27,15 +27,15 @@
     <!-- Quick Stats -->
     <div class="grid grid-cols-3 gap-3">
       <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
-        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Roundtrip Latency</p>
+        <p class="text-[11px] font-semibold text-slate-400 tracking-tight">Roundtrip Latency</p>
         <p class="text-lg font-bold text-emerald-400 mt-0.5 font-mono">{{ db_overview.latency_ms }} ms</p>
       </div>
       <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
-        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Active Sessions</p>
+        <p class="text-[11px] font-semibold text-slate-400 tracking-tight">Active Sessions</p>
         <p class="text-lg font-bold text-blue-400 mt-0.5 font-mono">{{ db_overview.active_sessions }}</p>
       </div>
       <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
-        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Engine Edition</p>
+        <p class="text-[11px] font-semibold text-slate-400 tracking-tight">Engine Edition</p>
         <p class="text-xs font-bold text-slate-200 mt-1.5">Dev (64-bit)</p>
       </div>
     </div>
@@ -54,7 +54,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-white/10 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+          <tr class="border-b border-white/10 text-slate-400 font-semibold font-semibold text-xs">
             <th class="py-2.5 px-3">Table Name</th>
             <th class="py-2.5 px-3">Schema</th>
             <th class="py-2.5 px-3 text-right">Row Count</th>
@@ -110,7 +110,7 @@
     </div>
 
     <div class="flex items-center justify-between">
-      <p class="text-[11px] text-slate-400">Direct query execution against Microsoft SQL Server 2025 at 192.168.1.82</p>
+      
       <button 
         onclick="runQuery()" 
         class="px-5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-500/20 flex items-center gap-2 transition"

@@ -1,0 +1,1153 @@
+{% if module.route_slug in ['fixed-assets', 'fixed-asset-management'] %}
+
+  <!-- =========================================================================
+       SUITE 1: MASTER SETUP SUITE (5 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 1.1 Asset Groups & Classes -->
+  {% if current_tab == 'fa-groups' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-blue-500"></i>
+            <span>Asset Groups &amp; Classification Classes</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Asset classification hierarchy with default useful life, depreciation rates, and asset type</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Group Code</th>
+              <th class="py-2.5 px-3">Group Description</th>
+              <th class="py-2.5 px-3">Asset Classification</th>
+              <th class="py-2.5 px-3 text-center">Depreciating</th>
+              <th class="py-2.5 px-3 text-center">Useful Life</th>
+              <th class="py-2.5 px-3 text-right">Depr Rate</th>
+              <th class="py-2.5 px-3 text-center">Active Assets</th>
+              <th class="py-2.5 px-3 text-right">Total Gross Cost</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for g in fa_groups %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ g.group_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ g.group_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ g.asset_type }}</span></td>
+                <td class="py-3 px-3 text-center">
+                  {% if g.is_depreciating %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">YES (DEPRECIATING)</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">NON-DEPRECIATING</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ g.default_useful_life_years }} Years</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ "{:,.2f}".format(g.default_depr_rate) }}%</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ g.active_asset_count }} Units</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(g.total_gross_cost) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_categories', '{{ g.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_categories', '{{ g.id }}', '{{ g.name or g.title or g.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.2 Physical Locations Master -->
+  {% elif current_tab == 'fa-locations' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="building-2" class="w-4 h-4 text-emerald-500"></i>
+            <span>Primary Physical Locations Master</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Manufacturing plants, logistics yards, and regional corporate facilities</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Location Code</th>
+              <th class="py-2.5 px-3">Location Name</th>
+              <th class="py-2.5 px-3">Facility Type</th>
+              <th class="py-2.5 px-3">Physical Address</th>
+              <th class="py-2.5 px-3">Facility Manager</th>
+              <th class="py-2.5 px-3 text-center">Sub-Locations</th>
+              <th class="py-2.5 px-3 text-center">Deployed Assets</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for l in fa_locations %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ l.location_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ l.location_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ l.location_type }}</span></td>
+                <td class="py-3 px-3 text-slate-500">{{ l.address }}</td>
+                <td class="py-3 px-3 font-medium">{{ l.manager_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-purple-500">{{ l.sub_location_count }} Bays</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ l.deployed_asset_count }} Assets</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ l.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ l.id }}', '{{ l.name or l.title or l.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.3 Sub-Locations & Machine Bays -->
+  {% elif current_tab == 'fa-sub-locations' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="grid" class="w-4 h-4 text-purple-500"></i>
+            <span>Sub-Locations &amp; Machine Bays Hierarchy</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">2D micro-location hierarchy: CNC bays, cleanroom server clusters, and plant floor sections</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Sub-Location Code</th>
+              <th class="py-2.5 px-3">Sub-Location Description</th>
+              <th class="py-2.5 px-3">Floor / Bay Details</th>
+              <th class="py-2.5 px-3">Parent Facility</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for s in fa_sub_locations %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ s.sub_location_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ s.sub_location_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ s.floor_or_bay }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ s.location_name }} ({{ s.location_code }})</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ s.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ s.id }}', '{{ s.name or s.title or s.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.4 Depreciation Policies -->
+  {% elif current_tab == 'fa-policies' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="percent" class="w-4 h-4 text-amber-500"></i>
+            <span>Depreciation Policies &amp; Method Rules</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Straight-Line Method (SLM), Written Down Value (WDV), useful life years, and salvage value %</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Policy Code</th>
+              <th class="py-2.5 px-3">Policy Name</th>
+              <th class="py-2.5 px-3">Depreciation Method</th>
+              <th class="py-2.5 px-3 text-center">Useful Life</th>
+              <th class="py-2.5 px-3 text-right">Salvage Value %</th>
+              <th class="py-2.5 px-3 text-right">Annual Rate %</th>
+              <th class="py-2.5 px-3 text-center">Applied Assets</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for p in fa_policies %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ p.policy_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ p.policy_name }}</td>
+                <td class="py-3 px-3">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if p.method == 'STRAIGHT_LINE' %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20{% elif p.method == 'REDUCING_BALANCE_WDV' %}bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20{% else %}bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20{% endif %}">
+                    {{ p.method }}
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ p.useful_life_years }} Years</td>
+                <td class="py-3 px-3 text-right font-mono">{{ "{:,.2f}".format(p.salvage_value_pct) }}%</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ "{:,.2f}".format(p.depr_rate) }}%</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ p.applied_asset_count }} Units</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ p.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ p.id }}', '{{ p.name or p.title or p.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.5 GL Control Account Sets -->
+  {% elif current_tab == 'fa-gl-control' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="landmark" class="w-4 h-4 text-indigo-500"></i>
+            <span>GL Asset Control Account Sets</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automated integration matrix mapping Asset Cost, Accumulated Depreciation, and Expense GL accounts</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Asset Group</th>
+              <th class="py-2.5 px-3">Asset Cost Account</th>
+              <th class="py-2.5 px-3">Accumulated Depr Account</th>
+              <th class="py-2.5 px-3">Depr Expense Account</th>
+              <th class="py-2.5 px-3">Disposal Gain/Loss Account</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for c in fa_gl_control %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ c.group_name }} ({{ c.group_code }})</td>
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ c.gl_cost_account }}</td>
+                <td class="py-3 px-3 font-mono text-purple-600 dark:text-purple-400">{{ c.gl_acc_depr_account }}</td>
+                <td class="py-3 px-3 font-mono text-amber-600 dark:text-amber-400">{{ c.gl_depr_expense_account }}</td>
+                <td class="py-3 px-3 font-mono text-rose-600 dark:text-rose-400">{{ c.gl_gain_loss_account }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ c.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ c.id }}', '{{ c.name or c.title or c.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 2: ASSET REGISTER & LIFECYCLE SUITE (6 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 2.1 Master Asset Register -->
+  {% elif current_tab == 'fa-assets' or current_tab is none %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i>
+            <span>Master Fixed Assets Register</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Capital assets registry with barcode tags, serials, capitalization costs, and custodians</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Asset Tag #</th>
+              <th class="py-2.5 px-3">Asset Description &amp; Manufacturer</th>
+              <th class="py-2.5 px-3">Category Group</th>
+              <th class="py-2.5 px-3">Location &amp; Bay</th>
+              <th class="py-2.5 px-3 text-right">Capital Cost</th>
+              <th class="py-2.5 px-3 text-right">Accumulated Depr</th>
+              <th class="py-2.5 px-3 text-right">Net Book Value</th>
+              <th class="py-2.5 px-3">Custodian</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Action</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for a in fa_assets %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ a.asset_tag }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ a.asset_name }}</span>
+                  <p class="text-[10px] text-slate-500">{{ a.manufacturer }} - {{ a.model_number }} | S/N: {{ a.serial_number }}</p>
+                </td>
+                <td class="py-3 px-3 text-slate-500">{{ a.group_name }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-medium text-slate-900 dark:text-white">{{ a.location_name }}</span>
+                  <p class="text-[10px] text-slate-500">{{ a.sub_location_name|default('-') }}</p>
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(a.purchase_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(a.accumulated_depreciation) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(a.net_book_value) }}</td>
+                <td class="py-3 px-3 font-medium">{{ a.custodian_name }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ a.status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/fixed-assets/print/tag/{{ a.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 rounded transition">
+                    <i data-lucide="scan" class="w-3 h-3"></i>
+                    <span>Tag Label</span>
+                  </a>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.2 Capital Asset Receipts (Asset GRN) -->
+  {% elif current_tab == 'fa-grn' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="inbox" class="w-4 h-4 text-emerald-500"></i>
+            <span>Capital Asset Receiving Notes (Asset GRN)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">PO-linked Capex receiving with technical QA inspection and automatic GL capitalization</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Asset GRN #</th>
+              <th class="py-2.5 px-3">Capex PO Ref</th>
+              <th class="py-2.5 px-3">Supplier / OEM</th>
+              <th class="py-2.5 px-3">Destination Plant</th>
+              <th class="py-2.5 px-3">GRN Date</th>
+              <th class="py-2.5 px-3 text-right">Capital Value</th>
+              <th class="py-2.5 px-3 text-center">QC Status</th>
+              <th class="py-2.5 px-3 text-center">GL Status</th>
+              <th class="py-2.5 px-3 text-center">Print Certificate</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for g in fa_grn_list %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ g.grn_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ g.po_ref }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ g.supplier_name }}</td>
+                <td class="py-3 px-3">{{ g.location_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ g.grn_date }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(g.total_cost) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ g.qc_status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">{{ g.gl_journal_ref }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/fixed-assets/print/grn/{{ g.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 rounded transition">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Print GRN</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ g.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ g.id }}', '{{ g.name or g.title or g.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.3 Leased & Non-Capitalized Assets -->
+  {% elif current_tab == 'fa-leased' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="clock-4" class="w-4 h-4 text-amber-500"></i>
+            <span>Leased &amp; Low-Value Expensed Assets</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Operating and finance lease schedules, right-of-use asset amortizations, and expensed low-value tooling</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Asset Tag #</th>
+              <th class="py-2.5 px-3">Description</th>
+              <th class="py-2.5 px-3">Lease / Class Type</th>
+              <th class="py-2.5 px-3">Lessor / Supplier</th>
+              <th class="py-2.5 px-3 text-right">Contract Value</th>
+              <th class="py-2.5 px-3">Expiry Date</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for a in fa_assets %}
+              {% if a.is_leased or not a.is_depreciating %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                  <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ a.asset_tag }}</td>
+                  <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ a.asset_name }}</td>
+                  <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ a.asset_type }}</span></td>
+                  <td class="py-3 px-3 text-slate-500">{{ a.supplier_name }}</td>
+                  <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(a.purchase_cost) }}</td>
+                  <td class="py-3 px-3 font-mono text-slate-500">{{ a.warranty_expiry }}</td>
+                  <td class="py-3 px-3 text-center">
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ a.status }}</span>
+                  </td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.4 Asset Transfers Log -->
+  {% elif current_tab == 'fa-transfers' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="repeat" class="w-4 h-4 text-purple-500"></i>
+            <span>Asset Inter-Plant &amp; Custodian Transfers Log</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Historical physical relocations and custodian accountability handovers</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Transfer #</th>
+              <th class="py-2.5 px-3">Asset Tag &amp; Name</th>
+              <th class="py-2.5 px-3">Origin Location</th>
+              <th class="py-2.5 px-3">Destination Facility</th>
+              <th class="py-2.5 px-3">Custodian Handover</th>
+              <th class="py-2.5 px-3">Transfer Date</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Print Note</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for t in fa_transfers_list %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ t.transfer_number }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ t.asset_tag }}</span>
+                  <p class="text-[10px] text-slate-500">{{ t.asset_name }}</p>
+                </td>
+                <td class="py-3 px-3">{{ t.from_location_name }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ t.to_location_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ t.from_custodian }} &rarr; <span class="font-bold text-slate-900 dark:text-white">{{ t.to_custodian }}</span></td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ t.transfer_date }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ t.status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/fixed-assets/print/transfer/{{ t.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 rounded transition">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Transfer Slip</span>
+                  </a>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ t.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ t.id }}', '{{ t.name or t.title or t.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.5 Disposals & Write-offs -->
+  {% elif current_tab == 'fa-disposals' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
+            <span>Asset Disposals, Scrapping &amp; Write-Offs</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Asset retirement, auction sale, and salvage write-offs with automatic GL Gain/Loss calculation</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Disposal #</th>
+              <th class="py-2.5 px-3">Asset Tag &amp; Name</th>
+              <th class="py-2.5 px-3">Type</th>
+              <th class="py-2.5 px-3 text-right">Original Cost</th>
+              <th class="py-2.5 px-3 text-right">Acc Depr</th>
+              <th class="py-2.5 px-3 text-right">Book Value (NBV)</th>
+              <th class="py-2.5 px-3 text-right">Sale Proceeds</th>
+              <th class="py-2.5 px-3 text-right">Gain / (Loss)</th>
+              <th class="py-2.5 px-3 text-center">Print Certificate</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for d in fa_disposals_list %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ d.disposal_number }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ d.asset_tag }}</span>
+                  <p class="text-[10px] text-slate-500">{{ d.asset_name }}</p>
+                </td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ d.disposal_type }}</span></td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(d.original_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(d.acc_depr_at_disposal) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(d.net_book_value) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(d.disposal_proceeds) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold {% if d.gain_loss_amount >= 0 %}text-emerald-600 dark:text-emerald-400{% else %}text-rose-600 dark:text-rose-400{% endif %}">
+                  {% if d.gain_loss_amount >= 0 %}+${{ "{:,.2f}".format(d.gain_loss_amount) }}{% else %}(${{ "{:,.2f}".format(d.gain_loss_amount|abs) }}){% endif %}
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/fixed-assets/print/disposal/{{ d.id }}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded transition">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Disposal Slip</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ d.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ d.id }}', '{{ d.name or d.title or d.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.6 Machine-Spares Mapping -->
+  {% elif current_tab == 'fa-spares' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="cpu" class="w-4 h-4 text-cyan-500"></i>
+            <span>Machine-Spares Maintenance Mapping</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cross-module integration linking inventory spare parts catalog to parent capital production machinery</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Machine Asset Tag</th>
+              <th class="py-2.5 px-3">Capital Machine Description</th>
+              <th class="py-2.5 px-3">Associated Spare Part</th>
+              <th class="py-2.5 px-3">Warehouse Location</th>
+              <th class="py-2.5 px-3 text-right">Spare Unit Cost</th>
+              <th class="py-2.5 px-3 text-right">Stock On-Hand</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for s in fa_spares_list %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ s.asset_tag }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ s.asset_name }}</td>
+                <td class="py-3 px-3">
+                  {% if s.spare_part_code %}
+                    <span class="font-bold text-slate-900 dark:text-white">{{ s.spare_part_code }}</span>
+                    <p class="text-[10px] text-slate-500">{{ s.spare_part_name }}</p>
+                  {% else %}
+                    <span class="text-slate-400">Standard OEM Maintenance Kit</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ s.location_name }}</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(s.spare_cost|default(450.0, true)) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(s.spare_stock_on_hand|default(12, true)) }} {{ s.uom_code|default('SET', true) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ s.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ s.id }}', '{{ s.name or s.title or s.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 3: DEPRECIATION ENGINE & GL AUTOMATION (3 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 3.1 Depreciation Execution Runs -->
+  {% elif current_tab == 'fa-depr-runs' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="history" class="w-4 h-4 text-purple-500"></i>
+            <span>Depreciation Execution Runs History</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Audited historical monthly and fiscal period depreciation execution batches</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Run Batch #</th>
+              <th class="py-2.5 px-3">Accounting Period</th>
+              <th class="py-2.5 px-3">Execution Date</th>
+              <th class="py-2.5 px-3 text-center">Assets Processed</th>
+              <th class="py-2.5 px-3 text-right">Total Depreciation Posted</th>
+              <th class="py-2.5 px-3 text-center">GL Journal Ref</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for r in fa_depr_runs %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ r.run_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ r.period_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ r.run_date }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ r.total_assets_processed }} Units</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(r.total_depreciation_amount) }}</td>
+                <td class="py-3 px-3 text-center font-mono text-emerald-600 dark:text-emerald-400">{{ r.gl_journal_ref }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ r.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_depreciation_runs', '{{ r.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_depreciation_runs', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.2 Depreciation Live Simulator -->
+  {% elif current_tab == 'fa-depr-simulation' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="play-circle" class="w-4 h-4 text-emerald-500"></i>
+            <span>Automated Depreciation Live Simulator (SLM &amp; WDV)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Live period depreciation calculations across active capital equipment ready for 1-click GL batch posting</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Simulated Monthly Depreciation</span>
+          <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(fa_depr_sim.total_monthly_depr) }}</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Annualized Depreciation Run</span>
+          <p class="text-2xl font-bold font-mono text-slate-900 dark:text-white">${{ "{:,.2f}".format(fa_depr_sim.total_annual_depr) }}</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Eligible Capital Machinery</span>
+          <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ fa_depr_sim.eligible_assets_count }} Active Units</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Asset Tag #</th>
+              <th class="py-2.5 px-3">Asset Name</th>
+              <th class="py-2.5 px-3">Depr Method</th>
+              <th class="py-2.5 px-3 text-right">Original Cost</th>
+              <th class="py-2.5 px-3 text-right">Current NBV</th>
+              <th class="py-2.5 px-3 text-right">Monthly Depr Amount</th>
+              <th class="py-2.5 px-3 text-right">Projected NBV</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for l in fa_depr_sim.lines %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ l.asset_tag }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ l.asset_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ l.method }}</span></td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(l.cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(l.current_nbv) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(l.monthly_depr) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(l.projected_nbv) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.3 Digital e-Approvals Hub -->
+  {% elif current_tab == 'fa-approvals' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-indigo-500"></i>
+            <span>Fixed Assets Digital e-Approvals Hub</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Multi-tier audit sign-off for Asset GRNs, Capex Capitalization vouchers, and Scrapping approvals</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Entity Type</th>
+              <th class="py-2.5 px-3">Tier Level</th>
+              <th class="py-2.5 px-3">Approver Name &amp; Role</th>
+              <th class="py-2.5 px-3">Technical Remarks &amp; Audit Comments</th>
+              <th class="py-2.5 px-3">Action Date</th>
+              <th class="py-2.5 px-3 text-center">Decision</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for a in fa_approvals %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ a.entity_type }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">Tier {{ a.tier_level }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ a.approver_name }}</span>
+                  <p class="text-[10px] text-slate-500">{{ a.approver_role }}</p>
+                </td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ a.comments }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ a.action_date }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ a.action }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 4: PHYSICAL VERIFICATION & BARCODE STUDIO (2 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 4.1 Physical Verification Audits -->
+  {% elif current_tab == 'fa-audits' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-500"></i>
+            <span>Physical Asset Verification Audits</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Field barcode verification reconciliations: Found vs Missing vs Relocated vs Damaged assets</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Audit Batch #</th>
+              <th class="py-2.5 px-3">Audited Facility</th>
+              <th class="py-2.5 px-3">Lead Auditor</th>
+              <th class="py-2.5 px-3">Audit Date</th>
+              <th class="py-2.5 px-3 text-center">Total Tagged</th>
+              <th class="py-2.5 px-3 text-center">Verified Found</th>
+              <th class="py-2.5 px-3 text-center">Missing Variance</th>
+              <th class="py-2.5 px-3 text-center">Audit Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for a in fa_audits %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ a.audit_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ a.location_name }}</td>
+                <td class="py-3 px-3">{{ a.auditor_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ a.audit_date }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ a.total_audited }} Units</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ a.found_count }} Units</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-slate-400">{{ a.missing_count }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ a.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.2 Barcode & Tag Scanner Studio -->
+  {% elif current_tab == 'fa-scanner' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="scan" class="w-4 h-4 text-amber-500"></i>
+            <span>Barcode &amp; Serial Asset Tag Scanner</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Instant asset discovery via Barcode, QR Code, or Serial Number tag</p>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-4">
+        <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Scan or Enter Asset Barcode / Tag #</label>
+        <div class="flex gap-3">
+          <input type="text" placeholder="e.g. BC-AST-APX-001 or AST-APX-CNC-001" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-900 text-sm font-mono focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+          <button class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs rounded-xl flex items-center gap-2 transition">
+            <i data-lucide="scan" class="w-4 h-4"></i>
+            <span>Scan Asset</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for a in fa_assets %}
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-white/5 hover:border-amber-500/30 transition bg-white/50 dark:bg-slate-900/50 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-mono font-bold text-blue-600 dark:text-blue-400 text-xs">{{ a.asset_tag }}</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">{{ a.status }}</span>
+            </div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">{{ a.asset_name }}</h4>
+            <div class="text-[11px] text-slate-500 space-y-0.5">
+              <p>Location: <span class="text-slate-900 dark:text-white font-medium">{{ a.location_name }}</span></p>
+              <p>Custodian: <span class="text-slate-900 dark:text-white font-medium">{{ a.custodian_name }}</span></p>
+              <p>Net Book Value: <span class="text-emerald-600 dark:text-emerald-400 font-mono font-bold">${{ "{:,.2f}".format(a.net_book_value) }}</span></p>
+            </div>
+            <div class="pt-2 border-t border-slate-200 dark:border-white/5 flex justify-end">
+              <a href="/modules/fixed-assets/print/tag/{{ a.id }}" target="_blank" class="text-xs text-amber-600 dark:text-amber-400 font-bold hover:underline flex items-center gap-1">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span>Print Asset Tag</span>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+
+  <!-- =========================================================================
+       SUITE 5: STATUTORY ASSET SCHEDULES & REPORTING (4 SUB-AREAS)
+       ========================================================================= -->
+  <!-- 5.1 Executive Summary of Fixed Assets -->
+  {% elif current_tab == 'fa-summary' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-blue-500"></i>
+            <span>Executive Summary of Fixed Assets</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Corporate KPI dashboard showing total capital investments, cumulative depreciation, and net carrying value</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Gross Block (Total Capital Cost)</span>
+          <p class="text-2xl font-bold font-mono text-slate-900 dark:text-white">${{ "{:,.2f}".format(fa_summary.total_gross_block|default(0.0, true)) }}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Accumulated Depreciation</span>
+          <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(fa_summary.total_accumulated_depr|default(0.0, true)) }}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Net Book Value (Carrying Asset Base)</span>
+          <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(fa_summary.total_net_book_value|default(0.0, true)) }}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Operating Units</span>
+          <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ fa_summary.total_assets|default(0, true) }} Assets</p>
+        </div>
+      </div>
+    </div>
+
+  <!-- 5.2 Statutory Asset Schedule (IAS 16 / IFRS) -->
+  {% elif current_tab == 'fa-statutory-schedule' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="table" class="w-4 h-4 text-emerald-500"></i>
+            <span>Statutory Fixed Asset Depreciation Schedule (IAS 16 / IFRS)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Official statutory matrix showing Gross Block, Period Additions/Disposals, Depreciation Block, and Closing Net Block</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Asset Category</th>
+              <th class="py-2.5 px-3 text-right">Opening Gross Cost</th>
+              <th class="py-2.5 px-3 text-right">Additions</th>
+              <th class="py-2.5 px-3 text-right">Closing Gross Cost</th>
+              <th class="py-2.5 px-3 text-right">Period Depr</th>
+              <th class="py-2.5 px-3 text-right">Closing Acc Depr</th>
+              <th class="py-2.5 px-3 text-right">Closing Net Book Value</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for s in fa_statutory_sched %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ s.group_name }} ({{ s.group_code }})</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(s.opening_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(s.additions_for_period) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(s.closing_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(s.depr_for_period) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(s.closing_acc_depr) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(s.closing_nbv) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ s.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ s.id }}', '{{ s.name or s.title or s.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.3 Asset Movement Audit Statement -->
+  {% elif current_tab == 'fa-movement-report' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="navigation" class="w-4 h-4 text-cyan-500"></i>
+            <span>Asset Movement &amp; Relocation Audit Statement</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Full chronological audit log of inter-plant movements, department reallocations, and custodian handovers</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Transfer Ref #</th>
+              <th class="py-2.5 px-3">Transfer Date</th>
+              <th class="py-2.5 px-3">Asset Tag &amp; Description</th>
+              <th class="py-2.5 px-3">Origin Facility</th>
+              <th class="py-2.5 px-3">Destination Facility</th>
+              <th class="py-2.5 px-3">Handover Custodian</th>
+              <th class="py-2.5 px-3">Reason</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for m in fa_movement_log %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ m.transfer_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ m.transfer_date }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ m.asset_tag }}</span>
+                  <p class="text-[10px] text-slate-500">{{ m.asset_name }}</p>
+                </td>
+                <td class="py-3 px-3">{{ m.origin_facility }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ m.destination_facility }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ m.from_custodian }} &rarr; <span class="font-bold text-slate-900 dark:text-white">{{ m.to_custodian }}</span></td>
+                <td class="py-3 px-3 text-slate-500">{{ m.reason }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ m.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('fa_assets', '{{ m.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('fa_assets', '{{ m.id }}', '{{ m.name or m.title or m.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.4 Fixed Asset Print Studio -->
+  {% elif current_tab == 'fa-print-studio' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-rose-500"></i>
+            <span>Fixed Assets Official Document Print Studio</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Generate and print standardized corporate letterhead documents for Capital Inwarding, Transfers, and Disposals</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <i data-lucide="inbox" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Capital Asset GRN Certificate</h4>
+          <p class="text-xs text-slate-500">Official capital equipment receiving note with QA laser alignment engineering acceptance</p>
+          {% if fa_grn_list %}
+            <a href="/modules/fixed-assets/print/grn/{{ fa_grn_list[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print Sample GRN</span>
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+            <i data-lucide="repeat" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Inter-Plant Transfer Note</h4>
+          <p class="text-xs text-slate-500">Official relocation slip for capital machinery transfer between plants and custodian handover</p>
+          {% if fa_transfers_list %}
+            <a href="/modules/fixed-assets/print/transfer/{{ fa_transfers_list[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print Transfer Slip</span>
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+            <i data-lucide="trash-2" class="w-5 h-5"></i>
+          </div>
+          <h4 class="font-bold text-sm text-slate-900 dark:text-white">Disposal &amp; Scrapping Slip</h4>
+          <p class="text-xs text-slate-500">Capital asset retirement and auction sale document with Net Book Value vs Proceeds gain/loss</p>
+          {% if fa_disposals_list %}
+            <a href="/modules/fixed-assets/print/disposal/{{ fa_disposals_list[0].id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Print Disposal Slip</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+{% endif %}

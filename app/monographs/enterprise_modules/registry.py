@@ -8,11 +8,11 @@ from app.core.db import db
 
 # Color mapping per suite
 SUITE_THEMES = {
-    1: {"color": "blue", "icon": "settings-2", "title": "1. Master Setup Suite"},
-    2: {"color": "emerald", "icon": "arrow-left-right", "title": "2. Transaction Processing & Automation Suite"},
-    3: {"color": "purple", "icon": "check-check", "title": "3. Process, Batch & Closing Suite"},
-    4: {"color": "amber", "icon": "bar-chart-2", "title": "4. Financial & Operational Analysis Suite"},
-    5: {"color": "rose", "icon": "file-pie-chart", "title": "5. Reporting & Statements Suite"},
+    1: {"color": "blue", "icon": "settings-2", "title": "Master Setup Suite"},
+    2: {"color": "emerald", "icon": "arrow-left-right", "title": "Transaction Processing & Automation Suite"},
+    3: {"color": "purple", "icon": "check-check", "title": "Process, Batch & Closing Suite"},
+    4: {"color": "amber", "icon": "bar-chart-2", "title": "Financial & Operational Analysis Suite"},
+    5: {"color": "rose", "icon": "file-pie-chart", "title": "Reporting & Statements Suite"},
 }
 
 def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
@@ -27,7 +27,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Chart of Accounts, Mappings & Cost Dimensions",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -43,7 +43,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing & Automation Suite",
+                "title": "Transaction Processing & Automation Suite",
                 "subtitle": "Double-Entry Journals, Recurring Engines & Vouchers",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -61,7 +61,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Financial Process & Closing Suite",
+                "title": "Financial Process & Closing Suite",
                 "subtitle": "Bulk Staging, Ledger Commitment & Data Diagnostics",
                 "icon": "check-check",
                 "theme_color": "purple",
@@ -73,7 +73,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Financial Analysis & Cost Control Suite",
+                "title": "Financial Analysis & Cost Control Suite",
                 "subtitle": "Departmental Spending & Real-Time Account Inquiry",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -85,7 +85,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. Financial Reporting & Statements Suite",
+                "title": "Financial Reporting & Statements Suite",
                 "subtitle": "Balance Sheet, Income Statement, Trial Balance & Cost Centre P&L",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -105,7 +105,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Customer Profiles, Credit Limits & Group Classifications",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -125,7 +125,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing & Automation Suite",
+                "title": "Transaction Processing & Automation Suite",
                 "subtitle": "Adjustments, Invoices, Debit/Credit Notes & Money Receipts",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -143,7 +143,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Credit Management Process Suite",
+                "title": "Credit Management Process Suite",
                 "subtitle": "Overdue Tracking, Dunning Escalation & Reminder Generation",
                 "icon": "shield-alert",
                 "theme_color": "purple",
@@ -154,7 +154,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Financial & Operational Analysis Suite",
+                "title": "Financial & Operational Analysis Suite",
                 "subtitle": "Real-Time Aging Matrix, Credit Limits & Portfolio Utilization",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -165,7 +165,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. Financial Reporting & Statements Suite",
+                "title": "Financial Reporting & Statements Suite",
                 "subtitle": "Statements, Aging Schedules, Real-Time Turnover & Registers",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -186,7 +186,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Cashier Stations, Bank Accounts & Currency Rules",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -201,7 +201,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing Suite",
+                "title": "Transaction Processing Suite",
                 "subtitle": "Receipts, Payments & Contra Transfers",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -215,7 +215,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Treasury Process & Reconciliation",
+                "title": "Treasury Process & Reconciliation",
                 "subtitle": "Bank Reconciliation & Daily Cash Drawer Closings",
                 "icon": "check-check",
                 "theme_color": "purple",
@@ -227,7 +227,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Liquidity & Cash Flow Analysis",
+                "title": "Liquidity & Cash Flow Analysis",
                 "subtitle": "Live Treasury Balances & Cash Velocity",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -239,7 +239,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. Treasury Reporting Suite",
+                "title": "Treasury Reporting Suite",
                 "subtitle": "Daily Cash Sheet, Bank Registers & Cheque Status",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -258,7 +258,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Vendor Master, AP Groups & Payment Terms",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -273,7 +273,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing Suite",
+                "title": "Transaction Processing Suite",
                 "subtitle": "Invoices, Payment Vouchers & Debit/Credit Notes",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -289,7 +289,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Payment Run & AP Process Suite",
+                "title": "Payment Run & AP Process Suite",
                 "subtitle": "Batch Payment Runs & AP Data Diagnostics",
                 "icon": "check-check",
                 "theme_color": "purple",
@@ -301,7 +301,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Payable Aging & Cash Outflow Analysis",
+                "title": "Payable Aging & Cash Outflow Analysis",
                 "subtitle": "DPO Metrics & Projected Cash Requirements",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -313,7 +313,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. AP Reporting & 1099 Disclosures",
+                "title": "AP Reporting & 1099 Disclosures",
                 "subtitle": "AP Schedule, Vendor Statements & Tax Filings",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -333,7 +333,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
         return [
             {
                 "suite_id": 1,
-                "title": "1. Master Setup Suite",
+                "title": "Master Setup Suite",
                 "subtitle": "Vendor Profiles, Enlistment Tiers, Buyer Governance & Incoterms",
                 "icon": "settings-2",
                 "theme_color": "blue",
@@ -351,7 +351,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 2,
-                "title": "2. Transaction Processing & Automation Suite",
+                "title": "Transaction Processing & Automation Suite",
                 "subtitle": "Multi-Type PR, RFQ Tenders, Dynamic CS Matrix & Purchase Orders",
                 "icon": "arrow-left-right",
                 "theme_color": "emerald",
@@ -366,7 +366,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 3,
-                "title": "3. Process, Batch & e-Approval Suite",
+                "title": "Process, Batch & e-Approval Suite",
                 "subtitle": "Multi-Tier Approval Chains, LC Operations & C&F Dispatch",
                 "icon": "check-check",
                 "theme_color": "purple",
@@ -380,7 +380,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 4,
-                "title": "4. Financial & Operational Analysis Suite",
+                "title": "Financial & Operational Analysis Suite",
                 "subtitle": "LC Exposure, Vendor Scorecards & Spend Analytics",
                 "icon": "bar-chart-2",
                 "theme_color": "amber",
@@ -393,7 +393,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             },
             {
                 "suite_id": 5,
-                "title": "5. Sourcing Reporting & 3-Way Audit Suite",
+                "title": "Sourcing Reporting & 3-Way Audit Suite",
                 "subtitle": "PR-PO-GRN Reconciliation, Purchase Registers & Schedules",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
@@ -406,7 +406,491 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
             }
         ]
 
-    # 6. DEFAULT DYNAMIC SUITE BUILDER FOR ALL OTHER 15 ENTERPRISE MODULES
+
+    # 6. SALES MANAGEMENT MODERN 5-SUITE REGISTRY
+    if slug in ("sales", "sales-management"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Master Setup Suite",
+                "subtitle": "Sales Teams Hierarchy, Pricing Matrices & Discount Limits",
+                "icon": "settings-2",
+                "theme_color": "blue",
+                "count_label": "6 Sub-Areas",
+                "cards": [
+                    {"title": "Sales Teams (MM/ZM/TSM)", "subtitle": "Territory hierarchy & team targets", "badge": str(counts.get("sls_teams_count", 6)), "url": "/modules/sales?tab=sales-teams", "icon": "network", "color": "blue"},
+                    {"title": "Salespersons Master", "subtitle": "Reps, commission rates & monthly quotas", "badge": str(counts.get("sls_reps_count", 5)), "url": "/modules/sales?tab=salespersons", "icon": "users", "color": "indigo"},
+                    {"title": "Sales Areas & Zones", "subtitle": "Territories, distribution centers & depots", "badge": str(counts.get("sls_areas_count", 5)), "url": "/modules/sales?tab=sales-areas", "icon": "map-pin", "color": "cyan"},
+                    {"title": "Price Profiles & Lists", "subtitle": "Base, Wholesale, Retail & OEM contracts", "badge": str(counts.get("sls_profiles_count", 5)), "url": "/modules/sales?tab=price-profiles", "icon": "tag", "color": "emerald"},
+                    {"title": "Product Catalog Prices", "subtitle": "Item pricing, min floor prices & UOMs", "badge": str(counts.get("sls_prices_count", 6)), "url": "/modules/sales?tab=product-prices", "icon": "layers", "color": "amber"},
+                    {"title": "Discount Limit Matrix", "subtitle": "Role-based discount limits & sign-off rules", "badge": "4 Tiers", "url": "/modules/sales?tab=discount-limits", "icon": "sliders", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Transaction Processing & Automation Suite",
+                "subtitle": "Quotes, Proformas, Sales Orders, DOs, Invoices & Returns",
+                "icon": "arrow-left-right",
+                "theme_color": "emerald",
+                "count_label": "6 Operations",
+                "cards": [
+                    {"title": "Sales Quotes & Proformas", "subtitle": "Formal quotations, revisions & 1-click SO conversion", "badge": str(counts.get("sls_quotes_count", 5)), "url": "/modules/sales?tab=quotes", "icon": "file-text", "color": "blue"},
+                    {"title": "Sales Orders (SO)", "subtitle": "Multi-item orders, packing specs & stock reservations", "badge": str(counts.get("sls_orders_count", 6)), "url": "/modules/sales?tab=sales-orders", "icon": "shopping-cart", "color": "emerald"},
+                    {"title": "Delivery Orders (DO)", "subtitle": "Delivery orders, fleet dispatch & gate passes", "badge": str(counts.get("sls_do_count", 2)), "url": "/modules/sales?tab=delivery-orders", "icon": "truck", "color": "cyan"},
+                    {"title": "Sales Invoices", "subtitle": "Commercial tax invoices & export documentation", "badge": str(counts.get("sls_inv_count", 2)), "url": "/modules/sales?tab=invoices", "icon": "receipt", "color": "indigo"},
+                    {"title": "Sales Returns & Credits", "subtitle": "Goods return memos & reverse credit invoices", "badge": str(counts.get("sls_returns_count", 1)), "url": "/modules/sales?tab=returns", "icon": "rotate-ccw", "color": "rose"},
+                    {"title": "Sales Target Budgets", "subtitle": "Annual/Quarterly targets by rep and customer", "badge": str(counts.get("sls_budgets_count", 4)), "url": "/modules/sales?tab=budgets", "icon": "pie-chart", "color": "amber"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Process, e-Approval & DSS Suite",
+                "subtitle": "Document Flow, Multi-Tier e-Approval & Margin Simulator",
+                "icon": "check-check",
+                "theme_color": "purple",
+                "count_label": "4 Operations",
+                "cards": [
+                    {"title": "Document Flow Studio", "subtitle": "Visual lifecycle trace (Quote -> SO -> DO -> Invoice -> GL)", "badge": "Visual Flow", "url": "/modules/sales?tab=document-flow", "icon": "git-merge", "color": "purple"},
+                    {"title": "e-Approval Hub", "subtitle": "Executive validation for credit & discount limit breaches", "badge": "e-Sign Queue", "url": "/modules/sales?tab=e-approvals", "icon": "check-check", "color": "indigo"},
+                    {"title": "DSS Margin Simulator", "subtitle": "Decision Support: Gross profit & floor price checking", "badge": "DSS Engine", "url": "/modules/sales?tab=dss-simulator", "icon": "calculator", "color": "amber"},
+                    {"title": "On-Hold Orders Queue", "subtitle": "Manage orders blocked for credit or stock shortage", "badge": str(counts.get("sls_on_hold_count", 1)) + " On Hold", "url": "/modules/sales?tab=on-hold-orders", "icon": "pause-circle", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "Analytical & Dynamic Pivot Suite",
+                "subtitle": "Sales, Collection & AR Pivots, MM-ZM-TSM Drilldown",
+                "icon": "bar-chart-2",
+                "theme_color": "amber",
+                "count_label": "3 Operations",
+                "cards": [
+                    {"title": "Sales, Collection & AR Pivot", "subtitle": "Monthly & yearly billed vs collected analytics", "badge": "Live Matrix", "url": "/modules/sales?tab=sales-collection-pivot", "icon": "bar-chart-3", "color": "amber"},
+                    {"title": "MM > ZM > TSM Performance", "subtitle": "Hierarchical drilldown by management structure", "badge": "Hierarchy", "url": "/modules/sales?tab=hierarchy-performance", "icon": "trending-up", "color": "emerald"},
+                    {"title": "Target vs Achievement", "subtitle": "Rep-wise budget vs actual billing variance matrix", "badge": "Variance", "url": "/modules/sales?tab=target-achievement", "icon": "target", "color": "blue"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Reporting & Document Print Studio",
+                "subtitle": "DO Pending Reconciliation, Profitability & Formal Printouts",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "4 Sub-Areas",
+                "cards": [
+                    {"title": "DO-GI-Invoice Pending", "subtitle": "Reconciliation audit of uninvoiced delivery orders", "badge": "Reconcile", "url": "/modules/sales?tab=do-invoice-pending", "icon": "clock-4", "color": "rose"},
+                    {"title": "Consolidated Statement", "subtitle": "Multi-company gross turnover & net outstanding", "badge": "Consolidated", "url": "/modules/sales?tab=consolidated-statement", "icon": "file-spreadsheet", "color": "indigo"},
+                    {"title": "Profitability Analysis", "subtitle": "Item-wise gross margins & discount audit", "badge": "Margins", "url": "/modules/sales?tab=profitability-report", "icon": "file-text", "color": "emerald"},
+                    {"title": "Sales Print Studio", "subtitle": "Formal letterhead printouts for Quotes, SO, DO & Invoices", "badge": "Print Hub", "url": "/modules/sales?tab=sales-print-studio", "icon": "printer", "color": "teal"},
+                ]
+            }
+        ]
+
+
+    # 7. INVENTORY MANAGEMENT MODERN 5-SUITE REGISTRY
+    if slug in ("inventory", "inventory-management"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Master Setup Suite",
+                "subtitle": "Warehouses, Bins, Product Groups & Unit of Measure Conversions",
+                "icon": "settings-2",
+                "theme_color": "blue",
+                "count_label": "5 Sub-Areas",
+                "cards": [
+                    {"title": "Warehouses Master", "subtitle": "Storage plants, regional depots & transit hubs", "badge": str(counts.get("inv_wh_count", 6)), "url": "/modules/inventory?tab=warehouses", "icon": "warehouse", "color": "blue"},
+                    {"title": "Multi-Bin Storage", "subtitle": "Aisle, rack, shelf & bin location map", "badge": str(counts.get("inv_bin_count", 5)), "url": "/modules/inventory?tab=bins", "icon": "grid", "color": "indigo"},
+                    {"title": "Product Groups & Classes", "subtitle": "RM, FG, WIP, Spares & Consumables categories", "badge": str(counts.get("inv_group_count", 6)), "url": "/modules/inventory?tab=product-groups", "icon": "folder-tree", "color": "cyan"},
+                    {"title": "UOM & Conversions", "subtitle": "Unit of measures & conversion multipliers", "badge": str(counts.get("inv_uom_count", 6)), "url": "/modules/inventory?tab=uom", "icon": "scale", "color": "emerald"},
+                    {"title": "Master Items Catalog", "subtitle": "Item codes, specifications & reorder points", "badge": str(counts.get("inv_item_count", 4)), "url": "/modules/inventory?tab=items", "icon": "package", "color": "amber"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Transaction Processing & Movement Suite",
+                "subtitle": "GRNs, Issue Challans, STO Transfers, Kitting & Adjustments",
+                "icon": "arrow-left-right",
+                "theme_color": "emerald",
+                "count_label": "5 Operations",
+                "cards": [
+                    {"title": "Goods Receiving Notes (GRN)", "subtitle": "Inward receipts from vendor PO, production & returns", "badge": str(counts.get("inv_grn_count", 1)), "url": "/modules/inventory?tab=grn", "icon": "arrow-down-left", "color": "emerald"},
+                    {"title": "Goods Issue Challans", "subtitle": "Outbound dispatches for DO, WIP, spares & cost centers", "badge": str(counts.get("inv_issue_count", 1)), "url": "/modules/inventory?tab=issues", "icon": "arrow-up-right", "color": "blue"},
+                    {"title": "Stock Transfer Orders (STO)", "subtitle": "Inter-warehouse transfers with in-transit tracking", "badge": str(counts.get("inv_sto_count", 1)), "url": "/modules/inventory?tab=stock-transfers", "icon": "truck", "color": "cyan"},
+                    {"title": "Material Kitting & Assembly", "subtitle": "BOM component conversion & bundle disassembly", "badge": "Assembly", "url": "/modules/inventory?tab=assembly", "icon": "layers", "color": "indigo"},
+                    {"title": "Physical Cycle Adjustments", "subtitle": "Periodic physical count variance (+/-) adjustments", "badge": str(counts.get("inv_adj_count", 1)), "url": "/modules/inventory?tab=adjustments", "icon": "sliders-horizontal", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Process, e-Approval & Closing Suite",
+                "subtitle": "Quality QA Approvals, Wave Picking Lists & Day-End Closing",
+                "icon": "check-check",
+                "theme_color": "purple",
+                "count_label": "3 Operations",
+                "cards": [
+                    {"title": "e-Approval Hub", "subtitle": "QA inspection sign-offs & STO dispatch approvals", "badge": "Approval Queue", "url": "/modules/inventory?tab=e-approvals", "icon": "check-check", "color": "indigo"},
+                    {"title": "Wave Picking Lists", "subtitle": "Automated warehouse pick lists by bin location", "badge": "Pick Lists", "url": "/modules/inventory?tab=picking-lists", "icon": "list-checks", "color": "purple"},
+                    {"title": "Day-End Inventory Closing", "subtitle": "EOD ledger reconciliation & balance snapshots", "badge": "EOD Process", "url": "/modules/inventory?tab=day-end-closing", "icon": "clock-4", "color": "amber"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "Warranty, Serialization & Barcode Suite",
+                "subtitle": "Serial Number Registry, Barcode Scanner & Warranty Inquiry",
+                "icon": "shield-check",
+                "theme_color": "amber",
+                "count_label": "2 Operations",
+                "cards": [
+                    {"title": "Serial & Warranty Registry", "subtitle": "Serialized tracking, warranty terms & AMC contracts", "badge": str(counts.get("inv_warranty_count", 2)), "url": "/modules/inventory?tab=warranties", "icon": "barcode", "color": "amber"},
+                    {"title": "Barcode & Serial Scanner", "subtitle": "Live scanner inquiry for serial & warranty validity", "badge": "Scanner Studio", "url": "/modules/inventory?tab=barcode-inquiry", "icon": "scan", "color": "emerald"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Reporting, Statements & Valuation Analysis Suite",
+                "subtitle": "Product Ledger, Valuation, DO Reconciliation, WIP Costing & Statements",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "10 Report Areas",
+                "cards": [
+                    {"title": "Product Ledger (Stock Card)", "subtitle": "Item-wise running balance statement with inward & outward logs", "badge": "Ledger", "url": "/modules/inventory?tab=product-ledger", "icon": "file-text", "color": "blue"},
+                    {"title": "Inventory Valuation Report", "subtitle": "Group & warehouse valuation breakdown with GL asset parity", "badge": "Valuation", "url": "/modules/inventory?tab=inventory-valuation", "icon": "calculator", "color": "emerald"},
+                    {"title": "DO vs Dispatch Reconciliation", "subtitle": "Delivery order confirmed vs actual dispatch challan variance", "badge": "DO Audit", "url": "/modules/inventory?tab=do-vs-dispatch", "icon": "clock-4", "color": "amber"},
+                    {"title": "WIP Production Costing", "subtitle": "Raw materials and tooling issued to manufacturing job cards", "badge": "WIP Cost", "url": "/modules/inventory?tab=production-costing", "icon": "layers", "color": "purple"},
+                    {"title": "Plant-Wise Consumption", "subtitle": "Multi-plant consumption breakdown and cost center split", "badge": "Plant Audit", "url": "/modules/inventory?tab=plant-consumption", "icon": "building-2", "color": "cyan"},
+                    {"title": "Inter-Warehouse STO Statement", "subtitle": "Plant-to-plant transfer audit with dispatch vs receipt tracking", "badge": "STO Audit", "url": "/modules/inventory?tab=sto-reports", "icon": "truck", "color": "indigo"},
+                    {"title": "Live Stock Balance Matrix", "subtitle": "On-hand, reserved, in-transit & available balances", "badge": "Live Matrix", "url": "/modules/inventory?tab=stock-balances", "icon": "bar-chart-3", "color": "blue"},
+                    {"title": "Goods in Transit (GIT)", "subtitle": "Inter-plant shipments on the road with carrier tracking", "badge": str(counts.get("inv_git_count", 1)) + " In Transit", "url": "/modules/inventory?tab=goods-in-transit", "icon": "navigation", "color": "cyan"},
+                    {"title": "ABC & Reorder Analytics", "subtitle": "Fast vs slow moving stock & safety stock alerts", "badge": "ABC Analysis", "url": "/modules/inventory?tab=abc-analysis", "icon": "pie-chart", "color": "indigo"},
+                    {"title": "Warehouse Print Studio", "subtitle": "Printable letterheads for GRN, Challans, STO & Warranties", "badge": "Print Hub", "url": "/modules/inventory?tab=warehouse-print-studio", "icon": "printer", "color": "rose"},
+                ]
+            }
+        ]
+
+
+
+
+    # =========================================================================
+    # 6. FIXED ASSETS & ASSET ACCOUNTING (5-SUITE ENTERPRISE ARCHITECTURE)
+    # =========================================================================
+    if slug in ("fixed-assets", "fixed-asset-management"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Master Setup Suite",
+                "subtitle": "Asset Groups, Locations, Sub-Locations, Policies & GL Sets",
+                "icon": "settings",
+                "theme_color": "blue",
+                "count_label": "5 Setup Areas",
+                "cards": [
+                    {"title": "Asset Groups & Classes", "subtitle": "Machinery, Buildings, Land, Vehicles, IT & Furniture", "badge": str(counts.get("fa_groups_count", 6)) + " Groups", "url": "/modules/fixed-assets?tab=fa-groups", "icon": "layers", "color": "blue"},
+                    {"title": "Physical Locations", "subtitle": "Primary manufacturing plants, facilities & yards", "badge": str(counts.get("fa_locs_count", 2)) + " Plants", "url": "/modules/fixed-assets?tab=fa-locations", "icon": "building-2", "color": "emerald"},
+                    {"title": "Sub-Locations & Machine Bays", "subtitle": "Production bays, server rooms & executive floors", "badge": "2D Coordinates", "url": "/modules/fixed-assets?tab=fa-sub-locations", "icon": "grid", "color": "purple"},
+                    {"title": "Depreciation Policies", "subtitle": "SLM, WDV, useful life years & salvage value %", "badge": "SLM & WDV", "url": "/modules/fixed-assets?tab=fa-policies", "icon": "percent", "color": "amber"},
+                    {"title": "GL Control Account Sets", "subtitle": "Direct GL mapping for Cost, Acc Depr, Expense & Gain/Loss", "badge": "GL Mapped", "url": "/modules/fixed-assets?tab=fa-gl-control", "icon": "landmark", "color": "indigo"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Asset Register & Lifecycle Suite",
+                "subtitle": "Capitalization, GRN Inwarding, Transfers, Disposals & Spares",
+                "icon": "box",
+                "theme_color": "emerald",
+                "count_label": "6 Operational Areas",
+                "cards": [
+                    {"title": "Master Asset Register", "subtitle": "Capital asset registry with barcode tags, serials & costs", "badge": str(counts.get("fa_assets_count", 4)) + " Active Assets", "url": "/modules/fixed-assets?tab=fa-assets", "icon": "file-text", "color": "blue"},
+                    {"title": "Capital Asset Receipts (Asset GRN)", "subtitle": "PO-linked Capex inwarding with QA laser alignment sign-off", "badge": "Inwarding", "url": "/modules/fixed-assets?tab=fa-grn", "icon": "inbox", "color": "emerald"},
+                    {"title": "Leased & Low-Value Assets", "subtitle": "Operating/Finance lease tracking and expensed tooling", "badge": "Leased/Expensed", "url": "/modules/fixed-assets?tab=fa-leased", "icon": "clock-4", "color": "amber"},
+                    {"title": "Asset Transfers Log", "subtitle": "Inter-departmental, inter-plant & custodian reallocations", "badge": "Transfers", "url": "/modules/fixed-assets?tab=fa-transfers", "icon": "repeat", "color": "purple"},
+                    {"title": "Disposals & Write-Offs", "subtitle": "Asset retirement, scrapping & sale with automated gain/loss", "badge": "Disposals", "url": "/modules/fixed-assets?tab=fa-disposals", "icon": "trash-2", "color": "rose"},
+                    {"title": "Machine-Spares Mapping", "subtitle": "Linking inventory spare parts to parent capital machines", "badge": "Spares Map", "url": "/modules/fixed-assets?tab=fa-spares", "icon": "cpu", "color": "cyan"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Depreciation Engine & GL Automation Suite",
+                "subtitle": "Depreciation Runs, Live Simulator, e-Approvals & GL Postings",
+                "icon": "calculator",
+                "theme_color": "purple",
+                "count_label": "3 Process Areas",
+                "cards": [
+                    {"title": "Depreciation Execution Runs", "subtitle": "Monthly & annual automated depreciation posting history", "badge": "Depr Runs", "url": "/modules/fixed-assets?tab=fa-depr-runs", "icon": "history", "color": "purple"},
+                    {"title": "Depreciation Live Simulator", "subtitle": "1-Click period depreciation calculation engine (SLM & WDV)", "badge": "Simulator", "url": "/modules/fixed-assets?tab=fa-depr-simulation", "icon": "play-circle", "color": "emerald"},
+                    {"title": "Digital e-Approvals Hub", "subtitle": "Multi-tier engineering QA and CFO Capex authorization", "badge": "e-Approvals", "url": "/modules/fixed-assets?tab=fa-approvals", "icon": "shield-check", "color": "indigo"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "Physical Verification & Barcode Studio Suite",
+                "subtitle": "Field Barcode Audits, Scanner Inquiry & Tag Generator",
+                "icon": "qr-code",
+                "theme_color": "amber",
+                "count_label": "2 Audit Areas",
+                "cards": [
+                    {"title": "Physical Verification Audits", "subtitle": "Field audit checklists reconciling Found vs Missing assets", "badge": "Audits", "url": "/modules/fixed-assets?tab=fa-audits", "icon": "check-circle-2", "color": "emerald"},
+                    {"title": "Barcode & Tag Scanner Studio", "subtitle": "Live barcode / serial lookup and printable asset tag labels", "badge": "Barcode Hub", "url": "/modules/fixed-assets?tab=fa-scanner", "icon": "scan", "color": "amber"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Statutory Asset Schedules & Reporting Suite",
+                "subtitle": "IAS 16 / IFRS Statutory Schedules, Summaries & Print Studio",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "4 Reporting Areas",
+                "cards": [
+                    {"title": "Executive Summary of Fixed Assets", "subtitle": "Gross Block, Accumulated Depr & Net Book Value KPIs", "badge": "Executive KPI", "url": "/modules/fixed-assets?tab=fa-summary", "icon": "pie-chart", "color": "blue"},
+                    {"title": "Statutory Asset Schedule (IAS 16)", "subtitle": "IFRS statutory schedule (Opening, Additions, Depr, Closing NBV)", "badge": "IAS 16 / IFRS", "url": "/modules/fixed-assets?tab=fa-statutory-schedule", "icon": "table", "color": "emerald"},
+                    {"title": "Asset Movement Audit Statement", "subtitle": "Historical plant and custodian movement statements", "badge": "Movement Log", "url": "/modules/fixed-assets?tab=fa-movement-report", "icon": "navigation", "color": "cyan"},
+                    {"title": "Fixed Asset Print Studio", "subtitle": "Printable letterheads for Asset GRN, Transfer & Disposal Slips", "badge": "Print Hub", "url": "/modules/fixed-assets?tab=fa-print-studio", "icon": "printer", "color": "rose"},
+                ]
+            }
+        ]
+
+    # =========================================================================
+    # 7. HUMAN RESOURCES, PAYROLL & TALENT (5-SUITE ENTERPRISE ARCHITECTURE)
+    # =========================================================================
+    if slug in ("hris", "hr", "human-resources", "human-capital"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Personnel & Organization Master Setup Suite",
+                "subtitle": "Grades, Departments, Designations, Work-Shifts, Holiday Calendar & Leave Quotas",
+                "icon": "settings-2",
+                "theme_color": "blue",
+                "count_label": "7 Setup Areas",
+                "cards": [
+                    {"title": "Employee Grades & Bands", "subtitle": "Executive, Management & Operator pay bands", "badge": str(counts.get("hr_grades_count", 6)) + " Grades", "url": "/modules/hris?tab=hr-grades", "icon": "award", "color": "blue"},
+                    {"title": "Departments Master", "subtitle": "Organizational divisions & cost centers", "badge": str(counts.get("hr_depts_count", 6)) + " Depts", "url": "/modules/hris?tab=hr-departments", "icon": "building-2", "color": "indigo"},
+                    {"title": "Designations & Titles", "subtitle": "Job titles, skill levels & rank hierarchy", "badge": "Designations", "url": "/modules/hris?tab=hr-designations", "icon": "badge-check", "color": "purple"},
+                    {"title": "Work-Shifts & Roster", "subtitle": "Morning, Day, Night & 24/7 security schedules", "badge": "Shifts", "url": "/modules/hris?tab=hr-shifts", "icon": "clock", "color": "amber"},
+                    {"title": "Annual Holiday Calendar", "subtitle": "Public holidays & corporate off days", "badge": "Calendar", "url": "/modules/hris?tab=hr-holidays", "icon": "calendar", "color": "emerald"},
+                    {"title": "Leave Policies & Types", "subtitle": "Casual, Sick, Earned & Maternity quotas", "badge": "Quotas", "url": "/modules/hris?tab=hr-leave-types", "icon": "file-heart", "color": "rose"},
+                    {"title": "Corporate Bank Accounts", "subtitle": "Salary disbursement accounts & routing", "badge": "Banking", "url": "/modules/hris?tab=hr-bank-accounts", "icon": "landmark", "color": "cyan"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Talent Acquisition & Employee Lifecycle Suite",
+                "subtitle": "Employee Dossiers, Contract Workers, Transfers, Vault & Recruitment",
+                "icon": "users",
+                "theme_color": "emerald",
+                "count_label": "6 Operational Areas",
+                "cards": [
+                    {"title": "Master Employee Profiles", "subtitle": "Comprehensive digital dossier, compensation & banking", "badge": str(counts.get("hr_employees_count", 4)) + " Staff", "url": "/modules/hris?tab=hr-employees", "icon": "user-check", "color": "emerald"},
+                    {"title": "Temporary & Casual Workers", "subtitle": "Daily wage, piece-rate & contract labor rosters", "badge": "Contractors", "url": "/modules/hris?tab=hr-contract-workers", "icon": "hard-hat", "color": "amber"},
+                    {"title": "Digital Document Vault", "subtitle": "Contracts, national IDs, degrees & certificates", "badge": "Vault", "url": "/modules/hris?tab=hr-documents", "icon": "folder-lock", "color": "blue"},
+                    {"title": "Transfers & Promotions Log", "subtitle": "Inter-plant, departmental transfers & grade adjustments", "badge": "Transfers", "url": "/modules/hris?tab=hr-transfers", "icon": "repeat", "color": "purple"},
+                    {"title": "Manpower Job Requisitions", "subtitle": "Hiring requests with multi-tier e-approvals", "badge": "Requisitions", "url": "/modules/hris?tab=hr-requisitions", "icon": "briefcase", "color": "indigo"},
+                    {"title": "CV Bank & Interview Scoring", "subtitle": "Candidate talent pool & structured interview rubric", "badge": "Talent Pool", "url": "/modules/hris?tab=hr-candidates", "icon": "user-plus", "color": "cyan"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Time, Attendance & Leave Management Suite",
+                "subtitle": "Biometric Sync, Leave Applications, Overtime Engine & Late Rules",
+                "icon": "calendar-check",
+                "theme_color": "purple",
+                "count_label": "3 Time Areas",
+                "cards": [
+                    {"title": "Biometric Punch Logs", "subtitle": "Daily biometric clock-in, terminal sync & late detection", "badge": "Live Biometrics", "url": "/modules/hris?tab=hr-attendance-log", "icon": "fingerprint", "color": "purple"},
+                    {"title": "Leave Applications & Ledger", "subtitle": "Online leave requests & approval workflow engine", "badge": "Approvals", "url": "/modules/hris?tab=hr-leaves", "icon": "calendar-heart", "color": "rose"},
+                    {"title": "Overtime (OT) Engine Matrix", "subtitle": "Staff OT hours tracking with 1.5x / 2.0x rates", "badge": "Overtime", "url": "/modules/hris?tab=hr-overtime", "icon": "timer", "color": "amber"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "Payroll, Loans, Income Tax & GL Processing Suite",
+                "subtitle": "Gross-to-Net Engine, Loans Amortization, Tax Slabs & GL Postings",
+                "icon": "calculator",
+                "theme_color": "amber",
+                "count_label": "5 Financial Areas",
+                "cards": [
+                    {"title": "Monthly Payroll Runs", "subtitle": "1-Click automated Gross-to-Net salary calculation batch", "badge": "Payroll Batch", "url": "/modules/hris?tab=hr-payroll-runs", "icon": "wallet", "color": "emerald"},
+                    {"title": "Itemized Payslips Register", "subtitle": "Full earnings & deductions breakdown with net payout", "badge": "Payslips", "url": "/modules/hris?tab=hr-payslips", "icon": "receipt", "color": "blue"},
+                    {"title": "Employee Loans & Advances", "subtitle": "Loan disbursement, EMI recovery & amortization schedules", "badge": "Loans", "url": "/modules/hris?tab=hr-loans", "icon": "coins", "color": "amber"},
+                    {"title": "Income Tax Slabs & Rebates", "subtitle": "Statutory graduated tax slabs & investment rebates", "badge": "TIN & Slabs", "url": "/modules/hris?tab=hr-tax-slabs", "icon": "scale", "color": "indigo"},
+                    {"title": "Treasury Tax Deposit Log", "subtitle": "Treasury challan remittance & GL withholding tax posting", "badge": "Treasury Challan", "url": "/modules/hris?tab=hr-tax-deposits", "icon": "landmark", "color": "purple"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Statements, Statutory Reports & Print Studio Suite",
+                "subtitle": "Salary Registers, Bank Advice, Tax Statements, PF Ledger & Print Hub",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "5 Reporting Areas",
+                "cards": [
+                    {"title": "Executive Workforce KPIs", "subtitle": "Headcount, monthly salary budget, loan balances & PF", "badge": "Executive Hub", "url": "/modules/hris?tab=hr-summary", "icon": "pie-chart", "color": "blue"},
+                    {"title": "Consolidated Salary Register", "subtitle": "Group-wide and plant-wide monthly salary matrix", "badge": "Salary Sheet", "url": "/modules/hris?tab=hr-salary-register", "icon": "file-spreadsheet", "color": "emerald"},
+                    {"title": "Corporate Bank Advice", "subtitle": "Standard salary disbursement advice statement", "badge": "Bank Advice", "url": "/modules/hris?tab=hr-bank-advice", "icon": "credit-card", "color": "cyan"},
+                    {"title": "Provident Fund (PF) Ledger", "subtitle": "Employee contribution, employer matching & balance", "badge": "PF Statement", "url": "/modules/hris?tab=hr-pf-ledger", "icon": "shield-dollar", "color": "purple"},
+                    {"title": "HR Official Print Studio", "subtitle": "Printable Payslips, Appointment Letters & Transfer Orders", "badge": "Print Hub", "url": "/modules/hris?tab=hr-print-studio", "icon": "printer", "color": "rose"},
+                ]
+            }
+        ]
+
+
+    # =========================================================================
+    # 8. PRODUCTION & MANUFACTURING MANAGEMENT (5-SUITE ENTERPRISE ARCHITECTURE)
+    # =========================================================================
+    if slug in ("production", "manufacturing", "production-management"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Engineering Masters, BOM & Plant Routing Setup Suite",
+                "subtitle": "Manufacturing Processes, Plants, Work Centers, Multi-Step Routings, Capacity & Engineering BOMs",
+                "icon": "settings-2",
+                "theme_color": "blue",
+                "count_label": "7 Setup Areas",
+                "cards": [
+                    {"title": "Manufacturing Processes", "subtitle": "Cutting, Machining, Welding, Coating & Testing stages", "badge": "Processes", "url": "/modules/production?tab=prod-processes", "icon": "layers", "color": "blue"},
+                    {"title": "Production Plants & Works", "subtitle": "Fabrication plants, machine shops & bay locations", "badge": "Plants", "url": "/modules/production?tab=prod-plants", "icon": "building-2", "color": "indigo"},
+                    {"title": "Work Centers & Resources", "subtitle": "5-Axis CNC, Robotic cells, Coating lines & CMM stations", "badge": "Work Centers", "url": "/modules/production?tab=prod-resources", "icon": "cpu", "color": "purple"},
+                    {"title": "Operational Routings", "subtitle": "Standard sequence, setup & run times per unit", "badge": "Routings", "url": "/modules/production?tab=prod-routings", "icon": "git-commit", "color": "amber"},
+                    {"title": "Plant Capacity Profiles", "subtitle": "Shift hours, monthly capacity & load utilization limits", "badge": "Capacity", "url": "/modules/production?tab=prod-capacity", "icon": "sliders", "color": "emerald"},
+                    {"title": "Standard Engineering BOM", "subtitle": "Multi-level bill of materials with scrap % & revision history", "badge": "BOM Standard", "url": "/modules/production?tab=prod-bom-standard", "icon": "folder-tree", "color": "cyan"},
+                    {"title": "Assembly BOM & Kitting", "subtitle": "Fast modular assembly recipes & kitted packaging sets", "badge": "Assembly BOM", "url": "/modules/production?tab=prod-bom-assembly", "icon": "box", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Production Orders, Job Cards & Floor Execution Suite",
+                "subtitle": "Demand Requisitions, Discrete Work Orders, Job Travelers, WIP Issues & Direct Assembly",
+                "icon": "factory",
+                "theme_color": "emerald",
+                "count_label": "6 Operational Areas",
+                "cards": [
+                    {"title": "Production Requisitions", "subtitle": "Demand-driven job requests from Sales Orders & buffer stock", "badge": "Requisitions", "url": "/modules/production?tab=prod-requisitions", "icon": "file-text", "color": "blue"},
+                    {"title": "Master Production Orders", "subtitle": "Discrete manufacturing work orders with planned vs completed", "badge": "Work Orders", "url": "/modules/production?tab=prod-orders", "icon": "clipboard-list", "color": "emerald"},
+                    {"title": "Shop Floor Job Cards", "subtitle": "Operation-level travelers, operator clock-in & actual hours", "badge": "Job Cards", "url": "/modules/production?tab=prod-job-cards", "icon": "wrench", "color": "purple"},
+                    {"title": "Material Issues to WIP", "subtitle": "Warehouse raw material and parts issue linked to BOM lines", "badge": "WIP Issues", "url": "/modules/production?tab=prod-mat-issues", "icon": "arrow-up-right", "color": "amber"},
+                    {"title": "Assembly Conversions", "subtitle": "Material-to-material instant batch assembly transformation", "badge": "Conversions", "url": "/modules/production?tab=prod-conversions", "icon": "repeat", "color": "cyan"},
+                    {"title": "Assembly Reversals & De-Kits", "subtitle": "Disassembly reversal returning component parts to warehouse", "badge": "Reversals", "url": "/modules/production?tab=prod-reversals", "icon": "rotate-ccw", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Quality Control, Downtime & Process Suite",
+                "subtitle": "In-Process QA Inspections, Machine Downtime Tracker, Data Import Hub & Year-End Process",
+                "icon": "shield-check",
+                "theme_color": "purple",
+                "count_label": "4 Control Areas",
+                "cards": [
+                    {"title": "Quality Inspection Hub", "subtitle": "First-piece, in-process & final QA tolerance test sign-offs", "badge": "Quality QA", "url": "/modules/production?tab=prod-qc-inspections", "icon": "check-circle", "color": "emerald"},
+                    {"title": "Machine Downtime Tracker", "subtitle": "Stoppage logging, tool change, breakdown & idle analytics", "badge": "Downtime Log", "url": "/modules/production?tab=prod-downtime", "icon": "alert-triangle", "color": "amber"},
+                    {"title": "External Data Import Hub", "subtitle": "Import opening stock, monthly sales forecast & BOM profiles", "badge": "Data Import", "url": "/modules/production?tab=prod-import-data", "icon": "download", "color": "blue"},
+                    {"title": "Year-End WIP Process", "subtitle": "Annual production WIP valuation rollover & cost variance close", "badge": "Year-End", "url": "/modules/production?tab=prod-year-end", "icon": "calendar-check", "color": "purple"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "Manufacturing Costing & Floor Analytics Suite",
+                "subtitle": "Actual vs Standard Costing, OEE Cockpit & Work Center Capacity Heatmap",
+                "icon": "calculator",
+                "theme_color": "amber",
+                "count_label": "3 Analytics Areas",
+                "cards": [
+                    {"title": "Manufacturing Cost Records", "subtitle": "Actual vs standard costing (Materials, Labor, Overhead, Scrap)", "badge": "Cost Engine", "url": "/modules/production?tab=prod-costing", "icon": "coins", "color": "emerald"},
+                    {"title": "OEE Effectiveness Cockpit", "subtitle": "Live Availability x Performance x Quality metrics per machine", "badge": "OEE Cockpit", "url": "/modules/production?tab=prod-oee-monitor", "icon": "gauge", "color": "amber"},
+                    {"title": "Capacity Load vs Availability", "subtitle": "Resource load factor, bottleneck identification & shift planning", "badge": "Capacity Load", "url": "/modules/production?tab=prod-capacity-planning", "icon": "bar-chart-2", "color": "blue"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Statements, Statutory Registers & Production Print Studio Suite",
+                "subtitle": "Executive KPIs, WIP Stage Ledger, Yield & Scrap Statements & Manufacturing Print Studio",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "4 Reporting Areas",
+                "cards": [
+                    {"title": "Executive Production KPIs", "subtitle": "Throughput volume, scrap rate %, average OEE & WIP valuation", "badge": "Executive Hub", "url": "/modules/production?tab=prod-summary", "icon": "pie-chart", "color": "blue"},
+                    {"title": "WIP Stage Balance Ledger", "subtitle": "Stage-by-stage Work-In-Progress balance & completed ops", "badge": "WIP Ledger", "url": "/modules/production?tab=prod-wip-ledger", "icon": "layers", "color": "emerald"},
+                    {"title": "Yield & Scrap Variance Report", "subtitle": "Production output yield %, scrap variance & material efficiency", "badge": "Yield Audit", "url": "/modules/production?tab=prod-yield-report", "icon": "scale", "color": "purple"},
+                    {"title": "Manufacturing Print Studio", "subtitle": "Official Work Orders, BOM Explosion Sheets, Pick Slips & QA Certs", "badge": "Print Hub", "url": "/modules/production?tab=prod-print-studio", "icon": "printer", "color": "rose"},
+                ]
+            }
+        ]
+
+
+    # =========================================================================
+    # 9. SYSTEM ADMINISTRATION & ENTERPRISE GOVERNANCE (5-SUITE ENTERPRISE ARCHITECTURE)
+    # =========================================================================
+    if slug in ("system-admin", "system_admin", "admin", "system-administration"):
+        return [
+            {
+                "suite_id": 1,
+                "title": "Global Organization, Locales & Currencies Setup Suite",
+                "subtitle": "Multi-Entity Companies, Business Units, Cost Centers, Geo Locales, Multi-Currency Board & Printers",
+                "icon": "globe",
+                "theme_color": "blue",
+                "count_label": "6 Setup Areas",
+                "cards": [
+                    {"title": "Company Profile & Multi-Entity Setup", "subtitle": "Subsidiaries, legal entity, registration & tax ID", "badge": "Companies", "url": "/modules/system-admin?tab=admin-companies", "icon": "building-2", "color": "blue"},
+                    {"title": "Business Units & Cost Centers", "subtitle": "Divisional hierarchy, operating branches & profit centers", "badge": "Units & CC", "url": "/modules/system-admin?tab=admin-units", "icon": "network", "color": "indigo"},
+                    {"title": "Countries, States & Locales", "subtitle": "ISO geographic directory, currency codes & locale formats", "badge": "Geo Locales", "url": "/modules/system-admin?tab=admin-geo", "icon": "map-pin", "color": "cyan"},
+                    {"title": "Multi-Currency & Daily Rates", "subtitle": "ISO currency profiles & real-time exchange rate table", "badge": "Currencies", "url": "/modules/system-admin?tab=admin-currencies", "icon": "coins", "color": "amber"},
+                    {"title": "Fiscal Calendars & Periods", "subtitle": "12-period fiscal calendar & opening balance lock", "badge": "Calendars", "url": "/modules/system-admin?tab=admin-calendars", "icon": "calendar-range", "color": "emerald"},
+                    {"title": "Network Printers & Spoolers", "subtitle": "Print servers, thermal slip drivers & default trays", "badge": "Printers", "url": "/modules/system-admin?tab=admin-printers", "icon": "printer", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Access Control, Roles & Security Governance Suite",
+                "subtitle": "User Profiles, Granular RBAC Permissions Matrix, Data Scopes, Password Policies & Live Sessions",
+                "icon": "shield-check",
+                "theme_color": "emerald",
+                "count_label": "5 Security Areas",
+                "cards": [
+                    {"title": "Enterprise User Profiles", "subtitle": "User credentials directory, departments & MFA status", "badge": "Users", "url": "/modules/system-admin?tab=admin-users", "icon": "users", "color": "emerald"},
+                    {"title": "Role-Based Access Control (RBAC)", "subtitle": "Function access matrix (View/Create/Edit/Delete/Approve)", "badge": "Roles & RBAC", "url": "/modules/system-admin?tab=admin-roles", "icon": "key-round", "color": "purple"},
+                    {"title": "Cost & Profit Center Scopes", "subtitle": "Subsidiary, business unit & cost center data restrictions", "badge": "Data Scopes", "url": "/modules/system-admin?tab=admin-auth-scope", "icon": "lock", "color": "blue"},
+                    {"title": "Password Vault & Security Policy", "subtitle": "Complexity rules, password renewal, reset & MFA keys", "badge": "Pass Vault", "url": "/modules/system-admin?tab=admin-passwords", "icon": "key", "color": "amber"},
+                    {"title": "Live Sessions & Security Telemetry", "subtitle": "Real-time active logins, device IP & session management", "badge": "Live Sessions", "url": "/modules/system-admin?tab=admin-sessions", "icon": "radio", "color": "cyan"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Tax Engine & Statutory Authorities Suite",
+                "subtitle": "Statutory Revenue Boards, Tax Categories, VAT/GST Profiles & Standard GL Account Linkages",
+                "icon": "landmark",
+                "theme_color": "purple",
+                "count_label": "3 Statutory Areas",
+                "cards": [
+                    {"title": "Statutory Tax Authorities", "subtitle": "Federal IRS, State Revenue & National Board of Revenue", "badge": "Authorities", "url": "/modules/system-admin?tab=admin-tax-authorities", "icon": "landmark", "color": "purple"},
+                    {"title": "Tax Classification Categories", "subtitle": "Standard VAT, Reduced, Zero-Rated, Withholding & Sales Tax", "badge": "Categories", "url": "/modules/system-admin?tab=admin-tax-categories", "icon": "tags", "color": "blue"},
+                    {"title": "Tax Rates & Profile Slabs", "subtitle": "Active calculation rates %, GL account mapping & recovery", "badge": "Tax Profiles", "url": "/modules/system-admin?tab=admin-tax-profiles", "icon": "receipt", "color": "emerald"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "System Diagnostics, Periodic Process & Integrity Suite",
+                "subtitle": "Database Integrity Scanner, Recalculate Ledgers, Month-End Module Closures & Backup Points",
+                "icon": "cpu",
+                "theme_color": "amber",
+                "count_label": "4 Maintenance Areas",
+                "cards": [
+                    {"title": "Database Integrity & Scanner", "subtitle": "Foreign key parity, orphan checks & ledger recalculation", "badge": "Integrity", "url": "/modules/system-admin?tab=admin-integrity", "icon": "activity", "color": "amber"},
+                    {"title": "Consolidated Month-End Close", "subtitle": "Periodic close for Cash, AR, AP, Inventory, HR & Assets", "badge": "Month-End", "url": "/modules/system-admin?tab=admin-periodic", "icon": "check-square", "color": "emerald"},
+                    {"title": "Year-End Processing & Balance Sync", "subtitle": "Retained earnings roll-forward & annual balance sync", "badge": "Year-End", "url": "/modules/system-admin?tab=admin-year-end", "icon": "calendar-check-2", "color": "purple"},
+                    {"title": "Database Backup Snapshots", "subtitle": "Automated full backups, transaction logs & restore points", "badge": "Backups", "url": "/modules/system-admin?tab=admin-backups", "icon": "hard-drive", "color": "blue"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Audit Vault, System Telemetry & Print Studio Suite",
+                "subtitle": "Tamper-Evident System Audit Trail, IT Infrastructure KPIs, License Telemetry & Print Studio",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "4 Telemetry Areas",
+                "cards": [
+                    {"title": "Tamper-Evident Audit Vault", "subtitle": "Immutable security timeline, entity mutations & IP logs", "badge": "Audit Vault", "url": "/modules/system-admin?tab=admin-audit-log", "icon": "shield-alert", "color": "rose"},
+                    {"title": "Executive Administration KPIs", "subtitle": "System health, database score, active nodes & periods", "badge": "Admin KPIs", "url": "/modules/system-admin?tab=admin-kpis", "icon": "pie-chart", "color": "blue"},
+                    {"title": "Enterprise Client License", "subtitle": "Autonomous Edition 2026, node limits & support SLA", "badge": "License", "url": "/modules/system-admin?tab=admin-license", "icon": "award", "color": "purple"},
+                    {"title": "System Admin Print Studio", "subtitle": "Security Audit Certs, Entity Specs, Tax Schedules & Health", "badge": "Print Studio", "url": "/modules/system-admin?tab=admin-print-studio", "icon": "printer", "color": "emerald"},
+                ]
+            }
+        ]
+
     # Automatically generates the standardized 5 enterprise suites based on module domain!
     return _generate_default_enterprise_suites(slug)
 
@@ -423,7 +907,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
     return [
         {
             "suite_id": 1,
-            "title": "1. Master Setup Suite",
+            "title": "Master Setup Suite",
             "subtitle": f"Core Master Catalogs, Policies & System Parameters for {mod_name}",
             "icon": "settings-2",
             "theme_color": "blue",
@@ -437,7 +921,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
         },
         {
             "suite_id": 2,
-            "title": "2. Transaction Processing & Automation Suite",
+            "title": "Transaction Processing & Automation Suite",
             "subtitle": f"Operational Vouchers, Workflow Documents & Processing Engine",
             "icon": "arrow-left-right",
             "theme_color": "emerald",
@@ -451,7 +935,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
         },
         {
             "suite_id": 3,
-            "title": "3. Process, Approval & Closing Suite",
+            "title": "Process, Approval & Closing Suite",
             "subtitle": "Workflow Approvals, Periodic Cycles & Integrity Diagnostics",
             "icon": "check-check",
             "theme_color": "purple",
@@ -463,7 +947,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
         },
         {
             "suite_id": 4,
-            "title": "4. Analytical & Control Suite",
+            "title": "Analytical & Control Suite",
             "subtitle": "Performance Metrics, Variance Calculations & KPI Dashboards",
             "icon": "bar-chart-2",
             "theme_color": "amber",
@@ -475,7 +959,7 @@ def _generate_default_enterprise_suites(slug: str) -> List[Dict[str, Any]]:
         },
         {
             "suite_id": 5,
-            "title": "5. Reporting & Statements Suite",
+            "title": "Reporting & Statements Suite",
             "subtitle": f"Statutory Registers, Periodic Schedules & Exportable Reports",
             "icon": "file-pie-chart",
             "theme_color": "rose",

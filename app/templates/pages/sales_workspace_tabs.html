@@ -1,0 +1,1372 @@
+{# Sales Management Comprehensive 5-Suite Workspace Tabs #}
+{% if module.route_slug in ('sales', 'sales-management') %}
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 1: MASTER SETUP SUITE                                              -->
+  <!-- ========================================================================= -->
+
+  <!-- 1.1 Sales Teams (MM > ZM > TSM Hierarchy) -->
+  {% if current_tab == 'sales-teams' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="network" class="w-4 h-4 text-blue-500"></i>
+            <span>Sales Teams & Management Hierarchy (MM &gt; ZM &gt; TSM)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Commercial hierarchy, zonal divisions, and divisional target allocations</p>
+        </div>
+        <button onclick="openModal('modal-add-sales-team')" class="btn-action-add px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition shadow-sm cursor-pointer">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Add Sales Team</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Team Code</th>
+              <th class="py-2.5 px-3">Team Name</th>
+              <th class="py-2.5 px-3">Tier / Type</th>
+              <th class="py-2.5 px-3">Assigned Area</th>
+              <th class="py-2.5 px-3">Manager / Lead</th>
+              <th class="py-2.5 px-3 text-right">Annual Target</th>
+              <th class="py-2.5 px-3 text-center">Reps</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for t in sls_teams %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ t.team_code }}</td>
+                <td class="py-3 px-3 font-medium text-slate-900 dark:text-white">{{ t.team_name }}</td>
+                <td class="py-3 px-3">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if 'MM' in t.team_type %}bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20{% elif 'ZM' in t.team_type %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20{% else %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% endif %}">
+                    {{ t.team_type }}
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ t.area_name|default('Corporate / National') }}</td>
+                <td class="py-3 px-3 font-medium">{{ t.manager_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-200">${{ "{:,.2f}".format(t.target_annual_amount|default(0)) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-500">{{ t.member_count }} Reps</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_teams', '{{ t.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_teams', '{{ t.id }}', '{{ t.name or t.title or t.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.2 Salespersons Master -->
+  {% elif current_tab == 'salespersons' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i>
+            <span>Sales Representatives & Account Executives</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sales personnel, commission rates, discount thresholds, and monthly quotas</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Rep Code</th>
+              <th class="py-2.5 px-3">Full Name</th>
+              <th class="py-2.5 px-3">Designation</th>
+              <th class="py-2.5 px-3">Team</th>
+              <th class="py-2.5 px-3">Contact</th>
+              <th class="py-2.5 px-3 text-center">Max Disc %</th>
+              <th class="py-2.5 px-3 text-right">Monthly Quota</th>
+              <th class="py-2.5 px-3 text-right">Total Sold</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for sp in sls_reps %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ sp.salesperson_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ sp.full_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ sp.designation }}</td>
+                <td class="py-3 px-3">{{ sp.team_name|default('Unassigned') }}</td>
+                <td class="py-3 px-3 font-mono text-[11px] text-slate-500">{{ sp.email }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">{{ sp.max_discount_pct }}%</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(sp.monthly_target|default(0)) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(sp.total_sold_amount|default(0)) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_reps', '{{ sp.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_reps', '{{ sp.id }}', '{{ sp.name or sp.title or sp.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.3 Sales Areas & Zones -->
+  {% elif current_tab == 'sales-areas' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="map-pin" class="w-4 h-4 text-cyan-500"></i>
+            <span>Sales Areas, Regions & Distribution Centers</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Geographic territory coverage, regional hubs, and operational jurisdiction</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Area Code</th>
+              <th class="py-2.5 px-3">Area Name</th>
+              <th class="py-2.5 px-3">Region</th>
+              <th class="py-2.5 px-3">Head of Area</th>
+              <th class="py-2.5 px-3">Subsidiary</th>
+              <th class="py-2.5 px-3 text-center">Teams Assigned</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for a in sls_areas %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ a.area_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ a.area_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ a.region_name }}</td>
+                <td class="py-3 px-3 font-medium">{{ a.head_of_area }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200">{{ a.company_code }}</span></td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ a.team_count }} Teams</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_areas', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_areas', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.4 Price Profiles & Catalogs -->
+  {% elif current_tab == 'price-profiles' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="tag" class="w-4 h-4 text-emerald-500"></i>
+            <span>Product Price Profiles & Contract Rate Cards</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Base price profiles, wholesale price matrices, retail tariffs, and special customer agreements</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Profile Code</th>
+              <th class="py-2.5 px-3">Profile Name</th>
+              <th class="py-2.5 px-3">Pricing Tier</th>
+              <th class="py-2.5 px-3">Currency</th>
+              <th class="py-2.5 px-3">Subsidiary</th>
+              <th class="py-2.5 px-3 text-center">Items Priced</th>
+              <th class="py-2.5 px-3 text-center">Default Tier</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for pp in sls_profiles %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ pp.profile_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ pp.profile_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ pp.price_type }}</span></td>
+                <td class="py-3 px-3 font-mono">{{ pp.currency }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ pp.company_code }}</span></td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ pp.item_count }} Items</td>
+                <td class="py-3 px-3 text-center">
+                  {% if pp.is_default %}
+                    <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Standard Default</span>
+                  {% else %}
+                    <span class="text-slate-400 text-[11px]">-</span>
+                  {% endif %}
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_quotes', '{{ pp.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_quotes', '{{ pp.id }}', '{{ pp.name or pp.title or pp.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.5 Product Prices Catalog -->
+  {% elif current_tab == 'product-prices' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-amber-500"></i>
+            <span>Product Prices & Floor Price Governance</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Itemized catalog rates, minimum allowable floor price, and maximum discount ceilings</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Item Code</th>
+              <th class="py-2.5 px-3">Item Description</th>
+              <th class="py-2.5 px-3">Price Profile</th>
+              <th class="py-2.5 px-3 text-center">UOM</th>
+              <th class="py-2.5 px-3 text-right">Base List Price</th>
+              <th class="py-2.5 px-3 text-right">Min Floor Price</th>
+              <th class="py-2.5 px-3 text-center">Max Discount</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for pr in sls_prices %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ pr.item_code }}</td>
+                <td class="py-3 px-3 font-medium text-slate-900 dark:text-white">{{ pr.item_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ pr.profile_name }}</td>
+                <td class="py-3 px-3 text-center font-mono">{{ pr.uom }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(pr.base_price) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(pr.min_selling_price) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ pr.max_discount_pct }}%</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_quotes', '{{ pr.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_quotes', '{{ pr.id }}', '{{ pr.name or pr.title or pr.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.6 Discount Limit Matrix -->
+  {% elif current_tab == 'discount-limits' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="sliders" class="w-4 h-4 text-rose-500"></i>
+            <span>Role-Based Sales Price Discount Limit Matrix</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Authorization thresholds, approval escalations, and commercial governance rules</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Role / Authority Level</th>
+              <th class="py-2.5 px-3 text-center">Max Direct Discount %</th>
+              <th class="py-2.5 px-3 text-center">Requires Escalation Above</th>
+              <th class="py-2.5 px-3">Escalation Approver</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for dl in sls_discount_limits %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ dl.role_name }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ dl.max_discount_pct }}%</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-rose-600 dark:text-rose-400">&gt; {{ dl.requires_approval_above_pct }}%</td>
+                <td class="py-3 px-3 font-medium text-slate-700 dark:text-slate-300">{{ dl.approver_role }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Enforced</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_quotes', '{{ dl.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_quotes', '{{ dl.id }}', '{{ dl.name or dl.title or dl.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 2: TRANSACTION PROCESSING & AUTOMATION SUITE                        -->
+  <!-- ========================================================================= -->
+
+  <!-- 2.1 Sales Quotes & Proformas -->
+  {% elif current_tab == 'quotes' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i>
+            <span>Sales Quotations, Proforma Invoices & Revisions</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Formal price quotations, revision histories, tender bids, and 1-click Sales Order conversions</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Quote #</th>
+              <th class="py-2.5 px-3">Rev</th>
+              <th class="py-2.5 px-3">Customer / Client</th>
+              <th class="py-2.5 px-3">Salesperson</th>
+              <th class="py-2.5 px-3">Quote Date</th>
+              <th class="py-2.5 px-3">Valid Until</th>
+              <th class="py-2.5 px-3 text-right">Total Amount</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Action</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for q in sls_quotes %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ q.quote_number }}</td>
+                <td class="py-3 px-3 font-mono text-center"><span class="px-1.5 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-white/10 font-bold">R{{ q.revision_no }}</span></td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ q.customer_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ q.salesperson_name|default('-') }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ q.quote_date }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ q.valid_until }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(q.total_amount) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if q.status == 'CONVERTED_TO_SO' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% elif q.status == 'ACCEPTED' %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20{% else %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20{% endif %}">
+                    {{ q.status }}
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/sales/print/quote/{{ q.id }}" target="_blank" class="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-200">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Print Quote</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('sales_quotes', '{{ q.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_quotes', '{{ q.id }}', '{{ q.name or q.title or q.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.2 Sales Orders (SO) -->
+  {% elif current_tab == 'sales-orders' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="shopping-cart" class="w-4 h-4 text-emerald-500"></i>
+            <span>Confirmed Sales Orders (SO)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Multi-line customer orders, payment & delivery terms, e-approvals, and dispatch fulfillment</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Order Number</th>
+              <th class="py-2.5 px-3">Customer</th>
+              <th class="py-2.5 px-3">Order Date</th>
+              <th class="py-2.5 px-3">Delivery Terms</th>
+              <th class="py-2.5 px-3">Payment Terms</th>
+              <th class="py-2.5 px-3 text-right">Order Value</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for o in sls_orders %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ o.order_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ o.customer_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ o.order_date }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ o.delivery_terms }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ o.payment_terms }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(o.total_amount) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if o.status == 'DO_ISSUED' %}bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20{% elif o.status == 'INVOICED' %}bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20{% elif o.status == 'ON_HOLD' %}bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20{% else %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% endif %}">
+                    {{ o.status }}
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <div class="flex items-center justify-center gap-1.5">
+                    <a href="/modules/sales/print/order/{{ o.id }}" target="_blank" class="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-200" title="Print Order Confirmation">
+                      <i data-lucide="printer" class="w-3 h-3"></i>
+                      <span>Print</span>
+                    </a>
+                  </div>
+                    <button type="button" onclick="openDynamicEditModal('sales_orders', '{{ o.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_orders', '{{ o.id }}', '{{ o.name or o.title or o.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.3 Delivery Orders (DO) -->
+  {% elif current_tab == 'delivery-orders' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="truck" class="w-4 h-4 text-cyan-500"></i>
+            <span>Delivery Orders (DO) & Gate Pass Dispatches</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Warehouse outbound dispatches, carrier tracking, gate pass validation, and delivery fulfillment</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">DO Number</th>
+              <th class="py-2.5 px-3">Sales Order Ref</th>
+              <th class="py-2.5 px-3">Customer</th>
+              <th class="py-2.5 px-3">Carrier / Fleet</th>
+              <th class="py-2.5 px-3">Vehicle #</th>
+              <th class="py-2.5 px-3">Gate Pass Ref</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Print DO</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for do in sls_do_list %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ do.do_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400">{{ do.order_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ do.customer_name }}</td>
+                <td class="py-3 px-3">{{ do.carrier_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ do.vehicle_no }}</td>
+                <td class="py-3 px-3 font-mono text-indigo-500">{{ do.gate_pass_ref }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+                    {{ do.status }}
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/sales/print/do/{{ do.id }}" target="_blank" class="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-200">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Print DO</span>
+                  </a>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_orders', '{{ do.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_orders', '{{ do.id }}', '{{ do.name or do.title or do.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.4 Sales Invoices -->
+  {% elif current_tab == 'invoices' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="receipt" class="w-4 h-4 text-indigo-500"></i>
+            <span>Commercial Sales Invoices & GL Journal Records</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Commercial tax invoices, export billing, money receipt settlements, and automatic GL journal links</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Invoice #</th>
+              <th class="py-2.5 px-3">Order Ref</th>
+              <th class="py-2.5 px-3">Customer</th>
+              <th class="py-2.5 px-3">Invoice Date</th>
+              <th class="py-2.5 px-3">Due Date</th>
+              <th class="py-2.5 px-3 text-right">Invoice Value</th>
+              <th class="py-2.5 px-3 text-center">GL Journal Ref</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Print</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for inv in sls_invoices %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ inv.invoice_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ inv.order_number|default('-') }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ inv.customer_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ inv.invoice_date }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ inv.due_date }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(inv.total_amount) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ inv.gl_journal_ref|default('Auto-Posted') }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if inv.status == 'PAID' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% else %}bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20{% endif %}">
+                    {{ inv.status }}
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/sales/print/invoice/{{ inv.id }}" target="_blank" class="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-200">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Print Invoice</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('sales_invoices', '{{ inv.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_invoices', '{{ inv.id }}', '{{ inv.name or inv.title or inv.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.5 Sales Returns & Credit Memos -->
+  {% elif current_tab == 'returns' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="rotate-ccw" class="w-4 h-4 text-rose-500"></i>
+            <span>Sales Returns & Credit Notes (Reverse Invoices)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Return goods authorizations, return delivery orders, and financial credit memos</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Return Number</th>
+              <th class="py-2.5 px-3">Customer</th>
+              <th class="py-2.5 px-3">Return Date</th>
+              <th class="py-2.5 px-3">Reason / Root Cause</th>
+              <th class="py-2.5 px-3 text-right">Credit Amount</th>
+              <th class="py-2.5 px-3 text-center">Credit Memo Ref</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for ret in sls_returns %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ ret.return_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ ret.customer_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ ret.return_date }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ ret.reason }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(ret.return_amount) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-500">{{ ret.credit_memo_ref }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                    {{ ret.status }}
+                  </span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_orders', '{{ ret.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_orders', '{{ ret.id }}', '{{ ret.name or ret.title or ret.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.6 Sales Budgets & Targets -->
+  {% elif current_tab == 'budgets' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
+            <span>Sales Budgets, Annual Targets & Quarterly Quotas</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Fiscal year sales targets allocated across quarters, reps, and customer accounts</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Fiscal Year</th>
+              <th class="py-2.5 px-3">Target Category</th>
+              <th class="py-2.5 px-3">Salesperson</th>
+              <th class="py-2.5 px-3 text-right">Annual Target</th>
+              <th class="py-2.5 px-3 text-right">Q1 Target</th>
+              <th class="py-2.5 px-3 text-right">Q2 Target</th>
+              <th class="py-2.5 px-3 text-right">Q3 Target</th>
+              <th class="py-2.5 px-3 text-right">Q4 Target</th>
+              <th class="py-2.5 px-3 text-right">Achieved</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for b in sls_budgets %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ b.fiscal_year }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ b.target_category }}</td>
+                <td class="py-3 px-3 font-medium">{{ b.salesperson_name|default('Corporate Pool') }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(b.annual_target) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(b.q1_target) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(b.q2_target) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(b.q3_target) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(b.q4_target) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(b.achieved_amount) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_orders', '{{ b.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_orders', '{{ b.id }}', '{{ b.name or b.title or b.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 3: PROCESS, E-APPROVAL & DSS SUITE                                 -->
+  <!-- ========================================================================= -->
+
+  <!-- 3.1 Document Flow Studio -->
+  {% elif current_tab == 'document-flow' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="git-merge" class="w-4 h-4 text-purple-500"></i>
+            <span>Interactive Document Flow Studio</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">End-to-end commercial lifecycle tracing: Quotation &rarr; Sales Order &rarr; Delivery Order &rarr; Invoice &rarr; GL Journal</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for doc in sls_doc_flow %}
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-mono font-bold text-blue-600 dark:text-blue-400 text-xs">{{ doc.order_number }}</span>
+              <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">{{ doc.status }}</span>
+            </div>
+            <p class="text-xs font-bold text-slate-900 dark:text-white truncate">{{ doc.customer_name }}</p>
+            
+            <!-- Visual Flow Stages -->
+            <div class="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-2 border-t border-slate-200 dark:border-white/5">
+              <span class="{% if doc.quote_number %}text-emerald-500 font-bold{% endif %}">1. Quote</span>
+              <span>&rarr;</span>
+              <span class="text-emerald-500 font-bold">2. SO</span>
+              <span>&rarr;</span>
+              <span class="{% if doc.do_number %}text-emerald-500 font-bold{% else %}text-slate-400{% endif %}">3. DO</span>
+              <span>&rarr;</span>
+              <span class="{% if doc.invoice_number %}text-emerald-500 font-bold{% else %}text-slate-400{% endif %}">4. Invoice</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  <!-- 3.2 e-Approval Hub -->
+  {% elif current_tab == 'e-approvals' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="check-check" class="w-4 h-4 text-indigo-500"></i>
+            <span>Multi-Tier e-Approval Sign-Off Hub</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Executive approvals for special pricing, credit term extensions, and discount threshold overrides</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Entity Type</th>
+              <th class="py-2.5 px-3">Tier Level</th>
+              <th class="py-2.5 px-3">Tier Name</th>
+              <th class="py-2.5 px-3">Approver Name</th>
+              <th class="py-2.5 px-3">Role</th>
+              <th class="py-2.5 px-3">Comments / Remarks</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for a in sls_approvals %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ a.entity_type }}</td>
+                <td class="py-3 px-3 font-mono text-center"><span class="px-1.5 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-white/10 font-bold">Tier {{ a.tier_level }}</span></td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ a.tier_name }}</td>
+                <td class="py-3 px-3 font-medium">{{ a.approver_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ a.approver_role }}</td>
+                <td class="py-3 px-3 text-slate-500 italic">{{ a.comments }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    {{ a.action }}
+                  </span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_orders', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_orders', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.3 DSS Margin Simulator -->
+  {% elif current_tab == 'dss-simulator' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="calculator" class="w-4 h-4 text-amber-500"></i>
+            <span>DSS (Decision Support System) Profit Margin Simulator</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time simulation of deal revenue, estimated manufacturing cost, gross profit margin %, and required director approvals</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-4">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Simulate Commercial Quote</h4>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-1">Select Catalog Product</label>
+            <select id="dss-item-select" class="mac-input w-full text-xs rounded-xl p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
+              {% for pr in sls_prices %}
+                <option value="{{ pr.base_price }}">{{ pr.item_code }} - {{ pr.item_name }} (${{ pr.base_price }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-1">Order Quantity</label>
+            <input type="number" id="dss-qty-input" value="500" class="mac-input w-full text-xs rounded-xl p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10" oninput="calculateDSS()">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-slate-500 mb-1">Requested Special Discount %</label>
+            <input type="number" id="dss-disc-input" value="5" min="0" max="40" class="mac-input w-full text-xs rounded-xl p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10" oninput="calculateDSS()">
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 p-5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-4 flex flex-col justify-center">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Instant DSS Viability Analysis</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Projected Revenue</span>
+              <p id="dss-rev" class="text-base font-bold text-slate-900 dark:text-white font-mono mt-1">$68,875.00</p>
+            </div>
+            <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Estimated Cost</span>
+              <p id="dss-cost" class="text-base font-bold text-slate-500 font-mono mt-1">$44,768.75</p>
+            </div>
+            <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Gross Profit</span>
+              <p id="dss-profit" class="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">$24,106.25</p>
+            </div>
+            <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">Gross Margin %</span>
+              <p id="dss-margin" class="text-base font-bold text-blue-600 dark:text-blue-400 font-mono mt-1">35.0%</p>
+            </div>
+          </div>
+          <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+              <span id="dss-status-msg" class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Healthy Margin: Standard Sales Rep Authority sufficient</span>
+            </div>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">PASSED</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function calculateDSS() {
+        const baseP = parseFloat(document.getElementById('dss-item-select').value) || 100;
+        const qty = parseFloat(document.getElementById('dss-qty-input').value) || 1;
+        const disc = parseFloat(document.getElementById('dss-disc-input').value) || 0;
+        
+        const netP = baseP * (1 - (disc / 100));
+        const rev = netP * qty;
+        const cost = rev * 0.65;
+        const profit = rev - cost;
+        const marginPct = rev > 0 ? (profit / rev * 100) : 0;
+
+        document.getElementById('dss-rev').innerText = '$' + rev.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('dss-cost').innerText = '$' + cost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('dss-profit').innerText = '$' + profit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('dss-margin').innerText = marginPct.toFixed(1) + '%';
+      }
+    </script>
+
+  <!-- 3.4 On-Hold Orders Queue -->
+  {% elif current_tab == 'on-hold-orders' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="pause-circle" class="w-4 h-4 text-rose-500"></i>
+            <span>On-Hold Orders for Goods Issue & Credit Release</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Orders temporarily blocked due to customer credit limits, inventory shortage, or compliance holds</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Order Number</th>
+              <th class="py-2.5 px-3">Customer</th>
+              <th class="py-2.5 px-3">Order Date</th>
+              <th class="py-2.5 px-3">Hold Reason</th>
+              <th class="py-2.5 px-3 text-right">Blocked Value</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for o in sls_orders if o.is_on_hold or o.status == 'ON_HOLD' %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ o.order_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ o.customer_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ o.order_date }}</td>
+                <td class="py-3 px-3 text-rose-600 dark:text-rose-400 font-medium">{{ o.hold_reason|default('Credit limit review pending by CFO') }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(o.total_amount) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                    ON HOLD
+                  </span>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="6" class="py-6 text-center text-slate-400">No orders currently on hold. All shipments released.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 4: ANALYTICAL & DYNAMIC PIVOT SUITE                                 -->
+  <!-- ========================================================================= -->
+
+  <!-- 4.1 Sales, Collection & AR Pivot -->
+  {% elif current_tab == 'sales-collection-pivot' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-4 h-4 text-amber-500"></i>
+            <span>Multi-Dimensional Pivot: Sales, Collection & Accounts Receivable</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Periodic performance comparing gross invoiced sales, cash collected, and outstanding debtor balances</p>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
+          <span class="text-[10px] text-slate-500 uppercase font-semibold">Total Invoiced Sales</span>
+          <p class="text-lg font-bold text-slate-900 dark:text-white font-mono mt-1">${{ "{:,.2f}".format(sls_pivot_data.total_billed|default(0)) }}</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
+          <span class="text-[10px] text-slate-500 uppercase font-semibold">Total Realized Collection</span>
+          <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">${{ "{:,.2f}".format(sls_pivot_data.total_collected|default(0)) }}</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
+          <span class="text-[10px] text-slate-500 uppercase font-semibold">Net AR Outstanding</span>
+          <p class="text-lg font-bold text-rose-600 dark:text-rose-400 font-mono mt-1">${{ "{:,.2f}".format(sls_pivot_data.total_ar|default(0)) }}</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
+          <span class="text-[10px] text-slate-500 uppercase font-semibold">Collection Efficiency</span>
+          <p class="text-lg font-bold text-blue-600 dark:text-blue-400 font-mono mt-1">{{ sls_pivot_data.collection_efficiency_pct|default(100) }}%</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Period / Month</th>
+              <th class="py-2.5 px-3 text-right">Billed Sales (USD)</th>
+              <th class="py-2.5 px-3 text-right">Collections Received (USD)</th>
+              <th class="py-2.5 px-3 text-right">AR Outstanding (USD)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for row in sls_pivot_data.monthly_data %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ row.month_name }} ({{ row.month_key }})</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(row.billed_sales) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(row.collected_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(row.outstanding_amount) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.2 MM > ZM > TSM Performance -->
+  {% elif current_tab == 'hierarchy-performance' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
+            <span>Hierarchical Performance: MM &gt; ZM &gt; TSM Wise Budget &amp; Sales</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Marketing Manager &rarr; Zonal Manager &rarr; Territory Sales Manager hierarchical budget vs achievement</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Team Name</th>
+              <th class="py-2.5 px-3">Tier Type</th>
+              <th class="py-2.5 px-3">Manager / In-Charge</th>
+              <th class="py-2.5 px-3 text-right">Annual Target</th>
+              <th class="py-2.5 px-3 text-right">Achieved Sales</th>
+              <th class="py-2.5 px-3 text-center">Achievement %</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for h in sls_hierarchy_data %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ h.team_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ h.team_type }}</span></td>
+                <td class="py-3 px-3 font-medium">{{ h.manager_name }}</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(h.target_annual_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(h.achieved_sales) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-600 dark:text-blue-400">{{ h.achievement_pct }}%</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_teams', '{{ h.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_teams', '{{ h.id }}', '{{ h.name or h.title or h.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.3 Target vs Achievement -->
+  {% elif current_tab == 'target-achievement' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="target" class="w-4 h-4 text-blue-500"></i>
+            <span>Salesperson Target vs. Achievement Variance Matrix</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Rep-wise sales target allocation, year-to-date realization, and quota variance</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Salesperson</th>
+              <th class="py-2.5 px-3">Category</th>
+              <th class="py-2.5 px-3">Fiscal Year</th>
+              <th class="py-2.5 px-3 text-right">Annual Target</th>
+              <th class="py-2.5 px-3 text-right">Achieved Amount</th>
+              <th class="py-2.5 px-3 text-center">Progress %</th>
+              <th class="py-2.5 px-3 text-right">Variance Balance</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for row in sls_target_variance %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ row.salesperson_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ row.target_category }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ row.fiscal_year }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(row.annual_target) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(row.achieved_amount) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ row.progress_pct }}%</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(row.variance_amount) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_teams', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_teams', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 5: REPORTING & DOCUMENT PRINT STUDIO                                -->
+  <!-- ========================================================================= -->
+
+  <!-- 5.1 DO-GI-Invoice Pending Reconciliation -->
+  {% elif current_tab == 'do-invoice-pending' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="clock-4" class="w-4 h-4 text-rose-500"></i>
+            <span>DO - Goods Issue - Invoice Pending Reconciliation Audit</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Audit trail identifying delivered orders not yet converted to commercial tax invoices</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">DO Number</th>
+              <th class="py-2.5 px-3">Dispatch Date</th>
+              <th class="py-2.5 px-3">Sales Order Ref</th>
+              <th class="py-2.5 px-3">Customer</th>
+              <th class="py-2.5 px-3 text-right">Order Value</th>
+              <th class="py-2.5 px-3">Invoice Number</th>
+              <th class="py-2.5 px-3 text-center">Reconciliation Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for r in sls_do_pending_report %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ r.do_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ r.dispatch_date }}</td>
+                <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400">{{ r.order_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ r.customer_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(r.order_value) }}</td>
+                <td class="py-3 px-3 font-mono text-indigo-500">{{ r.invoice_number|default('PENDING_INVOICE') }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if r.reconciliation_status == 'INVOICED' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% else %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20{% endif %}">
+                    {{ r.reconciliation_status }}
+                  </span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_orders', '{{ r.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_orders', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.2 Consolidated Statement -->
+  {% elif current_tab == 'consolidated-statement' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-indigo-500"></i>
+            <span>Consolidated Group Sales, Collection &amp; Outstanding Statement</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Multi-company executive summary across all 5 operating subsidiaries</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Subsidiary Company</th>
+              <th class="py-2.5 px-3 text-center">Orders</th>
+              <th class="py-2.5 px-3 text-right">Gross Orders (USD)</th>
+              <th class="py-2.5 px-3 text-center">Invoices</th>
+              <th class="py-2.5 px-3 text-right">Invoiced Sales (USD)</th>
+              <th class="py-2.5 px-3 text-right">Realized Cash (USD)</th>
+              <th class="py-2.5 px-3 text-right">Net AR Balance (USD)</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for c in sls_consolidated_statement %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-white/10 font-bold">{{ c.short_code }}</span>
+                  <span>{{ c.company_name }}</span>
+                </td>
+                <td class="py-3 px-3 text-center font-mono">{{ c.total_orders_count }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(c.total_ordered_amount) }}</td>
+                <td class="py-3 px-3 text-center font-mono">{{ c.total_invoices_count }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">${{ "{:,.2f}".format(c.total_invoiced_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(c.total_collected_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(c.net_outstanding_amount) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_orders', '{{ c.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_orders', '{{ c.id }}', '{{ c.name or c.title or c.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.3 Profitability Analysis -->
+  {% elif current_tab == 'profitability-report' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-emerald-500"></i>
+            <span>Product Profitability &amp; Discount Margin Audit</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Itemized revenue, estimated production costs, gross profit margins, and discount variance analysis</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Item Code</th>
+              <th class="py-2.5 px-3">Item Description</th>
+              <th class="py-2.5 px-3 text-center">UOM</th>
+              <th class="py-2.5 px-3 text-right">Sold Qty</th>
+              <th class="py-2.5 px-3 text-right">Total Revenue</th>
+              <th class="py-2.5 px-3 text-right">Est. Production Cost</th>
+              <th class="py-2.5 px-3 text-right">Gross Profit</th>
+              <th class="py-2.5 px-3 text-center">Margin %</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for item in sls_profitability_report %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ item.item_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ item.item_name }}</td>
+                <td class="py-3 px-3 text-center font-mono">{{ item.uom }}</td>
+                <td class="py-3 px-3 text-right font-mono">{{ "{:,.0f}".format(item.total_sold_qty) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(item.total_revenue) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(item.estimated_production_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(item.gross_profit_margin) }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-600 dark:text-blue-400">{{ item.margin_pct }}%</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('sales_orders', '{{ item.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('sales_orders', '{{ item.id }}', '{{ item.name or item.title or item.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.4 Sales Document Print Studio -->
+  {% elif current_tab == 'sales-print-studio' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-teal-500"></i>
+            <span>Commercial Document Print Studio &amp; Letterhead Hub</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Generate and print official corporate documents with multi-tier digital signatures and security barcodes</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">Sales Quotations</h4>
+          <p class="text-[11px] text-slate-500">Formal tender proposals & price quote sheets</p>
+          {% if sls_quotes %}
+            <a href="/modules/sales/print/quote/{{ sls_quotes[0].id }}" target="_blank" class="block w-full text-center py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition">
+              Print Sample Quote
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">Order Confirmations</h4>
+          <p class="text-[11px] text-slate-500">Confirmed sales order sheets with packing specs</p>
+          {% if sls_orders %}
+            <a href="/modules/sales/print/order/{{ sls_orders[0].id }}" target="_blank" class="block w-full text-center py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition">
+              Print Sample Order
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">Delivery Orders (DO)</h4>
+          <p class="text-[11px] text-slate-500">Warehouse challan & gate pass dispatch notes</p>
+          {% if sls_do_list %}
+            <a href="/modules/sales/print/do/{{ sls_do_list[0].id }}" target="_blank" class="block w-full text-center py-2 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition">
+              Print Sample DO
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <i data-lucide="receipt" class="w-5 h-5"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">Sales Tax Invoices</h4>
+          <p class="text-[11px] text-slate-500">Commercial tax invoices with GL audit reference</p>
+          {% if sls_invoices %}
+            <a href="/modules/sales/print/invoice/{{ sls_invoices[0].id }}" target="_blank" class="block w-full text-center py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition">
+              Print Sample Invoice
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  {% endif %}
+
+{% endif %}

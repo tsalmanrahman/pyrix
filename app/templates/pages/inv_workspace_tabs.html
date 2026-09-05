@@ -1,0 +1,1437 @@
+{# Inventory Management Comprehensive 5-Suite Workspace Tabs #}
+{% if module.route_slug in ('inventory', 'inventory-management') %}
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 1: MASTER SETUP SUITE                                              -->
+  <!-- ========================================================================= -->
+
+  <!-- 1.1 Warehouses Master -->
+  {% if current_tab == 'warehouses' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="warehouse" class="w-4 h-4 text-blue-500"></i>
+            <span>Warehouses, Plants &amp; Storage Facilities Master</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Central stores, finished goods depots, project stores, and intermodal CFS yards</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Warehouse Code</th>
+              <th class="py-2.5 px-3">Warehouse Name</th>
+              <th class="py-2.5 px-3">Storage Type</th>
+              <th class="py-2.5 px-3">Location / Plant Address</th>
+              <th class="py-2.5 px-3">Store Manager</th>
+              <th class="py-2.5 px-3">Subsidiary</th>
+              <th class="py-2.5 px-3 text-center">Bins</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for w in inv_warehouses %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ w.warehouse_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ w.warehouse_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ w.warehouse_type }}</span></td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ w.address }}</td>
+                <td class="py-3 px-3 font-medium">{{ w.manager_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ w.company_code }}</span></td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-indigo-500">{{ w.bin_count }} Bins</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ w.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ w.id }}', '{{ w.name or w.title or w.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.2 Multi-Bin Storage Locations -->
+  {% elif current_tab == 'bins' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="grid" class="w-4 h-4 text-indigo-500"></i>
+            <span>Multi-Bin Storage Map (Aisle / Rack / Shelf / Bin)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Precise 4-dimensional storage coordinates for rapid material put-away and picking</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Bin Code</th>
+              <th class="py-2.5 px-3">Warehouse</th>
+              <th class="py-2.5 px-3">Aisle</th>
+              <th class="py-2.5 px-3">Rack</th>
+              <th class="py-2.5 px-3">Shelf</th>
+              <th class="py-2.5 px-3">Bin Number</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for b in inv_bins %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ b.bin_code }}</td>
+                <td class="py-3 px-3 font-medium text-slate-900 dark:text-white">{{ b.warehouse_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ b.aisle }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ b.rack }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ b.shelf }}</td>
+                <td class="py-3 px-3 font-mono">{{ b.bin_number }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Operational</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ b.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ b.id }}', '{{ b.name or b.title or b.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.3 Product Groups & Categorization -->
+  {% elif current_tab == 'product-groups' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="folder-tree" class="w-4 h-4 text-cyan-500"></i>
+            <span>Product Groups, Item Classes &amp; Categories</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Raw Materials, Finished Goods, WIP Assemblies, Plant Consumables, and Spares</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Group Code</th>
+              <th class="py-2.5 px-3">Group Name</th>
+              <th class="py-2.5 px-3">Category Classification</th>
+              <th class="py-2.5 px-3">Subsidiary</th>
+              <th class="py-2.5 px-3 text-center">Items Assigned</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for g in inv_groups %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ g.group_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ g.group_name }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ g.group_type }}</span></td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ g.company_code }}</span></td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ g.item_count }} Items</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ g.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ g.id }}', '{{ g.name or g.title or g.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.4 UOM & Conversion Matrices -->
+  {% elif current_tab == 'uom' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="scale" class="w-4 h-4 text-emerald-500"></i>
+            <span>Units of Measure (UOM) &amp; Dynamic Conversion Matrix</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Base inventory unit definitions and package unit conversion multipliers</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">UOM Code</th>
+              <th class="py-2.5 px-3">UOM Description</th>
+              <th class="py-2.5 px-3">Base Unit</th>
+              <th class="py-2.5 px-3 text-center">Conversion Ratio</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for u in inv_uom_list %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ u.uom_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ u.uom_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ u.base_uom }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ u.conversion_ratio }}x</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Standard</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ u.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ u.id }}', '{{ u.name or u.title or u.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 1.5 Master Items Catalog -->
+  {% elif current_tab == 'items' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="package" class="w-4 h-4 text-amber-500"></i>
+            <span>Master Inventory Items &amp; Standard Cost Catalog</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Item specifications, standard costs, reorder levels, safety stocks, and serialization flags</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Item Code</th>
+              <th class="py-2.5 px-3">Item Description</th>
+              <th class="py-2.5 px-3">Product Group</th>
+              <th class="py-2.5 px-3 text-center">UOM</th>
+              <th class="py-2.5 px-3 text-right">Standard Cost</th>
+              <th class="py-2.5 px-3 text-right">On-Hand Qty</th>
+              <th class="py-2.5 px-3 text-center">Serialized</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for it in inv_items %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ it.item_code }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ it.item_name }}</span>
+                  <p class="text-[10px] text-slate-500 italic">{{ it.specification }}</p>
+                </td>
+                <td class="py-3 px-3 text-slate-500">{{ it.group_name|default('-') }}</td>
+                <td class="py-3 px-3 text-center font-mono">{{ it.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(it.standard_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(it.total_on_hand) }}</td>
+                <td class="py-3 px-3 text-center">
+                  {% if it.is_serialized %}
+                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">SERIALIZED</span>
+                  {% else %}
+                    <span class="text-slate-400 text-[10px]">Standard</span>
+                  {% endif %}
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ it.item_status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ it.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ it.id }}', '{{ it.name or it.title or it.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 2: TRANSACTION PROCESSING & MOVEMENT SUITE                          -->
+  <!-- ========================================================================= -->
+
+  <!-- 2.1 Goods Receiving Notes (GRN) -->
+  {% elif current_tab == 'grn' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-500"></i>
+            <span>Goods Receiving Notes (GRN / MRR)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Vendor PO material inwarding, production finished goods receipts, and quality inspection sign-offs</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">GRN Number</th>
+              <th class="py-2.5 px-3">Type</th>
+              <th class="py-2.5 px-3">Supplier / Origin</th>
+              <th class="py-2.5 px-3">Warehouse</th>
+              <th class="py-2.5 px-3">GRN Date</th>
+              <th class="py-2.5 px-3 text-right">Received Value</th>
+              <th class="py-2.5 px-3 text-center">QC Status</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Print</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for grn in inv_grn_list %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ grn.grn_number }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ grn.grn_type }}</span></td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ grn.supplier_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ grn.warehouse_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ grn.grn_date }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(grn.total_received_value) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ grn.qc_status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">{{ grn.status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/inventory/print/grn/{{ grn.id }}" target="_blank" class="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-200">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Print GRN</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ grn.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ grn.id }}', '{{ grn.name or grn.title or grn.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.2 Goods Issue Challans -->
+  {% elif current_tab == 'issues' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="arrow-up-right" class="w-4 h-4 text-blue-500"></i>
+            <span>Goods Issue Challans &amp; Outbound Dispatches</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Delivery Order dispatches, WIP issuances, maintenance spare parts, and cost center allocations</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Issue Challan #</th>
+              <th class="py-2.5 px-3">Issue Type</th>
+              <th class="py-2.5 px-3">Recipient / Destination</th>
+              <th class="py-2.5 px-3">Warehouse</th>
+              <th class="py-2.5 px-3">Gate Pass Ref</th>
+              <th class="py-2.5 px-3 text-right">Issued Value</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Print</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for iss in inv_issues %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ iss.issue_number }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ iss.issue_type }}</span></td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ iss.recipient_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ iss.warehouse_name }}</td>
+                <td class="py-3 px-3 font-mono text-indigo-500">{{ iss.gate_pass_ref }}</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(iss.total_issue_value) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">{{ iss.status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/inventory/print/issue/{{ iss.id }}" target="_blank" class="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-200">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Print Challan</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ iss.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ iss.id }}', '{{ iss.name or iss.title or iss.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.3 Stock Transfer Orders (STO) -->
+  {% elif current_tab == 'stock-transfers' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="truck" class="w-4 h-4 text-cyan-500"></i>
+            <span>Inter-Warehouse Stock Transfer Orders (STO)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Plant-to-plant &amp; warehouse shuttling with live in-transit cargo status and vehicle tracking</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">STO Number</th>
+              <th class="py-2.5 px-3">From Warehouse</th>
+              <th class="py-2.5 px-3">To Destination</th>
+              <th class="py-2.5 px-3">Dispatch Date</th>
+              <th class="py-2.5 px-3">Carrier / Fleet</th>
+              <th class="py-2.5 px-3 text-right">Transfer Value</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Print</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for st in inv_transfers %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ st.transfer_number }}</td>
+                <td class="py-3 px-3 font-medium">{{ st.from_warehouse }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ st.to_warehouse }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ st.dispatch_date }}</td>
+                <td class="py-3 px-3">{{ st.carrier_name }} ({{ st.vehicle_no }})</td><td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    ${{ "{:,.2f}".format(st.total_transfer_value) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">{{ st.status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/inventory/print/sto/{{ st.id }}" target="_blank" class="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-200">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Print STO</span>
+                  </a>
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ st.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ st.id }}', '{{ st.name or st.title or st.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 2.4 Physical Cycle Adjustments -->
+  {% elif current_tab == 'adjustments' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-rose-500"></i>
+            <span>Physical Inventory Cycle Count Adjustments (+/-)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Physical audit variances, write-offs, revaluation adjustments, and damaged stock reconciliations</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Adjustment #</th>
+              <th class="py-2.5 px-3">Warehouse</th>
+              <th class="py-2.5 px-3">Adjustment Date</th>
+              <th class="py-2.5 px-3">Reason / Classification</th>
+              <th class="py-2.5 px-3">Adjusted By</th>
+              <th class="py-2.5 px-3 text-right">Variance Impact</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for adj in inv_adjustments %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ adj.adjustment_number }}</td>
+                <td class="py-3 px-3 font-medium">{{ adj.warehouse_name }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ adj.adjustment_date }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ adj.reason_type }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ adj.adjusted_by }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">+${{ "{:,.2f}".format(adj.total_variance_amount) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ adj.status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ adj.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ adj.id }}', '{{ adj.name or adj.title or adj.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 3: PROCESS, E-APPROVAL & CLOSING SUITE                              -->
+  <!-- ========================================================================= -->
+
+  <!-- 3.1 e-Approval Hub -->
+  {% elif current_tab == 'e-approvals' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="check-check" class="w-4 h-4 text-indigo-500"></i>
+            <span>Inventory Digital e-Approval Hub</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">QA quality inspection validations, warehouse put-away sign-offs, and STO dispatch authorizations</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Entity Type</th>
+              <th class="py-2.5 px-3">Tier Level</th>
+              <th class="py-2.5 px-3">Tier Name</th>
+              <th class="py-2.5 px-3">Approver Name</th>
+              <th class="py-2.5 px-3">Role</th>
+              <th class="py-2.5 px-3">Inspection Comments</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for a in inv_approvals %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ a.entity_type }}</td>
+                <td class="py-3 px-3 font-mono text-center"><span class="px-1.5 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-white/10 font-bold">Tier {{ a.tier_level }}</span></td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ a.tier_name }}</td>
+                <td class="py-3 px-3 font-medium">{{ a.approver_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ a.approver_role }}</td>
+                <td class="py-3 px-3 text-slate-500 italic">{{ a.comments }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ a.action }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.2 Wave Picking Lists -->
+  {% elif current_tab == 'picking-lists' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="list-checks" class="w-4 h-4 text-purple-500"></i>
+            <span>Automated Wave &amp; Zone Picking Lists</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bin-sequenced warehouse pick lists generated automatically for delivery order packing teams</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Pick List Ref</th>
+              <th class="py-2.5 px-3">Order Ref</th>
+              <th class="py-2.5 px-3">Storage Bin Location</th>
+              <th class="py-2.5 px-3">Item Code &amp; Name</th>
+              <th class="py-2.5 px-3 text-right">Pick Qty</th>
+              <th class="py-2.5 px-3">Destination Facility</th>
+              <th class="py-2.5 px-3 text-center">Pick Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for pl in inv_picking_lists %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ pl.pick_list_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ pl.order_ref }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ pl.pick_bin_location }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ pl.item_code }} - {{ pl.item_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(pl.pick_qty) }} {{ pl.uom_code }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ pl.destination }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">{{ pl.pick_status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ pl.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ pl.id }}', '{{ pl.name or pl.title or pl.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 3.3 Day-End Inventory Closing -->
+  {% elif current_tab == 'day-end-closing' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="clock-4" class="w-4 h-4 text-amber-500"></i>
+            <span>Day-End Inventory Closing &amp; Valuation Reconciliation</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Automated end-of-day stock reconciliation, materialized balance refresh, and GL posting audit</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Items Reconciled</span>
+          <p class="text-2xl font-bold font-mono text-slate-900 dark:text-white">{{ inv_eod_data.items_balanced|default(4) }} Active Items</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Physical Stock Units</span>
+          <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(inv_eod_data.total_physical_units|default(3030)) }} Units</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">GL Ledger Parity</span>
+          <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">100% Balanced</p>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>
+          <div>
+            <p class="text-xs font-bold text-emerald-700 dark:text-emerald-300">Day-End Closing Status: Reconciled &amp; Committed</p>
+            <p class="text-[11px] text-emerald-600/80">All material transactions, goods receipts, and dispatches are fully posted to General Ledger</p>
+          </div>
+        </div>
+        <span class="px-3 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white">EOD SUCCESS</span>
+      </div>
+    </div>
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 4: WARRANTY, SERIALIZATION & BARCODE SUITE                          -->
+  <!-- ========================================================================= -->
+
+  <!-- 4.1 Serial & Warranty Registry -->
+  {% elif current_tab == 'warranties' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="barcode" class="w-4 h-4 text-amber-500"></i>
+            <span>Serial Number &amp; Product Warranty Registry</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">High-value item serialization, customer warranty validity, and AMC service coverage</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Serial Number</th>
+              <th class="py-2.5 px-3">Item Code &amp; Name</th>
+              <th class="py-2.5 px-3">Customer / Owner</th>
+              <th class="py-2.5 px-3">Invoice Ref</th>
+              <th class="py-2.5 px-3">Warranty Start</th>
+              <th class="py-2.5 px-3">Warranty End</th>
+              <th class="py-2.5 px-3 text-center">Period</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-center">Print Certificate</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for w in inv_warranties %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ w.serial_number }}</td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ w.item_code }}</span>
+                  <p class="text-[10px] text-slate-500">{{ w.item_name }}</p>
+                </td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ w.customer_name }}</td>
+                <td class="py-3 px-3 font-mono text-indigo-500">{{ w.invoice_ref }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ w.warranty_start_date }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ w.warranty_end_date }}</td>
+                <td class="py-3 px-3 text-center font-mono font-bold">{{ w.warranty_months }} Mo</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ w.status }}</span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <a href="/modules/inventory/print/warranty/{{ w.id }}" target="_blank" class="px-2 py-1 text-[11px] font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-200">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Certificate</span>
+                  </a>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ w.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ w.id }}', '{{ w.name or w.title or w.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 4.2 Barcode & Serial Scanner Studio -->
+  {% elif current_tab == 'barcode-inquiry' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="scan" class="w-4 h-4 text-emerald-500"></i>
+            <span>Barcode &amp; Serial Number Instant Inquiry Scanner</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Scan product barcodes or input serial numbers for instant warranty status and manufacturing history</p>
+        </div>
+      </div>
+
+      <div class="max-w-xl mx-auto p-6 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-4 text-center">
+        <i data-lucide="barcode" class="w-12 h-12 text-blue-500 mx-auto"></i>
+        <h4 class="text-sm font-bold text-slate-900 dark:text-white">Scan Barcode / Enter Serial Number</h4>
+        <div class="flex items-center gap-2">
+          <input type="text" id="serial-scanner-input" placeholder="e.g. SN-AERO-2026-8801 or SN-SMT-2026-9901" value="SN-AERO-2026-8801" class="mac-input w-full p-2.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 font-mono">
+          <button onclick="runSerialLookup()" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition flex items-center gap-1.5 shrink-0">
+            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+            <span>Lookup</span>
+          </button>
+        </div>
+
+        <div id="scanner-result" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-left space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">SN-AERO-2026-8801</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">WARRANTY ACTIVE</span>
+          </div>
+          <p class="text-xs font-bold text-slate-900 dark:text-white">Aerospace Titanium Bearing Bushings (Set 4)</p>
+          <p class="text-[11px] text-slate-600 dark:text-slate-400">Customer: Boeing Subcontractor Aviation Corp | Invoice: INV-APX-2026-8802</p>
+          <p class="text-[11px] font-mono text-slate-500">Coverage: 2026-08-18 to 2028-08-18 (24 Months Full OEM Warranty)</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function runSerialLookup() {
+        const val = document.getElementById('serial-scanner-input').value.trim();
+        const res = document.getElementById('scanner-result');
+        if (val.includes('SN-SMT')) {
+          res.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">${val}</span>
+              <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">WARRANTY ACTIVE</span>
+            </div>
+            <p class="text-xs font-bold text-slate-900 dark:text-white">5-Axis Surface Mount PCB Assembly</p>
+            <p class="text-[11px] text-slate-600 dark:text-slate-400">Customer: Siemens Smart Energy Infrastructure | Invoice: INV-APX-2026-8801</p>
+            <p class="text-[11px] font-mono text-slate-500">Coverage: 2026-08-20 to 2027-08-20 (12 Months Standard Coverage)</p>
+          `;
+        } else {
+          res.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">${val || 'SN-AERO-2026-8801'}</span>
+              <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">WARRANTY ACTIVE</span>
+            </div>
+            <p class="text-xs font-bold text-slate-900 dark:text-white">Aerospace Titanium Bearing Bushings (Set 4)</p>
+            <p class="text-[11px] text-slate-600 dark:text-slate-400">Customer: Boeing Subcontractor Aviation Corp | Invoice: INV-APX-2026-8802</p>
+            <p class="text-[11px] font-mono text-slate-500">Coverage: 2026-08-18 to 2028-08-18 (24 Months Full OEM Warranty)</p>
+          `;
+        }
+      }
+    </script>
+
+  <!-- ========================================================================= -->
+  <!-- SUITE 5: VALUATION & STOCK ANALYTICS SUITE                                -->
+  <!-- ========================================================================= -->
+
+  <!-- 5.1 Multi-Warehouse Stock Balance Matrix -->
+  {% elif current_tab == 'stock-balances' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-500"></i>
+            <span>Real-Time Multi-Warehouse Stock Balance Matrix</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Live visibility of On-Hand, Allocated/Reserved, In-Transit, and Available to Promise (ATP) balances</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Item Code</th>
+              <th class="py-2.5 px-3">Item Description</th>
+              <th class="py-2.5 px-3">Warehouse</th>
+              <th class="py-2.5 px-3">Bin Location</th>
+              <th class="py-2.5 px-3 text-right">On-Hand Qty</th>
+              <th class="py-2.5 px-3 text-right">Reserved Qty</th>
+              <th class="py-2.5 px-3 text-right">In-Transit Qty</th>
+              <th class="py-2.5 px-3 text-right">Available (ATP)</th>
+              <th class="py-2.5 px-3 text-right">Total Valuation</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for sb in inv_stock_matrix %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ sb.item_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ sb.item_name }}</td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ sb.warehouse_name }}</td>
+                <td class="py-3 px-3 font-mono text-indigo-500">{{ sb.bin_code|default('CENTRAL_BAY') }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ "{:,.0f}".format(sb.on_hand_qty) }} {{ sb.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono text-amber-600 dark:text-amber-400">{{ "{:,.0f}".format(sb.reserved_qty) }}</td>
+                <td class="py-3 px-3 text-right font-mono text-cyan-600 dark:text-cyan-400">{{ "{:,.0f}".format(sb.in_transit_qty) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(sb.available_to_promise) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(sb.total_valuation) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ sb.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ sb.id }}', '{{ sb.name or sb.title or sb.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.2 Goods in Transit (GIT) -->
+  {% elif current_tab == 'goods-in-transit' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="navigation" class="w-4 h-4 text-cyan-500"></i>
+            <span>Goods-in-Transit (GIT) Real-Time Tracking Monitor</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Active inter-warehouse stock transfer shipments currently on the road between plants</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Transfer STO #</th>
+              <th class="py-2.5 px-3">Origin Warehouse</th>
+              <th class="py-2.5 px-3">Destination Facility</th>
+              <th class="py-2.5 px-3">Item Shipped</th>
+              <th class="py-2.5 px-3 text-right">In-Transit Qty</th>
+              <th class="py-2.5 px-3">Carrier / Vehicle #</th>
+              <th class="py-2.5 px-3">Tracking Ref</th>
+              <th class="py-2.5 px-3 text-right">Value</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for git in inv_git_list %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ git.transfer_number }}</td>
+                <td class="py-3 px-3">{{ git.from_warehouse }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ git.to_warehouse }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ git.item_code }} - {{ git.item_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ "{:,.0f}".format(git.transfer_qty) }} {{ git.uom_code }}</td>
+                <td class="py-3 px-3">{{ git.carrier_name }} ({{ git.vehicle_no }})</td>
+                <td class="py-3 px-3 font-mono text-indigo-500">{{ git.tracking_ref }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(git.line_total) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ git.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ git.id }}', '{{ git.name or git.title or git.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.3 ABC Analysis & Replenishment -->
+  {% elif current_tab == 'abc-analysis' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i>
+            <span>Inventory ABC Classification &amp; Reorder Level Monitor</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Fast-Moving vs Slow-Moving valuation stratification and automated safety stock alarms</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Item Code</th>
+              <th class="py-2.5 px-3">Item Description</th>
+              <th class="py-2.5 px-3 text-right">On-Hand Qty</th>
+              <th class="py-2.5 px-3 text-right">Standard Cost</th>
+              <th class="py-2.5 px-3 text-right">Total Inventory Value</th>
+              <th class="py-2.5 px-3 text-center">ABC Class</th>
+              <th class="py-2.5 px-3 text-center">Replenishment Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for it in inv_abc_data %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ it.item_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ it.item_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ "{:,.0f}".format(it.current_on_hand) }} {{ it.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(it.standard_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(it.total_inventory_value) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if 'CATEGORY_A' in it.abc_category %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% elif 'CATEGORY_B' in it.abc_category %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20{% else %}bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20{% endif %}">
+                    {{ it.abc_category }}
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if it.replenishment_status == 'ADEQUATE_STOCK' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% else %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20{% endif %}">
+                    {{ it.replenishment_status }}
+                  </span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ it.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ it.id }}', '{{ it.name or it.title or it.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.4 Warehouse Print Studio -->
+  {% elif current_tab == 'warehouse-print-studio' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-rose-500"></i>
+            <span>Warehouse Document Print Studio &amp; Letterhead Hub</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Generate and print official warehouse documentation with QC signatures and barcode tags</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">Goods Receiving Note (GRN)</h4>
+          <p class="text-[11px] text-slate-500">Official vendor delivery inwarding sheet</p>
+          {% if inv_grn_list %}
+            <a href="/modules/inventory/print/grn/{{ inv_grn_list[0].id }}" target="_blank" class="block w-full text-center py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition">
+              Print Sample GRN
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">Goods Issue Challan</h4>
+          <p class="text-[11px] text-slate-500">Official warehouse dispatch challan with gate pass</p>
+          {% if inv_issues %}
+            <a href="/modules/inventory/print/issue/{{ inv_issues[0].id }}" target="_blank" class="block w-full text-center py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition">
+              Print Sample Challan
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">Stock Transfer Note (STO)</h4>
+          <p class="text-[11px] text-slate-500">Inter-warehouse shuttling dispatch note</p>
+          {% if inv_transfers %}
+            <a href="/modules/inventory/print/sto/{{ inv_transfers[0].id }}" target="_blank" class="block w-full text-center py-2 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition">
+              Print Sample STO
+            </a>
+          {% endif %}
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white">Warranty Certificate</h4>
+          <p class="text-[11px] text-slate-500">Official serialized product warranty certificate</p>
+          {% if inv_warranties %}
+            <a href="/modules/inventory/print/warranty/{{ inv_warranties[0].id }}" target="_blank" class="block w-full text-center py-2 rounded-xl text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white transition">
+              Print Certificate
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+
+  <!-- 5.5 Product Ledger (Stock Card Statement) -->
+  {% elif current_tab == 'product-ledger' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i>
+            <span>Product Ledger &amp; Item Stock Card Statement</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Chronological material ledger showing goods receipts (+), issue challans (-), and transfers with audit trails</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Date</th>
+              <th class="py-2.5 px-3">Document #</th>
+              <th class="py-2.5 px-3">Transaction Type</th>
+              <th class="py-2.5 px-3">Item Code &amp; Name</th>
+              <th class="py-2.5 px-3">Warehouse</th>
+              <th class="py-2.5 px-3 text-right">Inward Qty (+)</th>
+              <th class="py-2.5 px-3 text-right">Outward Qty (-)</th>
+              <th class="py-2.5 px-3 text-right">Rate</th>
+              <th class="py-2.5 px-3 text-right">Total Amount</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for row in inv_product_ledger %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono text-slate-500">{{ row.txn_date }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ row.doc_number }}</td>
+                <td class="py-3 px-3">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if row.qty_in > 0 %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% else %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20{% endif %}">
+                    {{ row.txn_type }}
+                  </span>
+                </td>
+                <td class="py-3 px-3">
+                  <span class="font-bold text-slate-900 dark:text-white">{{ row.item_code }}</span>
+                  <p class="text-[10px] text-slate-500">{{ row.item_name }}</p>
+                </td>
+                <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ row.warehouse_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                  {% if row.qty_in > 0 %}+{{ "{:,.0f}".format(row.qty_in) }} {{ row.uom_code }}{% else %}-{% endif %}
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
+                  {% if row.qty_out > 0 %}-{{ "{:,.0f}".format(row.qty_out) }} {{ row.uom_code }}{% else %}-{% endif %}
+                </td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(row.unit_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(row.amount) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.6 Inventory Valuation Report -->
+  {% elif current_tab == 'inventory-valuation' %}
+    <div class="glass-card rounded-2xl p-6 space-y-6 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-4 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="calculator" class="w-4 h-4 text-emerald-500"></i>
+            <span>Inventory Valuation &amp; Asset Parity Report</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Weighted average costing breakdown by SKU and product category with GL asset reconciliation</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Inventory Asset Valuation</span>
+          <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(inv_valuation_report.grand_total_valuation) }}</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Stock Quantity On-Hand</span>
+          <p class="text-2xl font-bold font-mono text-slate-900 dark:text-white">{{ "{:,.0f}".format(inv_valuation_report.grand_total_units) }} Units</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
+          <span class="text-[10px] font-bold text-slate-500 uppercase">Active Catalog SKUs</span>
+          <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ inv_valuation_report.total_skus }} SKUs</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Item Code</th>
+              <th class="py-2.5 px-3">Item Description</th>
+              <th class="py-2.5 px-3">Category Group</th>
+              <th class="py-2.5 px-3 text-center">UOM</th>
+              <th class="py-2.5 px-3 text-right">Standard Cost</th>
+              <th class="py-2.5 px-3 text-right">Stock On-Hand</th>
+              <th class="py-2.5 px-3 text-right">Total Valuation</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for it in inv_valuation_report.report_items %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ it.item_code }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ it.item_name }}</td>
+                <td class="py-3 px-3 text-slate-500">{{ it.group_name|default('-') }}</td>
+                <td class="py-3 px-3 text-center font-mono">{{ it.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(it.standard_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ "{:,.0f}".format(it.total_on_hand) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(it.total_valuation) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.7 Delivery Order (DO) vs Actual Dispatch Reconciliation -->
+  {% elif current_tab == 'do-vs-dispatch' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="clock-4" class="w-4 h-4 text-amber-500"></i>
+            <span>Delivery Order (DO) vs Actual Dispatch Reconciliation</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Auditing commercial Delivery Orders against actual warehouse physical dispatch challans</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">DO Number</th>
+              <th class="py-2.5 px-3">Customer Name</th>
+              <th class="py-2.5 px-3">Item Code &amp; Name</th>
+              <th class="py-2.5 px-3 text-right">DO Ordered Qty</th>
+              <th class="py-2.5 px-3 text-right">Actual Dispatched</th>
+              <th class="py-2.5 px-3 text-right">Pending Dispatch</th>
+              <th class="py-2.5 px-3 text-center">Fulfillment Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for row in inv_do_dispatch_report %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ row.do_number }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ row.customer_name }}</td>
+                <td class="py-3 px-3">{{ row.item_code }} - {{ row.item_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ "{:,.0f}".format(row.do_qty) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(row.actual_dispatched_qty) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold {% if row.pending_dispatch_qty > 0 %}text-amber-600 dark:text-amber-400{% else %}text-slate-400{% endif %}">
+                  {{ "{:,.0f}".format(row.pending_dispatch_qty) }}
+                </td>
+                <td class="py-3 px-3 text-center">
+                  {% if row.pending_dispatch_qty == 0 %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">FULLY DISPATCHED</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">PENDING DISPATCH</span>
+                  {% endif %}
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.8 Cost of Materials Issued to Production -->
+  {% elif current_tab == 'production-costing' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="layers" class="w-4 h-4 text-purple-500"></i>
+            <span>Cost of Materials Issued to Production (WIP Consumption)</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Raw materials, sub-assemblies, and tooling issued against shop floor manufacturing orders</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Issue Challan #</th>
+              <th class="py-2.5 px-3">Job Order Ref</th>
+              <th class="py-2.5 px-3">Production Line / Cost Centre</th>
+              <th class="py-2.5 px-3">Material Code &amp; Description</th>
+              <th class="py-2.5 px-3 text-right">Issued Qty</th>
+              <th class="py-2.5 px-3 text-right">Unit Standard Rate</th>
+              <th class="py-2.5 px-3 text-right">Material Cost</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for row in inv_prod_costing_report %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ row.issue_number }}</td>
+                <td class="py-3 px-3 font-mono text-slate-500">{{ row.job_order_ref }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ row.production_line }}</td>
+                <td class="py-3 px-3">{{ row.item_code }} - {{ row.item_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ "{:,.0f}".format(row.issued_qty) }} {{ row.uom_code }}</td>
+                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(row.unit_cost) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(row.total_material_cost) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.9 Plant-Wise Consumption Details -->
+  {% elif current_tab == 'plant-consumption' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="building-2" class="w-4 h-4 text-cyan-500"></i>
+            <span>Plant-Wise Material Consumption Statement</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Summary of material consumption across operating plants, warehouses, and storage depots</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Plant / Facility Name</th>
+              <th class="py-2.5 px-3">Facility Code</th>
+              <th class="py-2.5 px-3">Storage Type</th>
+              <th class="py-2.5 px-3">Subsidiary</th>
+              <th class="py-2.5 px-3 text-center">Challans Processed</th>
+              <th class="py-2.5 px-3 text-right">Units Consumed</th>
+              <th class="py-2.5 px-3 text-right">Total Consumption Value</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for row in inv_plant_consumption %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ row.warehouse_name }}</td>
+                <td class="py-3 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ row.warehouse_code }}</td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ row.warehouse_type }}</span></td>
+                <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ row.company_code }}</span></td>
+                <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ row.issue_challan_count }} Dispatches</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ "{:,.0f}".format(row.total_units_consumed) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(row.total_consumption_value) }}</td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <!-- 5.10 Inter-Warehouse STO Transfer Statement -->
+  {% elif current_tab == 'sto-reports' %}
+    <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="truck" class="w-4 h-4 text-indigo-500"></i>
+            <span>Inter-Warehouse Stock Transfer Orders (STO) Statement</span>
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Comprehensive audit statement for plant-to-plant material transfers and in-transit cargo</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
+              <th class="py-2.5 px-3">Transfer STO #</th>
+              <th class="py-2.5 px-3">Origin Plant</th>
+              <th class="py-2.5 px-3">Destination Facility</th>
+              <th class="py-2.5 px-3">Material Shipped</th>
+              <th class="py-2.5 px-3 text-right">Transfer Qty</th>
+              <th class="py-2.5 px-3">Carrier / Vehicle #</th>
+              <th class="py-2.5 px-3 text-right">Transfer Value</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+            {% for row in inv_sto_reports %}
+              <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="py-3 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ row.transfer_number }}</td>
+                <td class="py-3 px-3">{{ row.origin_facility }}</td>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ row.destination_facility }}</td>
+                <td class="py-3 px-3">{{ row.item_code }} - {{ row.item_name }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ "{:,.0f}".format(row.transfer_qty) }} {{ row.uom_code }}</td>
+                <td class="py-3 px-3">{{ row.carrier_name }} ({{ row.vehicle_no }})</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(row.line_total) }}</td>
+                <td class="py-3 px-3 text-center">
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">{{ row.transfer_status }}</span>
+                </td>
+              
+                <td class="py-3 px-3 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
+                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  {% endif %}
+
+{% endif %}

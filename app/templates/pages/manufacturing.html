@@ -25,19 +25,19 @@
     <!-- Quick Stats Summary -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
-        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Active Cells</p>
+        <p class="text-[10px] font-semibold text-slate-400 tracking-tight">Active Cells</p>
         <p class="text-lg font-bold text-emerald-400 mt-0.5">{{ plant_summary.running }} / {{ plant_summary.total_machines }}</p>
       </div>
       <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
-        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Avg Efficiency</p>
+        <p class="text-[10px] font-semibold text-slate-400 tracking-tight">Avg Efficiency</p>
         <p class="text-lg font-bold text-blue-400 mt-0.5">{{ plant_summary.average_efficiency }}%</p>
       </div>
       <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
-        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Units Produced</p>
+        <p class="text-[10px] font-semibold text-slate-400 tracking-tight">Units Produced</p>
         <p class="text-lg font-bold text-white mt-0.5">{{ "{:,}".format(plant_summary.total_units_today) }}</p>
       </div>
       <div class="px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/5">
-        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Defect Ratio</p>
+        <p class="text-[10px] font-semibold text-slate-400 tracking-tight">Defect Ratio</p>
         <p class="text-lg font-bold text-amber-400 mt-0.5">{{ plant_summary.defect_rate_pct }}%</p>
       </div>
     </div>
@@ -59,9 +59,8 @@
         <!-- Machine Card Header -->
         <div class="flex items-start justify-between gap-3">
           <div>
-            <span class="text-[10px] font-mono font-semibold text-slate-400 uppercase tracking-wider">{{ m.machine_id }}</span>
+            <span class="text-[10px] font-mono font-semibold text-slate-400 tracking-tight">{{ m.machine_id }}</span>
             <h3 class="text-sm font-bold text-white mt-0.5">{{ m.machine_name }}</h3>
-            <p class="text-xs text-slate-400 mt-0.5">{{ m.line_name }}</p>
           </div>
 
           <!-- Status Badge Dropdown -->

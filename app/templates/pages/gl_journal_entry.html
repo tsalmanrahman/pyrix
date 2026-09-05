@@ -13,7 +13,6 @@
         <h2 class="text-lg font-bold text-white tracking-tight">
           {% if is_edit_mode %}Edit Journal Voucher #{{ voucher.voucher_number }}{% else %}New Double-Entry Journal Voucher (JV){% endif %}
         </h2>
-        <p class="text-xs text-slate-400">Multi-line balanced accounting distribution studio</p>
       </div>
     </div>
 
@@ -32,7 +31,7 @@
 
     <!-- 1. Voucher Header Metadata -->
     <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3.5">
-      <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+      <h3 class="text-xs font-bold text-white tracking-tight flex items-center gap-2">
         <i data-lucide="file-text" class="w-4 h-4 text-blue-400"></i>
         <span>Voucher Header & Scoping</span>
       </h3>
@@ -98,7 +97,7 @@
     <!-- 2. Double-Entry Line Items Grid -->
     <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
       <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+        <h3 class="text-xs font-bold text-white tracking-tight flex items-center gap-2">
           <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
           <span>Double-Entry Line Items (Debit = Credit)</span>
         </h3>
@@ -115,7 +114,7 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs" id="journal-lines-table">
           <thead>
-            <tr class="border-b border-white/5 text-slate-400 font-medium uppercase tracking-wider text-[10px]">
+            <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
               <th class="py-2 px-2 w-10">#</th>
               <th class="py-2 px-2 min-w-[220px]">GL Account <span class="text-blue-400">*</span></th>
               <th class="py-2 px-2 min-w-[160px]">Cost Centre / Dept</th>
@@ -240,15 +239,15 @@
       <!-- Real-Time Balanced Validator Card -->
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-black/20 border border-white/10 text-xs">
         <div>
-          <span class="block text-slate-400 uppercase tracking-wider font-semibold text-[10px]">Total Debits</span>
+          <span class="block text-slate-400 tracking-tight font-semibold text-[10px]">Total Debits</span>
           <span id="total-debit-val" class="font-mono font-black text-cyan-400 text-base">$0.00</span>
         </div>
         <div>
-          <span class="block text-slate-400 uppercase tracking-wider font-semibold text-[10px]">Total Credits</span>
+          <span class="block text-slate-400 tracking-tight font-semibold text-[10px]">Total Credits</span>
           <span id="total-credit-val" class="font-mono font-black text-amber-400 text-base">$0.00</span>
         </div>
         <div>
-          <span class="block text-slate-400 uppercase tracking-wider font-semibold text-[10px]">Net Out-Of-Balance</span>
+          <span class="block text-slate-400 tracking-tight font-semibold text-[10px]">Net Out-Of-Balance</span>
           <span id="diff-val" class="font-mono font-black text-slate-200 text-base">$0.00</span>
         </div>
         <div class="flex items-center justify-end">
@@ -266,6 +265,16 @@
       <a href="/modules/general-ledger?tab=journals" class="btn-action-cancel h-9 px-4 rounded-xl text-xs font-medium transition flex items-center justify-center">
         Cancel
       </a>
+      {% if is_edit_mode %}
+      <button 
+        type="button" 
+        onclick="confirmDynamicDelete('gl_vouchers', '{{ voucher.id }}', '{{ voucher.voucher_number }}')" 
+        class="h-9 px-4 rounded-xl text-xs font-semibold bg-rose-600/10 hover:bg-rose-600/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1.5 transition cursor-pointer"
+      >
+        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+        <span>Delete Voucher</span>
+      </button>
+      {% endif %}
       <button 
         id="submit-voucher-btn" 
         type="submit" 
