@@ -139,7 +139,44 @@ async def global_exception_handler(request: Request, exc: Exception):
             status_code=500,
             content={"success": False, "error": str(exc)}
         )
-    raise exc
+    
+    import html
+    safe_err = html.escape(str(exc))
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(
+        status_code=500,
+        content=f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Error - Pyrix</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex items-center justify-center p-4 font-sans">
+  <div class="max-w-lg w-full bg-white rounded-2xl p-6 border border-slate-200 shadow-xl space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-lg">!</div>
+      <div>
+        <h1 class="text-base font-bold text-slate-900">Application Error (500)</h1>
+        <p class="text-xs text-slate-500">Route: <code class="font-mono bg-slate-100 px-1 py-0.5 rounded">{request.url.path}</code></p>
+      </div>
+    </div>
+    <div class="bg-rose-50 border border-rose-200 text-rose-700 text-xs p-3.5 rounded-xl font-mono break-words leading-relaxed">
+      {safe_err}
+    </div>
+    <div class="pt-2 flex items-center justify-between">
+      <a href="/login" class="inline-flex items-center px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition">
+        Return to Login
+      </a>
+      <button onclick="window.location.reload()" class="text-xs text-slate-500 hover:text-slate-700 font-medium cursor-pointer">
+        Retry
+      </button>
+    </div>
+  </div>
+</body>
+</html>"""
+    )
 
 if __name__ == "__main__":
     import uvicorn

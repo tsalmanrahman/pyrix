@@ -8,6 +8,11 @@ class ManufacturingService:
 
     @staticmethod
     def get_plant_summary() -> Dict[str, Any]:
+        from app.core.cache import cache
+        cached = cache.get("plant_summary")
+        if cached is not None:
+            return cached
+
         machines = db.query("SELECT * FROM manufacturing_telemetry")
         total_machines = len(machines)
         running = sum(1 for m in machines if m["status"] == "RUNNING")
@@ -18,7 +23,7 @@ class ManufacturingService:
         total_defects = sum(m["defect_count"] for m in machines)
         defect_rate = round((total_defects / total_units * 100), 2) if total_units else 0
 
-        return {
+        res = {
             "total_machines": total_machines,
             "running": running,
             "idle": idle,
@@ -28,6 +33,8 @@ class ManufacturingService:
             "total_defects": total_defects,
             "defect_rate_pct": defect_rate
         }
+        cache.set("plant_summary", res, ttl=30.0)
+        return res
 
     @staticmethod
     def update_machine_status(machine_id: str, new_status: str, user: str = "Floor Lead", ip: str = "127.0.0.1") -> bool:
@@ -48,10 +55,12 @@ class ManufacturingService:
             """,
             (machine_id, old_status, new_status, user, ip)
         )
+        cache.invalidate("plant_summary")
         return True
 
     @staticmethod
     def adjust_line_speed(machine_id: str, new_speed: int, user: str = "Floor Lead", ip: str = "127.0.0.1") -> bool:
+        from app.core.cache import cache
         db.execute(
             "UPDATE manufacturing_telemetry SET actual_ppm = ?, last_heartbeat = GETDATE() WHERE machine_id = ?",
             (new_speed, machine_id)
@@ -59,8 +68,9 @@ class ManufacturingService:
         db.execute(
             """
             INSERT INTO audit_logs (action_type, entity_name, entity_id, old_value, new_value, user_name, ip_address)
-            VALUES ('SPEED_ADJUSTMENT', 'manufacturing_telemetry', ?, 'speed_change', ?, ?, ?)
+            VALUES ('LINE_SPEED_ADJUST', 'manufacturing_telemetry', ?, ?, ?, ?, ?)
             """,
-            (machine_id, f"{new_speed} PPM", user, ip)
+            (machine_id, "previous_speed", str(new_speed), user, ip)
         )
+        cache.invalidate("plant_summary")
         return True

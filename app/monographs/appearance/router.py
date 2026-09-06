@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
+from app.core.templates import templates
 from app.core.db import db
 from app.core.company_service import CompanyService
 from app.monographs.appearance.service import AppearanceService
@@ -8,7 +8,6 @@ from app.monographs.dynamic_builder.service import DynamicOptionService
 from app.core.user_service import UserService
 
 router = APIRouter(tags=["Appearance"])
-templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/settings/appearance", response_class=HTMLResponse)
 async def appearance_page(request: Request):

@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-Sourcing - {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl">
+
+  <!-- Minimalist Header Banner with Sleek Icon Back Button -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-9 h-9 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+        <i data-lucide="{% if is_edit_mode %}edit-3{% elif entity == 'vendors' %}user-plus{% elif entity == 'requisitions' %}file-plus-2{% else %}shopping-cart{% endif %}" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
+        </h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          {% if entity == 'vendors' %}Register supplier legal identity, commercial terms, and credit limits
+          {% elif entity == 'requisitions' %}Initiate internal purchase request and departmental procurement scope
+          {% else %}Generate and issue procurement purchase order with terms and delivery incoterms
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <!-- Back Button to Sourcing Tab -->
+    <a 
+      href="/modules/sourcing?tab={{ sub_tab|default('vendors') }}" 
+      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300"
+      title="Back to Sourcing Workspace"
+    >
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    </a>
+  </div>
+
+  <!-- Dedicated Solid Form Container (Zero-Modal Full Page) -->
+  <form action="{% if is_edit_mode %}/modules/sourcing/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/sourcing/master/{{ entity }}{% endif %}" method="POST" class="space-y-4">
+
+    <!-- =========================================================================
+         1. VENDOR MASTER PROFILE (vendors)
+         ========================================================================= -->
+    {% if entity == 'vendors' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-5">
+        
+        <!-- Section 1: Corporate Legal Identity -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-tight flex items-center gap-2">
+            <i data-lucide="building-2" class="w-4 h-4"></i>
+            <span>1. Corporate Legal Identity & Org Classification</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Vendor Code <span class="text-blue-500">*</span></label>
+              <input 
+                type="text" 
+                name="vendor_code" 
+                required 
+                value="{{ record.vendor_code if record else default_code|default('VND-009') }}" 
+                placeholder="e.g. VND-009" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400"
+              >
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Vendor Registered Legal Name <span class="text-blue-500">*</span></label>
+              <input 
+                type="text" 
+                name="vendor_name" 
+                required 
+                value="{{ record.vendor_name if record else '' }}" 
+                placeholder="Full registered corporate supplier name" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Vendor Classification <span class="text-blue-500">*</span></label>
+              <select name="vendor_group" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+                <option value="MANUFACTURER_OEM" {% if record and record.vendor_group == 'MANUFACTURER_OEM' %}selected{% endif %}>Manufacturer / OEM</option>
+                <option value="DISTRIBUTOR" {% if record and record.vendor_group == 'DISTRIBUTOR' %}selected{% endif %}>Distributor / Agent</option>
+                <option value="LOCAL_SUPPLIER" {% if record and record.vendor_group == 'LOCAL_SUPPLIER' %}selected{% endif %}>Local Supplier</option>
+                <option value="SERVICE_CONTRACTOR" {% if record and record.vendor_group == 'SERVICE_CONTRACTOR' %}selected{% endif %}>Service Contractor</option>
+                <option value="FREIGHT_FORWARDER" {% if record and record.vendor_group == 'FREIGHT_FORWARDER' %}selected{% endif %}>C&F Freight Forwarder</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Tax ID / TIN</label>
+              <input 
+                type="text" 
+                name="tax_id_tin" 
+                value="{{ record.tax_id_tin if record else '' }}" 
+                placeholder="TIN-98124012" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">VAT / BIN Registration</label>
+              <input 
+                type="text" 
+                name="vat_bin" 
+                value="{{ record.vat_bin if record else '' }}" 
+                placeholder="BIN-002194812" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Contact & Communications -->
+        <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-white/5">
+          <h3 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 tracking-tight flex items-center gap-2">
+            <i data-lucide="contact" class="w-4 h-4"></i>
+            <span>2. Commercial Contacts & Communications</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Primary Contact Person</label>
+              <input 
+                type="text" 
+                name="contact_person" 
+                value="{{ record.contact_person if record else '' }}" 
+                placeholder="Key Account Executive / Sales Director" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Orders & Dispatch Email</label>
+              <input 
+                type="email" 
+                name="email" 
+                value="{{ record.email if record else '' }}" 
+                placeholder="orders@vendor.com" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Direct Telephone / Hotline</label>
+              <input 
+                type="text" 
+                name="phone" 
+                value="{{ record.phone if record else '' }}" 
+                placeholder="+880 2 988-1234 / +1 800..." 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Corporate Physical Address</label>
+              <input 
+                type="text" 
+                name="address" 
+                value="{{ record.address if record else '' }}" 
+                placeholder="Factory / Corporate HQ Address" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Commercial & Settlement Terms -->
+        <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-white/5">
+          <h3 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-tight flex items-center gap-2">
+            <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+            <span>3. Financial Settlement & Credit Terms</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Settlement Currency <span class="text-blue-500">*</span></label>
+              <select name="currency" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+                <option value="USD" {% if record and record.currency == 'USD' %}selected{% endif %}>USD ($ - United States Dollar)</option>
+                <option value="EUR" {% if record and record.currency == 'EUR' %}selected{% endif %}>EUR (€ - Euro)</option>
+                <option value="GBP" {% if record and record.currency == 'GBP' %}selected{% endif %}>GBP (£ - British Pound)</option>
+                <option value="BDT" {% if not record or record.currency == 'BDT' %}selected{% endif %}>BDT (৳ - Bangladeshi Taka)</option>
+                <option value="JPY" {% if record and record.currency == 'JPY' %}selected{% endif %}>JPY (¥ - Japanese Yen)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Credit Terms (Days) <span class="text-blue-500">*</span></label>
+              <input 
+                type="number" 
+                name="credit_terms_days" 
+                value="{{ record.credit_terms_days if record else 30 }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Quality Rating (Stars)</label>
+              <select name="rating_stars" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+                <option value="5.0" {% if not record or record.rating_stars == 5.0 %}selected{% endif %}>5.0 ★ (Prime Grade)</option>
+                <option value="4.5" {% if record and record.rating_stars == 4.5 %}selected{% endif %}>4.5 ★ (Approved Supplier)</option>
+                <option value="4.0" {% if record and record.rating_stars == 4.0 %}selected{% endif %}>4.0 ★ (Standard Vendor)</option>
+                <option value="3.5" {% if record and record.rating_stars == 3.5 %}selected{% endif %}>3.5 ★ (Trial Basis)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    {% endif %}
+
+    <!-- =========================================================================
+         2. REQUISITIONS (PR) MASTER (requisitions)
+         ========================================================================= -->
+    {% if entity == 'requisitions' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-5">
+        
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-tight flex items-center gap-2">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+            <span>1. Requisition Identification & Departmental Scope</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">PR Number <span class="text-blue-500">*</span></label>
+              <input 
+                type="text" 
+                name="req_number" 
+                required 
+                value="{{ record.req_number if record else default_code|default('PR-2026-009') }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Requisition Type</label>
+              <select name="req_type" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+                <option value="CAPEX_MACHINERY" {% if record and record.req_type == 'CAPEX_MACHINERY' %}selected{% endif %}>CAPEX Machinery & Plant</option>
+                <option value="RAW_MATERIALS" {% if record and record.req_type == 'RAW_MATERIALS' %}selected{% endif %}>Raw Materials & Feedstock</option>
+                <option value="SPARES_MRO" {% if record and record.req_type == 'SPARES_MRO' %}selected{% endif %}>Spares, Consumables & MRO</option>
+                <option value="IT_INFRASTRUCTURE" {% if record and record.req_type == 'IT_INFRASTRUCTURE' %}selected{% endif %}>IT Hardware & Licenses</option>
+                <option value="SERVICES" {% if record and record.req_type == 'SERVICES' %}selected{% endif %}>Contractual Services</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Priority Level</label>
+              <select name="priority" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+                <option value="NORMAL" {% if not record or record.priority == 'NORMAL' %}selected{% endif %}>Normal Priority</option>
+                <option value="HIGH" {% if record and record.priority == 'HIGH' %}selected{% endif %}>High Priority</option>
+                <option value="URGENT" {% if record and record.priority == 'URGENT' %}selected{% endif %}>Urgent / Plant Stoppage</option>
+                <option value="LOW" {% if record and record.priority == 'LOW' %}selected{% endif %}>Low Priority</option>
+              </select>
+            </div>
+            <div class="sm:col-span-3">
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Requisition Title & Operational Purpose <span class="text-blue-500">*</span></label>
+              <input 
+                type="text" 
+                name="title" 
+                required 
+                value="{{ record.title if record else '' }}" 
+                placeholder="e.g. Automated High-Speed Heavy Slitting Machine for Line 3" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-white/5">
+          <h3 class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-tight flex items-center gap-2">
+            <i data-lucide="user-check" class="w-4 h-4"></i>
+            <span>2. Requester & Financial Budget Allocation</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
+              <input 
+                type="text" 
+                name="dept_name" 
+                value="{{ record.dept_name if record else 'Operations & Maintenance' }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Requester Full Name</label>
+              <input 
+                type="text" 
+                name="requester_name" 
+                value="{{ record.requester_name if record else current_user.display_name|default('Engr. Farhan Tanvir') }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Budget (USD) <span class="text-blue-500">*</span></label>
+              <input 
+                type="number" 
+                step="0.01" 
+                name="total_estimated_amount" 
+                required 
+                value="{{ record.total_estimated_amount if record else 25000.00 }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+              >
+            </div>
+          </div>
+        </div>
+
+      </div>
+    {% endif %}
+
+    <!-- =========================================================================
+         3. PURCHASE ORDERS (PO) MASTER (purchase-orders)
+         ========================================================================= -->
+    {% if entity == 'purchase-orders' %}
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-5">
+        
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 tracking-tight flex items-center gap-2">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+            <span>1. Purchase Order Specification & Vendor Allocation</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">PO Number <span class="text-blue-500">*</span></label>
+              <input 
+                type="text" 
+                name="po_number" 
+                required 
+                value="{{ record.po_number if record else default_code|default('PO-2026-009') }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-indigo-600 dark:text-indigo-400"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">PO Category</label>
+              <select name="po_category" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+                <option value="RAW_MATERIALS">Raw Materials (Import / Local)</option>
+                <option value="CAPEX_EQUIPMENT">CAPEX Plant Equipment</option>
+                <option value="SPARES_MRO">Industrial Spare Parts</option>
+                <option value="SERVICE_CONTRACT">Annual Maintenance / Service</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Selected Vendor <span class="text-blue-500">*</span></label>
+              <select name="vendor_code" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+                {% for v in src_vendors|default([]) %}
+                  <option value="{{ v.vendor_code }}" {% if record and record.vendor_code == v.vendor_code %}selected{% endif %}>{{ v.vendor_code }} - {{ v.vendor_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-white/5">
+          <h3 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-tight flex items-center gap-2">
+            <i data-lucide="truck" class="w-4 h-4"></i>
+            <span>2. Commercial Incoterms, LC & Settlement</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Incoterm (Delivery)</label>
+              <select name="incoterm" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+                <option value="FOB">FOB (Free On Board)</option>
+                <option value="CFR">CFR (Cost & Freight)</option>
+                <option value="CIF">CIF (Cost, Insurance & Freight)</option>
+                <option value="EXW">EXW (Ex Works Factory)</option>
+                <option value="DAP">DAP (Delivered at Place)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Terms</label>
+              <input 
+                type="text" 
+                name="payment_terms" 
+                value="{{ record.payment_terms if record else '100% LC at Sight' }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">LC Reference (Optional)</label>
+              <input 
+                type="text" 
+                name="lc_number" 
+                value="{{ record.lc_number if record else '' }}" 
+                placeholder="LC-2026-SCB-019" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Total PO Amount <span class="text-blue-500">*</span></label>
+              <input 
+                type="number" 
+                step="0.01" 
+                name="total_amount" 
+                required 
+                value="{{ record.total_amount if record else 18500.00 }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+              >
+            </div>
+            <div>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Currency</label>
+              <select name="currency" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="BDT">BDT (৳)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    {% endif %}
+
+    <!-- Universal Form Bottom Actions Bar -->
+    <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-end gap-3">
+      <button 
+        type="submit" 
+        class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+        <span>{% if is_edit_mode %}Save Changes{% else %}Commit {{ entity_title }}{% endif %}</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}

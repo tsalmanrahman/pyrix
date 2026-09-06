@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from app.core.templates import templates
 from typing import Optional
 from app.core.db import db
 from app.core.company_service import CompanyService
@@ -58,7 +58,6 @@ from app.monographs.enterprise_modules.registry import get_module_suites_registr
 from app.core.user_service import UserService
 
 router = APIRouter(tags=["Enterprise Modules"])
-templates = Jinja2Templates(directory="app/templates")
 
 
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Query
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 from typing import Optional
+from app.core.templates import templates
 from app.core.db import db
 from app.core.company_service import CompanyService
 from app.monographs.appearance.service import AppearanceService
@@ -9,7 +9,6 @@ from app.monographs.dynamic_builder.service import DynamicOptionService
 from app.monographs.audit_logs.service import AuditService
 
 router = APIRouter(tags=["Security & Audit"])
-templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/settings/security", response_class=HTMLResponse)
 async def security_page(request: Request, action: Optional[str] = None):

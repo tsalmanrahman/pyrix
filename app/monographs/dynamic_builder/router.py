@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, Form, Body
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 from typing import List, Optional
 from pydantic import BaseModel
+from app.core.templates import templates
 from app.core.db import db
 from app.core.company_service import CompanyService
 from app.monographs.appearance.service import AppearanceService
@@ -10,7 +10,6 @@ from app.monographs.dynamic_builder.service import DynamicOptionService
 from app.core.user_service import UserService
 
 router = APIRouter(tags=["Dynamic Builder"])
-templates = Jinja2Templates(directory="app/templates")
 
 class ReorderRequest(BaseModel):
     order: List[int]

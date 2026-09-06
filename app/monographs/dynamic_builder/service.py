@@ -1,16 +1,27 @@
 import json
 from typing import List, Dict, Any, Optional
 from app.core.db import db
+from app.core.cache import cache
 
 class DynamicOptionService:
     @staticmethod
     def get_categories() -> List[Dict[str, Any]]:
-        return db.query(
+        cached = cache.get("dynamic_categories")
+        if cached is not None:
+            return cached
+        res = db.query(
             "SELECT * FROM dynamic_categories WHERE is_active = 1 ORDER BY sort_order ASC, code ASC"
         )
+        cache.set("dynamic_categories", res, ttl=300.0)
+        return res
 
     @staticmethod
     def get_options_by_category(category_code: Optional[str] = None) -> List[Dict[str, Any]]:
+        cache_key = f"dynamic_options_{category_code or 'all'}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         if category_code:
             options = db.query(
                 """
@@ -40,6 +51,7 @@ class DynamicOptionService:
                     opt["options_parsed"] = []
             else:
                 opt["options_parsed"] = []
+        cache.set(cache_key, options, ttl=180.0)
         return options
 
     @staticmethod
@@ -62,6 +74,7 @@ class DynamicOptionService:
             """,
             (option_key, str(old_val), str(new_value), user, ip)
         )
+        cache.invalidate_prefix("dynamic_options_")
         return True
 
     @staticmethod
@@ -78,6 +91,7 @@ class DynamicOptionService:
             """,
             (json.dumps(order_list), user, ip)
         )
+        cache.invalidate_prefix("dynamic_options_")
         return True
 
     @staticmethod

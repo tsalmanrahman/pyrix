@@ -1,12 +1,16 @@
 from typing import Dict, Any
 from app.core.db import db
+from app.core.cache import cache
 
 class AppearanceService:
     @staticmethod
     def get_appearance() -> Dict[str, Any]:
+        cached = cache.get("appearance")
+        if cached:
+            return cached
         res = db.query_one("SELECT TOP 1 * FROM appearance_settings ORDER BY id ASC")
         if not res:
-            return {
+            res = {
                 "theme_mode": "light",
                 "accent_color": "#0078D4",
                 "font_family": "SF Pro Display",
@@ -16,6 +20,7 @@ class AppearanceService:
                 "border_glow": 1,
                 "sound_effects": 0
             }
+        cache.set("appearance", res, ttl=300.0)
         return res
 
     @staticmethod
@@ -45,4 +50,5 @@ class AppearanceService:
             """,
             (f"{theme_mode}, {accent_color}, blur:{glass_blur_px}px", user, ip)
         )
+        cache.invalidate("appearance")
         return True
