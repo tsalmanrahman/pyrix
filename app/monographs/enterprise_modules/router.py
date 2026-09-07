@@ -1087,7 +1087,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         "src_pending_approvals": len(src_pending_approvals),
         "src_lc_count": len(src_lc_list),
         "src_dispatches_count": len(src_cnf_dispatches),
-        "src_lc_total": f"${src_kpi_summary.get('total_lc_amount', 0):,.0f}",
+        "src_lc_total": f"{active_company.get('currency_symbol', '৳')}{src_kpi_summary.get('total_lc_amount', 0):,.0f}",
     }
     module_suites = get_module_suites_registry(slug, context_counts)
     active_suite = get_active_suite_context(slug, current_tab, module_suites)
@@ -1519,7 +1519,8 @@ async def handle_new_gl_master_submit(
             target_tab = "coa"
         elif entity == "company-mappings" and gl_account_id:
             target_comp = company_id or str(active_company["id"])
-            GLMasterService.create_company_mapping(gl_account_id, target_comp, company_account_alias or "", posting_currency or "USD")
+            default_curr = active_company.get("currency") if active_company else "BDT"
+            GLMasterService.create_company_mapping(gl_account_id, target_comp, company_account_alias or "", posting_currency or default_curr)
             target_tab = "mapping"
         elif entity == "sub-accounts" and gl_account_id and sub_account_name:
             generated_code = SequenceService.get_next_code("gl_sub_accounts")
@@ -1693,7 +1694,8 @@ async def handle_edit_gl_master_submit(
             target_tab = "coa"
         elif entity == "company-mappings" and gl_account_id:
             target_comp = company_id or str(active_company["id"])
-            GLMasterService.update_company_mapping(record_id, gl_account_id, target_comp, company_account_alias or "", posting_currency or "USD")
+            default_curr = active_company.get("currency") if active_company else "BDT"
+            GLMasterService.update_company_mapping(record_id, gl_account_id, target_comp, company_account_alias or "", posting_currency or default_curr)
             target_tab = "mapping"
         elif entity == "sub-accounts" and gl_account_id and sub_account_code and sub_account_name:
             GLMasterService.update_sub_account(record_id, gl_account_id, sub_account_code, sub_account_name, sub_account_type or "DEPARTMENTAL")

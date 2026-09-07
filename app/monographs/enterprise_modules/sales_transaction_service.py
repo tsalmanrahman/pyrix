@@ -49,7 +49,7 @@ class SalesTransactionService:
         quote_date: str,
         valid_until: str,
         items: List[Dict[str, Any]],
-        currency: str = "USD",
+        currency: str = "BDT",
         discount_amount: float = 0.0,
         tax_amount: float = 0.0,
         progress_notes: Optional[str] = None
@@ -139,7 +139,7 @@ class SalesTransactionService:
         shipping_address: str,
         items: List[Dict[str, Any]],
         quote_id: Optional[str] = None,
-        currency: str = "USD",
+        currency: str = "BDT",
         discount_amount: float = 0.0,
         tax_amount: float = 0.0
     ) -> str:

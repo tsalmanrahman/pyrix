@@ -312,7 +312,7 @@
               <input type="date" name="required_date" value="{{ record.required_date if record else '2026-09-30' }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
             </div>
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Budget (USD)</label>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Budget ({{ active_company.currency_symbol }})</label>
               <input type="number" name="estimated_budget" value="{{ record.estimated_budget if record else 2500000.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
             </div>
           </div>
@@ -413,10 +413,10 @@
             <div>
               <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Currency</label>
               <select name="currency" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-                <option value="BDT">BDT (৳)</option>
+                <option value="BDT" {% if not record or record.currency == 'BDT' %}selected{% endif %}>BDT (৳ - Bangladeshi Taka)</option>
+                <option value="USD" {% if record and record.currency == 'USD' %}selected{% endif %}>USD ($ - United States Dollar)</option>
+                <option value="EUR" {% if record and record.currency == 'EUR' %}selected{% endif %}>EUR (€ - Euro)</option>
+                <option value="GBP" {% if record and record.currency == 'GBP' %}selected{% endif %}>GBP (£ - British Pound)</option>
               </select>
             </div>
           </div>

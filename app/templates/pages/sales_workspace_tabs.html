@@ -8,18 +8,12 @@
   <!-- 1.1 Sales Teams (MM > ZM > TSM Hierarchy) -->
   {% if current_tab == 'sales-teams' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="network" class="w-4 h-4 text-blue-500"></i>
-            <span>Sales Teams & Management Hierarchy (MM &gt; ZM &gt; TSM)</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Commercial hierarchy, zonal divisions, and divisional target allocations</p>
-        </div>
-        <button onclick="openModal('modal-add-sales-team')" class="btn-action-add px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition shadow-sm cursor-pointer">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-          <span>Add Sales Team</span>
-        </button>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="network" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Sales Teams & Management Hierarchy (MM > ZM > TSM): {{ active_company.name }}</span>
+        </h3>
+      <button onclick="openModal('modal-add-sales-team')" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Add Sales Team"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
       </div>
 
       <div class="overflow-x-auto">
@@ -49,7 +43,7 @@
                 </td>
                 <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ t.area_name|default('Corporate / National') }}</td>
                 <td class="py-3 px-3 font-medium">{{ t.manager_name }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-200">${{ "{:,.2f}".format(t.target_annual_amount|default(0)) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-200">{{ t.target_annual_amount|default(0)|money }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-indigo-500">{{ t.member_count }} Reps</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
@@ -69,14 +63,11 @@
   <!-- 1.2 Salespersons Master -->
   {% elif current_tab == 'salespersons' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i>
-            <span>Sales Representatives & Account Executives</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Sales personnel, commission rates, discount thresholds, and monthly quotas</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="users" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Sales Representatives & Account Executives: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -103,8 +94,8 @@
                 <td class="py-3 px-3">{{ sp.team_name|default('Unassigned') }}</td>
                 <td class="py-3 px-3 font-mono text-[11px] text-slate-500">{{ sp.email }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-amber-600 dark:text-amber-400">{{ sp.max_discount_pct }}%</td>
-                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(sp.monthly_target|default(0)) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(sp.total_sold_amount|default(0)) }}</td>
+                <td class="py-3 px-3 text-right font-mono">{{ sp.monthly_target|default(0)|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ sp.total_sold_amount|default(0)|money }}</td>
               
                 <td class="py-3 px-3 text-right">
                   <button type="button" onclick="openRowActionMenu(this, event, 'sales_reps', '{{ sp.id }}', '{{ sp.name or sp.title or sp.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
@@ -120,14 +111,11 @@
   <!-- 1.3 Sales Areas & Zones -->
   {% elif current_tab == 'sales-areas' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="map-pin" class="w-4 h-4 text-cyan-500"></i>
-            <span>Sales Areas, Regions & Distribution Centers</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Geographic territory coverage, regional hubs, and operational jurisdiction</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Sales Areas, Regions & Distribution Centers: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -171,14 +159,11 @@
   <!-- 1.4 Price Profiles & Catalogs -->
   {% elif current_tab == 'price-profiles' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="tag" class="w-4 h-4 text-emerald-500"></i>
-            <span>Product Price Profiles & Contract Rate Cards</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Base price profiles, wholesale price matrices, retail tariffs, and special customer agreements</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="tag" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Product Price Profiles & Contract Rate Cards: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -226,14 +211,11 @@
   <!-- 1.5 Product Prices Catalog -->
   {% elif current_tab == 'product-prices' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="layers" class="w-4 h-4 text-amber-500"></i>
-            <span>Product Prices & Floor Price Governance</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Itemized catalog rates, minimum allowable floor price, and maximum discount ceilings</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Product Prices & Floor Price Governance: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -257,8 +239,8 @@
                 <td class="py-3 px-3 font-medium text-slate-900 dark:text-white">{{ pr.item_name }}</td>
                 <td class="py-3 px-3 text-slate-500">{{ pr.profile_name }}</td>
                 <td class="py-3 px-3 text-center font-mono">{{ pr.uom }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(pr.base_price) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(pr.min_selling_price) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ pr.base_price|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ pr.min_selling_price|money }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ pr.max_discount_pct }}%</td>
               
                 <td class="py-3 px-3 text-right">
@@ -275,14 +257,11 @@
   <!-- 1.6 Discount Limit Matrix -->
   {% elif current_tab == 'discount-limits' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="sliders" class="w-4 h-4 text-rose-500"></i>
-            <span>Role-Based Sales Price Discount Limit Matrix</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Authorization thresholds, approval escalations, and commercial governance rules</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="sliders" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Role-Based Sales Price Discount Limit Matrix: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -326,14 +305,11 @@
   <!-- 2.1 Sales Quotes & Proformas -->
   {% elif current_tab == 'quotes' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i>
-            <span>Sales Quotations, Proforma Invoices & Revisions</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Formal price quotations, revision histories, tender bids, and 1-click Sales Order conversions</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Sales Quotations, Proforma Invoices & Revisions: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -362,7 +338,7 @@
                 <td class="py-3 px-3 font-mono text-slate-500">{{ q.quote_date }}</td>
                 <td class="py-3 px-3 font-mono text-slate-500">{{ q.valid_until }}</td><td class="py-3 px-3 text-right">
                   <div class="flex items-center justify-end gap-1.5">
-                    ${{ "{:,.2f}".format(q.total_amount) }}</td>
+                    {{ q.total_amount|money }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if q.status == 'CONVERTED_TO_SO' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% elif q.status == 'ACCEPTED' %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20{% else %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20{% endif %}">
                     {{ q.status }}
@@ -387,14 +363,11 @@
   <!-- 2.2 Sales Orders (SO) -->
   {% elif current_tab == 'sales-orders' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="shopping-cart" class="w-4 h-4 text-emerald-500"></i>
-            <span>Confirmed Sales Orders (SO)</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Multi-line customer orders, payment & delivery terms, e-approvals, and dispatch fulfillment</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="shopping-cart" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Confirmed Sales Orders (SO): {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -420,7 +393,7 @@
                 <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ o.delivery_terms }}</td>
                 <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ o.payment_terms }}</td><td class="py-3 px-3 text-right">
                   <div class="flex items-center justify-end gap-1.5">
-                    ${{ "{:,.2f}".format(o.total_amount) }}</td>
+                    {{ o.total_amount|money }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if o.status == 'DO_ISSUED' %}bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20{% elif o.status == 'INVOICED' %}bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20{% elif o.status == 'ON_HOLD' %}bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20{% else %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% endif %}">
                     {{ o.status }}
@@ -447,14 +420,11 @@
   <!-- 2.3 Delivery Orders (DO) -->
   {% elif current_tab == 'delivery-orders' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="truck" class="w-4 h-4 text-cyan-500"></i>
-            <span>Delivery Orders (DO) & Gate Pass Dispatches</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Warehouse outbound dispatches, carrier tracking, gate pass validation, and delivery fulfillment</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="truck" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Delivery Orders (DO) & Gate Pass Dispatches: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -507,14 +477,11 @@
   <!-- 2.4 Sales Invoices -->
   {% elif current_tab == 'invoices' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="receipt" class="w-4 h-4 text-indigo-500"></i>
-            <span>Commercial Sales Invoices & GL Journal Records</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Commercial tax invoices, export billing, money receipt settlements, and automatic GL journal links</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="receipt" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Commercial Sales Invoices & GL Journal Records: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -542,7 +509,7 @@
                 <td class="py-3 px-3 font-mono text-slate-500">{{ inv.invoice_date }}</td>
                 <td class="py-3 px-3 font-mono text-slate-500">{{ inv.due_date }}</td><td class="py-3 px-3 text-right">
                   <div class="flex items-center justify-end gap-1.5">
-                    ${{ "{:,.2f}".format(inv.total_amount) }}</td>
+                    {{ inv.total_amount|money }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ inv.gl_journal_ref|default('Auto-Posted') }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if inv.status == 'PAID' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% else %}bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20{% endif %}">
@@ -568,14 +535,11 @@
   <!-- 2.5 Sales Returns & Credit Memos -->
   {% elif current_tab == 'returns' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="rotate-ccw" class="w-4 h-4 text-rose-500"></i>
-            <span>Sales Returns & Credit Notes (Reverse Invoices)</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Return goods authorizations, return delivery orders, and financial credit memos</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Sales Returns & Credit Notes (Reverse Invoices): {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -599,7 +563,7 @@
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ ret.customer_name }}</td>
                 <td class="py-3 px-3 font-mono text-slate-500">{{ ret.return_date }}</td>
                 <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ ret.reason }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(ret.return_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ ret.return_amount|money }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-indigo-500">{{ ret.credit_memo_ref }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
@@ -621,14 +585,11 @@
   <!-- 2.6 Sales Budgets & Targets -->
   {% elif current_tab == 'budgets' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
-            <span>Sales Budgets, Annual Targets & Quarterly Quotas</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Fiscal year sales targets allocated across quarters, reps, and customer accounts</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Sales Budgets, Annual Targets & Quarterly Quotas: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -653,12 +614,12 @@
                 <td class="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ b.fiscal_year }}</td>
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ b.target_category }}</td>
                 <td class="py-3 px-3 font-medium">{{ b.salesperson_name|default('Corporate Pool') }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(b.annual_target) }}</td>
-                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(b.q1_target) }}</td>
-                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(b.q2_target) }}</td>
-                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(b.q3_target) }}</td>
-                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(b.q4_target) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(b.achieved_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ b.annual_target|money }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">{{ b.q1_target|money }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">{{ b.q2_target|money }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">{{ b.q3_target|money }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">{{ b.q4_target|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ b.achieved_amount|money }}</td>
               
                 <td class="py-3 px-3 text-right">
                   <button type="button" onclick="openRowActionMenu(this, event, 'sales_orders', '{{ b.id }}', '{{ b.name or b.title or b.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
@@ -715,14 +676,11 @@
   <!-- 3.2 e-Approval Hub -->
   {% elif current_tab == 'e-approvals' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="check-check" class="w-4 h-4 text-indigo-500"></i>
-            <span>Multi-Tier e-Approval Sign-Off Hub</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Executive approvals for special pricing, credit term extensions, and discount threshold overrides</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="check-check" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Multi-Tier e-Approval Sign-Off Hub: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -785,7 +743,7 @@
             <label class="block text-[11px] font-medium text-slate-500 mb-1">Select Catalog Product</label>
             <select id="dss-item-select" class="mac-input w-full text-xs rounded-xl p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
               {% for pr in sls_prices %}
-                <option value="{{ pr.base_price }}">{{ pr.item_code }} - {{ pr.item_name }} (${{ pr.base_price }})</option>
+                <option value="{{ pr.base_price }}">{{ pr.item_code }} - {{ pr.item_name }} ({{ pr.base_price|money }})</option>
               {% endfor %}
             </select>
           </div>
@@ -804,15 +762,15 @@
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
               <span class="text-[10px] text-slate-500 uppercase font-semibold">Projected Revenue</span>
-              <p id="dss-rev" class="text-base font-bold text-slate-900 dark:text-white font-mono mt-1">$68,875.00</p>
+              <p id="dss-rev" class="text-base font-bold text-slate-900 dark:text-white font-mono mt-1">{{ 68875.00|money }}</p>
             </div>
             <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
               <span class="text-[10px] text-slate-500 uppercase font-semibold">Estimated Cost</span>
-              <p id="dss-cost" class="text-base font-bold text-slate-500 font-mono mt-1">$44,768.75</p>
+              <p id="dss-cost" class="text-base font-bold text-slate-500 font-mono mt-1">{{ 44768.75|money }}</p>
             </div>
             <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
               <span class="text-[10px] text-slate-500 uppercase font-semibold">Gross Profit</span>
-              <p id="dss-profit" class="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">$24,106.25</p>
+              <p id="dss-profit" class="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">{{ 24106.25|money }}</p>
             </div>
             <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
               <span class="text-[10px] text-slate-500 uppercase font-semibold">Gross Margin %</span>
@@ -852,14 +810,11 @@
   <!-- 3.4 On-Hold Orders Queue -->
   {% elif current_tab == 'on-hold-orders' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="pause-circle" class="w-4 h-4 text-rose-500"></i>
-            <span>On-Hold Orders for Goods Issue & Credit Release</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Orders temporarily blocked due to customer credit limits, inventory shortage, or compliance holds</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="pause-circle" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>On-Hold Orders for Goods Issue & Credit Release: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -881,7 +836,7 @@
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ o.customer_name }}</td>
                 <td class="py-3 px-3 font-mono text-slate-500">{{ o.order_date }}</td>
                 <td class="py-3 px-3 text-rose-600 dark:text-rose-400 font-medium">{{ o.hold_reason|default('Credit limit review pending by CFO') }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(o.total_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ o.total_amount|money }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                     ON HOLD
@@ -919,15 +874,15 @@
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
           <span class="text-[10px] text-slate-500 uppercase font-semibold">Total Invoiced Sales</span>
-          <p class="text-lg font-bold text-slate-900 dark:text-white font-mono mt-1">${{ "{:,.2f}".format(sls_pivot_data.total_billed|default(0)) }}</p>
+          <p class="text-lg font-bold text-slate-900 dark:text-white font-mono mt-1">{{ sls_pivot_data.total_billed|default(0)|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
           <span class="text-[10px] text-slate-500 uppercase font-semibold">Total Realized Collection</span>
-          <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">${{ "{:,.2f}".format(sls_pivot_data.total_collected|default(0)) }}</p>
+          <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">{{ sls_pivot_data.total_collected|default(0)|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
           <span class="text-[10px] text-slate-500 uppercase font-semibold">Net AR Outstanding</span>
-          <p class="text-lg font-bold text-rose-600 dark:text-rose-400 font-mono mt-1">${{ "{:,.2f}".format(sls_pivot_data.total_ar|default(0)) }}</p>
+          <p class="text-lg font-bold text-rose-600 dark:text-rose-400 font-mono mt-1">{{ sls_pivot_data.total_ar|default(0)|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
           <span class="text-[10px] text-slate-500 uppercase font-semibold">Collection Efficiency</span>
@@ -940,18 +895,18 @@
           <thead>
             <tr class="border-b border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 font-semibold">
               <th class="py-2.5 px-3">Period / Month</th>
-              <th class="py-2.5 px-3 text-right">Billed Sales (USD)</th>
-              <th class="py-2.5 px-3 text-right">Collections Received (USD)</th>
-              <th class="py-2.5 px-3 text-right">AR Outstanding (USD)</th>
+              <th class="py-2.5 px-3 text-right">Billed Sales ({{ active_company.currency_symbol }})</th>
+              <th class="py-2.5 px-3 text-right">Collections Received ({{ active_company.currency_symbol }})</th>
+              <th class="py-2.5 px-3 text-right">AR Outstanding ({{ active_company.currency_symbol }})</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
             {% for row in sls_pivot_data.monthly_data %}
               <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ row.month_name }} ({{ row.month_key }})</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(row.billed_sales) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(row.collected_amount) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(row.outstanding_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ row.billed_sales|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ row.collected_amount|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ row.outstanding_amount|money }}</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -962,14 +917,11 @@
   <!-- 4.2 MM > ZM > TSM Performance -->
   {% elif current_tab == 'hierarchy-performance' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
-            <span>Hierarchical Performance: MM &gt; ZM &gt; TSM Wise Budget &amp; Sales</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Marketing Manager &rarr; Zonal Manager &rarr; Territory Sales Manager hierarchical budget vs achievement</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="trending-up" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Hierarchical Performance: MM > ZM > TSM Wise Budget & Sales: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -991,8 +943,8 @@
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ h.team_name }}</td>
                 <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ h.team_type }}</span></td>
                 <td class="py-3 px-3 font-medium">{{ h.manager_name }}</td>
-                <td class="py-3 px-3 text-right font-mono">${{ "{:,.2f}".format(h.target_annual_amount) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(h.achieved_sales) }}</td>
+                <td class="py-3 px-3 text-right font-mono">{{ h.target_annual_amount|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ h.achieved_sales|money }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-blue-600 dark:text-blue-400">{{ h.achievement_pct }}%</td>
               
                 <td class="py-3 px-3 text-right">
@@ -1009,14 +961,11 @@
   <!-- 4.3 Target vs Achievement -->
   {% elif current_tab == 'target-achievement' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="target" class="w-4 h-4 text-blue-500"></i>
-            <span>Salesperson Target vs. Achievement Variance Matrix</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Rep-wise sales target allocation, year-to-date realization, and quota variance</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="target" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Salesperson Target vs. Achievement Variance Matrix: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -1039,10 +988,10 @@
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ row.salesperson_name }}</td>
                 <td class="py-3 px-3 text-slate-600 dark:text-slate-400">{{ row.target_category }}</td>
                 <td class="py-3 px-3 font-mono text-slate-500">{{ row.fiscal_year }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(row.annual_target) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(row.achieved_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ row.annual_target|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ row.achieved_amount|money }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-blue-500">{{ row.progress_pct }}%</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(row.variance_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ row.variance_amount|money }}</td>
               
                 <td class="py-3 px-3 text-right">
                   <button type="button" onclick="openRowActionMenu(this, event, 'sales_teams', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
@@ -1062,14 +1011,11 @@
   <!-- 5.1 DO-GI-Invoice Pending Reconciliation -->
   {% elif current_tab == 'do-invoice-pending' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="clock-4" class="w-4 h-4 text-rose-500"></i>
-            <span>DO - Goods Issue - Invoice Pending Reconciliation Audit</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Audit trail identifying delivered orders not yet converted to commercial tax invoices</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="clock-4" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>DO - Goods Issue - Invoice Pending Reconciliation Audit: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -1093,7 +1039,7 @@
                 <td class="py-3 px-3 font-mono text-slate-500">{{ r.dispatch_date }}</td>
                 <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400">{{ r.order_number }}</td>
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ r.customer_name }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(r.order_value) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ r.order_value|money }}</td>
                 <td class="py-3 px-3 font-mono text-indigo-500">{{ r.invoice_number|default('PENDING_INVOICE') }}</td>
                 <td class="py-3 px-3 text-center">
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded {% if r.reconciliation_status == 'INVOICED' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20{% else %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20{% endif %}">
@@ -1115,14 +1061,11 @@
   <!-- 5.2 Consolidated Statement -->
   {% elif current_tab == 'consolidated-statement' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-indigo-500"></i>
-            <span>Consolidated Group Sales, Collection &amp; Outstanding Statement</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Multi-company executive summary across all 5 operating subsidiaries</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Consolidated Group Sales, Collection & Outstanding Statement: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -1147,11 +1090,11 @@
                   <span>{{ c.company_name }}</span>
                 </td>
                 <td class="py-3 px-3 text-center font-mono">{{ c.total_orders_count }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold">${{ "{:,.2f}".format(c.total_ordered_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold">{{ c.total_ordered_amount|money }}</td>
                 <td class="py-3 px-3 text-center font-mono">{{ c.total_invoices_count }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">${{ "{:,.2f}".format(c.total_invoiced_amount) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(c.total_collected_amount) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">${{ "{:,.2f}".format(c.net_outstanding_amount) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ c.total_invoiced_amount|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ c.total_collected_amount|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ c.net_outstanding_amount|money }}</td>
               
                 <td class="py-3 px-3 text-right">
                   <button type="button" onclick="openRowActionMenu(this, event, 'sales_orders', '{{ c.id }}', '{{ c.name or c.title or c.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
@@ -1167,14 +1110,11 @@
   <!-- 5.3 Profitability Analysis -->
   {% elif current_tab == 'profitability-report' %}
     <div class="glass-card rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-200 dark:border-white/5">
-        <div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <i data-lucide="file-text" class="w-4 h-4 text-emerald-500"></i>
-            <span>Product Profitability &amp; Discount Margin Audit</span>
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Itemized revenue, estimated production costs, gross profit margins, and discount variance analysis</p>
-        </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Product Profitability & Discount Margin Audit: {{ active_company.name }}</span>
+        </h3>
       </div>
 
       <div class="overflow-x-auto">
@@ -1199,9 +1139,9 @@
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ item.item_name }}</td>
                 <td class="py-3 px-3 text-center font-mono">{{ item.uom }}</td>
                 <td class="py-3 px-3 text-right font-mono">{{ "{:,.0f}".format(item.total_sold_qty) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(item.total_revenue) }}</td>
-                <td class="py-3 px-3 text-right font-mono text-slate-500">${{ "{:,.2f}".format(item.estimated_production_cost) }}</td>
-                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(item.gross_profit_margin) }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ item.total_revenue|money }}</td>
+                <td class="py-3 px-3 text-right font-mono text-slate-500">{{ item.estimated_production_cost|money }}</td>
+                <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ item.gross_profit_margin|money }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-blue-600 dark:text-blue-400">{{ item.margin_pct }}%</td>
               
                 <td class="py-3 px-3 text-right">

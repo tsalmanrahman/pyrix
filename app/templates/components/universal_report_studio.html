@@ -503,14 +503,21 @@
     }
 
     let words = parts.join(' ').trim();
-    if (currency === 'USD') {
+    if (currency === 'BDT') {
+      words += ' Taka';
+    } else if (currency === 'USD') {
       words += ' Dollars';
+    } else if (currency === 'GBP') {
+      words += ' Pounds Sterling';
+    } else if (currency === 'EUR') {
+      words += ' Euros';
     } else {
       words += ` ${currency}`;
     }
 
     if (cents > 0) {
-      words += ` and ${convertGroup(cents).trim()} Cents`;
+      const subUnit = currency === 'BDT' ? 'Poisha' : (currency === 'GBP' ? 'Pence' : 'Cents');
+      words += ` and ${convertGroup(cents).trim()} ${subUnit}`;
     }
     return words + ' Only';
   }
@@ -522,7 +529,7 @@
     // Auto-populate any element requesting data-in-words
     document.querySelectorAll('[data-in-words]').forEach(el => {
       const num = el.getAttribute('data-in-words');
-      const curr = el.getAttribute('data-currency') || 'USD';
+      const curr = el.getAttribute('data-currency') || '{{ active_company.currency|default("BDT") }}';
       el.textContent = formatNumberToWords(num, curr);
     });
   });

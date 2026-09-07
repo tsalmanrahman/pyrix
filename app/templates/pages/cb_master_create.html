@@ -132,7 +132,7 @@
           </div>
 
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Daily Cash Balance Limit ($)</label>
+            <label class="block text-slate-300 font-medium mb-1">Daily Cash Balance Limit ({{ active_company.currency_symbol }})</label>
             <input 
               type="number" 
               step="100" 
@@ -342,10 +342,10 @@
           <div>
             <label class="block text-slate-300 font-medium mb-1">Currency <span class="text-blue-400">*</span></label>
             <select name="currency" required class="mac-input w-full bg-slate-900 font-mono">
-              <option value="USD" {% if (record and record.currency == 'USD') or not record %}selected{% endif %}>USD ($)</option>
-              <option value="EUR" {% if record and record.currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
-              <option value="GBP" {% if record and record.currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
-              <option value="BDT" {% if record and record.currency == 'BDT' %}selected{% endif %}>BDT (৳)</option>
+              <option value="BDT" {% if (record and record.currency == 'BDT') or (not record and active_company.currency == 'BDT') %}selected{% endif %}>BDT (৳)</option>
+              <option value="USD" {% if (record and record.currency == 'USD') or (not record and active_company.currency == 'USD') %}selected{% endif %}>USD ($)</option>
+              <option value="EUR" {% if (record and record.currency == 'EUR') or (not record and active_company.currency == 'EUR') %}selected{% endif %}>EUR (€)</option>
+              <option value="GBP" {% if (record and record.currency == 'GBP') or (not record and active_company.currency == 'GBP') %}selected{% endif %}>GBP (£)</option>
               <option value="SGD" {% if record and record.currency == 'SGD' %}selected{% endif %}>SGD (S$)</option>
             </select>
           </div>
@@ -362,7 +362,7 @@
           </div>
 
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Opening / Initial Balance ($)</label>
+            <label class="block text-slate-300 font-medium mb-1">Opening / Initial Balance ({{ active_company.currency_symbol }})</label>
             <input 
               type="number" 
               step="0.01" 

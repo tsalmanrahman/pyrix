@@ -48,7 +48,7 @@ class SourcingMasterService:
         bank_account: Optional[str] = None,
         bank_swift: Optional[str] = None,
         credit_terms_days: int = 30,
-        currency: str = "USD",
+        currency: str = "BDT",
         rating_stars: float = 4.5
     ) -> str:
         new_id = str(uuid.uuid4())
@@ -76,7 +76,7 @@ class SourcingMasterService:
         bank_name: Optional[str] = None,
         bank_account: Optional[str] = None,
         credit_terms_days: int = 30,
-        currency: str = "USD",
+        currency: str = "BDT",
         rating_stars: float = 4.5
     ) -> None:
         db.execute(

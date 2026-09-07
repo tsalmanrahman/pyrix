@@ -62,7 +62,8 @@ class SourcingTransactionService:
         notes: Optional[str] = None,
         department_id: Optional[str] = None,
         cost_centre_id: Optional[str] = None,
-        items: Optional[List[Dict[str, Any]]] = None
+        items: Optional[List[Dict[str, Any]]] = None,
+        currency: str = "BDT"
     ) -> str:
         req_id = str(uuid.uuid4())
         total_amount = sum(float(it.get("quantity", 1)) * float(it.get("estimated_unit_price", 0)) for it in (items or []))
@@ -71,9 +72,9 @@ class SourcingTransactionService:
             """
             INSERT INTO sourcing_requisitions 
             (id, company_id, req_number, req_type, department_id, cost_centre_id, title, priority, requester_name, total_estimated_amount, currency, status, is_closed, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'USD', 'PENDING_APPROVAL', 0, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_APPROVAL', 0, ?)
             """,
-            (req_id, company_id, req_number.strip(), req_type, department_id or None, cost_centre_id or None, title.strip(), priority, requester_name.strip(), total_amount, notes)
+            (req_id, company_id, req_number.strip(), req_type, department_id or None, cost_centre_id or None, title.strip(), priority, requester_name.strip(), total_amount, currency, notes)
         )
 
         for it in (items or []):
@@ -339,7 +340,7 @@ class SourcingTransactionService:
         subtotal: float,
         tax_amount: float = 0.0,
         freight_amount: float = 0.0,
-        currency: str = "USD",
+        currency: str = "BDT",
         exchange_rate: float = 1.0,
         payment_terms: str = "Net 30 Days",
         incoterm: str = "FOB",
@@ -437,7 +438,7 @@ class SourcingTransactionService:
             subtotal=amount,
             tax_amount=0.0,
             freight_amount=0.0,
-            currency="USD",
+            currency=cs.get("currency") or "BDT",
             payment_terms=pay_terms,
             incoterm="FOB",
             requisition_id=cs["requisition_id"],

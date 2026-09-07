@@ -75,8 +75,8 @@
                 <th class="py-2.5 px-3">Account Number</th>
                 <th class="py-2.5 px-3">Account Title</th>
                 <th class="py-2.5 px-3">Cost Centre</th>
-                <th class="py-2.5 px-3 text-right">Debit (USD)</th>
-                <th class="py-2.5 px-3 text-right">Credit (USD)</th>
+                <th class="py-2.5 px-3 text-right">Debit ({{ active_company.currency_symbol }})</th>
+                <th class="py-2.5 px-3 text-right">Credit ({{ active_company.currency_symbol }})</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -89,16 +89,16 @@
                     {% if line.narration %}<p class="text-[10px] text-slate-500 italic">{{ line.narration }}</p>{% endif %}
                   </td>
                   <td class="py-2 px-3 font-mono text-[11px] text-slate-600">{{ line.cost_centre_code if line.cost_centre_code else 'General' }}</td>
-                  <td class="py-2 px-3 text-right font-mono font-bold text-cyan-600">${{ "{:,.2f}".format(line.debit_amount) }}</td>
-                  <td class="py-2 px-3 text-right font-mono font-bold text-amber-600">${{ "{:,.2f}".format(line.credit_amount) }}</td>
+                  <td class="py-2 px-3 text-right font-mono font-bold text-cyan-600">{{ line.debit_amount | money }}</td>
+                  <td class="py-2 px-3 text-right font-mono font-bold text-amber-600">{{ line.credit_amount | money }}</td>
                 </tr>
               {% endfor %}
             </tbody>
             <tfoot class="bg-slate-50 font-bold border-t-2 border-slate-900">
               <tr>
                 <td colspan="4" class="py-2.5 px-3 text-right uppercase tracking-wider text-slate-600">Total Balanced Ledger:</td>
-                <td class="py-2.5 px-3 text-right font-mono text-cyan-700 text-sm font-black">${{ "{:,.2f}".format(voucher.total_amount|default(0)|float) }}</td>
-                <td class="py-2.5 px-3 text-right font-mono text-amber-700 text-sm font-black">${{ "{:,.2f}".format(voucher.total_amount|default(0)|float) }}</td>
+                <td class="py-2.5 px-3 text-right font-mono text-cyan-700 text-sm font-black">{{ voucher.total_amount|default(0)|float | money }}</td>
+                <td class="py-2.5 px-3 text-right font-mono text-amber-700 text-sm font-black">{{ voucher.total_amount|default(0)|float | money }}</td>
               </tr>
             </tfoot>
           </table>
@@ -108,7 +108,7 @@
         <section class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-center justify-between gap-4">
           <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Voucher Value in Words:</span>
-            <p class="font-bold text-slate-900 italic" data-in-words="{{ voucher.total_amount|default(0)|float }}" data-currency="USD">Calculating...</p>
+            <p class="font-bold text-slate-900 italic" data-in-words="{{ voucher.total_amount|default(0)|float }}" data-currency="{{ active_company.currency|default('BDT') }}">Calculating...</p>
           </div>
           <div class="text-right font-mono text-xs text-emerald-700 font-bold">
             BALANCED & AUDITED

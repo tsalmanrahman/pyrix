@@ -54,7 +54,7 @@ class ARMasterService:
         credit_limit: float = 1000000.0,
         payment_terms_days: int = 30,
         discount_percentage: float = 0.0,
-        currency: str = "USD",
+        currency: str = "BDT",
         billing_address: Optional[str] = None
     ) -> None:
         db.execute(
@@ -96,7 +96,7 @@ class ARMasterService:
         credit_limit: float = 1000000.0,
         payment_terms_days: int = 30,
         discount_percentage: float = 0.0,
-        currency: str = "USD",
+        currency: str = "BDT",
         billing_address: Optional[str] = None
     ) -> None:
         db.execute(

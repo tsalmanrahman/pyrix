@@ -2539,29 +2539,45 @@ function getFieldLabel(field) {
   // 1. Check data-label
   if (field.dataset.label) return field.dataset.label;
 
-  // 2. Check preceding or enclosing label
-  const wrapper = field.closest('div');
-  if (wrapper) {
-    const labelEl = wrapper.querySelector('label');
-    if (labelEl) {
-      const clone = labelEl.cloneNode(true);
-      // Remove asterisk span
+  // 2. Check label with for="field.id"
+  if (field.id) {
+    const forLabel = document.querySelector(`label[for="${field.id}"]`);
+    if (forLabel) {
+      const clone = forLabel.cloneNode(true);
       clone.querySelectorAll('span').forEach(s => s.remove());
       const txt = clone.textContent.trim();
       if (txt) return txt;
     }
   }
 
-  // 3. Fallback to placeholder or name
-  if (field.placeholder && !field.placeholder.startsWith('e.g.')) {
+  // 3. Check enclosing wrapper (look upwards past .relative)
+  let parent = field.parentElement;
+  while (parent && (parent.classList.contains('relative') || parent.tagName === 'FIELDSET')) {
+    parent = parent.parentElement;
+  }
+  if (parent) {
+    const labelEl = parent.querySelector('label');
+    if (labelEl) {
+      const clone = labelEl.cloneNode(true);
+      clone.querySelectorAll('span').forEach(s => s.remove());
+      const txt = clone.textContent.trim();
+      if (txt) return txt;
+    }
+  }
+
+  // 4. Fallback to placeholder or name
+  if (field.placeholder && !field.placeholder.startsWith('e.g.') && !field.placeholder.startsWith('••••')) {
     return field.placeholder.replace('...', '').trim();
   }
   if (field.name) {
+    if (field.name === 'email') return 'Username';
+    if (field.name === 'password') return 'Password';
     return field.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
 
   return 'This field';
 }
+
 
 /**
  * Attaches real-time duplicate checking to identifier fields in a form.

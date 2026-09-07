@@ -55,7 +55,7 @@ class DynamicCrudService:
                 {"field": "profile_name", "label": "Profile Name", "type": "text", "required": True},
                 {"field": "frequency", "label": "Frequency", "type": "select", "options": ["DAILY", "WEEKLY", "MONTHLY", "QUARTERLY"], "required": True},
                 {"field": "day_of_period", "label": "Day of Period", "type": "number", "required": True},
-                {"field": "default_amount", "label": "Default Amount ($)", "type": "number", "step": "0.01", "required": True},
+                {"field": "default_amount", "label": "Default Amount", "type": "number", "step": "0.01", "required": True},
                 {"field": "is_auto_trigger", "label": "Automatic Trigger Active", "type": "checkbox"}
             ]
         },
@@ -80,7 +80,7 @@ class DynamicCrudService:
                 {"field": "budget_code", "label": "Budget Code", "type": "text", "required": True},
                 {"field": "budget_title", "label": "Budget Title", "type": "text", "required": True},
                 {"field": "fiscal_year", "label": "Fiscal Year", "type": "text", "required": True},
-                {"field": "allocated_amount", "label": "Allocated Amount ($)", "type": "number", "step": "0.01", "required": True},
+                {"field": "allocated_amount", "label": "Allocated Amount", "type": "number", "step": "0.01", "required": True},
                 {"field": "status", "label": "Approval Status", "type": "select", "options": ["DRAFT", "PENDING", "APPROVED", "REVISED"], "required": True}
             ]
         },
@@ -97,7 +97,7 @@ class DynamicCrudService:
                 {"field": "contact_person", "label": "Primary Contact", "type": "text"},
                 {"field": "email", "label": "Official Email", "type": "text"},
                 {"field": "phone", "label": "Phone Number", "type": "text"},
-                {"field": "credit_limit", "label": "Credit Limit ($)", "type": "number", "step": "0.01"},
+                {"field": "credit_limit", "label": "Credit Limit", "type": "number", "step": "0.01"},
                 {"field": "rating", "label": "Vendor Rating (1-5)", "type": "number", "step": "0.1"},
                 {"field": "is_active", "label": "Active Vendor", "type": "checkbox"}
             ],
@@ -115,7 +115,7 @@ class DynamicCrudService:
                 {"field": "title", "label": "Requisition Title", "type": "text", "required": True},
                 {"field": "requester_name", "label": "Requester Name", "type": "text", "required": True},
                 {"field": "priority", "label": "Priority", "type": "select", "options": ["LOW", "MEDIUM", "HIGH", "URGENT"], "required": True},
-                {"field": "total_estimated_amount", "label": "Est. Total ($)", "type": "number", "step": "0.01"},
+                {"field": "total_estimated_amount", "label": "Est. Total Amount", "type": "number", "step": "0.01"},
                 {"field": "status", "label": "Status", "type": "select", "options": ["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED"], "required": True}
             ]
         },
@@ -147,7 +147,7 @@ class DynamicCrudService:
                 {"field": "customer_name", "label": "Customer Name", "type": "text", "required": True},
                 {"field": "valid_until", "label": "Valid Until Date", "type": "date"},
                 {"field": "payment_terms", "label": "Payment Terms", "type": "text"},
-                {"field": "total_amount", "label": "Total Amount ($)", "type": "number", "step": "0.01"},
+                {"field": "total_amount", "label": "Total Amount", "type": "number", "step": "0.01"},
                 {"field": "status", "label": "Status", "type": "select", "options": ["DRAFT", "ISSUED", "ACCEPTED", "EXPIRED", "CONVERTED"], "required": True}
             ]
         },
@@ -178,7 +178,7 @@ class DynamicCrudService:
                 {"field": "customer_name", "label": "Customer Name", "type": "text", "required": True},
                 {"field": "invoice_date", "label": "Invoice Date", "type": "date", "required": True},
                 {"field": "due_date", "label": "Due Date", "type": "date", "required": True},
-                {"field": "total_amount", "label": "Invoice Amount ($)", "type": "number", "step": "0.01"},
+                {"field": "total_amount", "label": "Invoice Amount", "type": "number", "step": "0.01"},
                 {"field": "status", "label": "Payment Status", "type": "select", "options": ["ISSUED", "PAID", "PARTIALLY_PAID", "OVERDUE", "VOID"], "required": True}
             ]
         },
@@ -210,8 +210,8 @@ class DynamicCrudService:
                 {"field": "item_name", "label": "Item Name", "type": "text", "required": True},
                 {"field": "category", "label": "Item Category", "type": "text"},
                 {"field": "uom", "label": "Unit of Measure (UOM)", "type": "text", "required": True},
-                {"field": "standard_cost", "label": "Standard Cost ($)", "type": "number", "step": "0.01"},
-                {"field": "selling_price", "label": "Selling Price ($)", "type": "number", "step": "0.01"},
+                {"field": "standard_cost", "label": "Standard Cost", "type": "number", "step": "0.01"},
+                {"field": "selling_price", "label": "Selling Price", "type": "number", "step": "0.01"},
                 {"field": "is_active", "label": "Active Item", "type": "checkbox"}
             ]
         },
@@ -242,7 +242,7 @@ class DynamicCrudService:
             "editable_fields": [
                 {"field": "work_center_code", "label": "Center Code", "type": "text", "required": True},
                 {"field": "work_center_name", "label": "Work Center Name", "type": "text", "required": True},
-                {"field": "hourly_rate", "label": "Standard Hourly Rate ($)", "type": "number", "step": "0.01"},
+                {"field": "hourly_rate", "label": "Standard Hourly Rate", "type": "number", "step": "0.01"},
                 {"field": "capacity_hours_day", "label": "Capacity Hours / Day", "type": "number"},
                 {"field": "is_active", "label": "Active Center", "type": "checkbox"}
             ]
@@ -274,7 +274,7 @@ class DynamicCrudService:
                 {"field": "asset_tag", "label": "Asset Tag / Barcode", "type": "text", "required": True},
                 {"field": "asset_name", "label": "Asset Name", "type": "text", "required": True},
                 {"field": "acquisition_date", "label": "Acquisition Date", "type": "date"},
-                {"field": "acquisition_cost", "label": "Acquisition Cost ($)", "type": "number", "step": "0.01", "required": True},
+                {"field": "acquisition_cost", "label": "Acquisition Cost", "type": "number", "step": "0.01", "required": True},
                 {"field": "useful_life_years", "label": "Useful Life (Years)", "type": "number"},
                 {"field": "depreciation_method", "label": "Method", "type": "select", "options": ["STRAIGHT_LINE", "DECLINING_BALANCE", "SUM_OF_YEARS", "MACRS"]},
                 {"field": "status", "label": "Asset Status", "type": "select", "options": ["ACTIVE", "MAINTENANCE", "DISPOSED", "WRITTEN_OFF"], "required": True}
@@ -294,8 +294,8 @@ class DynamicCrudService:
                 {"field": "email", "label": "Official Email", "type": "text", "required": True},
                 {"field": "phone", "label": "Phone", "type": "text"},
                 {"field": "employment_status", "label": "Employment Status", "type": "select", "options": ["PERMANENT", "PROBATION", "CONTRACT", "INTERN", "RESIGNED"], "required": True},
-                {"field": "basic_salary", "label": "Basic Salary ($)", "type": "number", "step": "0.01"},
-                {"field": "gross_salary", "label": "Gross Salary ($)", "type": "number", "step": "0.01"},
+                {"field": "basic_salary", "label": "Basic Salary", "type": "number", "step": "0.01"},
+                {"field": "gross_salary", "label": "Gross Salary", "type": "number", "step": "0.01"},
                 {"field": "is_active", "label": "Active Employee", "type": "checkbox"}
             ]
         },
@@ -329,7 +329,7 @@ class DynamicCrudService:
                 {"field": "contact_person", "label": "Primary Contact", "type": "text"},
                 {"field": "email", "label": "Official Email", "type": "text"},
                 {"field": "phone", "label": "Telephone", "type": "text"},
-                {"field": "credit_limit", "label": "Credit Limit ($)", "type": "number", "step": "0.01"},
+                {"field": "credit_limit", "label": "Credit Limit", "type": "number", "step": "0.01"},
                 {"field": "is_active", "label": "Active Customer", "type": "checkbox"}
             ],
             "dep_checks": [
@@ -348,7 +348,7 @@ class DynamicCrudService:
                 {"field": "name", "label": "Cost Center Name", "type": "text", "required": True},
                 {"field": "department", "label": "Department Scope", "type": "text"},
                 {"field": "manager_name", "label": "Manager / Lead", "type": "text"},
-                {"field": "budget_allocation", "label": "Budget Allocation ($)", "type": "number", "step": "0.01"},
+                {"field": "budget_allocation", "label": "Budget Allocation", "type": "number", "step": "0.01"},
                 {"field": "is_profit_center", "label": "Profit Center", "type": "checkbox"},
                 {"field": "is_active", "label": "Active Cost Center", "type": "checkbox"}
             ],

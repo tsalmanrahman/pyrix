@@ -77,11 +77,11 @@
           <div class="space-y-1">
             <span class="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold">TOTAL AMOUNT RECEIVED</span>
             <p class="text-xs text-slate-300">
-              In Words: <span class="font-bold text-amber-300 italic" data-in-words="{{ receipt.amount }}" data-currency="USD">Calculating...</span>
+              In Words: <span class="font-bold text-amber-300 italic" data-in-words="{{ receipt.amount }}" data-currency="{{ active_company.currency|default('BDT') }}">Calculating...</span>
             </p>
           </div>
           <div class="text-right shrink-0">
-            <p class="text-2xl font-black font-mono text-emerald-400 tracking-tight">${{ "{:,.2f}".format(receipt.amount) }}</p>
+            <p class="text-2xl font-black font-mono text-emerald-400 tracking-tight">{{ receipt.amount|money }}</p>
           </div>
         </section>
       </div>

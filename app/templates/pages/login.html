@@ -160,6 +160,9 @@
     <p>&copy; <span class="copyright-year">2026</span> Pyrix Enterprise Suite. All rights reserved.</p>
   </footer>
 
+  <!-- Universal Client Application & Form Validation Engine -->
+  <script src="/static/js/app.js"></script>
+
   <script>
     lucide.createIcons();
 
@@ -184,9 +187,24 @@
     }
 
     function setPersona(email, pw) {
-      document.getElementById('login-email').value = email;
-      document.getElementById('login-password').value = pw;
+      const emailInput = document.getElementById('login-email');
+      const pwInput = document.getElementById('login-password');
+      emailInput.value = email;
+      pwInput.value = pw;
+
+      // Clear any active error borders and inline messages
+      [emailInput, pwInput].forEach(inp => {
+        if (!inp) return;
+        inp.classList.remove('field-error-border');
+        const parentDiv = inp.closest('.relative')?.parentElement || inp.parentElement;
+        if (parentDiv) {
+          const errEl = parentDiv.querySelector('.field-error-msg');
+          if (errEl) errEl.classList.add('hidden');
+          parentDiv.classList.remove('animate-shake');
+        }
+      });
     }
   </script>
 </body>
+
 </html>

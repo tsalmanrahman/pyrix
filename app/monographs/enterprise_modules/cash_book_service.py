@@ -252,7 +252,7 @@ class CashBookService:
         account_number: str,
         account_title: str,
         account_type: str = "CURRENT",
-        currency: str = "USD",
+        currency: str = "BDT",
         gl_account_id: str = "",
         opening_balance: float = 0.0,
         overdraft_limit: float = 0.0

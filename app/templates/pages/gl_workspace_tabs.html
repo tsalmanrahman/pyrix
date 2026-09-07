@@ -10,19 +10,15 @@
 <!-- TAB: Journal Vouchers (journals) -->
 {% if module.route_slug == 'general-ledger' and current_tab == 'journals' %}
   <div class="space-y-4">
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="file-spread" class="w-5 h-5"></i></div>
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Double-Entry Journal Vouchers (JV)</h2>
-          
-        </div>
-      </div>
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="file-spread" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+        <span>Double-Entry Journal Vouchers (JV): {{ active_company.name }}</span>
+      </h3>
       <div class="flex items-center gap-2">
-        <input type="text" placeholder="Filter vouchers..." onkeyup="filterTable('gl-vouchers-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
-        <a href="/modules/general-ledger/journals/new" class="mac-btn-primary px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+        <input type="text" placeholder="Filter vouchers..." onkeyup="filterTable('gl-vouchers-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/general-ledger/journals/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Journal Voucher">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-          <span>New Journal Voucher</span>
         </a>
       </div>
     </div>
@@ -35,7 +31,7 @@
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Batch / Ref</th>
             <th class="py-2.5 px-3">Narration</th>
-            <th class="py-2.5 px-3 text-right">Total ($)</th>
+            <th class="py-2.5 px-3 text-right">Total ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-center">Lines</th>
             <th class="py-2.5 px-3 text-center">Status</th>
             <th class="py-2.5 px-3 text-right">Actions</th>
@@ -50,7 +46,7 @@
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.voucher_date }}</td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.reference_number|default(v.batch_number|default('-')) }}</td>
               <td class="py-2.5 px-3 max-w-xs truncate font-medium">{{ v.narration|default('General Accounting Journal') }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-medium">${{ "{:,.2f}".format(v.total_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-medium">{{ v.total_amount|default(0.0)|money }}</td>
               <td class="py-2.5 px-3 text-center font-mono">{{ v.line_count|default(2) }}</td>
               <td class="py-2.5 px-3 text-center">
                 <span class="px-2 py-0.5 text-[9px] font-bold rounded {% if v.status == 'POSTED' %}bg-emerald-500/15 text-emerald-600 border border-emerald-500/30{% else %}bg-amber-500/15 text-amber-600 border border-amber-500/30{% endif %}">
@@ -131,7 +127,7 @@
         </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Total Distribution Amount ($) *</label>
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Total Distribution Amount ({{ active_company.currency_symbol }}) *</label>
           <input type="number" id="tmpl-amount" step="0.01" required value="75000.00" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
         </div>
 
@@ -149,17 +145,13 @@
 <!-- TAB: Automatic Batch Profiles (auto-batch-profiles) -->
 {% if module.route_slug == 'general-ledger' and current_tab == 'auto-batch-profiles' %}
   <div class="space-y-4">
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center"><i data-lucide="clock-4" class="w-5 h-5"></i></div>
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Automatic Batch Profiles</h2>
-          
-        </div>
-      </div>
-      <button onclick="document.getElementById('modal-new-profile').classList.remove('hidden')" class="mac-btn-primary px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="clock-4" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+        <span>Automatic Batch Profiles: {{ active_company.name }}</span>
+      </h3>
+      <button onclick="document.getElementById('modal-new-profile').classList.remove('hidden')" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Create Batch Profile">
         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-        <span>Create Automatic Batch Profile</span>
       </button>
     </div>
 
@@ -171,7 +163,7 @@
             <th class="py-2.5 px-3">Profile Name</th>
             <th class="py-2.5 px-3">Frequency</th>
             <th class="py-2.5 px-3">Day of Period</th>
-            <th class="py-2.5 px-3 text-right">Default Amount ($)</th>
+            <th class="py-2.5 px-3 text-right">Default Amount ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-center">Auto Trigger</th>
             <th class="py-2.5 px-3 text-right">Actions</th>
           </tr>
@@ -183,7 +175,7 @@
               <td class="py-2.5 px-3 font-medium">{{ p.profile_name }}</td>
               <td class="py-2.5 px-3 font-mono text-purple-600 font-semibold">{{ p.frequency }}</td>
               <td class="py-2.5 px-3 font-mono">Day {{ p.day_of_period }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-medium">${{ "{:,.2f}".format(p.default_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-medium">{{ p.default_amount|default(0.0)|money }}</td>
               <td class="py-2.5 px-3 text-center">
                 <span class="px-2 py-0.5 text-[9px] font-bold rounded-full {% if p.is_auto_trigger %}bg-emerald-100 text-emerald-800{% else %}bg-slate-100 text-slate-700{% endif %}">
                   {% if p.is_auto_trigger %}AUTO RUN{% else %}MANUAL{% endif %}
@@ -207,16 +199,13 @@
 <!-- TAB: Batch Status (batches) -->
 {% if module.route_slug == 'general-ledger' and (current_tab == 'batches' or current_tab == 'batch-status' or current_tab == 'post-batch') %}
   <div class="space-y-4">
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><i data-lucide="package-check" class="w-5 h-5"></i></div>
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Batch Processing & Status Control</h2>
-          
-        </div>
-      </div>
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="package-check" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+        <span>Batch Processing & Status Control: {{ active_company.name }}</span>
+      </h3>
       <div class="flex items-center gap-2">
-        <input type="text" placeholder="Filter batches..." onkeyup="filterTable('gl-batches-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
+        <input type="text" placeholder="Filter batches..." onkeyup="filterTable('gl-batches-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
       </div>
     </div>
 
@@ -227,8 +216,8 @@
             <th class="py-2.5 px-3">Batch Number</th>
             <th class="py-2.5 px-3">Batch Title</th>
             <th class="py-2.5 px-3">Type</th>
-            <th class="py-2.5 px-3 text-right">Debit ($)</th>
-            <th class="py-2.5 px-3 text-right">Credit ($)</th>
+            <th class="py-2.5 px-3 text-right">Debit ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Credit ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-center">Vouchers</th>
             <th class="py-2.5 px-3 text-center">Status</th>
             <th class="py-2.5 px-3 text-right">Posting Actions</th>
@@ -243,8 +232,8 @@
               <td class="py-2.5 px-3 font-medium">{{ b.batch_title }}</td>
               <td class="py-2.5 px-3 font-mono text-purple-600 font-semibold">{{ b.batch_type|default('MANUAL') }}</td><td class="py-3 px-3 text-right">
                   <div class="flex items-center justify-end gap-1.5">
-                    ${{ "{:,.2f}".format(b.total_debit|default(0.0)) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(b.total_credit|default(0.0)) }}</td>
+                    {{ b.total_debit|default(0.0)|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ b.total_credit|default(0.0)|money }}</td>
               <td class="py-2.5 px-3 text-center font-mono">{{ b.voucher_count|default(1) }}</td>
               <td class="py-2.5 px-3 text-center">
                 <span class="px-2 py-0.5 text-[9px] font-bold rounded {% if b.status == 'POSTED' %}bg-emerald-500/15 text-emerald-600 border border-emerald-500/30{% else %}bg-amber-500/15 text-amber-600 border border-amber-500/30{% endif %}">
@@ -295,7 +284,7 @@
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Reference</th>
             <th class="py-2.5 px-3">Narration</th>
-            <th class="py-2.5 px-3 text-right">Amount ($)</th>
+            <th class="py-2.5 px-3 text-right">Amount ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-right">Action</th>
               <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
@@ -308,7 +297,7 @@
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.reference_number|default('-') }}</td>
               <td class="py-2.5 px-3 font-medium">{{ v.narration|default('General Accounting Journal Voucher') }}</td><td class="py-3 px-3 text-right">
                   <div class="flex items-center justify-end gap-1.5">
-                    ${{ "{:,.2f}".format(v.total_amount|default(0.0)) }}</td>
+                    {{ v.total_amount|default(0.0)|money }}</td>
               <td class="py-2.5 px-3 text-right">
                 <button onclick="printGLVoucher('{{ v.id }}')" class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 text-[11px] font-bold inline-flex items-center gap-1.5 transition">
                   <i data-lucide="printer" class="w-3.5 h-3.5"></i>
@@ -399,15 +388,15 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
         <span class="text-xs text-slate-400 font-medium">Total Allocated Budget</span>
-        <div class="text-xl font-bold font-mono text-slate-900 dark:text-white">${{ "{:,.2f}".format(gl_cost_analysis.kpis.total_budget|default(0.0)) }}</div>
+        <div class="text-xl font-bold font-mono text-slate-900 dark:text-white">{{ gl_cost_analysis.kpis.total_budget|default(0.0)|money }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
         <span class="text-xs text-slate-400 font-medium">Total Actual Expenses</span>
-        <div class="text-xl font-bold font-mono text-amber-600">${{ "{:,.2f}".format(gl_cost_analysis.kpis.total_actual_spent|default(0.0)) }}</div>
+        <div class="text-xl font-bold font-mono text-amber-600">{{ gl_cost_analysis.kpis.total_actual_spent|default(0.0)|money }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
         <span class="text-xs text-slate-400 font-medium">Net Budget Variance</span>
-        <div class="text-xl font-bold font-mono text-emerald-600">${{ "{:,.2f}".format(gl_cost_analysis.kpis.net_variance|default(0.0)) }}</div>
+        <div class="text-xl font-bold font-mono text-emerald-600">{{ gl_cost_analysis.kpis.net_variance|default(0.0)|money }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
         <span class="text-xs text-slate-400 font-medium">Avg Budget Utilization</span>
@@ -421,9 +410,9 @@
         <thead>
           <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Cost Centre</th>
-            <th class="py-2.5 px-3 text-right">Allocated Budget ($)</th>
-            <th class="py-2.5 px-3 text-right">Actual Spent ($)</th>
-            <th class="py-2.5 px-3 text-right">Variance ($)</th>
+            <th class="py-2.5 px-3 text-right">Allocated Budget ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Actual Spent ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Variance ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-center">Utilization</th>
             <th class="py-2.5 px-3 text-center">Status</th>
           </tr>
@@ -435,9 +424,9 @@
                 <div class="font-bold text-slate-900 dark:text-white">{{ c.cost_centre_code }}</div>
                 <div class="text-[11px] text-slate-400">{{ c.cost_centre_name }}</div>
               </td>
-              <td class="py-2.5 px-3 text-right font-mono font-medium">${{ "{:,.2f}".format(c.allocated_budget) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-amber-600">${{ "{:,.2f}".format(c.total_spent) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">${{ "{:,.2f}".format(c.variance) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-medium">{{ c.allocated_budget|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-amber-600">{{ c.total_spent|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{{ c.variance|money }}</td>
               <td class="py-2.5 px-3 text-center">
                 <div class="text-[10px] font-mono font-bold text-purple-600">{{ c.utilization_pct }}%</div>
                 <div class="w-20 mx-auto bg-slate-100 dark:bg-white/10 h-1.5 rounded-full overflow-hidden mt-1">
@@ -477,11 +466,11 @@
           <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Account</th>
             <th class="py-2.5 px-3">Type</th>
-            <th class="py-2.5 px-3 text-right">Opening Bal ($)</th>
+            <th class="py-2.5 px-3 text-right">Opening Bal ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-right text-emerald-600">Period Debit</th>
             <th class="py-2.5 px-3 text-right text-rose-600">Period Credit</th>
             <th class="py-2.5 px-3 text-right">Net Change</th>
-            <th class="py-2.5 px-3 text-right">Closing Bal ($)</th>
+            <th class="py-2.5 px-3 text-right">Closing Bal ({{ active_company.currency_symbol }})</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
@@ -492,11 +481,11 @@
                 <div class="text-[11px] text-slate-400">{{ a.account_name }}</div>
               </td>
               <td class="py-2.5 px-3 font-mono text-slate-500 font-semibold">{{ a.account_type }}</td>
-              <td class="py-2.5 px-3 text-right font-mono">${{ "{:,.2f}".format(a.opening_balance) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">${{ "{:,.2f}".format(a.period_debit) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-rose-600">${{ "{:,.2f}".format(a.period_credit) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-medium">${{ "{:,.2f}".format(a.net_change) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(a.closing_balance) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ a.opening_balance|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{{ a.period_debit|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600">{{ a.period_credit|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-medium">{{ a.net_change|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ a.closing_balance|money }}</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -536,29 +525,29 @@
           {% for r in gl_financial_statements.income_statement.revenues %}
             <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
               <span>{{ r.account_name }}</span>
-              <span class="font-mono">${{ "{:,.2f}".format(r.balance) }}</span>
+              <span class="font-mono">{{ r.balance|money }}</span>
             </div>
           {% endfor %}
           <div class="flex items-center justify-between py-1.5 font-bold border-t border-slate-100 dark:border-white/5 text-slate-900 dark:text-white">
             <span>Total Revenue</span>
-            <span class="font-mono text-emerald-600">${{ "{:,.2f}".format(gl_financial_statements.income_statement.total_revenue|default(0.0)) }}</span>
+            <span class="font-mono text-emerald-600">{{ gl_financial_statements.income_statement.total_revenue|default(0.0)|money }}</span>
           </div>
 
           <div class="font-bold text-slate-700 dark:text-slate-300 pt-3">Operating Expenses</div>
           {% for e in gl_financial_statements.income_statement.expenses %}
             <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
               <span>{{ e.account_name }}</span>
-              <span class="font-mono">${{ "{:,.2f}".format(e.balance) }}</span>
+              <span class="font-mono">{{ e.balance|money }}</span>
             </div>
           {% endfor %}
           <div class="flex items-center justify-between py-1.5 font-bold border-t border-slate-100 dark:border-white/5 text-slate-900 dark:text-white">
             <span>Total Expenses</span>
-            <span class="font-mono text-rose-600">${{ "{:,.2f}".format(gl_financial_statements.income_statement.total_expense|default(0.0)) }}</span>
+            <span class="font-mono text-rose-600">{{ gl_financial_statements.income_statement.total_expense|default(0.0)|money }}</span>
           </div>
 
           <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 font-bold text-emerald-700 dark:text-emerald-300 text-sm mt-3">
             <span>Net Operating Profit</span>
-            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.income_statement.net_profit|default(0.0)) }}</span>
+            <span class="font-mono">{{ gl_financial_statements.income_statement.net_profit|default(0.0)|money }}</span>
           </div>
         </div>
       </div>
@@ -570,25 +559,25 @@
           <div class="font-bold text-slate-700 dark:text-slate-300">Total Assets</div>
           <div class="flex items-center justify-between py-1.5 font-bold text-slate-900 dark:text-white">
             <span>Current & Fixed Assets</span>
-            <span class="font-mono text-blue-600">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.total_assets|default(0.0)) }}</span>
+            <span class="font-mono text-blue-600">{{ gl_financial_statements.balance_sheet.total_assets|default(0.0)|money }}</span>
           </div>
 
           <div class="font-bold text-slate-700 dark:text-slate-300 pt-3">Liabilities & Equity</div>
           <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
             <span>Total Liabilities</span>
-            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.total_liabilities|default(0.0)) }}</span>
+            <span class="font-mono">{{ gl_financial_statements.balance_sheet.total_liabilities|default(0.0)|money }}</span>
           </div>
           <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
             <span>Share Capital & Reserves</span>
-            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.total_equity|default(0.0)) }}</span>
+            <span class="font-mono">{{ gl_financial_statements.balance_sheet.total_equity|default(0.0)|money }}</span>
           </div>
           <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
             <span>Net Profit for Period</span>
-            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.net_profit_transferred|default(0.0)) }}</span>
+            <span class="font-mono">{{ gl_financial_statements.balance_sheet.net_profit_transferred|default(0.0)|money }}</span>
           </div>
           <div class="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 font-bold text-blue-700 dark:text-blue-300 text-sm mt-3">
             <span>Total Liabilities & Equity</span>
-            <span class="font-mono">${{ "{:,.2f}".format(gl_financial_statements.balance_sheet.total_liabilities_and_equity|default(0.0)) }}</span>
+            <span class="font-mono">{{ gl_financial_statements.balance_sheet.total_liabilities_and_equity|default(0.0)|money }}</span>
           </div>
         </div>
       </div>
@@ -616,8 +605,8 @@
           <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Account Number</th>
             <th class="py-2.5 px-3">Account Title</th>
-            <th class="py-2.5 px-3 text-right">Debit ($)</th>
-            <th class="py-2.5 px-3 text-right">Credit ($)</th>
+            <th class="py-2.5 px-3 text-right">Debit ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Credit ({{ active_company.currency_symbol }})</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
@@ -625,16 +614,16 @@
             <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
               <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ r.account_number }}</td>
               <td class="py-2.5 px-3 font-medium">{{ r.account_name }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 font-medium">{% if r.closing_debit > 0 %}${{ "{:,.2f}".format(r.closing_debit) }}{% else %}-{% endif %}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-rose-600 font-medium">{% if r.closing_credit > 0 %}${{ "{:,.2f}".format(r.closing_credit) }}{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 font-medium">{% if r.closing_debit > 0 %}{{ r.closing_debit|money }}{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600 font-medium">{% if r.closing_credit > 0 %}{{ r.closing_credit|money }}{% else %}-{% endif %}</td>
             </tr>
           {% endfor %}
         </tbody>
         <tfoot>
           <tr class="border-t-2 border-slate-200 dark:border-white/10 font-bold font-mono text-slate-900 dark:text-white bg-slate-50 dark:bg-white/[0.02]">
             <td colspan="2" class="py-3 px-3 uppercase">Total Trial Balance</td>
-            <td class="py-3 px-3 text-right text-emerald-600">${{ "{:,.2f}".format(gl_trial_balance.totals.closing_debit|default(0.0)) }}</td>
-            <td class="py-3 px-3 text-right text-rose-600">${{ "{:,.2f}".format(gl_trial_balance.totals.closing_credit|default(0.0)) }}</td>
+            <td class="py-3 px-3 text-right text-emerald-600">{{ gl_trial_balance.totals.closing_debit|default(0.0)|money }}</td>
+            <td class="py-3 px-3 text-right text-rose-600">{{ gl_trial_balance.totals.closing_credit|default(0.0)|money }}</td>
           </tr>
         </tfoot>
       </table>
@@ -665,8 +654,8 @@
             <th class="py-2.5 px-3">Account</th>
             <th class="py-2.5 px-3">Cost Centre / Dept</th>
             <th class="py-2.5 px-3">Line Memo</th>
-            <th class="py-2.5 px-3 text-right">Debit ($)</th>
-            <th class="py-2.5 px-3 text-right">Credit ($)</th>
+            <th class="py-2.5 px-3 text-right">Debit ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Credit ({{ active_company.currency_symbol }})</th>
               <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
         </thead>
@@ -681,8 +670,8 @@
               </td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ t.cost_centre_code|default(t.dept_code|default('CORP')) }}</td>
               <td class="py-2.5 px-3 max-w-xs truncate">{{ t.line_narration|default('-') }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{% if t.debit_amount > 0 %}${{ "{:,.2f}".format(t.debit_amount) }}{% else %}-{% endif %}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-rose-600">{% if t.credit_amount > 0 %}${{ "{:,.2f}".format(t.credit_amount) }}{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{% if t.debit_amount > 0 %}{{ t.debit_amount|money }}{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600">{% if t.credit_amount > 0 %}{{ t.credit_amount|money }}{% else %}-{% endif %}</td>
             
                 <td class="py-3 px-3 text-right">
                   <button type="button" onclick="openRowActionMenu(this, event, 'gl_vouchers', '{{ t.id }}', '{{ t.name or t.title or t.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
@@ -714,10 +703,10 @@
         <thead>
           <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Cost Centre</th>
-            <th class="py-2.5 px-3 text-right">Revenues ($)</th>
-            <th class="py-2.5 px-3 text-right">Direct Costs ($)</th>
-            <th class="py-2.5 px-3 text-right">Overheads ($)</th>
-            <th class="py-2.5 px-3 text-right">Net Margin ($)</th>
+            <th class="py-2.5 px-3 text-right">Revenues ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Direct Costs ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Overheads ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Net Margin ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-center">Margin %</th>
               <th class="py-2.5 px-3 text-right">Actions</th>
             </tr>
@@ -726,10 +715,10 @@
           {% for p in gl_cost_centre_pnl %}
             <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ p.cost_centre_code }} - {{ p.cost_centre_name }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 font-bold">${{ "{:,.2f}".format(p.revenue) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-rose-500">${{ "{:,.2f}".format(p.direct_costs) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-amber-500">${{ "{:,.2f}".format(p.overheads) }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(p.net_contribution) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 font-bold">{{ p.revenue|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-500">{{ p.direct_costs|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-amber-500">{{ p.overheads|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ p.net_contribution|money }}</td>
               <td class="py-2.5 px-3 text-center font-mono font-bold text-purple-600">{{ p.margin_pct }}%</td>
             
                 <td class="py-3 px-3 text-right">
@@ -794,7 +783,7 @@
       <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Date:</span> <span id="pv-date" class="font-bold font-mono">2026-08-27</span></div>
       <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Reference:</span> <span id="pv-ref" class="font-bold font-mono">-</span></div>
       <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Status:</span> <span id="pv-status" class="font-bold text-emerald-600">POSTED</span></div>
-      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Currency:</span> <span id="pv-curr" class="font-bold font-mono">USD ($)</span></div>
+      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Currency:</span> <span id="pv-curr" class="font-bold font-mono">{{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</span></div>
     </div>
 
     <!-- Narration -->
@@ -811,16 +800,16 @@
             <th class="py-2">Account Title</th>
             <th class="py-2">Cost Centre</th>
             <th class="py-2">Line Memo</th>
-            <th class="py-2 text-right">Debit ($)</th>
-            <th class="py-2 text-right">Credit ($)</th>
+            <th class="py-2 text-right">Debit ({{ active_company.currency_symbol }})</th>
+            <th class="py-2 text-right">Credit ({{ active_company.currency_symbol }})</th>
           </tr>
         </thead>
         <tbody id="pv-lines-body" class="divide-y divide-slate-100 dark:divide-white/5"></tbody>
         <tfoot>
           <tr class="border-t-2 border-slate-900 dark:border-white font-bold font-mono">
             <td colspan="3" class="py-2.5">Total Distribution</td>
-            <td class="py-2.5 text-right font-mono" id="pv-tot-deb">$0.00</td>
-            <td class="py-2.5 text-right font-mono" id="pv-tot-crd">$0.00</td>
+            <td class="py-2.5 text-right font-mono" id="pv-tot-deb">{{ 0.0|money }}</td>
+            <td class="py-2.5 text-right font-mono" id="pv-tot-crd">{{ 0.0|money }}</td>
           </tr>
         </tfoot>
       </table>
@@ -934,8 +923,12 @@ async function printGLVoucher(voucherId) {
       document.getElementById('pv-ref').innerText = d.voucher.reference_number || '-';
       document.getElementById('pv-status').innerText = d.voucher.status;
       document.getElementById('pv-narration').innerText = d.voucher.narration || '-';
-      document.getElementById('pv-tot-deb').innerText = '$' + d.total_debit.toLocaleString('en-US', { minimumFractionDigits: 2 });
-      document.getElementById('pv-tot-crd').innerText = '$' + d.total_credit.toLocaleString('en-US', { minimumFractionDigits: 2 });
+      const curSym = '{{ active_company.currency_symbol|default("৳") }}';
+      if (document.getElementById('pv-curr')) {
+        document.getElementById('pv-curr').innerText = (d.voucher.currency_code || '{{ active_company.currency|default("BDT") }}') + ' (' + curSym + ')';
+      }
+      document.getElementById('pv-tot-deb').innerText = curSym + d.total_debit.toLocaleString('en-US', { minimumFractionDigits: 2 });
+      document.getElementById('pv-tot-crd').innerText = curSym + d.total_credit.toLocaleString('en-US', { minimumFractionDigits: 2 });
 
       let rowsHtml = '';
       d.lines.forEach(l => {
@@ -944,8 +937,8 @@ async function printGLVoucher(voucherId) {
             <td class="py-1.5 font-semibold text-slate-800 dark:text-slate-200">${l.account_number} - ${l.account_name}</td>
             <td class="py-1.5 font-mono text-slate-500">${l.cost_centre_code || '-'}</td>
             <td class="py-1.5 text-slate-500">${l.line_narration || '-'}</td>
-            <td class="py-1.5 text-right font-mono text-emerald-600">${l.debit_amount > 0 ? '$' + l.debit_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}</td>
-            <td class="py-1.5 text-right font-mono text-rose-600">${l.credit_amount > 0 ? '$' + l.credit_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}</td>
+            <td class="py-1.5 text-right font-mono text-emerald-600">${l.debit_amount > 0 ? curSym + l.debit_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}</td>
+            <td class="py-1.5 text-right font-mono text-rose-600">${l.credit_amount > 0 ? curSym + l.credit_amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '-'}</td>
           </tr>
         `;
       });

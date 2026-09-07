@@ -182,7 +182,7 @@ class SalesMasterService:
         )
 
     @staticmethod
-    def create_price_profile(company_id: str, profile_code: str, profile_name: str, currency: str = "USD", price_type: str = "BASE_PRICE", is_default: int = 0) -> str:
+    def create_price_profile(company_id: str, profile_code: str, profile_name: str, currency: str = "BDT", price_type: str = "BASE_PRICE", is_default: int = 0) -> str:
         new_id = str(uuid.uuid4())
         db.execute(
             """

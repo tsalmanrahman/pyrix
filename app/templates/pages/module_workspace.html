@@ -86,10 +86,10 @@
   <!-- 1. Master: GL Accounts (Chart of Accounts) -->
   {% if module.route_slug == 'general-ledger' and current_tab == 'coa' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Chart of Accounts</span>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Chart of Accounts: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/general-ledger/master/gl-accounts/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add GL Account">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -147,9 +147,9 @@
   <!-- 2. Master: GL Account Mapping with Company -->
   {% elif module.route_slug == 'general-ledger' and current_tab == 'mapping' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-400"></i>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>GL Account Matrix: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/general-ledger/master/company-mappings/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Mapping">
@@ -202,10 +202,10 @@
   <!-- 3. Master: GL Sub Accounts -->
   {% elif module.route_slug == 'general-ledger' and current_tab == 'subaccounts' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="folder-tree" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>GL Sub Accounts Master</span>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="folder-tree" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>GL Sub Accounts Master: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/general-ledger/master/sub-accounts/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Sub Account">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -259,10 +259,10 @@
   <!-- 4. Master: Departments -->
   {% elif module.route_slug == 'general-ledger' and current_tab == 'departments' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="users" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Organizational Departments Master</span>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="users" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Departments Master: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/general-ledger/master/departments/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Department">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -310,9 +310,9 @@
   <!-- 5. Master: Cost Centres -->
   {% elif module.route_slug == 'general-ledger' and current_tab == 'costcentres' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="target" class="w-3.5 h-3.5 text-blue-400"></i>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="target" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Cost Centres Master: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/general-ledger/master/cost-centres/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Cost Centre">
@@ -672,9 +672,9 @@
   <!-- 7. Master: Budget Sets -->
   {% elif module.route_slug == 'general-ledger' and current_tab == 'budgets' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-blue-400"></i>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Annual Budget Sets Master: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/general-ledger/master/budget-sets/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Budget Set">
@@ -706,8 +706,8 @@
                 <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ b.fiscal_year }}</td>
                 <td class="py-2.5 px-2.5 text-slate-300 font-mono">{{ b.account_number }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400 font-mono">{{ b.cost_centre_code if b.cost_centre_code else 'Unassigned' }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-100">${{ "{:,.2f}".format(b.allocated_amount) }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono text-amber-400">${{ "{:,.2f}".format(b.utilized_amount) }}</td>
+                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-100">{{ b.allocated_amount|money }}</td>
+                <td class="py-2.5 px-2.5 text-right font-mono text-amber-400">{{ b.utilized_amount|money }}</td>
                 <td class="py-2.5 px-2.5 text-center">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     {{ b.status }}
@@ -771,7 +771,7 @@
                 <td class="py-2.5 px-2.5 text-center font-mono font-bold text-slate-300">
                   <span class="px-2 py-0.5 rounded bg-slate-800 border border-white/5 text-[10px]">{{ v.line_count }} lines</span>
                 </td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-100">${{ "{:,.2f}".format(v.total_amount) }}</td>
+                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-100">{{ v.total_amount|money }}</td>
                 <td class="py-2.5 px-2.5 text-center">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     {{ v.status }}
@@ -846,8 +846,8 @@
                   <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5">{{ b.batch_type }}</span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center font-mono font-bold text-slate-300">{{ b.voucher_count }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-cyan-400">${{ "{:,.2f}".format(b.total_debit) }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-amber-400">${{ "{:,.2f}".format(b.total_credit) }}</td>
+                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-cyan-400">{{ b.total_debit|money }}</td>
+                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-amber-400">{{ b.total_credit|money }}</td>
                 <td class="py-2.5 px-2.5 text-center">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full {% if b.status == 'POSTED' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-amber-500/10 text-amber-400 border border-amber-500/20{% endif %}">
                     {{ b.status }}
@@ -933,9 +933,9 @@
   <!-- 1. Cash Book: Cashiers Master -->
   {% elif module.route_slug == 'cash-book' and current_tab == 'cashiers' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="user-check" class="w-3.5 h-3.5 text-blue-400"></i>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="user-check" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Cashier Stations Master: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/cash-book/master/cashiers/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Cashier Station">
@@ -949,7 +949,7 @@
               <th class="py-2 px-2.5">Code</th>
               <th class="py-2 px-2.5">Station Name</th>
               <th class="py-2 px-2.5">Counter Booth Location</th>
-              <th class="py-2 px-2.5 text-right">Daily Limit ($)</th>
+              <th class="py-2 px-2.5 text-right">Daily Limit ({{ active_company.currency_symbol }})</th>
               <th class="py-2 px-2.5">Linked GL Account</th>
               <th class="py-2 px-2.5 text-center">Status</th>
               <th class="py-2 px-2.5 text-center">Actions</th>
@@ -963,7 +963,7 @@
                 </td>
                 <td class="py-2.5 px-2.5 font-semibold text-slate-200">{{ c.cashier_name }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400">{{ c.counter_station }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-emerald-400">${{ "{:,.2f}".format(c.daily_cash_limit) }}</td>
+                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-emerald-400">{{ c.daily_cash_limit|money }}</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">
                   {% if c.gl_account_number %}[{{ c.gl_account_number }}] {{ c.gl_account_name }}{% else %}—{% endif %}
                 </td>
@@ -987,10 +987,10 @@
   <!-- 2. Cash Book: Bank Master -->
   {% elif module.route_slug == 'cash-book' and current_tab == 'banks' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Corporate Banking Partners Master</span>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Corporate Banking Partners Master: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/cash-book/master/banks/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Bank Partner">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -1039,10 +1039,10 @@
   <!-- 3. Cash Book: Bank Branches -->
   {% elif module.route_slug == 'cash-book' and current_tab == 'branches' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Bank Branch Locations Master</span>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+          <span>Bank Branch Locations Master: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/cash-book/master/branches/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Branch">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -1091,9 +1091,9 @@
   <!-- 4. Cash Book: Bank Accounts -->
   {% elif module.route_slug == 'cash-book' and current_tab == 'accounts' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="credit-card" class="w-3.5 h-3.5 text-blue-400"></i>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="credit-card" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Corporate Treasury Bank Accounts: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/cash-book/master/accounts/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Bank Account">
@@ -1126,7 +1126,7 @@
                     {{ ba.account_type }} ({{ ba.currency }})
                   </span>
                 </td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-emerald-400">${{ "{:,.2f}".format(ba.current_balance) }}</td>
+                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-emerald-400">{{ ba.current_balance|money }}</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">
                   [{{ ba.gl_account_number }}] {{ ba.gl_account_name }}
                 </td>
@@ -1188,7 +1188,7 @@
                   {{ mr.payment_mode }} {% if mr.cheque_no %}({{ mr.cheque_no }}){% endif %}
                 </td>
                 <td class="py-2.5 px-2.5 text-right font-mono font-bold text-emerald-400">
-                  ${{ "{:,.2f}".format(mr.amount) }}
+                  {{ mr.amount|money }}
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full {% if mr.status == 'ISSUED' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% endif %}">
@@ -1259,7 +1259,7 @@
                   {% if ct.to_bank_account_no %}{{ ct.to_bank_account_title }}{% else %}{{ ct.to_cashier_name }}{% endif %}
                 </td>
                 <td class="py-2.5 px-2.5 text-right font-mono font-bold text-emerald-400">
-                  ${{ "{:,.2f}".format(ct.amount) }}
+                  {{ ct.amount|money }}
                 </td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">{{ ct.reference_number }}</td>
                 <td class="py-2.5 px-2.5 text-center">
