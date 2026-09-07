@@ -357,6 +357,21 @@ class DynamicCrudService:
                 {"table": "admin_user_profiles", "col": "cost_center_id", "label": "Assigned Users"}
             ]
         },
+        "admin_companies": {
+            "table": "companies",
+            "title": "Company Legal Entity & Currency Setup",
+            "id_col": "id",
+            "display_col": "name",
+            "editable_fields": [
+                {"field": "name", "label": "Company Legal Name", "type": "text", "required": True},
+                {"field": "short_code", "label": "Short Code", "type": "text", "required": True},
+                {"field": "currency", "label": "Base / Operating Currency", "type": "select", "options": ["BDT", "GBP", "USD", "EUR", "AED", "AUD", "CAD", "JPY", "SGD"], "required": True},
+                {"field": "industry", "label": "Industry Segment", "type": "text"},
+                {"field": "headquarters", "label": "Headquarters Location", "type": "text"},
+                {"field": "fiscal_year", "label": "Fiscal Year Cycle", "type": "text"},
+                {"field": "is_active", "label": "Active Status", "type": "checkbox"}
+            ]
+        },
         "admin_business_units": {
             "table": "admin_business_units",
             "title": "Business Unit",
@@ -501,6 +516,16 @@ class DynamicCrudService:
         try:
             affected = db.execute(sql, tuple(params))
             if affected > 0:
+                if table == "companies":
+                    try:
+                        from app.core.cache import cache
+                        cache.invalidate("all_companies")
+                        if "currency" in form_data:
+                            new_cur = form_data["currency"]
+                            db.execute("UPDATE admin_company_configs SET base_currency = ? WHERE company_id = ?", (new_cur, record_id))
+                    except Exception:
+                        pass
+
                 AuditService.log_event(
                     company_id="3B5A7898-82A2-49D3-8C87-3BA0C47B0630",
                     action_type="DYNAMIC_UPDATE",

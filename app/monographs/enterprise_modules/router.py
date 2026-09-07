@@ -12,6 +12,7 @@ from app.monographs.enterprise_modules.gl_journal_service import GLJournalServic
 from app.monographs.enterprise_modules.gl_process_service import GLProcessService
 from app.monographs.enterprise_modules.gl_analysis_service import GLAnalysisService
 from app.monographs.enterprise_modules.gl_report_service import GLReportService
+from app.monographs.enterprise_modules.gl_category_service import GLCategoryService
 from app.monographs.enterprise_modules.cash_book_service import CashBookService
 from app.monographs.enterprise_modules.ar_master_service import ARMasterService
 from app.monographs.enterprise_modules.ar_transaction_service import ARTransactionService
@@ -56,15 +57,103 @@ from app.monographs.enterprise_modules.admin_maintenance_service import AdminMai
 from app.monographs.enterprise_modules.admin_report_service import AdminReportService
 from app.monographs.enterprise_modules.registry import get_module_suites_registry, get_active_suite_context
 from app.core.user_service import UserService
+from app.core.sequence_service import SequenceService
 
 router = APIRouter(tags=["Enterprise Modules"])
+
+# =========================================================================
+# 🛡️ Centralized Real-Time Uniqueness Verification Engine
+# =========================================================================
+@router.get("/api/validation/check-unique")
+async def check_field_uniqueness(
+    entity: str = Query(...),
+    field: str = Query(...),
+    value: str = Query(...),
+    exclude_id: Optional[str] = None,
+    company_id: Optional[str] = None
+):
+    """
+    Universal Field-Level Real-Time Uniqueness Verification Engine.
+    Verifies whether a specific field value already exists in active database records.
+    """
+    clean_value = (value or "").strip()
+    if not clean_value:
+        return JSONResponse({"is_unique": True, "message": "Field is empty."})
+
+    # Validate field name safely (alphanumeric and underscore only)
+    safe_field = "".join(c for c in field if c.isalnum() or c == "_")
+    if not safe_field:
+        return JSONResponse({"is_unique": False, "message": "Invalid field name."}, status_code=400)
+
+    # Registry mapping entities to tables and display labels
+    ENTITY_CONFIG = {
+        "gl-accounts": {"table": "gl_accounts", "code_col": "account_number", "label": "Account Name"},
+        "gl_accounts": {"table": "gl_accounts", "code_col": "account_number", "label": "Account Name"},
+        "gl-categories": {"table": "gl_account_categories", "code_col": "category_code", "label": "Statutory Category"},
+        "gl_account_categories": {"table": "gl_account_categories", "code_col": "category_code", "label": "Statutory Category"},
+        "gl-segments": {"table": "gl_financial_segments", "code_col": "segment_code", "label": "Operating Segment"},
+        "gl_financial_segments": {"table": "gl_financial_segments", "code_col": "segment_code", "label": "Operating Segment"},
+        "departments": {"table": "gl_departments", "code_col": "dept_code", "label": "Department"},
+        "gl_departments": {"table": "gl_departments", "code_col": "dept_code", "label": "Department"},
+        "cost-centres": {"table": "admin_cost_centers", "code_col": "cost_center_code", "label": "Cost Centre"},
+        "sub-accounts": {"table": "gl_sub_accounts", "code_col": "sub_account_code", "label": "Sub Account"},
+        "gl_sub_accounts": {"table": "gl_sub_accounts", "code_col": "sub_account_code", "label": "Sub Account"},
+        "cb-bank-accounts": {"table": "cb_bank_accounts", "code_col": "account_number", "label": "Bank Account"},
+        "cb_bank_accounts": {"table": "cb_bank_accounts", "code_col": "account_number", "label": "Bank Account"},
+        "customers": {"table": "customers", "code_col": "customer_code", "label": "Customer"},
+        "vendors": {"table": "vendors", "code_col": "vendor_code", "label": "Vendor"}
+    }
+
+    cfg = ENTITY_CONFIG.get(entity)
+    if not cfg:
+        table_name = entity.replace("-", "_")
+        code_col = "code"
+        label = entity.replace("-", " ").title()
+    else:
+        table_name = cfg["table"]
+        code_col = cfg.get("code_col", "code")
+        label = cfg.get("label", entity.replace("-", " ").title())
+
+    # Build query
+    sql = f"SELECT id, {code_col} AS existing_code FROM {table_name} WHERE LOWER(TRIM({safe_field})) = LOWER(TRIM(?)) AND COALESCE(isDelete, 0) = 0"
+    params = [clean_value]
+
+    if exclude_id and isinstance(exclude_id, str) and exclude_id.strip() and exclude_id.strip() not in ("null", "undefined", "new"):
+        sql += " AND id != ?"
+        params.append(exclude_id.strip())
+
+
+    try:
+        row = db.query_one(sql, tuple(params))
+        if row:
+            existing_code = row.get("existing_code") or "EXISTS"
+            return JSONResponse({
+                "is_unique": False,
+                "entity": entity,
+                "field": safe_field,
+                "value": clean_value,
+                "existing_code": str(existing_code),
+                "message": f"{label} '{clean_value}' already exists (Code: {existing_code}). Duplicate entries are not permitted."
+            })
+        else:
+            return JSONResponse({
+                "is_unique": True,
+                "entity": entity,
+                "field": safe_field,
+                "value": clean_value,
+                "message": "Field value is available and unique."
+            })
+    except Exception as e:
+        return JSONResponse({"is_unique": True, "message": "Validation skipped."})
+
 
 
 
 
 ADMIN_SUB_AREAS = {
-    # 1. Global Organization, Locales & Currencies Setup Suite (6 Sub-Areas)
+    # 1. Global Organization, Locales & Currencies Setup Suite (7 Sub-Areas)
     "admin-companies": {"title": "Company Profile & Multi-Entity Setup", "icon": "building-2", "entity": "admin-companies"},
+    "admin-sequences": {"title": "Document Numbering & Auto-Code Prefix Setup", "icon": "hash", "entity": "admin-sequences"},
     "admin-units": {"title": "Business Units & Cost Centers", "icon": "network", "entity": "admin-units"},
     "admin-geo": {"title": "Countries, States & Locales", "icon": "map-pin", "entity": "admin-geo"},
     "admin-currencies": {"title": "Multi-Currency & Daily Rates", "icon": "coins", "entity": "admin-currencies"},
@@ -172,8 +261,8 @@ HR_SUB_AREAS = {
 
 GL_SUB_AREAS = {
     # 1. Master Setup Suite (6 Sub-Areas)
-    "coa": {"title": "GL Account (COA) List", "icon": "book-open", "entity": "gl-accounts"},
-    "mapping": {"title": "GL Account Mapping Matrix", "icon": "building-2", "entity": "company-mappings"},
+    "coa": {"title": "GL Account List", "icon": "book-open", "entity": "gl-accounts"},
+    "mapping": {"title": "GL Account Matrix List", "icon": "building-2", "entity": "company-mappings"},
     "subaccounts": {"title": "GL Sub Accounts List", "icon": "folder-tree", "entity": "sub-accounts"},
     "departments": {"title": "Organizational Departments", "icon": "users", "entity": "departments"},
     "costcentres": {"title": "Cost Centres Master", "icon": "target", "entity": "cost-centres"},
@@ -420,6 +509,9 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
     gl_transaction_details = []
     gl_cost_centre_pnl = []
     gl_notes_to_accounts = []
+    gl_categories = []
+    gl_segments = []
+    gl_category_kpis = {}
 
     # Cash Book Collections
     cb_cashiers = []
@@ -605,6 +697,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
 
     # Admin Collections
     admin_companies = []
+    admin_sequences = []
     admin_business_units = []
     admin_cost_centers = []
     admin_countries = []
@@ -652,6 +745,9 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         gl_transaction_details = GLReportService.get_transaction_details_report(str(active_company["id"]))
         gl_cost_centre_pnl = GLReportService.get_cost_centre_pnl(str(active_company["id"]))
         gl_notes_to_accounts = GLReportService.get_notes_to_accounts(str(active_company["id"]))
+        gl_categories = GLCategoryService.get_categories()
+        gl_segments = GLCategoryService.get_segments()
+        gl_category_kpis = GLCategoryService.get_summary_kpis()
 
     elif slug == "cash-book":
         cb_cashiers = CashBookService.get_cashiers(str(active_company["id"]))
@@ -759,6 +855,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
 
     elif module["route_slug"] in ("system-admin", "system_admin", "admin", "system-administration"):
         admin_companies = AdminMasterService.get_companies()
+        admin_sequences = SequenceService.list_all_sequences()
         admin_business_units = AdminMasterService.get_business_units(active_cid)
         admin_cost_centers = AdminMasterService.get_cost_centers(active_cid)
         admin_countries = AdminMasterService.get_countries()
@@ -934,6 +1031,8 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         "gl_template_count": len(gl_templates),
         "gl_batch_count": len(gl_batches),
         "gl_budget_count": len(gl_budgets),
+        "gl_category_count": len(gl_categories),
+        "gl_segment_count": len(gl_segments),
         "gl_integrity_label": gl_integrity.get("status_label", "100% HEALTHY"),
         "gl_cost_spent": f"${gl_cost_analysis.get('kpis', {}).get('total_actual_spent', 0.0):,.0f}",
         "ar_customers_count": len(ar_customers),
@@ -1025,6 +1124,9 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
             "gl_transaction_details": gl_transaction_details,
             "gl_cost_centre_pnl": gl_cost_centre_pnl,
             "gl_notes_to_accounts": gl_notes_to_accounts,
+            "gl_categories": gl_categories,
+            "gl_segments": gl_segments,
+            "gl_category_kpis": gl_category_kpis,
             "cb_cashiers": cb_cashiers,
             "cb_banks": cb_banks,
             "cb_branches": cb_branches,
@@ -1186,6 +1288,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
             "prod_wip_ledger": prod_wip_ledger,
             "prod_yield_report": prod_yield_report,
             "admin_companies": admin_companies,
+            "admin_sequences": admin_sequences,
             "admin_business_units": admin_business_units,
             "admin_cost_centers": admin_cost_centers,
             "admin_countries": admin_countries,
@@ -1245,6 +1348,8 @@ async def new_module_record_page(request: Request, slug: str):
         {"title": "New Transaction Entry", "url": None}
     ]
 
+    auto_ref_number = "[ Auto-Generated on Save ]"
+
     return templates.TemplateResponse(
         request=request,
         name="pages/record_create.html",
@@ -1254,6 +1359,7 @@ async def new_module_record_page(request: Request, slug: str):
             "appearance": appearance,
             "db_health": db_health,
             "breadcrumbs": breadcrumbs,
+            "auto_ref_number": auto_ref_number,
             "active_tab": f"module_{slug}"
         }
     )
@@ -1264,7 +1370,7 @@ async def handle_new_record_submit(
     slug: str,
     module_code: str = Form(...),
     record_type: str = Form("ENTRY"),
-    ref_number: str = Form(...),
+    ref_number: Optional[str] = Form(None),
     title: str = Form(...),
     status: str = Form("COMPLETED"),
     amount: float = Form(0.0),
@@ -1272,11 +1378,12 @@ async def handle_new_record_submit(
     created_by: str = Form("Operator Admin")
 ):
     active_company = CompanyService.resolve_active_company(request)
+    gen_ref = SequenceService.get_next_code("generic_records")
     EnterpriseModuleService.add_module_record(
         company_id=str(active_company["id"]),
         module_code=module_code,
         record_type=record_type,
-        ref_number=ref_number,
+        ref_number=gen_ref,
         title=title,
         status=status,
         amount=amount,
@@ -1332,6 +1439,15 @@ async def new_gl_master_record_page(request: Request, entity: str):
         {"title": f"New {entity_titles[entity]}", "url": None}
     ]
 
+    gl_seq_map = {
+        "gl-accounts": "gl_accounts",
+        "sub-accounts": "gl_sub_accounts",
+        "departments": "gl_departments",
+        "cost-centres": "gl_cost_centres",
+        "budget-sets": "gl_budget_sets"
+    }
+    auto_code = "[ Auto-Generated on Save ]"
+
     return templates.TemplateResponse(
         request=request,
         name="pages/gl_master_create.html",
@@ -1348,6 +1464,7 @@ async def new_gl_master_record_page(request: Request, entity: str):
             "appearance": appearance,
             "db_health": db_health,
             "breadcrumbs": breadcrumbs,
+            "auto_code": auto_code,
             "active_tab": "module_general-ledger"
         }
     )
@@ -1390,41 +1507,62 @@ async def handle_new_gl_master_submit(
     active_company = CompanyService.resolve_active_company(request)
     target_tab = "transactions"
 
-    if entity == "gl-accounts" and account_number and account_name:
-        GLMasterService.create_account(account_number, account_name, account_type or "ASSET", financial_statement or "BALANCE_SHEET", normal_balance or "DEBIT")
-        target_tab = "coa"
-    elif entity == "company-mappings" and gl_account_id:
-        target_comp = company_id or str(active_company["id"])
-        GLMasterService.create_company_mapping(gl_account_id, target_comp, company_account_alias or "", posting_currency or "USD")
-        target_tab = "mapping"
-    elif entity == "sub-accounts" and gl_account_id and sub_account_code and sub_account_name:
-        GLMasterService.create_sub_account(gl_account_id, sub_account_code, sub_account_name, sub_account_type or "DEPARTMENTAL")
-        target_tab = "subaccounts"
-    elif entity == "departments" and dept_code and dept_name:
-        GLMasterService.create_department(dept_code, dept_name, head_of_dept or "")
-        target_tab = "departments"
-    elif entity == "cost-centres" and cost_centre_code and cost_centre_name:
-        target_comp = company_id or str(active_company["id"])
-        GLMasterService.create_cost_centre(cost_centre_code, cost_centre_name, department_id, target_comp)
-        target_tab = "costcentres"
-    elif entity == "budget-sets" and budget_code and budget_title and gl_account_id:
-        target_comp = company_id or str(active_company["id"])
-        GLMasterService.create_budget_set(
-            budget_code, budget_title, fiscal_year or active_company["fiscal_year"], target_comp, cost_centre_id, gl_account_id, allocated_amount or 0.0, budget_status or "APPROVED"
-        )
-        target_tab = "budgets"
+    try:
+        if entity == "gl-accounts":
+            if not account_name or not account_name.strip():
+                raise ValueError("Account Name is required and cannot be blank.")
+            is_unique, existing_code = GLMasterService.is_account_name_unique(account_name)
+            if not is_unique:
+                raise ValueError(f"Account name '{account_name.strip()}' already exists (Code: {existing_code}).")
+            generated_code = SequenceService.get_next_code("gl_accounts")
+            GLMasterService.create_account(generated_code, account_name, account_type or "ASSET", financial_statement or "BALANCE_SHEET", normal_balance or "DEBIT")
+            target_tab = "coa"
+        elif entity == "company-mappings" and gl_account_id:
+            target_comp = company_id or str(active_company["id"])
+            GLMasterService.create_company_mapping(gl_account_id, target_comp, company_account_alias or "", posting_currency or "USD")
+            target_tab = "mapping"
+        elif entity == "sub-accounts" and gl_account_id and sub_account_name:
+            generated_code = SequenceService.get_next_code("gl_sub_accounts")
+            GLMasterService.create_sub_account(gl_account_id, generated_code, sub_account_name, sub_account_type or "DEPARTMENTAL")
+            target_tab = "subaccounts"
+        elif entity == "departments" and dept_name:
+            generated_code = SequenceService.get_next_code("gl_departments")
+            GLMasterService.create_department(generated_code, dept_name, head_of_dept or "")
+            target_tab = "departments"
+        elif entity == "cost-centres" and cost_centre_name:
+            generated_code = SequenceService.get_next_code("gl_cost_centres")
+            target_comp = company_id or str(active_company["id"])
+            GLMasterService.create_cost_centre(generated_code, cost_centre_name, department_id, target_comp)
+            target_tab = "costcentres"
+        elif entity == "budget-sets" and budget_title and gl_account_id:
+            generated_code = SequenceService.get_next_code("gl_budget_sets")
+            target_comp = company_id or str(active_company["id"])
+            GLMasterService.create_budget_set(
+                generated_code, budget_title, fiscal_year or active_company["fiscal_year"], target_comp, cost_centre_id, gl_account_id, allocated_amount or 0.0, budget_status or "APPROVED"
+            )
+            target_tab = "budgets"
 
-    return RedirectResponse(url=f"/modules/general-ledger?tab={target_tab}", status_code=303)
+        return RedirectResponse(url=f"/modules/general-ledger?tab={target_tab}", status_code=303)
+    except ValueError as ve:
+        if request.headers.get("accept") == "application/json" or request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JSONResponse({"status": "error", "message": str(ve)}, status_code=400)
+        return RedirectResponse(url=f"/modules/general-ledger/master/{entity}/new?error={str(ve)}", status_code=303)
+
 
 # =========================================================================
-# Solid GL Master Data Edit Pages (/modules/general-ledger/master/{entity}/{record_id}/edit)
+# Solid GL Master Data View & Edit Pages (/modules/general-ledger/master/{entity}/{record_id}/edit & /view)
 # =========================================================================
+@router.get("/modules/general-ledger/master/{entity}/{record_id}/view", response_class=HTMLResponse)
 @router.get("/modules/general-ledger/master/{entity}/{record_id}/edit", response_class=HTMLResponse)
 async def edit_gl_master_record_page(request: Request, entity: str, record_id: str):
     module = EnterpriseModuleService.get_module_by_slug("general-ledger")
     active_company = CompanyService.resolve_active_company(request)
     appearance = AppearanceService.get_appearance()
     db_health = db.check_health()
+
+    is_view = request.url.path.endswith("/view") or request.query_params.get("mode") == "view"
+    edit_url = f"/modules/general-ledger/master/{entity}/{record_id}/edit"
+    view_url = f"/modules/general-ledger/master/{entity}/{record_id}/view"
 
     entity_titles = {
         "gl-accounts": "GL Account (Chart of Accounts)",
@@ -1476,7 +1614,7 @@ async def edit_gl_master_record_page(request: Request, entity: str, record_id: s
         {"title": "Financial & Treasury", "url": "/"},
         {"title": "General Ledger", "url": "/modules/general-ledger"},
         {"title": sub_title, "url": f"/modules/general-ledger?tab={sub_tab}"},
-        {"title": f"Edit {entity_titles[entity]}", "url": None}
+        {"title": f"{'View' if is_view else 'Edit'} {entity_titles[entity]}", "url": None}
     ]
 
     return templates.TemplateResponse(
@@ -1489,7 +1627,10 @@ async def edit_gl_master_record_page(request: Request, entity: str, record_id: s
             "entity_title": entity_titles[entity],
             "record": record,
             "record_id": record_id,
-            "is_edit_mode": True,
+            "is_edit_mode": not is_view,
+            "is_view_mode": is_view,
+            "edit_url": edit_url,
+            "view_url": view_url,
             "all_accounts": all_accounts,
             "all_departments": all_departments,
             "all_cost_centres": all_cost_centres,
@@ -1541,35 +1682,48 @@ async def handle_edit_gl_master_submit(
     active_company = CompanyService.resolve_active_company(request)
     target_tab = "transactions"
 
-    if entity == "gl-accounts" and account_number and account_name:
-        GLMasterService.update_account(record_id, account_number, account_name, account_type or "ASSET", financial_statement or "BALANCE_SHEET", normal_balance or "DEBIT")
-        target_tab = "coa"
-    elif entity == "company-mappings" and gl_account_id:
-        target_comp = company_id or str(active_company["id"])
-        GLMasterService.update_company_mapping(record_id, gl_account_id, target_comp, company_account_alias or "", posting_currency or "USD")
-        target_tab = "mapping"
-    elif entity == "sub-accounts" and gl_account_id and sub_account_code and sub_account_name:
-        GLMasterService.update_sub_account(record_id, gl_account_id, sub_account_code, sub_account_name, sub_account_type or "DEPARTMENTAL")
-        target_tab = "subaccounts"
-    elif entity == "departments" and dept_code and dept_name:
-        GLMasterService.update_department(record_id, dept_code, dept_name, head_of_dept or "")
-        target_tab = "departments"
-    elif entity == "cost-centres" and cost_centre_code and cost_centre_name:
-        target_comp = company_id or str(active_company["id"])
-        GLMasterService.update_cost_centre(record_id, cost_centre_code, cost_centre_name, department_id, target_comp)
-        target_tab = "costcentres"
-    elif entity == "budget-sets" and budget_title and gl_account_id:
-        target_comp = company_id or str(active_company["id"])
-        GLMasterService.update_budget_set(
-            record_id, budget_title, fiscal_year or active_company["fiscal_year"], target_comp, cost_centre_id, gl_account_id, allocated_amount or 0.0, budget_status or "APPROVED"
-        )
-        target_tab = "budgets"
+    try:
+        if entity == "gl-accounts":
+            if not account_name or not account_name.strip():
+                raise ValueError("Account Name is required and cannot be blank.")
+            is_unique, existing_code = GLMasterService.is_account_name_unique(account_name, exclude_id=record_id)
+            if not is_unique:
+                raise ValueError(f"Account name '{account_name.strip()}' already exists (Code: {existing_code}).")
+            GLMasterService.update_account(record_id, account_number, account_name, account_type or "ASSET", financial_statement or "BALANCE_SHEET", normal_balance or "DEBIT")
+            target_tab = "coa"
+        elif entity == "company-mappings" and gl_account_id:
+            target_comp = company_id or str(active_company["id"])
+            GLMasterService.update_company_mapping(record_id, gl_account_id, target_comp, company_account_alias or "", posting_currency or "USD")
+            target_tab = "mapping"
+        elif entity == "sub-accounts" and gl_account_id and sub_account_code and sub_account_name:
+            GLMasterService.update_sub_account(record_id, gl_account_id, sub_account_code, sub_account_name, sub_account_type or "DEPARTMENTAL")
+            target_tab = "subaccounts"
+        elif entity == "departments" and dept_code and dept_name:
+            GLMasterService.update_department(record_id, dept_code, dept_name, head_of_dept or "")
+            target_tab = "departments"
+        elif entity == "cost-centres" and cost_centre_code and cost_centre_name:
+            target_comp = company_id or str(active_company["id"])
+            GLMasterService.update_cost_centre(record_id, cost_centre_code, cost_centre_name, department_id, target_comp)
+            target_tab = "costcentres"
+        elif entity == "budget-sets" and budget_title and gl_account_id:
+            target_comp = company_id or str(active_company["id"])
+            GLMasterService.update_budget_set(
+                record_id, budget_title, fiscal_year or active_company["fiscal_year"], target_comp, cost_centre_id, gl_account_id, allocated_amount or 0.0, budget_status or "APPROVED"
+            )
+            target_tab = "budgets"
 
-    return RedirectResponse(url=f"/modules/general-ledger?tab={target_tab}", status_code=303)
+        return RedirectResponse(url=f"/modules/general-ledger?tab={target_tab}", status_code=303)
+    except ValueError as ve:
+        if request.headers.get("accept") == "application/json" or request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JSONResponse({"status": "error", "message": str(ve)}, status_code=400)
+        return RedirectResponse(url=f"/modules/general-ledger/master/{entity}/{record_id}/edit?error={str(ve)}", status_code=303)
+
+
 
 # =========================================================================
-# Solid Transaction Entry Edit Pages (/modules/{slug}/records/{record_id}/edit)
+# Solid Transaction Entry View & Edit Pages (/modules/{slug}/records/{record_id}/edit & /view)
 # =========================================================================
+@router.get("/modules/{slug}/records/{record_id}/view", response_class=HTMLResponse)
 @router.get("/modules/{slug}/records/{record_id}/edit", response_class=HTMLResponse)
 async def edit_module_record_page(request: Request, slug: str, record_id: str):
     module = EnterpriseModuleService.get_module_by_slug(slug)
@@ -1584,11 +1738,15 @@ async def edit_module_record_page(request: Request, slug: str, record_id: str):
     appearance = AppearanceService.get_appearance()
     db_health = db.check_health()
 
+    is_view = request.url.path.endswith("/view") or request.query_params.get("mode") == "view"
+    edit_url = f"/modules/{slug}/records/{record_id}/edit"
+    view_url = f"/modules/{slug}/records/{record_id}/view"
+
     breadcrumbs = [
         {"title": "Home", "url": "/"},
         {"title": module["domain_group"], "url": "/"},
         {"title": module["name"], "url": f"/modules/{slug}"},
-        {"title": f"Edit Entry #{record['code']}", "url": None}
+        {"title": f"{'View' if is_view else 'Edit'} Entry #{record['code']}", "url": None}
     ]
 
     return templates.TemplateResponse(
@@ -1598,7 +1756,10 @@ async def edit_module_record_page(request: Request, slug: str, record_id: str):
             "module": module,
             "record": record,
             "record_id": record_id,
-            "is_edit_mode": True,
+            "is_edit_mode": not is_view,
+            "is_view_mode": is_view,
+            "edit_url": edit_url,
+            "view_url": view_url,
             "active_company": active_company,
             "appearance": appearance,
             "db_health": db_health,
@@ -1661,6 +1822,8 @@ async def new_journal_voucher_page(request: Request):
         {"title": "New Journal Entry", "url": None}
     ]
 
+    auto_voucher_number = "[ Auto-Generated on Save ]"
+
     return templates.TemplateResponse(
         request=request,
         name="pages/gl_journal_entry.html",
@@ -1674,6 +1837,7 @@ async def new_journal_voucher_page(request: Request):
             "breadcrumbs": breadcrumbs,
             "is_edit_mode": False,
             "voucher": None,
+            "auto_voucher_number": auto_voucher_number,
             "lines": [],
             "active_tab": "module_general-ledger"
         }
@@ -1682,7 +1846,7 @@ async def new_journal_voucher_page(request: Request):
 @router.post("/modules/general-ledger/journals/new")
 async def handle_new_journal_submit(
     request: Request,
-    voucher_number: str = Form(...),
+    voucher_number: Optional[str] = Form(None),
     voucher_date: str = Form(...),
     reference_number: Optional[str] = Form(None),
     narration: str = Form(...)
@@ -1704,10 +1868,13 @@ async def handle_new_journal_submit(
             "credit_amount": float(credits[i]) if i < len(credits) and credits[i] else 0.0
         })
 
+    # Generate business code automatically via SequenceService
+    actual_voucher_number = SequenceService.get_next_code("gl_journal_vouchers")
+
     active_company = CompanyService.resolve_active_company(request)
     GLJournalService.create_journal_voucher(
         company_id=str(active_company["id"]),
-        voucher_number=voucher_number,
+        voucher_number=actual_voucher_number,
         voucher_date=voucher_date,
         reference_number=reference_number or "",
         narration=narration,
@@ -1715,6 +1882,7 @@ async def handle_new_journal_submit(
     )
     return RedirectResponse(url="/modules/general-ledger?tab=journals", status_code=303)
 
+@router.get("/modules/general-ledger/journals/{voucher_id}/view", response_class=HTMLResponse)
 @router.get("/modules/general-ledger/journals/{voucher_id}/edit", response_class=HTMLResponse)
 async def edit_journal_voucher_page(request: Request, voucher_id: str):
     module = EnterpriseModuleService.get_module_by_slug("general-ledger")
@@ -1729,12 +1897,16 @@ async def edit_journal_voucher_page(request: Request, voucher_id: str):
     all_accounts = GLMasterService.get_all_accounts()
     all_cost_centres = GLMasterService.get_cost_centres_for_company(str(active_company["id"]))
 
+    is_view = request.url.path.endswith("/view") or request.query_params.get("mode") == "view"
+    edit_url = f"/modules/general-ledger/journals/{voucher_id}/edit"
+    view_url = f"/modules/general-ledger/journals/{voucher_id}/view"
+
     breadcrumbs = [
         {"title": "Home", "url": "/"},
         {"title": "Financial & Treasury", "url": "/"},
         {"title": "General Ledger", "url": "/modules/general-ledger"},
         {"title": "Journal Vouchers", "url": "/modules/general-ledger?tab=journals"},
-        {"title": f"Edit {voucher['voucher_number']}", "url": None}
+        {"title": f"{'View' if is_view else 'Edit'} {voucher['voucher_number']}", "url": None}
     ]
 
     return templates.TemplateResponse(
@@ -1748,7 +1920,10 @@ async def edit_journal_voucher_page(request: Request, voucher_id: str):
             "all_accounts": all_accounts,
             "all_cost_centres": all_cost_centres,
             "breadcrumbs": breadcrumbs,
-            "is_edit_mode": True,
+            "is_edit_mode": not is_view,
+            "is_view_mode": is_view,
+            "edit_url": edit_url,
+            "view_url": view_url,
             "voucher": voucher,
             "lines": lines,
             "active_tab": "module_general-ledger"
@@ -1853,6 +2028,347 @@ async def api_delete_batch(batch_id: str):
 async def api_delete_voucher(voucher_id: str):
     GLJournalService.delete_journal_voucher(voucher_id)
     return {"success": True, "voucher_id": voucher_id}
+
+# =========================================================================
+# GL Account Categories & IFRS 8 Financial Segments Endpoints
+# =========================================================================
+@router.get("/api/modules/general-ledger/categories/{category_id}/accounts")
+async def api_get_category_accounts(category_id: str):
+    cat = GLCategoryService.get_category_by_id(category_id)
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"success": True, "category": cat}
+
+@router.post("/api/modules/general-ledger/categories/new")
+async def api_create_category(
+    request: Request,
+    category_code: str = Form(...),
+    category_name: str = Form(...),
+    statement_section: str = Form(...),
+    classification_type: str = Form(...),
+    description: Optional[str] = Form(None),
+    reporting_sort: int = Form(10)
+):
+    cat_id = GLCategoryService.create_category(
+        category_code=category_code,
+        category_name=category_name,
+        statement_section=statement_section,
+        classification_type=classification_type,
+        description=description,
+        reporting_sort=reporting_sort
+    )
+    if request.headers.get("accept") == "application/json" or request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return {"success": True, "category_id": cat_id, "message": "Category created successfully."}
+    return RedirectResponse(url="/modules/general-ledger?tab=categories", status_code=303)
+
+@router.post("/api/modules/general-ledger/categories/{category_id}/delete")
+async def api_delete_category(category_id: str):
+    GLCategoryService.delete_category(category_id)
+    return {"success": True, "category_id": category_id}
+
+@router.post("/api/modules/general-ledger/segments/new")
+async def api_create_segment(
+    request: Request,
+    segment_code: str = Form(...),
+    segment_name: str = Form(...),
+    segment_type: str = Form(...),
+    head_of_segment: Optional[str] = Form(None),
+    target_margin_pct: float = Form(0.0),
+    revenue_weight_pct: float = Form(0.0)
+):
+    seg_id = GLCategoryService.create_segment(
+        segment_code=segment_code,
+        segment_name=segment_name,
+        segment_type=segment_type,
+        head_of_segment=head_of_segment,
+        target_margin_pct=target_margin_pct,
+        revenue_weight_pct=revenue_weight_pct
+    )
+    if request.headers.get("accept") == "application/json" or request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return {"success": True, "segment_id": seg_id, "message": "Segment created successfully."}
+    return RedirectResponse(url="/modules/general-ledger?tab=categories", status_code=303)
+
+@router.post("/api/modules/general-ledger/segments/{segment_id}/delete")
+async def api_delete_segment(segment_id: str):
+    GLCategoryService.delete_segment(segment_id)
+    return {"success": True, "segment_id": segment_id}
+
+
+# =========================================================================
+# GL Account Categories & IFRS 8 Financial Segments Solid Pages
+# =========================================================================
+
+# 1. Statutory Categories Solid Views & Form
+@router.get("/modules/general-ledger/categories/new", response_class=HTMLResponse)
+async def new_category_page(request: Request):
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Financial & Treasury", "url": "/"},
+        {"title": "General Ledger", "url": "/modules/general-ledger"},
+        {"title": "Categories & Segments", "url": "/modules/general-ledger?tab=categories"},
+        {"title": "New Category", "url": None}
+    ]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/gl_category_form.html",
+        context={
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "breadcrumbs": breadcrumbs,
+            "is_edit": False,
+            "category": None,
+            "category_code": f"CAT-GL-{len(GLCategoryService.get_categories()) + 1:02d}",
+            "active_tab": "module_general-ledger"
+        }
+    )
+
+@router.post("/modules/general-ledger/categories/new")
+async def create_category_solid(
+    request: Request,
+    category_code: str = Form(...),
+    category_name: str = Form(...),
+    statement_section: str = Form(...),
+    classification_type: str = Form(...),
+    description: Optional[str] = Form(None),
+    reporting_sort: int = Form(10)
+):
+    cat_id = GLCategoryService.create_category(
+        category_code=category_code,
+        category_name=category_name,
+        statement_section=statement_section,
+        classification_type=classification_type,
+        description=description,
+        reporting_sort=reporting_sort
+    )
+    return RedirectResponse(url=f"/modules/general-ledger/categories/{cat_id}/view", status_code=303)
+
+@router.get("/modules/general-ledger/categories/{category_id}/view", response_class=HTMLResponse)
+async def view_category_page(request: Request, category_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+
+    cat = GLCategoryService.get_category_by_id(category_id)
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Financial & Treasury", "url": "/"},
+        {"title": "General Ledger", "url": "/modules/general-ledger"},
+        {"title": "Categories & Segments", "url": "/modules/general-ledger?tab=categories"},
+        {"title": cat["category_name"], "url": None}
+    ]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/gl_category_detail.html",
+        context={
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "breadcrumbs": breadcrumbs,
+            "category": cat,
+            "active_tab": "module_general-ledger"
+        }
+    )
+
+@router.get("/modules/general-ledger/categories/{category_id}/edit", response_class=HTMLResponse)
+async def edit_category_page(request: Request, category_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+
+    cat = GLCategoryService.get_category_by_id(category_id)
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Financial & Treasury", "url": "/"},
+        {"title": "General Ledger", "url": "/modules/general-ledger"},
+        {"title": "Categories & Segments", "url": "/modules/general-ledger?tab=categories"},
+        {"title": f"Edit {cat['category_name']}", "url": None}
+    ]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/gl_category_form.html",
+        context={
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "breadcrumbs": breadcrumbs,
+            "is_edit": True,
+            "category": cat,
+            "active_tab": "module_general-ledger"
+        }
+    )
+
+@router.post("/modules/general-ledger/categories/{category_id}/edit")
+async def update_category_solid(
+    request: Request,
+    category_id: str,
+    category_name: str = Form(...),
+    statement_section: str = Form(...),
+    classification_type: str = Form(...),
+    description: Optional[str] = Form(None),
+    reporting_sort: int = Form(10),
+    is_active: Optional[str] = Form(None)
+):
+    GLCategoryService.update_category(
+        category_id=category_id,
+        category_name=category_name,
+        statement_section=statement_section,
+        classification_type=classification_type,
+        description=description,
+        reporting_sort=reporting_sort,
+        is_active=bool(is_active)
+    )
+    return RedirectResponse(url=f"/modules/general-ledger/categories/{category_id}/view", status_code=303)
+
+# 2. Operating Segments Solid Views & Form
+@router.get("/modules/general-ledger/segments/new", response_class=HTMLResponse)
+async def new_segment_page(request: Request):
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Financial & Treasury", "url": "/"},
+        {"title": "General Ledger", "url": "/modules/general-ledger"},
+        {"title": "Categories & Segments", "url": "/modules/general-ledger?tab=categories"},
+        {"title": "New Operating Segment", "url": None}
+    ]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/gl_segment_form.html",
+        context={
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "breadcrumbs": breadcrumbs,
+            "is_edit": False,
+            "segment": None,
+            "segment_code": f"SEG-OPS-{len(GLCategoryService.get_segments()) + 1:02d}",
+            "active_tab": "module_general-ledger"
+        }
+    )
+
+@router.post("/modules/general-ledger/segments/new")
+async def create_segment_solid(
+    request: Request,
+    segment_code: str = Form(...),
+    segment_name: str = Form(...),
+    segment_type: str = Form(...),
+    head_of_segment: Optional[str] = Form(None),
+    target_margin_pct: float = Form(0.0),
+    revenue_weight_pct: float = Form(0.0)
+):
+    seg_id = GLCategoryService.create_segment(
+        segment_code=segment_code,
+        segment_name=segment_name,
+        segment_type=segment_type,
+        head_of_segment=head_of_segment,
+        target_margin_pct=target_margin_pct,
+        revenue_weight_pct=revenue_weight_pct
+    )
+    return RedirectResponse(url=f"/modules/general-ledger/segments/{seg_id}/view", status_code=303)
+
+@router.get("/modules/general-ledger/segments/{segment_id}/view", response_class=HTMLResponse)
+async def view_segment_page(request: Request, segment_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+
+    seg = GLCategoryService.get_segment_by_id(segment_id)
+    if not seg:
+        raise HTTPException(status_code=404, detail="Segment not found")
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Financial & Treasury", "url": "/"},
+        {"title": "General Ledger", "url": "/modules/general-ledger"},
+        {"title": "Categories & Segments", "url": "/modules/general-ledger?tab=categories"},
+        {"title": seg["segment_name"], "url": None}
+    ]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/gl_segment_detail.html",
+        context={
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "breadcrumbs": breadcrumbs,
+            "segment": seg,
+            "active_tab": "module_general-ledger"
+        }
+    )
+
+@router.get("/modules/general-ledger/segments/{segment_id}/edit", response_class=HTMLResponse)
+async def edit_segment_page(request: Request, segment_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+
+    seg = GLCategoryService.get_segment_by_id(segment_id)
+    if not seg:
+        raise HTTPException(status_code=404, detail="Segment not found")
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Financial & Treasury", "url": "/"},
+        {"title": "General Ledger", "url": "/modules/general-ledger"},
+        {"title": "Categories & Segments", "url": "/modules/general-ledger?tab=categories"},
+        {"title": f"Edit {seg['segment_name']}", "url": None}
+    ]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/gl_segment_form.html",
+        context={
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "breadcrumbs": breadcrumbs,
+            "is_edit": True,
+            "segment": seg,
+            "active_tab": "module_general-ledger"
+        }
+    )
+
+@router.post("/modules/general-ledger/segments/{segment_id}/edit")
+async def update_segment_solid(
+    request: Request,
+    segment_id: str,
+    segment_name: str = Form(...),
+    segment_type: str = Form(...),
+    head_of_segment: Optional[str] = Form(None),
+    target_margin_pct: float = Form(0.0),
+    revenue_weight_pct: float = Form(0.0),
+    is_active: Optional[str] = Form(None)
+):
+    GLCategoryService.update_segment(
+        segment_id=segment_id,
+        segment_name=segment_name,
+        segment_type=segment_type,
+        head_of_segment=head_of_segment,
+        target_margin_pct=target_margin_pct,
+        revenue_weight_pct=revenue_weight_pct,
+        is_active=bool(is_active)
+    )
+    return RedirectResponse(url=f"/modules/general-ledger/segments/{segment_id}/view", status_code=303)
+
+
 
 # =========================================================================
 # CASH BOOK & TREASURY SUITE ROUTES
@@ -2094,6 +2610,14 @@ async def new_cb_master_record_page(request: Request, entity: str):
         {"title": f"New {ent_meta['title']}", "url": None}
     ]
 
+    cb_seq_map = {
+        "cashiers": "cb_cashiers",
+        "banks": "cb_banks",
+        "branches": "cb_branches",
+        "accounts": "cb_bank_accounts"
+    }
+    auto_code = "[ Auto-Generated on Save ]"
+
     return templates.TemplateResponse(
         request=request,
         name="pages/cb_master_create.html",
@@ -2110,10 +2634,12 @@ async def new_cb_master_record_page(request: Request, entity: str):
             "gl_accounts": gl_accounts,
             "appearance": appearance,
             "breadcrumbs": breadcrumbs,
+            "auto_code": auto_code,
             "active_tab": "module_cash-book"
         }
     )
 
+@router.get("/modules/cash-book/master/{entity}/{record_id}/view", response_class=HTMLResponse)
 @router.get("/modules/cash-book/master/{entity}/{record_id}/edit", response_class=HTMLResponse)
 async def edit_cb_master_record_page(request: Request, entity: str, record_id: str):
     if entity not in CB_MASTER_ENTITIES:
@@ -2139,13 +2665,17 @@ async def edit_cb_master_record_page(request: Request, entity: str, record_id: s
     branches_list = CashBookService.get_branches()
     gl_accounts = GLMasterService.get_all_accounts()
 
+    is_view = request.url.path.endswith("/view") or request.query_params.get("mode") == "view"
+    edit_url = f"/modules/cash-book/master/{entity}/{record_id}/edit"
+    view_url = f"/modules/cash-book/master/{entity}/{record_id}/view"
+
     ent_meta = CB_MASTER_ENTITIES[entity]
     breadcrumbs = [
         {"title": "Home", "url": "/"},
         {"title": "Financial & Treasury", "url": "/"},
         {"title": "Cash Book", "url": "/modules/cash-book"},
         {"title": ent_meta["title"], "url": f"/modules/cash-book?tab={ent_meta['tab']}"},
-        {"title": f"Edit {ent_meta['title']}", "url": None}
+        {"title": f"{'View' if is_view else 'Edit'} {ent_meta['title']}", "url": None}
     ]
 
     return templates.TemplateResponse(
@@ -2155,7 +2685,10 @@ async def edit_cb_master_record_page(request: Request, entity: str, record_id: s
             "entity": entity,
             "entity_title": ent_meta["title"],
             "sub_tab": ent_meta["tab"],
-            "is_edit_mode": True,
+            "is_edit_mode": not is_view,
+            "is_view_mode": is_view,
+            "edit_url": edit_url,
+            "view_url": view_url,
             "record": record,
             "record_id": record_id,
             "active_company": active_company,
@@ -2175,8 +2708,9 @@ async def create_cb_master_record(request: Request, entity: str):
     tab = CB_MASTER_ENTITIES[entity]["tab"]
 
     if entity == "cashiers":
+        gen_code = SequenceService.get_next_code("cb_cashiers")
         CashBookService.create_cashier(
-            cashier_code=form_data.get("cashier_code", ""),
+            cashier_code=gen_code,
             cashier_name=form_data.get("cashier_name", ""),
             company_id=form_data.get("company_id", ""),
             counter_station=form_data.get("counter_station", ""),
@@ -2184,26 +2718,29 @@ async def create_cb_master_record(request: Request, entity: str):
             gl_account_id=form_data.get("gl_account_id") or None
         )
     elif entity == "banks":
+        gen_code = SequenceService.get_next_code("cb_banks")
         CashBookService.create_bank(
-            bank_code=form_data.get("bank_code", ""),
+            bank_code=gen_code,
             bank_name=form_data.get("bank_name", ""),
             swift_code=form_data.get("swift_code") or None,
             country=form_data.get("country", "United States")
         )
     elif entity == "branches":
+        gen_code = SequenceService.get_next_code("cb_branches")
         CashBookService.create_branch(
             bank_id=form_data.get("bank_id", ""),
-            branch_code=form_data.get("branch_code", ""),
+            branch_code=gen_code,
             branch_name=form_data.get("branch_name", ""),
             routing_number=form_data.get("routing_number") or None,
             branch_address=form_data.get("branch_address") or None,
             contact_phone=form_data.get("contact_phone") or None
         )
     elif entity == "accounts":
+        gen_code = SequenceService.get_next_code("cb_bank_accounts")
         CashBookService.create_bank_account(
             company_id=form_data.get("company_id", ""),
             branch_id=form_data.get("branch_id", ""),
-            account_number=form_data.get("account_number", ""),
+            account_number=gen_code,
             account_title=form_data.get("account_title", ""),
             account_type=form_data.get("account_type", "CURRENT"),
             currency=form_data.get("currency", "USD"),
@@ -2321,6 +2858,18 @@ async def new_ar_master_page(request: Request, entity: str):
     ar_control_sets = ARMasterService.get_control_account_sets(str(active_company["id"]))
     gl_accounts = GLMasterService.get_all_accounts()
 
+    ar_seq_map = {
+        "customers": "ar_customers",
+        "ar-customer-groups": "ar_customer_groups",
+        "customer-groups": "ar_commercial_groups",
+        "group-categories": "ar_group_categories",
+        "control-accounts": "ar_control_accounts",
+        "reminder-criteria": "ar_reminder_criteria",
+        "aging-profiles": "ar_aging_profiles",
+        "adjustment-types": "ar_adjustment_types",
+    }
+    auto_code = "[ Auto-Generated on Save ]"
+
     return templates.TemplateResponse(
         request=request,
         name="pages/ar_master_create.html",
@@ -2343,10 +2892,12 @@ async def new_ar_master_page(request: Request, entity: str):
             "ar_group_categories": ar_group_categories,
             "ar_control_sets": ar_control_sets,
             "gl_accounts": gl_accounts,
+            "auto_code": auto_code,
             "active_tab": "module_accounts-receivable"
         }
     )
 
+@router.get("/modules/accounts-receivable/master/{entity}/{record_id}/view", response_class=HTMLResponse)
 @router.get("/modules/accounts-receivable/master/{entity}/{record_id}/edit", response_class=HTMLResponse)
 async def edit_ar_master_page(request: Request, entity: str, record_id: str):
     if entity not in AR_MASTER_ENTITIES:
@@ -2383,6 +2934,10 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
     appearance = AppearanceService.get_appearance()
     db_health = db.check_health()
 
+    is_view = request.url.path.endswith("/view") or request.query_params.get("mode") == "view"
+    edit_url = f"/modules/accounts-receivable/master/{entity}/{record_id}/edit"
+    view_url = f"/modules/accounts-receivable/master/{entity}/{record_id}/view"
+
     ent_meta = AR_MASTER_ENTITIES[entity]
     sub_tab = ent_meta["tab"]
     sub_title = AR_SUB_AREAS.get(sub_tab, {}).get("title", ent_meta["title"])
@@ -2392,7 +2947,7 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
         {"title": "Financial & Treasury", "url": "/"},
         {"title": "Accounts Receivable", "url": "/modules/accounts-receivable"},
         {"title": sub_title, "url": f"/modules/accounts-receivable?tab={sub_tab}"},
-        {"title": f"Edit {ent_meta['title']}", "url": None}
+        {"title": f"{'View' if is_view else 'Edit'} {ent_meta['title']}", "url": None}
     ]
 
     ar_customers = ARMasterService.get_all_customers()
@@ -2410,7 +2965,10 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
             "entity": entity,
             "entity_title": ent_meta["title"],
             "sub_tab": sub_tab,
-            "is_edit_mode": True,
+            "is_edit_mode": not is_view,
+            "is_view_mode": is_view,
+            "edit_url": edit_url,
+            "view_url": view_url,
             "record": record,
             "record_id": record_id,
             "active_company": active_company,
@@ -2435,8 +2993,9 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
 @router.post("/modules/accounts-receivable/master/customers/new")
 async def create_ar_customer_action(request: Request):
     form = await request.form()
+    gen_code = SequenceService.get_next_code("ar_customers")
     ARMasterService.create_customer(
-        customer_code=form.get("customer_code", ""),
+        customer_code=gen_code,
         customer_name=form.get("customer_name", ""),
         ar_customer_group_id=form.get("ar_customer_group_id") or None,
         commercial_group_id=form.get("commercial_group_id") or None,
@@ -2480,23 +3039,26 @@ async def create_ar_master_record(entity: str, request: Request):
     form = await request.form()
     tab = entity
     if entity == "ar-customer-groups":
+        gen_code = SequenceService.get_next_code("ar_customer_groups")
         ARMasterService.create_ar_customer_group(
-            group_code=form.get("group_code", ""),
+            group_code=gen_code,
             group_name=form.get("group_name", ""),
             control_account_set_id=form.get("control_account_set_id") or None,
             default_credit_limit=float(form.get("default_credit_limit", 500000.0)),
             grace_period_days=int(form.get("grace_period_days", 30))
         )
     elif entity == "customer-groups":
+        gen_code = SequenceService.get_next_code("ar_commercial_groups")
         ARMasterService.create_commercial_group(
-            group_code=form.get("group_code", ""),
+            group_code=gen_code,
             group_name=form.get("group_name", ""),
             region=form.get("region") or None,
             description=form.get("description") or None
         )
     elif entity == "group-categories":
+        gen_code = SequenceService.get_next_code("ar_group_categories")
         ARMasterService.create_group_category(
-            category_code=form.get("category_code", ""),
+            category_code=gen_code,
             category_name=form.get("category_name", ""),
             tier_level=form.get("tier_level", "Standard"),
             min_turnover=float(form.get("min_turnover", 0.0)),
@@ -2522,8 +3084,9 @@ async def create_ar_master_record(entity: str, request: Request):
             is_default=bool(form.get("is_default"))
         )
     elif entity == "control-accounts":
+        gen_code = SequenceService.get_next_code("ar_control_accounts")
         ARMasterService.create_control_account_set(
-            set_code=form.get("set_code", ""),
+            set_code=gen_code,
             set_name=form.get("set_name", ""),
             company_id=form.get("company_id") or None,
             ar_control_gl_id=form.get("ar_control_gl_id") or None,
@@ -2532,8 +3095,9 @@ async def create_ar_master_record(entity: str, request: Request):
             advance_received_gl_id=form.get("advance_received_gl_id") or None
         )
     elif entity == "reminder-criteria":
+        gen_code = SequenceService.get_next_code("ar_reminder_criteria")
         ARMasterService.create_reminder_criteria(
-            criteria_code=form.get("criteria_code", ""),
+            criteria_code=gen_code,
             criteria_name=form.get("criteria_name", ""),
             reminder_level=form.get("reminder_level", "Level 1 (Gentle)"),
             overdue_days_threshold=int(form.get("overdue_days_threshold", 15)),
@@ -2543,8 +3107,9 @@ async def create_ar_master_record(entity: str, request: Request):
             email_subject_template=form.get("email_subject_template") or None
         )
     elif entity == "aging-profiles":
+        gen_code = SequenceService.get_next_code("ar_aging_profiles")
         ARMasterService.create_aging_profile(
-            profile_code=form.get("profile_code", ""),
+            profile_code=gen_code,
             profile_name=form.get("profile_name", ""),
             bucket_1_label=form.get("bucket_1_label", "Current (0-30 Days)"),
             bucket_2_label=form.get("bucket_2_label", "31-60 Days"),
@@ -2554,8 +3119,9 @@ async def create_ar_master_record(entity: str, request: Request):
             bad_debt_provision_pct=float(form.get("bad_debt_provision_pct", 5.0))
         )
     elif entity == "adjustment-types":
+        gen_code = SequenceService.get_next_code("ar_adjustment_types")
         ARMasterService.create_adjustment_type(
-            adjustment_code=form.get("adjustment_code", ""),
+            adjustment_code=gen_code,
             adjustment_name=form.get("adjustment_name", ""),
             adjustment_category=form.get("adjustment_category", "CREDIT"),
             default_offset_gl_id=form.get("default_offset_gl_id") or None,
@@ -2949,8 +3515,9 @@ async def get_gl_printable_voucher_api(voucher_id: str):
 @router.post("/modules/sourcing/actions/vendors/create")
 async def create_sourcing_vendor_action(request: Request):
     form = await request.form()
+    gen_code = SequenceService.get_next_code("sourcing_vendors")
     SourcingMasterService.create_vendor(
-        vendor_code=form.get("vendor_code", "VND-NEW"),
+        vendor_code=gen_code,
         vendor_name=form.get("vendor_name", ""),
         vendor_group=form.get("vendor_group", "MANUFACTURER_OEM"),
         contact_person=form.get("contact_person"),
@@ -2966,9 +3533,10 @@ async def create_sourcing_vendor_action(request: Request):
 async def create_sourcing_requisition_action(request: Request):
     form = await request.form()
     active_company = CompanyService.resolve_active_company(request)
+    gen_code = SequenceService.get_next_code("sourcing_requisitions")
     SourcingTransactionService.create_requisition(
         company_id=str(active_company["id"]),
-        req_number=form.get("req_number", "REQ-NEW"),
+        req_number=gen_code,
         req_type=form.get("req_type", "SPARES"),
         title=form.get("title", ""),
         priority=form.get("priority", "MEDIUM"),
@@ -2983,8 +3551,7 @@ async def generate_po_from_cs_action(request: Request):
     cs_id = form.get("cs_id")
     if not cs_id:
         raise HTTPException(status_code=400, detail="Missing cs_id")
-    import random
-    po_num = f"PO-APX-{random.randint(1100, 9999)}"
+    po_num = SequenceService.get_next_code("sourcing_purchase_orders")
     SourcingTransactionService.generate_po_from_cs_winner(cs_id=cs_id, po_number=po_num)
     return RedirectResponse(url="/modules/sourcing?tab=purchase-orders", status_code=303)
 
@@ -3650,3 +4217,30 @@ async def api_admin_year_end_sync(request: Request):
         raise HTTPException(status_code=400, detail="Active company context required")
     res = AdminMaintenanceService.execute_year_end_sync(active_cid)
     return res
+
+@router.post("/api/admin/sequences/update")
+async def api_update_sequence_rule(request: Request):
+    try:
+        form = await request.form()
+        entity_key = str(form.get("entity_key", "")).strip()
+        prefix = str(form.get("prefix", "")).strip()
+        include_year = str(form.get("include_year", "NONE")).strip()
+        delimiter = str(form.get("delimiter", "-")).strip()
+        padding_digits = int(form.get("padding_digits", 4))
+        next_number = int(form.get("next_number", 1))
+
+        if not entity_key:
+            return JSONResponse({"success": False, "error": "Entity key is required."}, status_code=400)
+
+        result = SequenceService.update_sequence_rule(
+            entity_key=entity_key,
+            prefix=prefix,
+            include_year=include_year,
+            delimiter=delimiter,
+            padding_digits=padding_digits,
+            next_number=next_number
+        )
+        return JSONResponse(result)
+    except Exception as e:
+        return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+

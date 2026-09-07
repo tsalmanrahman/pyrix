@@ -1,41 +1,78 @@
 {% extends "base.html" %}
 
-{% block title %}{{ active_company.short_code }}-{{ module.short_code }} - {% if is_edit_mode %}Edit Entry #{{ record.code }}{% else %}New Entry{% endif %}{% endblock %}
+{% block title %}{{ active_company.short_code }}-{{ module.short_code }} - {% if is_view_mode %}View Entry #{{ record.code }}{% elif is_edit_mode %}Edit Entry #{{ record.code }}{% else %}New Entry{% endif %}{% endblock %}
 
 {% block content %}
 <div class="space-y-6 max-w-4xl">
 
-  <!-- Minimalist Header Banner with Sleek Icon Back Button -->
+  <!-- Minimalist Header Banner with Far-Left Back Button & Focused Right Action -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <i data-lucide="{% if is_edit_mode %}edit-3{% else %}{{ module.icon }}{% endif %}" class="w-6 h-6 text-blue-400 shrink-0"></i>
-      <h2 class="text-lg font-bold text-white tracking-tight">
-        {% if is_edit_mode %}Edit {{ module.name }} Entry #{{ record.code }}{% else %}New {{ module.name }} Entry{% endif %}
-      </h2>
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="/modules/{{ module.route_slug }}" 
+        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="Back to {{ module.name }}"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:border-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
+      <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+        <i data-lucide="{% if is_view_mode %}eye{% elif is_edit_mode %}edit-3{% else %}{{ module.icon }}{% endif %}" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Title & Scope -->
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-white tracking-tight truncate">
+          {% if is_view_mode %}View {{ module.name }} Entry{% elif is_edit_mode %}Edit {{ module.name }} Entry{% else %}New {{ module.name }} Entry{% endif %}
+        </h2>
+      </div>
     </div>
 
-    <!-- Sleek Tinted Icon Back Button (Indigo Glass) -->
-    <a 
-      href="/modules/{{ module.route_slug }}" 
-      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
-      title="Back to {{ module.name }}"
-    >
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-    </a>
+    <!-- Right Side: Exactly ONE Focused Action -->
+    <div class="flex items-center gap-2 shrink-0">
+      {% if is_view_mode and edit_url %}
+      <a 
+        href="{{ edit_url }}" 
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-500/10 hover:bg-blue-600 text-blue-600 hover:text-white dark:bg-blue-500/20 dark:hover:bg-blue-600 dark:text-blue-400 dark:hover:text-white border border-blue-500/20 shadow-sm hover:scale-105 active:scale-95 shrink-0"
+        title="Edit Record"
+      >
+        <i data-lucide="edit-3" class="w-4 h-4"></i>
+      </a>
+      {% elif is_edit_mode %}
+      <button 
+        type="submit" 
+        form="record-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Update Entry"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% elif not is_view_mode %}
+      <button 
+        type="submit" 
+        form="record-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Save Entry"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% endif %}
+    </div>
   </div>
 
   <!-- Solid Form Container -->
-  <form action="{% if is_edit_mode %}/modules/{{ module.route_slug }}/records/{{ record_id }}/edit{% else %}/modules/{{ module.route_slug }}/new{% endif %}" method="POST" class="space-y-4">
+  <form id="record-form" action="{% if is_edit_mode %}/modules/{{ module.route_slug }}/records/{{ record_id }}/edit{% else %}/modules/{{ module.route_slug }}/new{% endif %}" method="POST" class="space-y-4">
+    <fieldset {% if is_view_mode %}disabled class="opacity-90 cursor-default space-y-4"{% else %}class="space-y-4"{% endif %}>
     <input type="hidden" name="module_code" value="{{ module.module_code }}">
 
     <!-- 1. Document Reference & Type Card -->
     <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3.5">
-      <h3 class="text-xs font-bold text-white tracking-tight flex items-center gap-2">
-        <i data-lucide="file-text" class="w-4 h-4 text-blue-400"></i>
-        <span>Document Classification & Reference</span>
-      </h3>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+      <div class="grid grid-cols-1 {% if is_edit_mode or is_view_mode or record %}md:grid-cols-3{% else %}md:grid-cols-2{% endif %} gap-3.5 text-xs">
         <div>
           <label class="block text-slate-400 font-medium mb-1">Operating Entity</label>
           <input type="text" readonly value="[{{ active_company.short_code }}] {{ active_company.name }}" class="mac-input w-full font-medium">
@@ -58,16 +95,18 @@
           </select>
         </div>
 
+        {% if is_edit_mode or is_view_mode or record %}
         <div>
-          <label class="block text-slate-400 font-medium mb-1">Reference / Voucher No (Auto-ID)</label>
+          <label class="block text-slate-300 font-medium mb-1">Reference / Voucher No</label>
           <input 
             type="text" 
             name="ref_number" 
             readonly 
-            value="{{ record.ref_number if record else 'DOC-' ~ active_company.short_code ~ '-' ~ range(1000, 9999)|random }}" 
-            class="mac-input w-full font-mono font-semibold text-blue-500"
+            value="{{ record.ref_number }}" 
+            class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
           >
         </div>
+        {% endif %}
       </div>
     </div>
 
@@ -136,15 +175,7 @@
         </div>
       </div>
     </div>
-
-    <!-- 3. Submission Action Bar -->
-    <div class="flex items-center justify-end gap-2.5 pt-1">
-      <button type="submit" class="h-9 px-5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm">
-        <i data-lucide="check" class="w-3.5 h-3.5"></i>
-        <span>{% if is_edit_mode %}Update Entry{% else %}Save Entry{% endif %}</span>
-      </button>
-    </div>
-
+    </fieldset>
   </form>
 
 </div>

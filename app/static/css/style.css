@@ -198,6 +198,21 @@ body {
   padding-right: 28px !important;
 }
 
+/* Modal Active - Auto-Hide Side Menu for Unobstructed Pop-up Focus */
+.modal-active-sidebar-hidden .floating-sidebar {
+  transform: translateX(-350px) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease !important;
+}
+
+.modal-active-sidebar-hidden .main-wrapper {
+  margin-left: 28px !important;
+  padding-left: 0 !important;
+  padding-right: 28px !important;
+  transition: margin-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
 /* Small Screens / Tablets / Mobile (< 1024px) */
 @media (max-width: 1023px) {
   .floating-sidebar {
@@ -586,23 +601,36 @@ select.mac-input {
    ========================================================================== */
 .table-filter-popover {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   left: 0;
-  min-width: 220px;
-  background: #161a23;
+  width: 270px;
+  background: rgba(15, 23, 42, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  z-index: 50;
-  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  z-index: 99999;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   color: #f1f5f9;
+  animation: popoverFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 [data-theme="light"] .table-filter-popover {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
   color: #0f172a !important;
 }
 
@@ -610,19 +638,33 @@ select.mac-input {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 6px;
-  border-radius: 6px;
+  padding: 4px 8px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.15s ease;
   font-size: 11px;
 }
 
 .table-filter-popover-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 [data-theme="light"] .table-filter-popover-item:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+.table-filter-popover .custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.table-filter-popover .custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.table-filter-popover .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 4px;
+}
+.table-filter-popover .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
 }
 
 .filter-chip {
@@ -726,3 +768,90 @@ select.mac-input {
   cursor: grabbing !important;
   user-select: none !important;
 }
+
+/* ==========================================================================
+   🖱️ SMART TABLE NAVIGATION & ID LINKS (SINGLE-CLICK ID & DOUBLE-CLICK ROW)
+   ========================================================================== */
+.table-id-link {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-weight: 700;
+  color: #3b82f6; /* blue-500 */
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.table-id-link:hover {
+  color: #60a5fa; /* blue-400 */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.interactive-table-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.interactive-table-row:hover {
+  background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+.dark .interactive-table-row:hover {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+}
+
+/* ==========================================================================
+   🚨 UNIVERSAL FORM FIELD VALIDATION & SHAKE ALERT STYLES
+   ========================================================================== */
+@keyframes fieldShake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-6px); }
+  30%, 60%, 90% { transform: translateX(6px); }
+}
+
+.animate-shake {
+  animation: fieldShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+}
+
+.field-error-border {
+  border-color: #f43f5e !important;
+  background-color: rgba(244, 63, 94, 0.04) !important;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2) !important;
+}
+
+.field-success-border {
+  border-color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.03) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+.field-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #f43f5e;
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 500;
+  margin-top: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.field-error-msg svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .field-error-border {
+  border-color: #e11d48 !important;
+  background-color: #fff1f2 !important;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.16) !important;
+}
+
+[data-theme="light"] .field-error-msg {
+  color: #e11d48;
+}
+

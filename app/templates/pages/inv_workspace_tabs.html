@@ -48,14 +48,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ w.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ w.id }}', '{{ w.name or w.title or w.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ w.id }}', '{{ w.name or w.title or w.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -104,14 +99,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ b.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ b.id }}', '{{ b.name or b.title or b.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ b.id }}', '{{ b.name or b.title or b.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -158,14 +148,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ g.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ g.id }}', '{{ g.name or g.title or g.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ g.id }}', '{{ g.name or g.title or g.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -210,14 +195,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ u.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ u.id }}', '{{ u.name or u.title or u.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ u.id }}', '{{ u.name or u.title or u.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -277,14 +257,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ it.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ it.id }}', '{{ it.name or it.title or it.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ it.id }}', '{{ it.name or it.title or it.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -346,12 +321,9 @@
                     <i data-lucide="printer" class="w-3 h-3"></i>
                     <span>Print GRN</span>
                   </a>
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ grn.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ grn.id }}', '{{ grn.name or grn.title or grn.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ grn.id }}', '{{ grn.name or grn.title or grn.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                   </div>
                 </td></tr>
             {% endfor %}
@@ -406,12 +378,9 @@
                     <i data-lucide="printer" class="w-3 h-3"></i>
                     <span>Print Challan</span>
                   </a>
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ iss.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ iss.id }}', '{{ iss.name or iss.title or iss.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ iss.id }}', '{{ iss.name or iss.title or iss.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                   </div>
                 </td></tr>
             {% endfor %}
@@ -466,12 +435,9 @@
                     <i data-lucide="printer" class="w-3 h-3"></i>
                     <span>Print STO</span>
                   </a>
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ st.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ st.id }}', '{{ st.name or st.title or st.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ st.id }}', '{{ st.name or st.title or st.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                   </div>
                 </td></tr>
             {% endfor %}
@@ -521,14 +487,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ adj.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ adj.id }}', '{{ adj.name or adj.title or adj.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ adj.id }}', '{{ adj.name or adj.title or adj.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -581,14 +542,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ a.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ a.id }}', '{{ a.name or a.title or a.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -637,14 +593,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ pl.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ pl.id }}', '{{ pl.name or pl.title or pl.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ pl.id }}', '{{ pl.name or pl.title or pl.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -749,14 +700,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ w.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ w.id }}', '{{ w.name or w.title or w.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ w.id }}', '{{ w.name or w.title or w.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -875,14 +821,9 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(sb.total_valuation) }}</td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ sb.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ sb.id }}', '{{ sb.name or sb.title or sb.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ sb.id }}', '{{ sb.name or sb.title or sb.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -931,14 +872,9 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(git.line_total) }}</td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_warehouses', '{{ git.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_warehouses', '{{ git.id }}', '{{ git.name or git.title or git.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_warehouses', '{{ git.id }}', '{{ git.name or git.title or git.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -993,14 +929,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ it.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ it.id }}', '{{ it.name or it.title or it.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ it.id }}', '{{ it.name or it.title or it.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -1131,14 +1062,9 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">${{ "{:,.2f}".format(row.amount) }}</td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -1251,14 +1177,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -1305,14 +1226,9 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400">${{ "{:,.2f}".format(row.total_material_cost) }}</td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -1359,14 +1275,9 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">${{ "{:,.2f}".format(row.total_consumption_value) }}</td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -1417,14 +1328,9 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    <button type="button" onclick="openDynamicEditModal('inv_items', '{{ row.id }}')" class="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition transform hover:scale-105" title="Edit Record">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button type="button" onclick="confirmDynamicDelete('inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}', this)" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 transition transform hover:scale-105" title="Delete Record">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'inv_items', '{{ row.id }}', '{{ row.name or row.title or row.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td></tr>
             {% endfor %}
           </tbody>

@@ -1,52 +1,102 @@
 {% extends "base.html" %}
 
-{% block title %}{{ active_company.short_code }}-GL - {% if is_edit_mode %}Edit Journal Voucher{% else %}New Journal Voucher{% endif %}{% endblock %}
+{% block title %}{{ active_company.short_code }}-GL - {% if is_view_mode %}View Journal Voucher #{{ voucher.voucher_number }}{% elif is_edit_mode %}Edit Journal Voucher #{{ voucher.voucher_number }}{% else %}New Journal Voucher{% endif %}{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
 
-  <!-- Header Banner -->
-  <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <i data-lucide="file-spread" class="w-6 h-6 text-blue-400 shrink-0"></i>
-      <div>
-        <h2 class="text-lg font-bold text-white tracking-tight">
-          {% if is_edit_mode %}Edit Journal Voucher #{{ voucher.voucher_number }}{% else %}New Double-Entry Journal Voucher (JV){% endif %}
+  <!-- Minimalist Header Banner with Far-Left Back Button & Focused Right Action -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="/modules/general-ledger?tab=journals" 
+        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="Back to Journal List"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:border-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
+      <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+        <i data-lucide="{% if is_view_mode %}eye{% elif is_edit_mode %}edit-3{% else %}file-spread{% endif %}" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Title & Scope -->
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-white tracking-tight truncate">
+          {% if is_view_mode %}View Journal Voucher{% elif is_edit_mode %}Edit Journal Voucher{% else %}New Double-Entry Journal Voucher (JV){% endif %}
         </h2>
       </div>
     </div>
 
-    <!-- Sleek Back Button -->
-    <a 
-      href="/modules/general-ledger?tab=journals" 
-      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
-      title="Back to Journal List"
-    >
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-    </a>
+    <!-- Right Side: Single Focused Action & Print (Zero Delete Danger on Edit page) -->
+    <div class="flex items-center gap-2 shrink-0">
+      {% if is_view_mode and edit_url %}
+      <a 
+        href="{{ edit_url }}" 
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-500/10 hover:bg-blue-600 text-blue-600 hover:text-white dark:bg-blue-500/20 dark:hover:bg-blue-600 dark:text-blue-400 dark:hover:text-white border border-blue-500/20 shadow-sm hover:scale-105 active:scale-95 shrink-0"
+        title="Edit Voucher"
+      >
+        <i data-lucide="edit-3" class="w-4 h-4"></i>
+      </a>
+      {% elif is_edit_mode %}
+      <button 
+        id="submit-voucher-btn" 
+        type="submit" 
+        form="journal-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Update & Post Voucher"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% elif not is_view_mode %}
+      <button 
+        id="submit-voucher-btn" 
+        type="submit" 
+        form="journal-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Post Journal Voucher"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% endif %}
+
+      {% if voucher and voucher.id %}
+      <a 
+        href="/modules/general-ledger/vouchers/{{ voucher.id }}/print" 
+        target="_blank"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shadow-sm hover:scale-105 active:scale-95 shrink-0"
+        title="Print Journal Voucher"
+      >
+        <i data-lucide="printer" class="w-4 h-4 text-blue-400"></i>
+      </a>
+      {% endif %}
+    </div>
   </div>
 
   <!-- Main Journal Form -->
   <form id="journal-form" action="{% if is_edit_mode %}/modules/general-ledger/journals/{{ voucher.id }}/edit{% else %}/modules/general-ledger/journals/new{% endif %}" method="POST" class="space-y-4">
+    <fieldset {% if is_view_mode %}disabled class="opacity-90 cursor-default space-y-4"{% else %}class="space-y-4"{% endif %}>
 
     <!-- 1. Voucher Header Metadata -->
     <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3.5">
-      <h3 class="text-xs font-bold text-white tracking-tight flex items-center gap-2">
-        <i data-lucide="file-text" class="w-4 h-4 text-blue-400"></i>
-        <span>Voucher Header & Scoping</span>
-      </h3>
-
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-3.5 text-xs">
+      <div class="grid grid-cols-1 {% if is_edit_mode or is_view_mode or voucher %}md:grid-cols-4{% else %}md:grid-cols-3{% endif %} gap-3.5 text-xs">
+        {% if is_edit_mode or is_view_mode or voucher %}
         <div>
-          <label class="block text-slate-400 font-medium mb-1">Voucher Number (Auto-ID)</label>
+          <label class="block text-slate-300 font-medium mb-1">Voucher Number</label>
           <input 
             type="text" 
             name="voucher_number" 
             readonly 
-            value="{{ voucher.voucher_number if voucher else 'JV-' ~ active_company.short_code ~ '-2026-' ~ range(1000, 9999)|random }}" 
-            class="mac-input w-full font-mono font-semibold text-blue-400"
+            value="{{ voucher.voucher_number }}" 
+            class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
           >
         </div>
+        {% endif %}
 
         <div>
           <label class="block text-slate-300 font-medium mb-1">Posting Date <span class="text-blue-400">*</span></label>
@@ -101,6 +151,7 @@
           <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
           <span>Double-Entry Line Items (Debit = Credit)</span>
         </h3>
+        {% if not is_view_mode %}
         <button 
           type="button" 
           onclick="addJournalLine()" 
@@ -109,6 +160,7 @@
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
           <span>Add Line Item</span>
         </button>
+        {% endif %}
       </div>
 
       <div class="overflow-x-auto">
@@ -240,15 +292,15 @@
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-black/20 border border-white/10 text-xs">
         <div>
           <span class="block text-slate-400 tracking-tight font-semibold text-[10px]">Total Debits</span>
-          <span id="total-debit-val" class="font-mono font-black text-cyan-400 text-base">$0.00</span>
+          <span id="total-debit-val" class="font-mono font-black text-cyan-400 text-base">{{ active_company.currency_symbol }}0.00</span>
         </div>
         <div>
           <span class="block text-slate-400 tracking-tight font-semibold text-[10px]">Total Credits</span>
-          <span id="total-credit-val" class="font-mono font-black text-amber-400 text-base">$0.00</span>
+          <span id="total-credit-val" class="font-mono font-black text-amber-400 text-base">{{ active_company.currency_symbol }}0.00</span>
         </div>
         <div>
           <span class="block text-slate-400 tracking-tight font-semibold text-[10px]">Net Out-Of-Balance</span>
-          <span id="diff-val" class="font-mono font-black text-slate-200 text-base">$0.00</span>
+          <span id="diff-val" class="font-mono font-black text-slate-200 text-base">{{ active_company.currency_symbol }}0.00</span>
         </div>
         <div class="flex items-center justify-end">
           <span id="balance-badge" class="px-3 py-1.5 rounded-xl font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -259,29 +311,7 @@
       </div>
 
     </div>
-
-    <!-- 3. Submission Action Bar -->
-    <div class="flex items-center justify-end gap-2.5 pt-1">
-      {% if is_edit_mode %}
-      <button 
-        type="button" 
-        onclick="confirmDynamicDelete('gl_vouchers', '{{ voucher.id }}', '{{ voucher.voucher_number }}')" 
-        class="h-9 px-4 rounded-xl text-xs font-semibold bg-rose-600/10 hover:bg-rose-600/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1.5 transition cursor-pointer"
-      >
-        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-        <span>Delete Voucher</span>
-      </button>
-      {% endif %}
-      <button 
-        id="submit-voucher-btn" 
-        type="submit" 
-        class="h-9 px-5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <i data-lucide="check" class="w-3.5 h-3.5"></i>
-        <span>{% if is_edit_mode %}Update & Post Voucher{% else %}Post Journal Voucher{% endif %}</span>
-      </button>
-    </div>
-
+    </fieldset>
   </form>
 
 </div>
@@ -357,10 +387,11 @@
       totalCredit += parseFloat(input.value) || 0;
     });
 
+    const currencySymbol = '{{ active_company.currency_symbol|default("$") }}';
     const diff = Math.abs(totalDebit - totalCredit);
-    document.getElementById('total-debit-val').textContent = `$${totalDebit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('total-credit-val').textContent = `$${totalCredit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('diff-val').textContent = `$${diff.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('total-debit-val').textContent = `${currencySymbol}${totalDebit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('total-credit-val').textContent = `${currencySymbol}${totalCredit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('diff-val').textContent = `${currencySymbol}${diff.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
     const badge = document.getElementById('balance-badge');
     const submitBtn = document.getElementById('submit-voucher-btn');

@@ -1,31 +1,83 @@
 {% extends "base.html" %}
 
-{% block title %}{{ active_company.short_code }}-AR - {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}{% endblock %}
+{% block title %}{{ active_company.short_code }}-AR - {% if is_view_mode %}View {{ entity_title }}{% elif is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="space-y-6 max-w-5xl">
 
-  <!-- Minimalist Header Banner with Sleek Icon Back Button & Contextual Search -->
+  <!-- Minimalist Header Banner with Far-Left Back Button & Focused Right Action -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap">
-    <div class="flex items-center gap-3 min-w-0">
-      <i data-lucide="{% if is_edit_mode %}edit-3{% else %}user-plus{% endif %}" class="w-6 h-6 text-blue-500 shrink-0"></i>
-      <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">
-        {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
-      </h2>
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="/modules/accounts-receivable?tab={{ sub_tab|default('customers') }}" 
+        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="Back to List"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:border-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
+      <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center shrink-0">
+        <i data-lucide="{% if is_view_mode %}eye{% elif is_edit_mode %}edit-3{% else %}user-plus{% endif %}" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Title & Scope -->
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          {% if is_view_mode %}View {{ entity_title }}{% elif is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
+        </h2>
+      </div>
     </div>
 
-    <!-- Back Button to Sub-Area List -->
-    <a 
-      href="/modules/accounts-receivable?tab={{ sub_tab|default('customers') }}" 
-      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
-      title="Back to List"
-    >
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-    </a>
+    <!-- Right Side: Exactly ONE Focused Action (Zero Delete Danger on Edit page) -->
+    <div class="flex items-center gap-2 shrink-0">
+      {% if is_view_mode and edit_url %}
+      <a 
+        href="{{ edit_url }}" 
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-500/10 hover:bg-blue-600 text-blue-600 hover:text-white dark:bg-blue-500/20 dark:hover:bg-blue-600 dark:text-blue-400 dark:hover:text-white border border-blue-500/20 shadow-sm hover:scale-105 active:scale-95 shrink-0"
+        title="Edit Record"
+      >
+        <i data-lucide="edit-3" class="w-4 h-4"></i>
+      </a>
+      {% elif is_edit_mode %}
+      <button 
+        type="submit" 
+        form="ar-record-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Save Changes"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% elif not is_view_mode %}
+      <button 
+        type="submit" 
+        form="ar-record-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Create {{ entity_title }}"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% endif %}
+    </div>
   </div>
 
+  {% if request.query_params.get('error') %}
+  <div class="glass-card rounded-2xl p-4 border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-300 text-xs flex items-center justify-between gap-3 animate-shake">
+    <div class="flex items-center gap-2.5">
+      <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 shrink-0"></i>
+      <span class="font-medium">{{ request.query_params.get('error') }}</span>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Dedicated Solid Form Container (Zero-Modal Full Page) -->
-  <form action="{% if is_edit_mode %}/modules/accounts-receivable/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/accounts-receivable/master/{{ entity }}{% endif %}" method="POST" class="space-y-4">
+  <form id="ar-record-form" {% if record_id %}data-record-id="{{ record_id }}"{% elif record %}data-record-id="{{ record.id }}"{% endif %} action="{% if is_edit_mode %}/modules/accounts-receivable/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/accounts-receivable/master/{{ entity }}{% endif %}" method="POST" class="space-y-4">
+    <fieldset {% if is_view_mode %}disabled class="opacity-90 cursor-default space-y-4"{% else %}class="space-y-4"{% endif %}>
+
 
     <!-- =========================================================================
          1. CUSTOMER MASTER PROFILE (customers)
@@ -40,18 +92,19 @@
             <span>1. Customer Identification & Corporate Entity</span>
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            {% if is_edit_mode or is_view_mode or record %}
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Code <span class="text-blue-500">*</span></label>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Code</label>
               <input 
                 type="text" 
                 name="customer_code" 
-                required 
-                value="{{ record.customer_code if record else '' }}" 
-                placeholder="e.g. CUST-2001" 
-                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400"
+                readonly 
+                value="{{ record.customer_code }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
               >
             </div>
-            <div class="sm:col-span-2">
+            {% endif %}
+            <div class="{% if is_edit_mode or is_view_mode or record %}sm:col-span-2{% else %}sm:col-span-3{% endif %}">
               <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Registered Legal Name <span class="text-blue-500">*</span></label>
               <input 
                 type="text" 
@@ -159,7 +212,7 @@
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Credit Limit ($) <span class="text-blue-500">*</span></label>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Credit Limit ({{ active_company.currency_symbol }}) <span class="text-blue-500">*</span></label>
               <input 
                 type="number" 
                 step="1000" 
@@ -210,11 +263,13 @@
     {% elif entity == 'ar-customer-groups' %}
       <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Group Code *</label>
-            <input type="text" name="group_code" required value="{{ record.group_code if record else '' }}" placeholder="e.g. AR-COMM" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Group Code</label>
+            <input type="text" name="group_code" readonly value="{{ record.group_code }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none">
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}sm:col-span-2{% endif %}">
             <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Group Name *</label>
             <input type="text" name="group_name" required value="{{ record.group_name if record else '' }}" placeholder="Commercial Trade Receivables" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
           </div>
@@ -229,7 +284,7 @@
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Default Credit ($)</label>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Default Credit ({{ active_company.currency_symbol }})</label>
               <input type="number" name="default_credit_limit" value="{{ record.default_credit_limit if record else 500000 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
             </div>
             <div>
@@ -246,11 +301,13 @@
     {% elif entity == 'customer-groups' %}
       <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Commercial Group Code *</label>
-            <input type="text" name="group_code" required value="{{ record.group_code if record else '' }}" placeholder="e.g. CG-WHOLESALE" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Commercial Group Code</label>
+            <input type="text" name="group_code" readonly value="{{ record.group_code }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none">
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}sm:col-span-2{% endif %}">
             <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Commercial Group Name *</label>
             <input type="text" name="group_name" required value="{{ record.group_name if record else '' }}" placeholder="Wholesale & Bulk Distribution" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
           </div>
@@ -271,11 +328,13 @@
     {% elif entity == 'group-categories' %}
       <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Category Code *</label>
-            <input type="text" name="category_code" required value="{{ record.category_code if record else '' }}" placeholder="e.g. CAT-TIER1" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Category Code</label>
+            <input type="text" name="category_code" readonly value="{{ record.category_code }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none">
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if is_edit_mode or is_view_mode or record %}sm:col-span-1{% else %}sm:col-span-2{% endif %}">
             <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Category Name *</label>
             <input type="text" name="category_name" required value="{{ record.category_name if record else '' }}" placeholder="Tier 1 - Strategic Key Account" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
           </div>
@@ -288,7 +347,7 @@
             </select>
           </div>
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Min Annual Turnover ($)</label>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Min Annual Turnover ({{ active_company.currency_symbol }})</label>
             <input type="number" name="min_turnover" value="{{ record.min_turnover if record else 0.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
           </div>
           <div>
@@ -326,7 +385,7 @@
             <input type="text" name="subsidiary_account_code" value="{{ record.subsidiary_account_code if record else '' }}" placeholder="e.g. APEX-CUST-1001" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
           </div>
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Allocated Credit Limit ($)</label>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Allocated Credit Limit ({{ active_company.currency_symbol }})</label>
             <input type="number" name="allocated_credit_limit" value="{{ record.allocated_credit_limit if record else 500000.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
           </div>
           <div>
@@ -375,11 +434,19 @@
     {% elif entity == 'control-accounts' %}
       <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Control Set Code *</label>
-            <input type="text" name="set_code" required value="{{ record.set_code if record else '' }}" placeholder="e.g. AR-COMM-SET" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Control Set Code</label>
+            <input 
+              type="text" 
+              name="set_code" 
+              readonly 
+              value="{{ record.set_code }}" 
+              class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
+            >
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}sm:col-span-2{% endif %}">
             <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Control Set Name *</label>
             <input type="text" name="set_name" required value="{{ record.set_name if record else '' }}" placeholder="Standard Commercial AR Control Set" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
           </div>
@@ -409,11 +476,19 @@
     {% elif entity == 'reminder-criteria' %}
       <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Criteria Code *</label>
-            <input type="text" name="criteria_code" required value="{{ record.criteria_code if record else '' }}" placeholder="e.g. CRIT-DUN-L1" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Criteria Code</label>
+            <input 
+              type="text" 
+              name="criteria_code" 
+              readonly 
+              value="{{ record.criteria_code }}" 
+              class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
+            >
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if is_edit_mode or is_view_mode or record %}sm:col-span-1{% else %}sm:col-span-2{% endif %}">
             <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Criteria Name *</label>
             <input type="text" name="criteria_name" required value="{{ record.criteria_name if record else '' }}" placeholder="15-Day Gentle Reminder Notice" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
           </div>
@@ -430,7 +505,7 @@
             <input type="number" name="overdue_days_threshold" value="{{ record.overdue_days_threshold if record else 15 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
           </div>
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Min Overdue Amount ($)</label>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Min Overdue Amount ({{ active_company.currency_symbol }})</label>
             <input type="number" name="min_overdue_amount" value="{{ record.min_overdue_amount if record else 1000.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
           </div>
           <div>
@@ -446,11 +521,19 @@
     {% elif entity == 'aging-profiles' %}
       <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Profile Code *</label>
-            <input type="text" name="profile_code" required value="{{ record.profile_code if record else '' }}" placeholder="e.g. AGING-STD" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Profile Code</label>
+            <input 
+              type="text" 
+              name="profile_code" 
+              readonly 
+              value="{{ record.profile_code }}" 
+              class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
+            >
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}sm:col-span-2{% endif %}">
             <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Profile Name *</label>
             <input type="text" name="profile_name" required value="{{ record.profile_name if record else '' }}" placeholder="Standard Multi-Bracket Aging" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
           </div>
@@ -463,11 +546,19 @@
     {% elif entity == 'adjustment-types' %}
       <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-4 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Adjustment Code *</label>
-            <input type="text" name="adjustment_code" required value="{{ record.adjustment_code if record else '' }}" placeholder="e.g. ADJ-BAD-DEBT" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600">
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Adjustment Code</label>
+            <input 
+              type="text" 
+              name="adjustment_code" 
+              readonly 
+              value="{{ record.adjustment_code }}" 
+              class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
+            >
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if is_edit_mode or is_view_mode or record %}sm:col-span-1{% else %}sm:col-span-2{% endif %}">
             <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Adjustment Name *</label>
             <input type="text" name="adjustment_name" required value="{{ record.adjustment_name if record else '' }}" placeholder="Bad Debt Write-off" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-semibold">
           </div>
@@ -481,18 +572,7 @@
         </div>
       </div>
     {% endif %}
-
-    <!-- Universal Form Bottom Actions Bar -->
-    <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-end gap-3">
-      <button 
-        type="submit" 
-        class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
-      >
-        <i data-lucide="check" class="w-4 h-4"></i>
-        <span>{% if is_edit_mode %}Save Changes{% else %}Create {{ entity_title }}{% endif %}</span>
-      </button>
-    </div>
-
+    </fieldset>
   </form>
 
 </div>

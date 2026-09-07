@@ -7,12 +7,24 @@
 
   <!-- Dynamic Contextual Module / Sub-Page Header Banner with Integrated Search -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap">
+    <!-- Left-Side Navigation & Context Domain (Far-Left Back Button) -->
     <div class="flex items-center gap-3 min-w-0">
+      <!-- Sleek Iconic Back Button (Dynamic Hierarchical Navigation Level) -->
+      <a 
+        href="{% if current_tab and current_tab != 'overview' %}/modules/{{ module.route_slug }}{% else %}{{ back_url|default('/') }}{% endif %}" 
+        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="{% if current_tab and current_tab != 'overview' %}Back to {{ module.name }} Master Hub{% else %}{{ back_title|default('Back to Home') }}{% endif %}"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <div class="h-5 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
       <i data-lucide="{{ current_page_icon|default(module.icon) }}" class="w-6 h-6 text-blue-500 shrink-0"></i>
       <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">{{ current_page_title|default(module.name) }}</h2>
     </div>
 
-    <!-- Right-Side Action Controls: Live Instant Contextual Search Filter + Back Button -->
+    <!-- Right-Side Action Controls: Live Instant Contextual Search Filter ONLY -->
     <div class="flex items-center gap-3">
       <div class="relative">
         <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -24,15 +36,6 @@
           class="mac-input pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64 md:w-80 shadow-inner bg-slate-50 dark:bg-white/[0.04] focus:bg-white dark:focus:bg-slate-900 transition-all placeholder:text-slate-400"
         >
       </div>
-
-      <!-- Sleek Tinted Icon Back Button (Dynamic Navigation Level) -->
-      <a 
-        href="{{ back_url|default('/') }}" 
-        class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
-        title="{{ back_title|default('Back to Home') }}"
-      >
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-      </a>
     </div>
   </div>
 
@@ -86,7 +89,7 @@
       <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
         <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
           <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Chart of Accounts Master (COA)</span>
+          <span>Chart of Accounts</span>
         </h3>
         <a href="/modules/general-ledger/master/gl-accounts/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add GL Account">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -96,7 +99,6 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Code</th>
               <th class="py-2 px-2.5">Account Number</th>
               <th class="py-2 px-2.5">Account Name</th>
               <th class="py-2 px-2.5">Type</th>
@@ -108,9 +110,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for a in gl_coa %}
-              <tr id="row-coa-{{ a.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">#{{ a.code }}</td>
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ a.account_number }}</td>
+              <tr id="row-coa-{{ a.id }}" data-view-url="/modules/general-ledger/master/gl-accounts/{{ a.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/general-ledger/master/gl-accounts/{{ a.id }}/view" class="table-id-link" title="Click to view details">{{ a.account_number }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ a.account_name }}</td>
                 <td class="py-2.5 px-2.5">
                   <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5">
@@ -125,22 +128,14 @@
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <a 
-                      href="/modules/general-ledger/master/gl-accounts/{{ a.id }}/edit" 
-                      class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Edit Account"
-                    >
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button 
-                      onclick="deleteMasterRecord('gl-accounts', '{{ a.id }}', '{{ a.account_number }} - {{ a.account_name }}', 'row-coa-{{ a.id }}')" 
-                      class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Delete Account"
-                    >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button 
+                    type="button" 
+                    onclick="openRowActionMenu(this, event, 'gl_accounts', '{{ a.id }}', '{{ a.account_name }}', '/modules/general-ledger/master/gl-accounts/{{ a.id }}/edit', 'deleteMasterRecord(\'gl-accounts\', \'{{ a.id }}\', \'{{ a.account_number }} - {{ a.account_name }}\', \'row-coa-{{ a.id }}\')')" 
+                    class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                    title="More actions"
+                  >
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td>
               </tr>
             {% endfor %}
@@ -155,7 +150,7 @@
       <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
         <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
           <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>GL Account Mapping Matrix: {{ active_company.name }}</span>
+          <span>GL Account Matrix: {{ active_company.name }}</span>
         </h3>
         <a href="/modules/general-ledger/master/company-mappings/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Mapping">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -165,7 +160,6 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Seq</th>
               <th class="py-2 px-2.5">Master Account</th>
               <th class="py-2 px-2.5">Account Description</th>
               <th class="py-2 px-2.5">Company Scope</th>
@@ -177,9 +171,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for m in gl_mappings %}
-              <tr id="row-map-{{ m.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">#{{ m.code }}</td>
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ m.account_number }}</td>
+              <tr id="row-map-{{ m.id }}" data-view-url="/modules/general-ledger/master/company-mappings/{{ m.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/general-ledger/master/company-mappings/{{ m.id }}/view" class="table-id-link" title="Click to view details">{{ m.account_number }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ m.account_name }}</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-300">[{{ m.company_code }}]</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ m.company_account_alias if m.company_account_alias else '—' }}</td>
@@ -188,22 +183,14 @@
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ENABLED</span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <a 
-                      href="/modules/general-ledger/master/company-mappings/{{ m.id }}/edit" 
-                      class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Edit Mapping"
-                    >
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button 
-                      onclick="deleteMasterRecord('company-mappings', '{{ m.id }}', '{{ m.account_number }} Mapping', 'row-map-{{ m.id }}')" 
-                      class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Delete Mapping"
-                    >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button 
+                    type="button" 
+                    onclick="openRowActionMenu(this, event, 'company_mappings', '{{ m.id }}', '{{ m.account_name }} Mapping', '/modules/general-ledger/master/company-mappings/{{ m.id }}/edit', 'deleteMasterRecord(\'company-mappings\', \'{{ m.id }}\', \'{{ m.account_number }} Mapping\', \'row-map-{{ m.id }}\')')" 
+                    class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                    title="More actions"
+                  >
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td>
               </tr>
             {% endfor %}
@@ -228,7 +215,6 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Code</th>
               <th class="py-2 px-2.5">Sub Account Code</th>
               <th class="py-2 px-2.5">Sub Account Name</th>
               <th class="py-2 px-2.5">Parent Master Account</th>
@@ -239,9 +225,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for s in gl_subaccounts %}
-              <tr id="row-sub-{{ s.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">#{{ s.code }}</td>
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ s.sub_account_code }}</td>
+              <tr id="row-sub-{{ s.id }}" data-view-url="/modules/general-ledger/master/sub-accounts/{{ s.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/general-ledger/master/sub-accounts/{{ s.id }}/view" class="table-id-link" title="Click to view details">{{ s.sub_account_code }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ s.sub_account_name }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400 font-mono">{{ s.parent_account_number }} — {{ s.parent_account_name }}</td>
                 <td class="py-2.5 px-2.5">
@@ -253,22 +240,14 @@
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <a 
-                      href="/modules/general-ledger/master/sub-accounts/{{ s.id }}/edit" 
-                      class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Edit Sub Account"
-                    >
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button 
-                      onclick="deleteMasterRecord('sub-accounts', '{{ s.id }}', '{{ s.sub_account_code }}', 'row-sub-{{ s.id }}')" 
-                      class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Delete Sub Account"
-                    >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button 
+                    type="button" 
+                    onclick="openRowActionMenu(this, event, 'sub_accounts', '{{ s.id }}', '{{ s.sub_account_name }}', '/modules/general-ledger/master/sub-accounts/{{ s.id }}/edit', 'deleteMasterRecord(\'sub-accounts\', \'{{ s.id }}\', \'{{ s.sub_account_code }}\', \'row-sub-{{ s.id }}\')')" 
+                    class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                    title="More actions"
+                  >
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td>
               </tr>
             {% endfor %}
@@ -293,7 +272,6 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Code</th>
               <th class="py-2 px-2.5">Dept Code</th>
               <th class="py-2 px-2.5">Department Name</th>
               <th class="py-2 px-2.5">Head of Department</th>
@@ -303,31 +281,24 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for d in gl_departments %}
-              <tr id="row-dept-{{ d.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">#{{ d.code }}</td>
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ d.dept_code }}</td>
+              <tr id="row-dept-{{ d.id }}" data-view-url="/modules/general-ledger/master/departments/{{ d.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/general-ledger/master/departments/{{ d.id }}/view" class="table-id-link" title="Click to view details">{{ d.dept_code }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ d.dept_name }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400">{{ d.head_of_dept if d.head_of_dept else '—' }}</td>
                 <td class="py-2.5 px-2.5 text-center">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <a 
-                      href="/modules/general-ledger/master/departments/{{ d.id }}/edit" 
-                      class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Edit Department"
-                    >
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button 
-                      onclick="deleteMasterRecord('departments', '{{ d.id }}', '{{ d.dept_code }} - {{ d.dept_name }}', 'row-dept-{{ d.id }}')" 
-                      class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Delete Department"
-                    >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button 
+                    type="button" 
+                    onclick="openRowActionMenu(this, event, 'departments', '{{ d.id }}', '{{ d.dept_name }}', '/modules/general-ledger/master/departments/{{ d.id }}/edit', 'deleteMasterRecord(\'departments\', \'{{ d.id }}\', \'{{ d.dept_code }} - {{ d.dept_name }}\', \'row-dept-{{ d.id }}\')')" 
+                    class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                    title="More actions"
+                  >
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td>
               </tr>
             {% endfor %}
@@ -352,7 +323,6 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Code</th>
               <th class="py-2 px-2.5">Cost Centre Code</th>
               <th class="py-2 px-2.5">Cost Centre Name</th>
               <th class="py-2 px-2.5">Department</th>
@@ -363,9 +333,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for cc in gl_costcentres %}
-              <tr id="row-cc-{{ cc.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">#{{ cc.code }}</td>
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ cc.cost_centre_code }}</td>
+              <tr id="row-cc-{{ cc.id }}" data-view-url="/modules/general-ledger/master/cost-centres/{{ cc.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/general-ledger/master/cost-centres/{{ cc.id }}/view" class="table-id-link" title="Click to view details">{{ cc.cost_centre_code }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ cc.cost_centre_name }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400 font-mono">{{ cc.dept_code if cc.dept_code else 'Corporate' }} — {{ cc.dept_name if cc.dept_name else '' }}</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-300">[{{ cc.company_code }}]</td>
@@ -373,22 +344,14 @@
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <a 
-                      href="/modules/general-ledger/master/cost-centres/{{ cc.id }}/edit" 
-                      class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Edit Cost Centre"
-                    >
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button 
-                      onclick="deleteMasterRecord('cost-centres', '{{ cc.id }}', '{{ cc.cost_centre_code }} - {{ cc.cost_centre_name }}', 'row-cc-{{ cc.id }}')" 
-                      class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Delete Cost Centre"
-                    >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button 
+                    type="button" 
+                    onclick="openRowActionMenu(this, event, 'cost_centres', '{{ cc.id }}', '{{ cc.cost_centre_name }}', '/modules/general-ledger/master/cost-centres/{{ cc.id }}/edit', 'deleteMasterRecord(\'cost-centres\', \'{{ cc.id }}\', \'{{ cc.cost_centre_code }} - {{ cc.cost_centre_name }}\', \'row-cc-{{ cc.id }}\')')" 
+                    class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                    title="More actions"
+                  >
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td>
               </tr>
             {% endfor %}
@@ -397,7 +360,316 @@
       </div>
     </div>
 
-  <!-- 6. Master: Budget Sets -->
+  <!-- 6. Master: Statutory Categories & IFRS 8 Financial Segments Studio -->
+  {% elif module.route_slug == 'general-ledger' and current_tab == 'categories' %}
+    <div class="space-y-4">
+      <!-- Studio KPI Metrics Banner -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="glass-card rounded-2xl p-3 border border-slate-200 dark:border-white/10 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+            <i data-lucide="tags" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Total Categories</p>
+            <p class="text-base font-bold text-slate-900 dark:text-white font-mono leading-none mt-0.5">{{ gl_category_kpis.total_categories }}</p>
+          </div>
+        </div>
+        <div class="glass-card rounded-2xl p-3 border border-slate-200 dark:border-white/10 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+            <i data-lucide="scale" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Balance Sheet</p>
+            <p class="text-base font-bold text-blue-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.balance_sheet_categories }}</p>
+          </div>
+        </div>
+        <div class="glass-card rounded-2xl p-3 border border-slate-200 dark:border-white/10 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+            <i data-lucide="trending-up" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Income Stmt</p>
+            <p class="text-base font-bold text-purple-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.income_statement_categories }}</p>
+          </div>
+        </div>
+        <div class="glass-card rounded-2xl p-3 border border-slate-200 dark:border-white/10 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Mapped Accounts</p>
+            <p class="text-base font-bold text-emerald-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.mapped_accounts_total }}</p>
+          </div>
+        </div>
+        <div class="glass-card rounded-2xl p-3 border border-slate-200 dark:border-white/10 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
+            <i data-lucide="pie-chart" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">IFRS 8 Segments</p>
+            <p class="text-base font-bold text-cyan-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.total_segments }}</p>
+          </div>
+        </div>
+        <div class="glass-card rounded-2xl p-3 border border-slate-200 dark:border-white/10 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+            <i data-lucide="percent" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Avg Target Margin</p>
+            <p class="text-base font-bold text-rose-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.average_segment_margin }}%</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Studio Pillar Switcher Bar & Filters -->
+      <div class="glass-card rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-white/10 flex items-center justify-between flex-wrap gap-3">
+        <!-- Dual Pillar Tabs -->
+        <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/5 text-xs font-semibold">
+          <button 
+            type="button" 
+            id="tab-btn-statutory" 
+            onclick="switchStudioPillar('statutory')"
+            class="px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 bg-blue-600 text-white shadow-sm cursor-pointer"
+          >
+            <i data-lucide="scale" class="w-3.5 h-3.5"></i>
+            <span>Statutory Taxonomies</span>
+            <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 text-white font-mono">{{ gl_categories|length }}</span>
+          </button>
+          <button 
+            type="button" 
+            id="tab-btn-segments" 
+            onclick="switchStudioPillar('segments')"
+            class="px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+          >
+            <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i>
+            <span>Operating Segments (IFRS 8)</span>
+            <span class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-white/10 font-mono">{{ gl_segments|length }}</span>
+          </button>
+        </div>
+
+        <!-- Actions & Universal Search -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Statement Filter Pills (Active on Statutory Tab) -->
+          <div id="statutory-statement-pills" class="inline-flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-white/[0.03] border border-slate-200/50 dark:border-white/5 text-[11px]">
+            <button type="button" onclick="filterStatutoryBySection('ALL', this)" class="stat-pill-btn active px-2.5 py-1 rounded-md text-blue-400 font-semibold bg-blue-500/10 cursor-pointer">All</button>
+            <button type="button" onclick="filterStatutoryBySection('BALANCE_SHEET', this)" class="stat-pill-btn px-2.5 py-1 rounded-md text-slate-400 hover:text-white cursor-pointer">Balance Sheet</button>
+            <button type="button" onclick="filterStatutoryBySection('INCOME_STATEMENT', this)" class="stat-pill-btn px-2.5 py-1 rounded-md text-slate-400 hover:text-white cursor-pointer">Income Stmt</button>
+          </div>
+
+          <!-- Studio Search -->
+          <div class="relative">
+            <input 
+              type="text" 
+              placeholder="Search taxonomy & segments..." 
+              onkeyup="executeDynamicPageSearch(this.value)" 
+              class="mac-input px-3 py-1.5 pl-8 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-44 sm:w-56"
+            >
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          </div>
+
+          <!-- Create Buttons (Solid Pages) -->
+          <a 
+            href="/modules/general-ledger/categories/new" 
+            id="btn-create-category"
+            class="mac-btn-primary px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm cursor-pointer"
+          >
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>New Category</span>
+          </a>
+          <a 
+            href="/modules/general-ledger/segments/new" 
+            id="btn-create-segment"
+            class="hidden mac-btn-primary px-3 py-1.5 rounded-xl text-xs font-semibold items-center gap-1.5 shadow-sm cursor-pointer"
+          >
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>New Segment</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Pillar A: Statutory Categories Table -->
+      <div id="pillar-statutory-container" class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs" id="table-statutory-categories">
+            <thead>
+              <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
+                <th class="py-2.5 px-3">Taxonomy Code</th>
+                <th class="py-2.5 px-3">Statutory Category Name</th>
+                <th class="py-2.5 px-3">Statement Section</th>
+                <th class="py-2.5 px-3">Classification Type</th>
+                <th class="py-2.5 px-3 text-center">Sort Order</th>
+                <th class="py-2.5 px-3 text-center">Mapped COA Accounts</th>
+                <th class="py-2.5 px-3 text-center">Status</th>
+                <th class="py-2.5 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-slate-300">
+              {% for c in gl_categories %}
+                <tr 
+                  id="row-cat-{{ c.id }}" 
+                  data-section="{{ c.statement_section }}" 
+                  data-view-url="/modules/general-ledger/categories/{{ c.id }}/view"
+                  tabindex="0" 
+                  class="interactive-table-row hover:bg-white/[0.02] transition cursor-pointer"
+                >
+                  <td class="py-2.5 px-3 font-mono font-bold text-amber-400">
+                    <a 
+                      href="/modules/general-ledger/categories/{{ c.id }}/view" 
+                      class="table-id-link text-left hover:underline" 
+                      title="Click to view category details and mapped accounts"
+                    >
+                      {{ c.category_code }}
+                    </a>
+                  </td>
+                  <td class="py-2.5 px-3 font-medium text-slate-200">
+                    <div>{{ c.category_name }}</div>
+                    {% if c.description %}
+                    <div class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{{ c.description }}</div>
+                    {% endif %}
+                  </td>
+                  <td class="py-2.5 px-3 font-mono">
+                    {% if c.statement_section == 'BALANCE_SHEET' %}
+                      <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Balance Sheet</span>
+                    {% else %}
+                      <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">Income Statement</span>
+                    {% endif %}
+                  </td>
+                  <td class="py-2.5 px-3 font-mono text-slate-400 text-[10px]">
+                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5">
+                      {{ c.classification_type }}
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3 text-center font-mono text-slate-400">{{ c.reporting_sort }}</td>
+                  <td class="py-2.5 px-3 text-center">
+                    <a 
+                      href="/modules/general-ledger/categories/{{ c.id }}/view"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition hover:scale-105 active:scale-95 cursor-pointer {% if c.mapped_accounts_count|default(0) > 0 %}bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20{% else %}bg-slate-800 text-slate-400 border border-white/5{% endif %}"
+                      title="Click to view mapped accounts"
+                    >
+                      <i data-lucide="layers" class="w-3 h-3"></i>
+                      <span>{{ c.mapped_accounts_count|default(0) }} Accounts</span>
+                    </a>
+                  </td>
+                  <td class="py-2.5 px-3 text-center">
+                    <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+                  </td>
+                  <td class="py-2.5 px-3 text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <a 
+                        href="/modules/general-ledger/categories/{{ c.id }}/view" 
+                        class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" 
+                        title="View Category Details"
+                      >
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                      </a>
+                      <a 
+                        href="/modules/general-ledger/categories/{{ c.id }}/edit" 
+                        class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors cursor-pointer" 
+                        title="Edit Category"
+                      >
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                      </a>
+                      <button 
+                        type="button" 
+                        onclick="deleteStudioCategory('{{ c.id }}', '{{ c.category_code }} - {{ c.category_name }}', 'row-cat-{{ c.id }}')" 
+                        class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer" 
+                        title="Delete Category"
+                      >
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pillar B: Operating Segments Table -->
+      <div id="pillar-segments-container" class="hidden glass-card rounded-2xl p-4 space-y-3 border border-white/10">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs" id="table-operating-segments">
+            <thead>
+              <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
+                <th class="py-2.5 px-3">Segment Code</th>
+                <th class="py-2.5 px-3">Segment Name</th>
+                <th class="py-2.5 px-3">Segment Type</th>
+                <th class="py-2.5 px-3">Head of Segment</th>
+                <th class="py-2.5 px-3 text-right">Target Margin (%)</th>
+                <th class="py-2.5 px-3 text-right">Revenue Weight (%)</th>
+                <th class="py-2.5 px-3 text-center">Status</th>
+                <th class="py-2.5 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-slate-300">
+              {% for s in gl_segments %}
+                <tr 
+                  id="row-seg-{{ s.id }}" 
+                  data-view-url="/modules/general-ledger/segments/{{ s.id }}/view" 
+                  tabindex="0" 
+                  class="interactive-table-row hover:bg-white/[0.02] transition cursor-pointer"
+                >
+                  <td class="py-2.5 px-3 font-mono font-bold text-cyan-400">
+                    <a 
+                      href="/modules/general-ledger/segments/{{ s.id }}/view" 
+                      class="table-id-link hover:underline" 
+                      title="Click to view segment details"
+                    >
+                      {{ s.segment_code }}
+                    </a>
+                  </td>
+                  <td class="py-2.5 px-3 font-medium text-slate-200">{{ s.segment_name }}</td>
+                  <td class="py-2.5 px-3">
+                    <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5">
+                      {{ s.segment_type }}
+                    </span>
+                  </td>
+                  <td class="py-2.5 px-3 text-slate-400 font-medium">{{ s.head_of_segment|default('Corporate Executive') }}</td>
+                  <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-400">
+                    {{ s.target_margin_pct }}%
+                  </td>
+                  <td class="py-2.5 px-3 text-right font-mono font-bold text-blue-400">
+                    {{ s.revenue_weight_pct }}%
+                  </td>
+                  <td class="py-2.5 px-3 text-center">
+                    <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+                  </td>
+                  <td class="py-2.5 px-3 text-right">
+                    <div class="inline-flex items-center gap-1">
+                      <a 
+                        href="/modules/general-ledger/segments/{{ s.id }}/view" 
+                        class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer" 
+                        title="View Segment Details"
+                      >
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                      </a>
+                      <a 
+                        href="/modules/general-ledger/segments/{{ s.id }}/edit" 
+                        class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors cursor-pointer" 
+                        title="Edit Segment"
+                      >
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                      </a>
+                      <button 
+                        type="button" 
+                        onclick="deleteStudioSegment('{{ s.id }}', '{{ s.segment_code }} - {{ s.segment_name }}', 'row-seg-{{ s.id }}')" 
+                        class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer" 
+                        title="Delete Segment"
+                      >
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  <!-- 7. Master: Budget Sets -->
   {% elif module.route_slug == 'general-ledger' and current_tab == 'budgets' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
       <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
@@ -413,7 +685,6 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Code</th>
               <th class="py-2 px-2.5">Budget Code</th>
               <th class="py-2 px-2.5">Budget Title</th>
               <th class="py-2 px-2.5">Fiscal Year</th>
@@ -427,9 +698,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for b in gl_budgets %}
-              <tr id="row-bud-{{ b.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">#{{ b.code }}</td>
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ b.budget_code }}</td>
+              <tr id="row-bud-{{ b.id }}" data-view-url="/modules/general-ledger/master/budget-sets/{{ b.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/general-ledger/master/budget-sets/{{ b.id }}/view" class="table-id-link" title="Click to view details">{{ b.budget_code }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ b.budget_title }}</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ b.fiscal_year }}</td>
                 <td class="py-2.5 px-2.5 text-slate-300 font-mono">{{ b.account_number }}</td>
@@ -442,22 +714,14 @@
                   </span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <a 
-                      href="/modules/general-ledger/master/budget-sets/{{ b.id }}/edit" 
-                      class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Edit Budget Set"
-                    >
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button 
-                      onclick="deleteMasterRecord('budget-sets', '{{ b.id }}', '{{ b.budget_code }}', 'row-bud-{{ b.id }}')" 
-                      class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Delete Budget Set"
-                    >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
+                  <button 
+                    type="button" 
+                    onclick="openRowActionMenu(this, event, 'budget_sets', '{{ b.id }}', '{{ b.budget_set_name if b.budget_set_name else b.budget_code }}', '/modules/general-ledger/master/budget-sets/{{ b.id }}/edit', 'deleteMasterRecord(\'budget-sets\', \'{{ b.id }}\', \'{{ b.budget_code }}\', \'row-bud-{{ b.id }}\')')" 
+                    class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                    title="More actions"
+                  >
+                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                  </button>
                 </td>
               </tr>
             {% endfor %}
@@ -485,7 +749,6 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Code</th>
               <th class="py-2 px-2.5">Voucher Number</th>
               <th class="py-2 px-2.5">Date</th>
               <th class="py-2 px-2.5">Reference</th>
@@ -498,9 +761,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for v in gl_vouchers %}
-              <tr id="row-jv-{{ v.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">#{{ v.code }}</td>
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ v.voucher_number }}</td>
+              <tr id="row-jv-{{ v.id }}" data-view-url="/modules/general-ledger/journals/{{ v.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/general-ledger/journals/{{ v.id }}/view" class="table-id-link" title="Click to view details">{{ v.voucher_number }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-300">{{ v.voucher_date }}</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ v.reference_number if v.reference_number else '—' }}</td>
                 <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ v.narration }}</td>
@@ -517,24 +781,18 @@
                   <div class="flex items-center justify-center gap-1.5">
                     <a 
                       href="/modules/general-ledger/vouchers/{{ v.id }}/print" 
-                      class="btn-action-back w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
+                      class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
                       title="Print Journal Voucher"
                     >
                       <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                     </a>
-                    <a 
-                      href="/modules/general-ledger/journals/{{ v.id }}/edit" 
-                      class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Edit Voucher"
-                    >
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
                     <button 
-                      onclick="deleteVoucherRecord('{{ v.id }}', '{{ v.voucher_number }}', 'row-jv-{{ v.id }}')" 
-                      class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Delete Voucher"
+                      type="button" 
+                      onclick="openRowActionMenu(this, event, 'gl_vouchers', '{{ v.id }}', '{{ v.voucher_number }}', '/modules/general-ledger/journals/{{ v.id }}/edit', 'deleteVoucherRecord(\'{{ v.id }}\', \'{{ v.voucher_number }}\', \'row-jv-{{ v.id }}\')')" 
+                      class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                      title="More actions"
                     >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                     </button>
                   </div>
                 </td>
@@ -567,7 +825,6 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Seq</th>
               <th class="py-2 px-2.5">Batch Number</th>
               <th class="py-2 px-2.5">Batch Title</th>
               <th class="py-2 px-2.5">Type</th>
@@ -580,9 +837,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for b in gl_batches %}
-              <tr id="row-bat-{{ b.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">#{{ b.code }}</td>
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ b.batch_number }}</td>
+              <tr id="row-bat-{{ b.id }}" data-entity="gl_batch" data-id="{{ b.id }}" data-title="Batch {{ b.batch_number }}" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="javascript:void(0)" onclick="openDynamicViewModal('gl_batch', '{{ b.id }}', 'Batch {{ b.batch_number }}')" class="table-id-link" title="Click to view batch details">{{ b.batch_number }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ b.batch_title }}</td>
                 <td class="py-2.5 px-2.5">
                   <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5">{{ b.batch_type }}</span>
@@ -608,11 +866,12 @@
                       </button>
                     {% endif %}
                     <button 
-                      onclick="deleteBatchRecord('{{ b.id }}', '{{ b.batch_number }}', 'row-bat-{{ b.id }}')" 
-                      class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" 
-                      title="Delete Batch"
+                      type="button"
+                      onclick="openRowActionMenu(this, event, 'gl_batch', '{{ b.id }}', 'Batch {{ b.batch_number }}', null, 'deleteBatchRecord(\'{{ b.id }}\', \'{{ b.batch_number }}\', \'row-bat-{{ b.id }}\')')" 
+                      class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                      title="More actions"
                     >
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                     </button>
                   </div>
                 </td>
@@ -698,8 +957,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for c in cb_cashiers %}
-              <tr id="row-csh-{{ c.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ c.cashier_code }}</td>
+              <tr id="row-csh-{{ c.id }}" data-view-url="/modules/cash-book/master/cashiers/{{ c.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/cash-book/master/cashiers/{{ c.id }}/view" class="table-id-link" title="Click to view details">{{ c.cashier_code }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-semibold text-slate-200">{{ c.cashier_name }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400">{{ c.counter_station }}</td>
                 <td class="py-2.5 px-2.5 text-right font-mono font-bold text-emerald-400">${{ "{:,.2f}".format(c.daily_cash_limit) }}</td>
@@ -711,11 +972,8 @@
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
                   <div class="flex items-center justify-center gap-1.5">
-                    <a href="/modules/cash-book/master/cashiers/{{ c.id }}/edit" class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Edit Cashier">
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button onclick="deleteCbMaster('cashiers', '{{ c.id }}', '{{ c.cashier_code }} - {{ c.cashier_name }}', 'row-csh-{{ c.id }}')" class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Delete Cashier">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'cashiers', '{{ c.id }}', '{{ c.cashier_name }}', '/modules/cash-book/master/cashiers/{{ c.id }}/edit', 'deleteCbMaster(\'cashiers\', \'{{ c.id }}\', \'{{ c.cashier_code }} - {{ c.cashier_name }}\', \'row-csh-{{ c.id }}\')')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                     </button>
                   </div>
                 </td>
@@ -753,8 +1011,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for b in cb_banks %}
-              <tr id="row-bnk-{{ b.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ b.bank_code }}</td>
+              <tr id="row-bnk-{{ b.id }}" data-view-url="/modules/cash-book/master/banks/{{ b.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/cash-book/master/banks/{{ b.id }}/view" class="table-id-link" title="Click to view details">{{ b.bank_code }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-semibold text-slate-200">{{ b.bank_name }}</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ b.swift_code|default('—') }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400">{{ b.country }}</td>
@@ -764,11 +1024,8 @@
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
                   <div class="flex items-center justify-center gap-1.5">
-                    <a href="/modules/cash-book/master/banks/{{ b.id }}/edit" class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Edit Bank">
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button onclick="deleteCbMaster('banks', '{{ b.id }}', '{{ b.bank_code }} - {{ b.bank_name }}', 'row-bnk-{{ b.id }}')" class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Delete Bank">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'banks', '{{ b.id }}', '{{ b.bank_name }}', '/modules/cash-book/master/banks/{{ b.id }}/edit', 'deleteCbMaster(\'banks\', \'{{ b.id }}\', \'{{ b.bank_code }} - {{ b.bank_name }}\', \'row-bnk-{{ b.id }}\')')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                     </button>
                   </div>
                 </td>
@@ -806,8 +1063,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for br in cb_branches %}
-              <tr id="row-br-{{ br.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ br.branch_code }}</td>
+              <tr id="row-br-{{ br.id }}" data-view-url="/modules/cash-book/master/branches/{{ br.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/cash-book/master/branches/{{ br.id }}/view" class="table-id-link" title="Click to view details">{{ br.branch_code }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-semibold text-slate-200">{{ br.branch_name }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400 font-medium">{{ br.bank_name }}</td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ br.routing_number|default('—') }}</td>
@@ -817,11 +1076,8 @@
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
                   <div class="flex items-center justify-center gap-1.5">
-                    <a href="/modules/cash-book/master/branches/{{ br.id }}/edit" class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Edit Branch">
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button onclick="deleteCbMaster('branches', '{{ br.id }}', '{{ br.branch_code }} - {{ br.branch_name }}', 'row-br-{{ br.id }}')" class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Delete Branch">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'branches', '{{ br.id }}', '{{ br.branch_name }}', '/modules/cash-book/master/branches/{{ br.id }}/edit', 'deleteCbMaster(\'branches\', \'{{ br.id }}\', \'{{ br.branch_code }} - {{ br.branch_name }}\', \'row-br-{{ br.id }}\')')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                     </button>
                   </div>
                 </td>
@@ -859,8 +1115,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for ba in cb_accounts %}
-              <tr id="row-acc-{{ ba.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ ba.account_number }}</td>
+              <tr id="row-acc-{{ ba.id }}" data-view-url="/modules/cash-book/master/accounts/{{ ba.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/cash-book/master/accounts/{{ ba.id }}/view" class="table-id-link" title="Click to view details">{{ ba.account_number }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-semibold text-slate-200">{{ ba.account_title }}</td>
                 <td class="py-2.5 px-2.5 text-slate-400">{{ ba.bank_name }} - {{ ba.branch_name }}</td>
                 <td class="py-2.5 px-2.5">
@@ -874,11 +1132,8 @@
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
                   <div class="flex items-center justify-center gap-1.5">
-                    <a href="/modules/cash-book/master/accounts/{{ ba.id }}/edit" class="btn-action-edit w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Edit Account">
-                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button onclick="deleteCbMaster('accounts', '{{ ba.id }}', '{{ ba.account_number }} - {{ ba.account_title }}', 'row-acc-{{ ba.id }}')" class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Delete Account">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'accounts', '{{ ba.id }}', '{{ ba.account_title }}', '/modules/cash-book/master/accounts/{{ ba.id }}/edit', 'deleteCbMaster(\'accounts\', \'{{ ba.id }}\', \'{{ ba.account_number }} - {{ ba.account_title }}\', \'row-acc-{{ ba.id }}\')')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                     </button>
                   </div>
                 </td>
@@ -918,8 +1173,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for mr in cb_receipts %}
-              <tr id="row-mr-{{ mr.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ mr.receipt_number }}</td>
+              <tr id="row-mr-{{ mr.id }}" data-view-url="/modules/cash-book/receipts/{{ mr.id }}/print" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/cash-book/receipts/{{ mr.id }}/print" class="table-id-link" title="Click to view receipt">{{ mr.receipt_number }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">{{ mr.receipt_date }}</td>
                 <td class="py-2.5 px-2.5">
                   <span class="px-2 py-0.5 text-[9px] font-bold rounded uppercase bg-slate-800 text-slate-300 border border-white/5 font-mono">
@@ -944,8 +1201,8 @@
                       <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                       <span>Print</span>
                     </a>
-                    <button onclick="deleteMoneyReceipt('{{ mr.id }}', '{{ mr.receipt_number }}', 'row-mr-{{ mr.id }}')" class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Cancel / Delete Receipt">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'cb_receipts', '{{ mr.id }}', '{{ mr.receipt_number }}', null, 'deleteMoneyReceipt(\'{{ mr.id }}\', \'{{ mr.receipt_number }}\', \'row-mr-{{ mr.id }}\')')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                     </button>
                   </div>
                 </td>
@@ -985,8 +1242,10 @@
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for ct in cb_transfers %}
-              <tr id="row-ct-{{ ct.id }}" class="hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">{{ ct.transfer_number }}</td>
+              <tr id="row-ct-{{ ct.id }}" data-view-url="/modules/cash-book/transfers/{{ ct.id }}/print" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
+                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                  <a href="/modules/cash-book/transfers/{{ ct.id }}/print" class="table-id-link" title="Click to view contra voucher">{{ ct.transfer_number }}</a>
+                </td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">{{ ct.transfer_date }}</td>
                 <td class="py-2.5 px-2.5">
                   <span class="px-2 py-0.5 text-[9px] font-bold rounded uppercase bg-slate-800 text-slate-300 border border-white/5 font-mono">
@@ -1009,8 +1268,8 @@
                       <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                       <span>Print</span>
                     </a>
-                    <button onclick="deleteContraTransfer('{{ ct.id }}', '{{ ct.transfer_number }}', 'row-ct-{{ ct.id }}')" class="btn-action-delete w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Delete Contra Transfer">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'cb_transfers', '{{ ct.id }}', '{{ ct.transfer_number }}', null, 'deleteContraTransfer(\'{{ ct.id }}\', \'{{ ct.transfer_number }}\', \'row-ct-{{ ct.id }}\')')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                     </button>
                   </div>
                 </td>
@@ -1167,6 +1426,111 @@
 
   function filterTable(tableId, query) {
     executeDynamicPageSearch(query);
+  }
+
+  // =========================================================================
+  // GL CATEGORIES & SEGMENTS STUDIO LOGIC
+  // =========================================================================
+  function switchStudioPillar(pillar) {
+    const btnStat = document.getElementById('tab-btn-statutory');
+    const btnSeg = document.getElementById('tab-btn-segments');
+    const contStat = document.getElementById('pillar-statutory-container');
+    const contSeg = document.getElementById('pillar-segments-container');
+    const btnNewCat = document.getElementById('btn-create-category');
+    const btnNewSeg = document.getElementById('btn-create-segment');
+    const pills = document.getElementById('statutory-statement-pills');
+
+    if (!btnStat || !btnSeg) return;
+
+    if (pillar === 'statutory') {
+      btnStat.className = 'px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 bg-blue-600 text-white shadow-sm cursor-pointer';
+      btnSeg.className = 'px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer';
+      if (contStat) contStat.classList.remove('hidden');
+      if (contSeg) contSeg.classList.add('hidden');
+      if (btnNewCat) btnNewCat.classList.remove('hidden');
+      if (btnNewSeg) btnNewSeg.classList.add('hidden');
+      if (pills) pills.classList.remove('hidden');
+    } else {
+      btnSeg.className = 'px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 bg-cyan-600 text-white shadow-sm cursor-pointer';
+      btnStat.className = 'px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer';
+      if (contStat) contStat.classList.add('hidden');
+      if (contSeg) contSeg.classList.remove('hidden');
+      if (btnNewCat) btnNewCat.classList.add('hidden');
+      if (btnNewSeg) {
+        btnNewSeg.classList.remove('hidden');
+        btnNewSeg.classList.add('flex');
+      }
+      if (pills) pills.classList.add('hidden');
+    }
+  }
+
+  function filterStatutoryBySection(section, btn) {
+    document.querySelectorAll('.stat-pill-btn').forEach(b => {
+      b.classList.remove('active', 'bg-blue-500/10', 'text-blue-400', 'font-semibold');
+      b.classList.add('text-slate-400');
+    });
+    if (btn) {
+      btn.classList.add('active', 'bg-blue-500/10', 'text-blue-400', 'font-semibold');
+      btn.classList.remove('text-slate-400');
+    }
+
+    const rows = document.querySelectorAll('#table-statutory-categories tbody tr');
+    rows.forEach(r => {
+      const rowSec = r.getAttribute('data-section');
+      if (section === 'ALL' || rowSec === section) {
+        r.style.display = '';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+  }
+
+  function deleteStudioCategory(catId, catLabel, rowId) {
+    if (!confirm(`Are you sure you want to deactivate and remove category "${catLabel}"?\n\nAny mapped accounts will be safely unlinked.`)) return;
+
+    fetch(`/api/modules/general-ledger/categories/${catId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        const row = document.getElementById(rowId);
+        if (row) {
+          row.style.transition = 'all 0.3s ease';
+          row.style.opacity = '0';
+          row.style.transform = 'scale(0.95)';
+          setTimeout(() => row.remove(), 300);
+        }
+      } else {
+        alert('Failed to delete category');
+      }
+    })
+    .catch(err => alert('Network error: ' + err));
+  }
+
+  function deleteStudioSegment(segId, segLabel, rowId) {
+    if (!confirm(`Are you sure you want to deactivate operating segment "${segLabel}"?`)) return;
+
+    fetch(`/api/modules/general-ledger/segments/${segId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        const row = document.getElementById(rowId);
+        if (row) {
+          row.style.transition = 'all 0.3s ease';
+          row.style.opacity = '0';
+          row.style.transform = 'scale(0.95)';
+          setTimeout(() => row.remove(), 300);
+        }
+      } else {
+        alert('Failed to delete segment');
+      }
+    })
+    .catch(err => alert('Network error: ' + err));
   }
 </script>
 {% endblock %}

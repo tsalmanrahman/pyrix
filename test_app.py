@@ -27,7 +27,7 @@ def run_tests():
     assert resp.status_code == 200
     assert "Chart of Accounts Master (COA)" in resp.text
     assert "1010-00" in resp.text
-    assert "GL Account (COA) List" in resp.text
+    assert "GL Account List" in resp.text
     # Actions column and action buttons must be present
     assert "Actions" in resp.text
     assert "btn-action-edit" in resp.text
@@ -40,7 +40,7 @@ def run_tests():
     print("\n--- 4. Testing GL Account Mapping Tab ---")
     resp = client.get("/modules/general-ledger?tab=mapping")
     assert resp.status_code == 200
-    assert "GL Account Mapping Matrix" in resp.text
+    assert "GL Account Matrix List" in resp.text
     assert "Actions" in resp.text
     assert 'title="Back to General Ledger Master Hub"' in resp.text
     assert "id=\"module-suites-container\"" not in resp.text
@@ -88,7 +88,7 @@ def run_tests():
     resp = client.get("/modules/general-ledger/master/gl-accounts/new")
     assert resp.status_code == 200
     assert "New GL Account (Chart of Accounts)" in resp.text
-    assert "GL Account (COA) List" in resp.text  # Clickable parent breadcrumb
+    assert "GL Account List" in resp.text  # Clickable parent breadcrumb
     print("[OK - Solid Master Data creation page verified with 4-level deep breadcrumbs]")
 
     # 10. Test Dynamic Edit Page (Pre-filled form) & Update flow

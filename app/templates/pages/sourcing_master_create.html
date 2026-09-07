@@ -5,17 +5,32 @@
 {% block content %}
 <div class="space-y-6 max-w-5xl">
 
-  <!-- Minimalist Header Banner with Sleek Icon Back Button -->
+  <!-- Minimalist Header Banner with Far-Left Back Button & Focused Right Action -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap">
-    <div class="flex items-center gap-3 min-w-0">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="/modules/sourcing?tab={{ sub_tab|default('vendors') }}" 
+        class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="Back to Sourcing Workspace"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:border-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
       <div class="w-9 h-9 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
         <i data-lucide="{% if is_edit_mode %}edit-3{% elif entity == 'vendors' %}user-plus{% elif entity == 'requisitions' %}file-plus-2{% else %}shopping-cart{% endif %}" class="w-5 h-5"></i>
       </div>
-      <div>
+
+      <!-- Title & Scope -->
+      <div class="min-w-0">
         <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight truncate">
           {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
         </h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400">
+        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
           {% if entity == 'vendors' %}Register supplier legal identity, commercial terms, and credit limits
           {% elif entity == 'requisitions' %}Initiate internal purchase request and departmental procurement scope
           {% else %}Generate and issue procurement purchase order with terms and delivery incoterms
@@ -24,18 +39,42 @@
       </div>
     </div>
 
-    <!-- Back Button to Sourcing Tab -->
-    <a 
-      href="/modules/sourcing?tab={{ sub_tab|default('vendors') }}" 
-      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300"
-      title="Back to Sourcing Workspace"
-    >
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-    </a>
+    <!-- Right Side: Exactly ONE Focused Action -->
+    <div class="flex items-center gap-2 shrink-0">
+      {% if is_edit_mode %}
+      <button 
+        type="submit" 
+        form="sourcing-record-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Save Changes"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% else %}
+      <button 
+        type="submit" 
+        form="sourcing-record-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Commit {{ entity_title }}"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% endif %}
+    </div>
   </div>
 
+  {% if request.query_params.get('error') %}
+  <div class="glass-card rounded-2xl p-4 border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-300 text-xs flex items-center justify-between gap-3 animate-shake">
+    <div class="flex items-center gap-2.5">
+      <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 shrink-0"></i>
+      <span class="font-medium">{{ request.query_params.get('error') }}</span>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Dedicated Solid Form Container (Zero-Modal Full Page) -->
-  <form action="{% if is_edit_mode %}/modules/sourcing/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/sourcing/master/{{ entity }}{% endif %}" method="POST" class="space-y-4">
+  <form id="sourcing-record-form" {% if record_id %}data-record-id="{{ record_id }}"{% elif record %}data-record-id="{{ record.id }}"{% endif %} action="{% if is_edit_mode %}/modules/sourcing/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/sourcing/master/{{ entity }}{% endif %}" method="POST" class="space-y-4">
+
 
     <!-- =========================================================================
          1. VENDOR MASTER PROFILE (vendors)
@@ -50,18 +89,19 @@
             <span>1. Corporate Legal Identity & Org Classification</span>
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            {% if is_edit_mode or is_view_mode or record %}
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Vendor Code <span class="text-blue-500">*</span></label>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Vendor Code</label>
               <input 
                 type="text" 
                 name="vendor_code" 
-                required 
-                value="{{ record.vendor_code if record else default_code|default('VND-009') }}" 
-                placeholder="e.g. VND-009" 
-                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400"
+                readonly 
+                value="{{ record.vendor_code }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
               >
             </div>
-            <div class="sm:col-span-2">
+            {% endif %}
+            <div class="{% if is_edit_mode or is_view_mode or record %}sm:col-span-2{% else %}sm:col-span-3{% endif %}">
               <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Vendor Registered Legal Name <span class="text-blue-500">*</span></label>
               <input 
                 type="text" 
@@ -207,17 +247,19 @@
             <i data-lucide="file-text" class="w-4 h-4"></i>
             <span>1. Requisition Identification & Departmental Scope</span>
           </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div class="grid grid-cols-1 {% if is_edit_mode or is_view_mode or record %}sm:grid-cols-3{% else %}sm:grid-cols-2{% endif %} gap-3 text-xs">
+            {% if is_edit_mode or is_view_mode or record %}
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">PR Number <span class="text-blue-500">*</span></label>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">PR Number</label>
               <input 
                 type="text" 
                 name="req_number" 
-                required 
-                value="{{ record.req_number if record else default_code|default('PR-2026-009') }}" 
-                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-emerald-600 dark:text-emerald-400"
+                readonly 
+                value="{{ record.req_number }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
               >
             </div>
+            {% endif %}
             <div>
               <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Requisition Type</label>
               <select name="req_type" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
@@ -237,7 +279,7 @@
                 <option value="LOW" {% if record and record.priority == 'LOW' %}selected{% endif %}>Low Priority</option>
               </select>
             </div>
-            <div class="sm:col-span-3">
+            <div class="sm:col-span-full">
               <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Requisition Title & Operational Purpose <span class="text-blue-500">*</span></label>
               <input 
                 type="text" 
@@ -253,49 +295,35 @@
 
         <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-white/5">
           <h3 class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-tight flex items-center gap-2">
-            <i data-lucide="user-check" class="w-4 h-4"></i>
-            <span>2. Requester & Financial Budget Allocation</span>
+            <i data-lucide="package" class="w-4 h-4"></i>
+            <span>2. Requested Target Specifications & Logistics</span>
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
-              <input 
-                type="text" 
-                name="dept_name" 
-                value="{{ record.dept_name if record else 'Operations & Maintenance' }}" 
-                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
-              >
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Target Delivery Site / Warehouse</label>
+              <select name="delivery_location" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+                <option value="CENTRAL_WAREHOUSE">Central Logistics Hub - Silo A</option>
+                <option value="PLANT_SITE_01">Main Production Plant 01</option>
+                <option value="BONDED_CUSTOMS_YARD">Port Qasim Bonded Yard</option>
+              </select>
             </div>
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Requester Full Name</label>
-              <input 
-                type="text" 
-                name="requester_name" 
-                value="{{ record.requester_name if record else current_user.display_name|default('Engr. Farhan Tanvir') }}" 
-                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10"
-              >
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Required by Date</label>
+              <input type="date" name="required_date" value="{{ record.required_date if record else '2026-09-30' }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
             </div>
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Budget (USD) <span class="text-blue-500">*</span></label>
-              <input 
-                type="number" 
-                step="0.01" 
-                name="total_estimated_amount" 
-                required 
-                value="{{ record.total_estimated_amount if record else 25000.00 }}" 
-                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-emerald-600 dark:text-emerald-400"
-              >
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Estimated Budget (USD)</label>
+              <input type="number" name="estimated_budget" value="{{ record.estimated_budget if record else 2500000.0 }}" class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
             </div>
           </div>
         </div>
 
       </div>
-    {% endif %}
+    {% elif entity == 'purchase-orders' %}
 
     <!-- =========================================================================
          3. PURCHASE ORDERS (PO) MASTER (purchase-orders)
          ========================================================================= -->
-    {% if entity == 'purchase-orders' %}
       <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 space-y-5">
         
         <div class="space-y-3">
@@ -303,17 +331,19 @@
             <i data-lucide="shopping-cart" class="w-4 h-4"></i>
             <span>1. Purchase Order Specification & Vendor Allocation</span>
           </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div class="grid grid-cols-1 {% if is_edit_mode or is_view_mode or record %}sm:grid-cols-3{% else %}sm:grid-cols-2{% endif %} gap-3 text-xs">
+            {% if is_edit_mode or is_view_mode or record %}
             <div>
-              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">PO Number <span class="text-blue-500">*</span></label>
+              <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">PO Number</label>
               <input 
                 type="text" 
                 name="po_number" 
-                required 
-                value="{{ record.po_number if record else default_code|default('PO-2026-009') }}" 
-                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-indigo-600 dark:text-indigo-400"
+                readonly 
+                value="{{ record.po_number }}" 
+                class="mac-input w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
               >
             </div>
+            {% endif %}
             <div>
               <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">PO Category</label>
               <select name="po_category" class="mac-input w-full px-2.5 py-1.5 rounded-xl border border-slate-300 dark:border-white/10 font-mono">
@@ -394,17 +424,6 @@
 
       </div>
     {% endif %}
-
-    <!-- Universal Form Bottom Actions Bar -->
-    <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-end gap-3">
-      <button 
-        type="submit" 
-        class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
-      >
-        <i data-lucide="check" class="w-4 h-4"></i>
-        <span>{% if is_edit_mode %}Save Changes{% else %}Commit {{ entity_title }}{% endif %}</span>
-      </button>
-    </div>
 
   </form>
 

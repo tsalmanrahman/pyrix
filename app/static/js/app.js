@@ -10,7 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserMenu();
   initSmartTables();
   initDragToScroll();
+  initDirtyFormGuard();
+  initSmartTableRowNavigation();
+  initModalAutoHideManager();
+  initUniversalFormValidation();
 });
+
 
 function initLucide() {
   if (window.lucide) {
@@ -884,11 +889,14 @@ function setupSmartTable(table, tableIdx, totalTables) {
 
   const ths = Array.from(headerRow.querySelectorAll('th'));
   const rows = Array.from(tbody.querySelectorAll('tr'));
-  if (rows.length === 0) return;
+  // Store original order for resetting sorts
+  rows.forEach((r, idx) => {
+    if (r._originalIndex === undefined) r._originalIndex = idx;
+  });
 
   // Active filters & sorting registry for this table
   table._activeFilters = {};
-  table._sortState = { colIndex: -1, asc: true };
+  table._sortState = { colIndex: -1, asc: null };
 
   // Setup Pagination state on table
   table._pagination = {
@@ -1052,60 +1060,92 @@ function setupSmartTable(table, tableIdx, totalTables) {
     // Create Unified Menu Button
     const menuBtn = document.createElement('button');
     menuBtn.type = 'button';
-    menuBtn.className = 'btn-col-menu-trigger w-5 h-5 rounded hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-blue-400 transition cursor-pointer';
+    menuBtn.className = 'btn-col-menu-trigger w-6 h-6 rounded-lg hover:bg-slate-200/70 dark:hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-blue-500 transition cursor-pointer';
     menuBtn.title = `Sort & Filter ${headerText}`;
     menuBtn.innerHTML = `<i data-lucide="filter" class="w-3 h-3"></i>`;
 
     // Create Unified Popover
     const popover = document.createElement('div');
-    popover.className = 'table-filter-popover hidden text-xs w-60';
+    popover.className = 'table-filter-popover hidden text-xs w-72 select-none';
     
     // Check if we should show value checkboxes (if there are categorical values)
-    const hasCategoryValues = distinctValues.size >= 2 && distinctValues.size <= 20;
+    const hasCategoryValues = distinctValues.size >= 2 && distinctValues.size <= 25;
 
     let optionsHtml = '';
     if (hasCategoryValues) {
       optionsHtml = `
-        <div class="space-y-1 max-h-36 overflow-y-auto text-slate-700 dark:text-slate-300 border-t border-slate-200 dark:border-white/10 pt-1.5 mt-1.5 popover-options-list">
-          <div class="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Filter by value:</div>
+        <div class="space-y-1.5 border-t border-slate-200 dark:border-white/10 pt-2 mb-2.5">
+          <div class="flex items-center justify-between text-[11px] px-0.5">
+            <span class="text-slate-500 dark:text-slate-400 font-medium">Values (${distinctValues.size})</span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="btn-select-all-vals text-blue-600 dark:text-blue-400 hover:underline font-medium text-[10px] cursor-pointer">Select all</button>
+              <span class="text-slate-400 dark:text-slate-600">&bull;</span>
+              <button type="button" class="btn-clear-all-vals text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-medium text-[10px] cursor-pointer">Clear</button>
+            </div>
+          </div>
+          <div class="space-y-0.5 max-h-36 overflow-y-auto custom-scrollbar pr-1 border border-slate-200 dark:border-white/5 rounded-xl p-1 bg-slate-50 dark:bg-slate-950/40 popover-options-list">
+          </div>
         </div>
       `;
     }
 
     popover.innerHTML = `
-      <div class="font-bold text-slate-900 dark:text-white text-[11px] border-b border-slate-200 dark:border-white/10 pb-1.5 mb-1.5 flex justify-between items-center">
-        <span>${headerText}</span>
-        <button type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-white btn-popover-close text-sm leading-none">&times;</button>
-      </div>
-
-      <!-- Sort Controls -->
-      <div class="space-y-0.5 border-b border-slate-200 dark:border-white/10 pb-1.5 mb-1.5">
-        <button type="button" class="btn-sort-asc w-full flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 text-left text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
-          <span>Sort A &rarr; Z (Lowest first)</span>
-        </button>
-        <button type="button" class="btn-sort-desc w-full flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-white/10 text-left text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-blue-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/></svg>
-          <span>Sort Z &rarr; A (Highest first)</span>
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-200 dark:border-white/10">
+        <div class="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-xs tracking-tight">
+          <i data-lucide="filter" class="w-3.5 h-3.5 text-blue-500"></i>
+          <span class="truncate max-w-[190px]">${headerText}</span>
+        </div>
+        <button type="button" class="btn-popover-close w-6 h-6 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer" title="Close">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
         </button>
       </div>
 
-      <!-- Quick Search Filter -->
-      <div class="space-y-1">
-        <div class="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Search in ${headerText}:</div>
-        <input 
-          type="text" 
-          placeholder="Type to filter..." 
-          class="col-search-input w-full px-2.5 py-1 text-xs rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition"
-        >
+      <!-- Segmented 3-Way Sort Control -->
+      <div class="mb-2.5">
+        <div class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Sorting</div>
+        <div class="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-slate-950/60 p-1 rounded-xl border border-slate-200 dark:border-white/5 text-[11px] font-medium">
+          <button type="button" class="btn-sort-asc py-1 px-1 rounded-lg flex items-center justify-center gap-1 transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/10 cursor-pointer" title="Sort Ascending">
+            <i data-lucide="arrow-down-a-z" class="w-3 h-3"></i>
+            <span>A &rarr; Z</span>
+          </button>
+          <button type="button" class="btn-sort-desc py-1 px-1 rounded-lg flex items-center justify-center gap-1 transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/10 cursor-pointer" title="Sort Descending">
+            <i data-lucide="arrow-up-z-a" class="w-3 h-3"></i>
+            <span>Z &rarr; A</span>
+          </button>
+          <button type="button" class="btn-sort-none py-1 px-1 rounded-lg flex items-center justify-center gap-1 transition bg-blue-600 text-white font-semibold shadow-sm cursor-pointer" title="Clear sort">
+            <span>None</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic Search Input -->
+      <div class="space-y-1 mb-2.5">
+        <div class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Search in ${headerText}</div>
+        <div class="relative flex items-center">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none"></i>
+          <input 
+            type="text" 
+            placeholder="Filter values..." 
+            class="col-search-input w-full pl-8 pr-7 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition font-medium"
+          >
+          <button type="button" class="btn-clear-search-input hidden absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer" title="Clear search">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
       </div>
 
       ${optionsHtml}
 
       <!-- Bottom Actions -->
-      <div class="pt-2 mt-1.5 border-t border-slate-200 dark:border-white/10 flex justify-between text-[10px]">
-        <button type="button" class="btn-clear-col text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white">Clear</button>
-        <button type="button" class="btn-popover-close text-blue-600 dark:text-blue-400 hover:underline font-semibold">Done</button>
+      <div class="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
+        <button type="button" class="btn-clear-col text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center gap-1 font-medium transition cursor-pointer" title="Reset this column's filters">
+          <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+          <span>Reset</span>
+        </button>
+        <button type="button" class="btn-popover-close px-3 py-1 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition cursor-pointer">
+          Done
+        </button>
       </div>
     `;
 
@@ -1114,48 +1154,144 @@ function setupSmartTable(table, tableIdx, totalTables) {
       const optionsList = popover.querySelector('.popover-options-list');
       distinctValues.forEach((count, val) => {
         const item = document.createElement('label');
-        item.className = 'table-filter-popover-item';
+        item.className = 'table-filter-popover-item group';
+        item.setAttribute('data-val', val);
         item.innerHTML = `
-          <input type="checkbox" value="${val}" class="filter-chk rounded text-blue-600 bg-slate-800 border-white/10">
-          <span class="truncate flex-1">${val}</span>
-          <span class="text-[9px] font-mono text-slate-400">(${count})</span>
+          <input type="checkbox" value="${val.replace(/"/g, '&quot;')}" class="filter-chk rounded text-blue-600 bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-white/20 focus:ring-0 cursor-pointer">
+          <span class="truncate flex-1 text-[11px] text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">${val}</span>
+          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-200/60 dark:bg-white/5 text-slate-500 dark:text-slate-400 font-semibold">${count}</span>
         `;
         optionsList.appendChild(item);
       });
     }
 
-    // Sort Handlers
-    popover.querySelector('.btn-sort-asc').addEventListener('click', (e) => {
+    // Sort Segment Handlers
+    const btnSortAsc = popover.querySelector('.btn-sort-asc');
+    const btnSortDesc = popover.querySelector('.btn-sort-desc');
+    const btnSortNone = popover.querySelector('.btn-sort-none');
+
+    function updateSortSegmentUi(mode) {
+      const activeCls = ['bg-blue-600', 'text-white', 'font-semibold', 'shadow-sm'];
+      const defaultCls = ['text-slate-600', 'dark:text-slate-400'];
+
+      [btnSortAsc, btnSortDesc, btnSortNone].forEach(btn => {
+        if (!btn) return;
+        btn.classList.remove(...activeCls);
+        btn.classList.add(...defaultCls);
+      });
+
+      if (mode === 'asc' && btnSortAsc) {
+        btnSortAsc.classList.add(...activeCls);
+        btnSortAsc.classList.remove(...defaultCls);
+      } else if (mode === 'desc' && btnSortDesc) {
+        btnSortDesc.classList.add(...activeCls);
+        btnSortDesc.classList.remove(...defaultCls);
+      } else if (btnSortNone) {
+        btnSortNone.classList.add(...activeCls);
+        btnSortNone.classList.remove(...defaultCls);
+      }
+      updateColHeaderIndicator(table, colIdx, menuBtn, popover);
+    }
+
+    btnSortAsc.addEventListener('click', (e) => {
       e.stopPropagation();
       sortSmartTableColumn(table, colIdx, true, totalTables);
-      closeAllTablePopovers();
+      updateSortSegmentUi('asc');
     });
 
-    popover.querySelector('.btn-sort-desc').addEventListener('click', (e) => {
+    btnSortDesc.addEventListener('click', (e) => {
       e.stopPropagation();
       sortSmartTableColumn(table, colIdx, false, totalTables);
-      closeAllTablePopovers();
+      updateSortSegmentUi('desc');
     });
 
-    // Search Input Keystroke Handler
-    const searchInput = popover.querySelector('.col-search-input');
-    searchInput.addEventListener('input', () => {
-      applySmartTableFilters(table, chipsContainer, totalTables);
+    btnSortNone.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sortSmartTableColumn(table, colIdx, null, totalTables);
+      updateSortSegmentUi('none');
     });
+
+    // Search Input Keystroke & Option Filtering Handler
+    const searchInput = popover.querySelector('.col-search-input');
+    const clearSearchBtn = popover.querySelector('.btn-clear-search-input');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        if (clearSearchBtn) {
+          clearSearchBtn.classList.toggle('hidden', query === '');
+        }
+        // Live-filter checkboxes in popover
+        popover.querySelectorAll('.table-filter-popover-item').forEach(item => {
+          const val = (item.getAttribute('data-val') || '').toLowerCase();
+          if (!query || val.includes(query)) {
+            item.classList.remove('hidden');
+          } else {
+            item.classList.add('hidden');
+          }
+        });
+
+        applySmartTableFilters(table, chipsContainer, totalTables);
+        updateColHeaderIndicator(table, colIdx, menuBtn, popover);
+      });
+
+      if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          searchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+          popover.querySelectorAll('.table-filter-popover-item').forEach(item => item.classList.remove('hidden'));
+          applySmartTableFilters(table, chipsContainer, totalTables);
+          updateColHeaderIndicator(table, colIdx, menuBtn, popover);
+          searchInput.focus();
+        });
+      }
+    }
+
+    // Batch Actions: Select All / Clear
+    const btnSelectAll = popover.querySelector('.btn-select-all-vals');
+    if (btnSelectAll) {
+      btnSelectAll.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popover.querySelectorAll('.table-filter-popover-item:not(.hidden) .filter-chk').forEach(chk => chk.checked = true);
+        applySmartTableFilters(table, chipsContainer, totalTables);
+        updateColHeaderIndicator(table, colIdx, menuBtn, popover);
+      });
+    }
+
+    const btnClearAll = popover.querySelector('.btn-clear-all-vals');
+    if (btnClearAll) {
+      btnClearAll.addEventListener('click', (e) => {
+        e.stopPropagation();
+        popover.querySelectorAll('.filter-chk').forEach(chk => chk.checked = false);
+        applySmartTableFilters(table, chipsContainer, totalTables);
+        updateColHeaderIndicator(table, colIdx, menuBtn, popover);
+      });
+    }
 
     // Checkbox Handlers
     const checkboxes = popover.querySelectorAll('.filter-chk');
     checkboxes.forEach(chk => {
       chk.addEventListener('change', () => {
         applySmartTableFilters(table, chipsContainer, totalTables);
+        updateColHeaderIndicator(table, colIdx, menuBtn, popover);
       });
     });
 
-    // Clear Button Handler
+    // Reset / Clear Column Button Handler
     popover.querySelector('.btn-clear-col').addEventListener('click', () => {
-      searchInput.value = '';
+      if (searchInput) {
+        searchInput.value = '';
+        if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+        popover.querySelectorAll('.table-filter-popover-item').forEach(item => item.classList.remove('hidden'));
+      }
       checkboxes.forEach(c => c.checked = false);
+      if (table._sortState && table._sortState.colIndex === colIdx) {
+        sortSmartTableColumn(table, colIdx, null, totalTables);
+        updateSortSegmentUi('none');
+      }
       applySmartTableFilters(table, chipsContainer, totalTables);
+      updateColHeaderIndicator(table, colIdx, menuBtn, popover);
     });
 
     // Close Button Handlers
@@ -1175,10 +1311,11 @@ function setupSmartTable(table, tableIdx, totalTables) {
         const rect = menuBtn.getBoundingClientRect();
         popover.style.position = 'fixed';
         popover.style.top = `${rect.bottom + 6}px`;
-        popover.style.left = `${Math.min(Math.max(10, rect.left), window.innerWidth - 260)}px`;
+        popover.style.left = `${Math.min(Math.max(10, rect.left), window.innerWidth - 300)}px`;
         popover.style.zIndex = '99999';
         popover.classList.remove('hidden');
-        setTimeout(() => searchInput.focus(), 50);
+        initLucide();
+        setTimeout(() => searchInput && searchInput.focus(), 50);
       }
     });
 
@@ -1186,7 +1323,7 @@ function setupSmartTable(table, tableIdx, totalTables) {
     th.appendChild(wrapper);
     document.body.appendChild(popover);
     table._colPopovers = table._colPopovers || [];
-    table._colPopovers.push({ colIdx, popover, menuBtn, th });
+    table._colPopovers.push({ colIdx, popover, menuBtn, th, updateSortSegmentUi });
   });
 
   // Initial page render
@@ -1303,10 +1440,6 @@ function applySmartTableFilters(table, chipsContainer, totalTables) {
     const headerTitle = th.querySelector('span')?.textContent.trim() || `Col ${colIdx}`;
 
     if (searchVal || checked.length > 0) {
-      if (menuBtn) {
-        menuBtn.classList.add('text-blue-400', 'bg-blue-500/20');
-        menuBtn.classList.remove('text-slate-400');
-      }
       activeFilters.push({
         colIdx,
         title: headerTitle,
@@ -1315,12 +1448,8 @@ function applySmartTableFilters(table, chipsContainer, totalTables) {
         popover,
         menuBtn
       });
-    } else {
-      if (menuBtn) {
-        menuBtn.classList.remove('text-blue-400', 'bg-blue-500/20');
-        menuBtn.classList.add('text-slate-400');
-      }
     }
+    updateColHeaderIndicator(table, colIdx, menuBtn, popover);
   });
 
   // Filter rows into matchingRows array
@@ -1397,21 +1526,25 @@ function applySmartTableFilters(table, chipsContainer, totalTables) {
 function sortSmartTableColumn(table, colIdx, asc, totalTables) {
   const tbody = table.querySelector('tbody');
   const allRows = table._pagination ? table._pagination.allRows : Array.from(tbody.querySelectorAll('tr'));
-  table._sortState = { colIndex: colIdx, asc: asc };
+  table._sortState = { colIndex: asc === null ? -1 : colIdx, asc: asc };
 
-  allRows.sort((a, b) => {
-    const textA = a.cells[colIdx]?.textContent.trim() || '';
-    const textB = b.cells[colIdx]?.textContent.trim() || '';
+  if (asc === null) {
+    allRows.sort((a, b) => (a._originalIndex ?? 0) - (b._originalIndex ?? 0));
+  } else {
+    allRows.sort((a, b) => {
+      const textA = a.cells[colIdx]?.textContent.trim() || '';
+      const textB = b.cells[colIdx]?.textContent.trim() || '';
 
-    // Check if numeric or currency
-    const numA = parseFloat(textA.replace(/[^0-9.-]/g, ''));
-    const numB = parseFloat(textB.replace(/[^0-9.-]/g, ''));
+      // Check if numeric or currency
+      const numA = parseFloat(textA.replace(/[^0-9.-]/g, ''));
+      const numB = parseFloat(textB.replace(/[^0-9.-]/g, ''));
 
-    if (!isNaN(numA) && !isNaN(numB) && !textA.includes('-') && !textB.includes('-')) {
-      return asc ? numA - numB : numB - numA;
-    }
-    return asc ? textA.localeCompare(textB) : textB.localeCompare(textA);
-  });
+      if (!isNaN(numA) && !isNaN(numB) && !textA.includes('-') && !textB.includes('-')) {
+        return asc ? numA - numB : numB - numA;
+      }
+      return asc ? textA.localeCompare(textB, undefined, { numeric: true, sensitivity: 'base' }) : textB.localeCompare(textA, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }
 
   allRows.forEach(r => tbody.appendChild(r));
   
@@ -1420,7 +1553,48 @@ function sortSmartTableColumn(table, colIdx, asc, totalTables) {
     renderTablePage(table);
   }
 
-  showToast(`Sorted by column ${asc ? '(Ascending)' : '(Descending)'}`);
+  // Update indicators across all column popovers
+  if (table._colPopovers) {
+    table._colPopovers.forEach(cp => {
+      if (cp.colIdx !== colIdx && cp.updateSortSegmentUi) {
+        cp.updateSortSegmentUi('none');
+      }
+      updateColHeaderIndicator(table, cp.colIdx, cp.menuBtn, cp.popover);
+    });
+  }
+
+  if (asc !== null) {
+    showToast(`Sorted by column ${asc ? '(Ascending)' : '(Descending)'}`);
+  } else {
+    showToast('Reset column sort order');
+  }
+}
+
+function updateColHeaderIndicator(table, colIdx, menuBtn, popover) {
+  if (!menuBtn) return;
+  const sortState = table._sortState || { colIndex: -1, asc: null };
+  const searchVal = popover.querySelector('.col-search-input')?.value.trim() || '';
+  const hasFilter = searchVal !== '' || popover.querySelectorAll('.filter-chk:checked').length > 0;
+  const isSorted = sortState.colIndex === colIdx && sortState.asc !== null;
+
+  if (isSorted) {
+    menuBtn.classList.add('text-blue-500', 'bg-blue-500/15', 'font-bold');
+    menuBtn.classList.remove('text-slate-400');
+    if (sortState.asc) {
+      menuBtn.innerHTML = `<i data-lucide="arrow-down-a-z" class="w-3.5 h-3.5 text-blue-500"></i>`;
+    } else {
+      menuBtn.innerHTML = `<i data-lucide="arrow-up-z-a" class="w-3.5 h-3.5 text-blue-500"></i>`;
+    }
+  } else if (hasFilter) {
+    menuBtn.classList.add('text-blue-500', 'bg-blue-500/15');
+    menuBtn.classList.remove('text-slate-400');
+    menuBtn.innerHTML = `<span class="relative flex items-center justify-center"><i data-lucide="filter" class="w-3 h-3 text-blue-500"></i><span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-500 ring-2 ring-white dark:ring-slate-900"></span></span>`;
+  } else {
+    menuBtn.classList.remove('text-blue-500', 'bg-blue-500/15', 'font-bold');
+    menuBtn.classList.add('text-slate-400');
+    menuBtn.innerHTML = `<i data-lucide="filter" class="w-3 h-3"></i>`;
+  }
+  initLucide();
 }
 
 /* ==========================================================================
@@ -1510,8 +1684,77 @@ function initDragToScroll() {
   });
 }
 
+/* ==========================================================================
+   ⚡ UNIVERSAL MODAL / POP-UP AUTO-HIDE SIDEBAR ENGINE
+   Automatically slides the side menu smoothly off-screen when ANY modal or
+   popup opens in the application, and restores it when closed.
+   ========================================================================== */
+window.pyrixModalManager = {
+  activeModals: new Set(),
 
+  syncSidebarState() {
+    const htmlEl = document.documentElement;
+    const modalCandidates = document.querySelectorAll(
+      '[id^="modal-"], [role="dialog"], [aria-modal="true"]'
+    );
+    let anyVisible = false;
+    modalCandidates.forEach(el => {
+      // Exclude small-screen sidebar backdrop
+      if (el.id === 'sidebar-backdrop') return;
 
+      const isVisible = !el.classList.contains('hidden') && 
+                        window.getComputedStyle(el).display !== 'none' &&
+                        window.getComputedStyle(el).visibility !== 'hidden' &&
+                        (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0);
+      if (isVisible) {
+        anyVisible = true;
+        this.activeModals.add(el.id || el);
+      } else if (el.id) {
+        this.activeModals.delete(el.id);
+      }
+    });
+
+    if (anyVisible || this.activeModals.size > 0) {
+      if (!htmlEl.classList.contains('modal-active-sidebar-hidden')) {
+        htmlEl.classList.add('modal-active-sidebar-hidden');
+      }
+    } else {
+      htmlEl.classList.remove('modal-active-sidebar-hidden');
+    }
+  },
+
+  registerOpen(modalId) {
+    if (modalId) this.activeModals.add(modalId);
+    document.documentElement.classList.add('modal-active-sidebar-hidden');
+  },
+
+  registerClose(modalId) {
+    if (modalId) this.activeModals.delete(modalId);
+    setTimeout(() => this.syncSidebarState(), 40);
+  },
+
+  init() {
+    if (typeof MutationObserver !== 'undefined') {
+      const observer = new MutationObserver(() => {
+        this.syncSidebarState();
+      });
+
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style'],
+        subtree: true
+      });
+    }
+
+    this.syncSidebarState();
+  }
+};
+
+function initModalAutoHideManager() {
+  if (window.pyrixModalManager && typeof window.pyrixModalManager.init === 'function') {
+    window.pyrixModalManager.init();
+  }
+}
 
 /* ==========================================================================
    ⚡ UNIVERSAL DYNAMIC CRUD MODAL CONTROLLER (Edit & Delete)
@@ -1767,3 +2010,646 @@ async function executeDynamicDelete() {
     if (window.lucide) window.lucide.createIcons();
   }
 }
+
+/* ==========================================================================
+   ⚡ UNIVERSAL FLOATING ROW ACTION POPOVER & DYNAMIC VIEW ENGINE
+   ========================================================================== */
+let currentActionTarget = {
+  entity: null,
+  id: null,
+  title: null,
+  editUrl: null,
+  deleteFnStr: null,
+  triggerBtn: null,
+  rowElement: null
+};
+
+function openRowActionMenu(btn, e, entity, id, title, editUrl, deleteFnStr) {
+  if (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
+  const menu = document.getElementById('floating-row-action-menu');
+  if (!menu) return;
+
+  // Toggle close if clicking the same trigger button while open
+  if (!menu.classList.contains('hidden') && currentActionTarget.triggerBtn === btn) {
+    closeRowActionMenu();
+    return;
+  }
+
+  currentActionTarget = {
+    entity: entity,
+    id: id,
+    title: title || 'Record',
+    editUrl: editUrl || null,
+    deleteFnStr: deleteFnStr || null,
+    triggerBtn: btn,
+    rowElement: btn ? btn.closest('tr') : null
+  };
+
+  // Display menu to measure dimensions
+  menu.style.visibility = 'hidden';
+  menu.classList.remove('hidden');
+
+  const rect = btn.getBoundingClientRect();
+  const menuWidth = menu.offsetWidth || 176;
+  const menuHeight = menu.offsetHeight || 150;
+
+  // Horizontal position (align right edge of menu to right edge of button)
+  let left = rect.right - menuWidth;
+  if (left < 8) left = 8;
+  if (left + menuWidth > window.innerWidth - 8) {
+    left = window.innerWidth - menuWidth - 8;
+  }
+
+  // Vertical position (check if opening downwards overflows viewport)
+  let top = rect.bottom + 4;
+  if (top + menuHeight > window.innerHeight - 8) {
+    // Open upwards
+    top = rect.top - menuHeight - 4;
+  }
+
+  menu.style.top = `${Math.round(top)}px`;
+  menu.style.left = `${Math.round(left)}px`;
+  menu.style.visibility = 'visible';
+
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+}
+
+function closeRowActionMenu() {
+  const menu = document.getElementById('floating-row-action-menu');
+  if (menu && !menu.classList.contains('hidden')) {
+    menu.classList.add('hidden');
+  }
+}
+
+function handleActionMenuClick(action) {
+  const { entity, id, title, editUrl, deleteFnStr, triggerBtn } = currentActionTarget;
+  closeRowActionMenu();
+
+  if (action === 'view') {
+    if (editUrl) {
+      const viewUrl = editUrl.endsWith('/edit')
+        ? editUrl.replace(/\/edit$/, '/view')
+        : `${editUrl}?mode=view`;
+      window.location.href = viewUrl;
+    } else if (entity && id) {
+      openDynamicViewModal(entity, id, title);
+    }
+  } else if (action === 'edit') {
+    if (editUrl) {
+      window.location.href = editUrl;
+    } else if (entity && id) {
+      openDynamicEditModal(entity, id);
+    }
+  } else if (action === 'delete') {
+    if (deleteFnStr) {
+      try {
+        const fn = new Function(deleteFnStr);
+        fn();
+      } catch (err) {
+        console.error('Delete action failed', err);
+      }
+    } else if (entity && id) {
+      confirmDynamicDelete(entity, id, title, triggerBtn);
+    }
+  }
+}
+
+async function openDynamicViewModal(entity, id, title) {
+  const modal = document.getElementById('modal-dynamic-view');
+  const loading = document.getElementById('dynamic-view-loading');
+  const fieldsContainer = document.getElementById('dynamic-view-fields');
+  const titleEl = document.getElementById('dynamic-view-title');
+  const subtitleEl = document.getElementById('dynamic-view-subtitle');
+
+  if (!modal) return;
+
+  modal.classList.remove('hidden');
+  loading.classList.remove('hidden');
+  fieldsContainer.classList.add('hidden');
+  fieldsContainer.innerHTML = '';
+
+  titleEl.textContent = title ? `${title}` : 'Record Details';
+  subtitleEl.textContent = `Entity: ${entity} • Record ID: ${id}`;
+
+  try {
+    const res = await fetch(`/api/crud/${entity}/${id}`);
+    const json = await res.json();
+    if (!json.success || !json.payload) throw new Error(json.error || 'Failed to load record');
+
+    const { title: entityTitle, fields, data } = json.payload;
+    titleEl.textContent = entityTitle ? `${entityTitle}: ${title || id}` : (title || 'Record Details');
+
+    fields.forEach(f => {
+      const fieldCard = document.createElement('div');
+      fieldCard.className = 'p-3 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50/60 dark:bg-white/[0.02] space-y-1';
+
+      const val = data[f.field] !== undefined && data[f.field] !== null ? data[f.field] : '—';
+      let formattedVal = val;
+
+      if (f.type === 'checkbox') {
+        formattedVal = val 
+          ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">YES</span>' 
+          : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-white/10 text-slate-500">NO</span>';
+      } else if (typeof val === 'boolean') {
+        formattedVal = val 
+          ? '<span class="text-emerald-600 font-bold">Yes</span>' 
+          : '<span class="text-slate-400">No</span>';
+      }
+
+      fieldCard.innerHTML = `
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">${f.label}</div>
+        <div class="text-xs font-semibold text-slate-800 dark:text-slate-200 break-words">${formattedVal}</div>
+      `;
+      fieldsContainer.appendChild(fieldCard);
+    });
+
+    loading.classList.add('hidden');
+    fieldsContainer.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  } catch (err) {
+    loading.innerHTML = `<div class="text-rose-500 text-xs font-semibold">${err.message || 'Error loading details'}</div>`;
+  }
+}
+
+function closeDynamicViewModal() {
+  const modal = document.getElementById('modal-dynamic-view');
+  if (modal) modal.classList.add('hidden');
+}
+
+function switchToEditFromView() {
+  const { entity, id } = currentActionTarget;
+  closeDynamicViewModal();
+  if (entity && id) {
+    openDynamicEditModal(entity, id);
+  }
+}
+
+// Global dismiss listeners for floating action menu
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('floating-row-action-menu');
+  if (menu && !menu.classList.contains('hidden')) {
+    if (!menu.contains(e.target) && (!currentActionTarget.triggerBtn || !currentActionTarget.triggerBtn.contains(e.target))) {
+      closeRowActionMenu();
+    }
+  }
+});
+
+window.addEventListener('scroll', () => {
+  closeRowActionMenu();
+}, { passive: true });
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeRowActionMenu();
+    closeDynamicViewModal();
+    dismissUnsavedModal();
+  }
+});
+
+/* ==========================================================================
+   🛡️ UNSAVED CHANGES GUARD & DIRTY FORM CONTROLLER
+   ========================================================================== */
+let isFormDirty = false;
+let pendingNavigationUrl = null;
+
+function initDirtyFormGuard() {
+  // Find any active record forms
+  const forms = document.querySelectorAll('form:not([data-no-dirty-guard])');
+  forms.forEach(form => {
+    if (form.querySelector('input:not([type="hidden"]), select, textarea')) {
+      form.addEventListener('input', (e) => {
+        if (!e.target.closest('#header-search-container')) {
+          isFormDirty = true;
+        }
+      });
+      form.addEventListener('change', (e) => {
+        if (!e.target.closest('#header-search-container')) {
+          isFormDirty = true;
+        }
+      });
+      form.addEventListener('submit', () => {
+        isFormDirty = false;
+      });
+    }
+  });
+
+  // Intercept all Back buttons (.btn-action-back)
+  document.addEventListener('click', (e) => {
+    const backBtn = e.target.closest('.btn-action-back');
+    if (backBtn && isFormDirty) {
+      e.preventDefault();
+      e.stopPropagation();
+      pendingNavigationUrl = backBtn.getAttribute('href');
+      showUnsavedModal();
+    }
+  });
+
+  // Native browser navigation protection
+  window.addEventListener('beforeunload', (e) => {
+    if (isFormDirty) {
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
+    }
+  });
+}
+
+function showUnsavedModal() {
+  const modal = document.getElementById('modal-unsaved-changes');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+function dismissUnsavedModal() {
+  const modal = document.getElementById('modal-unsaved-changes');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+  pendingNavigationUrl = null;
+}
+
+function confirmDiscardNavigation() {
+  isFormDirty = false;
+  dismissUnsavedModal();
+  if (pendingNavigationUrl) {
+    window.location.href = pendingNavigationUrl;
+  } else {
+    window.history.back();
+  }
+}
+
+/* ==========================================================================
+   🖱️ SMART TABLE ROW NAVIGATION (SINGLE-CLICK ID & DOUBLE-CLICK ROW)
+   ========================================================================== */
+function initSmartTableRowNavigation() {
+  // 1. Delegated Double-Click on table row with [data-view-url], [data-edit-url], or [data-entity]
+  document.addEventListener('dblclick', (e) => {
+    // Shield interactive elements (buttons, links, inputs, selects, action menus)
+    if (e.target.closest('button, a, input, select, textarea, .table-action-menu, #floating-row-action-menu, .table-filter-popover, .smart-table-col-menu, .view-size-popover')) {
+      return;
+    }
+
+    // Shield accidental double-click during text selection (e.g. copying text from a cell)
+    const selectedText = window.getSelection() ? window.getSelection().toString().trim() : '';
+    if (selectedText.length > 0) {
+      return;
+    }
+
+    // Locate enclosing row with data-view-url, data-edit-url, or data-entity
+    const row = e.target.closest('tr[data-view-url], tr[data-edit-url], tr[data-entity]');
+    if (!row) return;
+
+    let targetUrl = row.getAttribute('data-view-url');
+    if (!targetUrl || targetUrl === '#' || targetUrl === 'null') {
+      const editUrl = row.getAttribute('data-edit-url');
+      if (editUrl) {
+        targetUrl = editUrl.endsWith('/edit') ? editUrl.replace(/\/edit$/, '/view') : `${editUrl}?mode=view`;
+      }
+    }
+
+    if (targetUrl && targetUrl !== '#' && targetUrl !== 'null') {
+      window.location.href = targetUrl;
+    } else {
+      const entity = row.getAttribute('data-entity');
+      const id = row.getAttribute('data-id');
+      const title = row.getAttribute('data-title') || '';
+      if (entity && id && typeof openDynamicViewModal === 'function') {
+        openDynamicViewModal(entity, id, title);
+      }
+    }
+  });
+
+  // 2. Delegated Enter Key on table row when focused
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.matches('tr[data-view-url]') || activeEl.matches('tr[data-edit-url]') || activeEl.matches('tr[data-entity]'))) {
+        // If an inner element has focus (like a button, input, or link), let it handle its own Enter
+        if (e.target.closest('button, a, input, select, textarea')) return;
+        let targetUrl = activeEl.getAttribute('data-view-url');
+        if (!targetUrl || targetUrl === '#' || targetUrl === 'null') {
+          const editUrl = activeEl.getAttribute('data-edit-url');
+          if (editUrl) {
+            targetUrl = editUrl.endsWith('/edit') ? editUrl.replace(/\/edit$/, '/view') : `${editUrl}?mode=view`;
+          }
+        }
+        if (targetUrl && targetUrl !== '#' && targetUrl !== 'null') {
+          window.location.href = targetUrl;
+        } else {
+          const entity = activeEl.getAttribute('data-entity');
+          const id = activeEl.getAttribute('data-id');
+          const title = activeEl.getAttribute('data-title') || '';
+          if (entity && id && typeof openDynamicViewModal === 'function') {
+            openDynamicViewModal(entity, id, title);
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ==========================================================================
+   🚨 UNIVERSAL FORM FIELD VALIDATION & REAL-TIME DUPLICATE DETECTION ENGINE
+   ========================================================================== */
+function initUniversalFormValidation() {
+  // 1. Locate all active data forms across the application
+  const forms = document.querySelectorAll('form:not([data-no-validate]):not(#header-search-container form)');
+  
+  forms.forEach(form => {
+    // Disable native browser validation popups so our smooth shake alerts take precedence
+    form.setAttribute('novalidate', 'true');
+
+    // Intercept form submit event
+    form.addEventListener('submit', (e) => {
+      const isValid = validatePyrixForm(form);
+      if (!isValid) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+    });
+
+    // Wire real-time duplicate checks on eligible inputs
+    setupDuplicateCheckers(form);
+  });
+
+  // 2. Intercept external submit buttons (e.g. <button type="submit" form="master-record-form">)
+  document.addEventListener('click', (e) => {
+    const submitBtn = e.target.closest('button[type="submit"][form]');
+    if (!submitBtn) return;
+
+    const targetFormId = submitBtn.getAttribute('form');
+    if (!targetFormId) return;
+
+    const targetForm = document.getElementById(targetFormId);
+    if (!targetForm) return;
+
+    const isValid = validatePyrixForm(targetForm);
+    if (!isValid) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      return false;
+    }
+  });
+}
+
+/**
+ * Validates all required fields and duplicate flags in the target form.
+ * Returns true if valid, false if any field fails.
+ */
+function validatePyrixForm(form) {
+  if (!form) return true;
+
+  // Find all visible and enabled required fields
+  const requiredFields = form.querySelectorAll(
+    'input[required]:not([type="hidden"]):not([disabled]), ' +
+    'select[required]:not([disabled]), ' +
+    'textarea[required]:not([disabled]), ' +
+    '[data-required="true"]:not([disabled])'
+  );
+
+  let hasError = false;
+  let firstInvalidField = null;
+
+  requiredFields.forEach(field => {
+    // Skip fields that are explicitly hidden or inside hidden containers
+    if (field.offsetParent === null && !field.classList.contains('always-validate')) {
+      return;
+    }
+
+    const val = field.value ? field.value.trim() : '';
+    const isBlank = (field.tagName === 'SELECT') ? (!val || val === '' || val === '__none__') : (val === '');
+
+    if (isBlank) {
+      hasError = true;
+      const labelText = getFieldLabel(field);
+      triggerFieldShake(field, `${labelText} is required and cannot be blank.`);
+      if (!firstInvalidField) firstInvalidField = field;
+    } else if (field.dataset.duplicateConflict === 'true') {
+      hasError = true;
+      const dupMsg = field.dataset.duplicateMessage || 'This value already exists in the database. Please provide a unique value.';
+      triggerFieldShake(field, dupMsg);
+      if (!firstInvalidField) firstInvalidField = field;
+    }
+  });
+
+  // Also check any non-required fields that have duplicate conflicts
+  const nonRequiredDuplicates = form.querySelectorAll('[data-duplicate-conflict="true"]');
+  nonRequiredDuplicates.forEach(field => {
+    hasError = true;
+    const dupMsg = field.dataset.duplicateMessage || 'This value already exists in the database.';
+    triggerFieldShake(field, dupMsg);
+    if (!firstInvalidField) firstInvalidField = field;
+  });
+
+  if (hasError && firstInvalidField) {
+    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    firstInvalidField.focus({ preventScroll: true });
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Triggers the animated shake alert, glowing red border, and inline error message.
+ */
+function triggerFieldShake(field, errorMsg) {
+  if (!field) return;
+
+  // Resolve enclosing wrapper for the shake animation
+  let wrapper = field.closest('.form-group, .space-y-1, .space-y-1\\.5, .space-y-2');
+  if (!wrapper) {
+    const relContainer = field.closest('.relative');
+    wrapper = relContainer ? relContainer.parentElement : field.parentElement;
+  }
+  if (!wrapper) wrapper = field;
+
+  // Apply red error glow
+  field.classList.remove('field-success-border');
+  field.classList.add('field-error-border');
+
+  // Trigger CSS shake animation with forced reflow
+  wrapper.classList.remove('animate-shake');
+  void wrapper.offsetWidth; // Force reflow
+  wrapper.classList.add('animate-shake');
+
+  // Insert or update inline error message element
+  let errEl = wrapper.querySelector('.field-error-msg');
+  if (!errEl) {
+    errEl = document.createElement('div');
+    errEl.className = 'field-error-msg';
+    errEl.innerHTML = `
+      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span class="field-error-text"></span>
+    `;
+    // Insert after input or after relative wrapper
+    const insertAfterEl = field.closest('.relative') || field;
+    if (insertAfterEl.nextSibling) {
+      insertAfterEl.parentNode.insertBefore(errEl, insertAfterEl.nextSibling);
+    } else {
+      insertAfterEl.parentNode.appendChild(errEl);
+    }
+  }
+
+  const textSpan = errEl.querySelector('.field-error-text') || errEl.querySelector('span');
+  if (textSpan && errorMsg) {
+    textSpan.textContent = errorMsg;
+  }
+  errEl.classList.remove('hidden');
+
+  // Clean up animation class after completion
+  setTimeout(() => {
+    wrapper.classList.remove('animate-shake');
+  }, 500);
+
+  // Real-time listener: clear error as soon as user enters valid data
+  function clearOnInput() {
+    const currentVal = field.value ? field.value.trim() : '';
+    if (currentVal !== '' && field.dataset.duplicateConflict !== 'true') {
+      field.classList.remove('field-error-border');
+      if (errEl) errEl.classList.add('hidden');
+      field.removeEventListener('input', clearOnInput);
+      field.removeEventListener('change', clearOnInput);
+    }
+  }
+
+  field.addEventListener('input', clearOnInput);
+  field.addEventListener('change', clearOnInput);
+}
+
+/**
+ * Extracts a human-friendly label for an input field.
+ */
+function getFieldLabel(field) {
+  // 1. Check data-label
+  if (field.dataset.label) return field.dataset.label;
+
+  // 2. Check preceding or enclosing label
+  const wrapper = field.closest('div');
+  if (wrapper) {
+    const labelEl = wrapper.querySelector('label');
+    if (labelEl) {
+      const clone = labelEl.cloneNode(true);
+      // Remove asterisk span
+      clone.querySelectorAll('span').forEach(s => s.remove());
+      const txt = clone.textContent.trim();
+      if (txt) return txt;
+    }
+  }
+
+  // 3. Fallback to placeholder or name
+  if (field.placeholder && !field.placeholder.startsWith('e.g.')) {
+    return field.placeholder.replace('...', '').trim();
+  }
+  if (field.name) {
+    return field.name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  return 'This field';
+}
+
+/**
+ * Attaches real-time duplicate checking to identifier fields in a form.
+ */
+function setupDuplicateCheckers(form) {
+  // Auto-detect entity from form action or data attribute
+  let entity = form.dataset.uniqueEntity;
+  if (!entity && form.action) {
+    if (form.action.includes('/master/gl-accounts')) entity = 'gl-accounts';
+    else if (form.action.includes('/categories')) entity = 'gl-categories';
+    else if (form.action.includes('/segments')) entity = 'gl-segments';
+    else if (form.action.includes('/master/departments')) entity = 'departments';
+    else if (form.action.includes('/master/cost-centres')) entity = 'cost-centres';
+    else if (form.action.includes('/master/cb-bank-accounts')) entity = 'cb-bank-accounts';
+    else if (form.action.includes('/master/customers')) entity = 'customers';
+    else if (form.action.includes('/master/vendors')) entity = 'vendors';
+  }
+
+  // Find candidate fields for duplicate validation
+  const candidateInputs = form.querySelectorAll(
+    '[data-unique-entity], ' +
+    'input[name="account_name"], input[name="category_code"], input[name="category_name"], ' +
+    'input[name="segment_code"], input[name="segment_name"], input[name="dept_name"], input[name="dept_code"], ' +
+    'input[name="cost_centre_name"], input[name="cost_centre_code"], input[name="customer_name"], input[name="vendor_name"]'
+  );
+
+  candidateInputs.forEach(input => {
+    const targetEntity = input.dataset.uniqueEntity || entity;
+    const targetField = input.dataset.uniqueField || input.name;
+    if (!targetEntity || !targetField) return;
+
+    // Extract exclude_id if editing existing record
+    let excludeId = form.dataset.recordId || null;
+    if (!excludeId && form.action) {
+      const match = form.action.match(/\/(?:master\/[^\/]+|categories|segments)\/([^\/]+)\/edit/);
+      if (match) excludeId = match[1];
+    }
+
+    let debounceTimer = null;
+
+    function executeCheck() {
+      const val = input.value ? input.value.trim() : '';
+      if (!val) {
+        delete input.dataset.duplicateConflict;
+        delete input.dataset.duplicateMessage;
+        input.classList.remove('field-error-border');
+        input.classList.remove('field-success-border');
+        const err = input.closest('div')?.querySelector('.field-error-msg');
+        if (err) err.classList.add('hidden');
+        return;
+      }
+
+      let url = `/api/validation/check-unique?entity=${encodeURIComponent(targetEntity)}&field=${encodeURIComponent(targetField)}&value=${encodeURIComponent(val)}`;
+      if (excludeId) {
+        url += `&exclude_id=${encodeURIComponent(excludeId)}`;
+      }
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          if (!data) return;
+          if (data.is_unique === false) {
+            input.dataset.duplicateConflict = 'true';
+            input.dataset.duplicateMessage = data.message;
+            triggerFieldShake(input, data.message);
+          } else {
+            delete input.dataset.duplicateConflict;
+            delete input.dataset.duplicateMessage;
+            input.classList.remove('field-error-border');
+            input.classList.add('field-success-border');
+            const err = input.closest('div')?.querySelector('.field-error-msg');
+            if (err) err.classList.add('hidden');
+          }
+        })
+        .catch(() => {});
+    }
+
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(executeCheck, 400);
+    });
+
+    input.addEventListener('blur', () => {
+      clearTimeout(debounceTimer);
+      executeCheck();
+    });
+  });
+}
+
+
+

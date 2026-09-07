@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-GL - {% if is_edit %}Edit Operating Segment{% else %}New Operating Segment{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl">
+
+  <!-- Minimalist Header Banner with Far-Left Back Button & Focused Action -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="{% if is_edit %}/modules/general-ledger/segments/{{ segment.id }}/view{% else %}/modules/general-ledger?tab=categories{% endif %}" 
+        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="Back"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
+      <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+        <i data-lucide="{% if is_edit %}edit-3{% else %}plus-circle{% endif %}" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Clean Title (No redundant subtitles) -->
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-white tracking-tight truncate">
+          {% if is_edit %}Edit Operating Segment{% else %}New Operating Segment{% endif %}
+        </h2>
+      </div>
+    </div>
+
+    <!-- Top Right Action -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button 
+        type="submit" 
+        form="form-segment"
+        class="h-9 px-4 rounded-xl flex items-center gap-1.5 font-semibold text-xs transition-all duration-200 bg-cyan-600 hover:bg-cyan-500 text-white border border-cyan-400/30 shadow-sm shadow-cyan-500/20 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+        title="Save Record"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+        <span>{% if is_edit %}Update Segment{% else %}Save Segment{% endif %}</span>
+      </button>
+    </div>
+  </div>
+
+  {% if request.query_params.get('error') %}
+  <div class="glass-card rounded-2xl p-4 border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs flex items-center justify-between gap-3 animate-shake">
+    <div class="flex items-center gap-2.5">
+      <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
+      <span class="font-medium">{{ request.query_params.get('error') }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Solid Form Container -->
+  <form id="form-segment" data-unique-entity="gl-segments" {% if is_edit %}data-record-id="{{ segment.id }}"{% endif %} action="{% if is_edit %}/modules/general-ledger/segments/{{ segment.id }}/edit{% else %}/modules/general-ledger/segments/new{% endif %}" method="POST" class="space-y-4">
+    <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
+        <!-- Segment Code -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Segment Code <span class="text-blue-400">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="segment_code" 
+            required 
+            data-unique-entity="gl-segments"
+            data-unique-field="segment_code"
+            {% if is_edit %}readonly value="{{ segment.segment_code }}" class="mac-input w-full font-mono font-bold text-cyan-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
+            {% else %}value="{{ segment_code|default('') }}" placeholder="e.g. SEG-NAM-01" class="mac-input w-full font-mono font-bold uppercase" autofocus{% endif %}
+          >
+          <span class="text-[10px] text-slate-400 mt-1 block">Operating unit or reporting segment code</span>
+        </div>
+
+        <!-- Segment Type -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Segment Reporting Type <span class="text-blue-400">*</span>
+          </label>
+          <select name="segment_type" required class="mac-input w-full font-medium">
+            <option value="Geographic Segment" {% if is_edit and segment.segment_type == 'Geographic Segment' %}selected{% endif %}>Geographic Segment</option>
+            <option value="Business Unit" {% if is_edit and segment.segment_type == 'Business Unit' %}selected{% endif %}>Business Unit</option>
+            <option value="Product Line" {% if is_edit and segment.segment_type == 'Product Line' %}selected{% endif %}>Product Line</option>
+            <option value="Corporate / Shared" {% if is_edit and segment.segment_type == 'Corporate / Shared' %}selected{% endif %}>Corporate / Shared</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Segment Name -->
+      <div class="text-xs">
+        <label class="block text-slate-300 font-medium mb-1.5">
+          Segment Name <span class="text-blue-400">*</span>
+        </label>
+        <input 
+          type="text" 
+          name="segment_name" 
+          required 
+          data-unique-entity="gl-segments"
+          data-unique-field="segment_name"
+          value="{% if is_edit %}{{ segment.segment_name }}{% endif %}"
+          placeholder="e.g. North America Enterprise Systems" 
+          class="mac-input w-full font-medium"
+        >
+      </div>
+
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 text-xs">
+        <!-- Head of Segment -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Executive / Head of Segment
+          </label>
+          <input 
+            type="text" 
+            name="head_of_segment" 
+            value="{% if is_edit %}{{ segment.head_of_segment|default('') }}{% endif %}"
+            placeholder="e.g. VP Financial Operations" 
+            class="mac-input w-full"
+          >
+        </div>
+
+        <!-- Target Margin % -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Target Margin (%)
+          </label>
+          <input 
+            type="number" 
+            step="0.1" 
+            name="target_margin_pct" 
+            value="{% if is_edit %}{{ segment.target_margin_pct }}{% else %}25.0{% endif %}" 
+            class="mac-input w-full font-mono"
+          >
+        </div>
+
+        <!-- Revenue Weight % -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Revenue Weight (%)
+          </label>
+          <input 
+            type="number" 
+            step="0.1" 
+            name="revenue_weight_pct" 
+            value="{% if is_edit %}{{ segment.revenue_weight_pct }}{% else %}10.0{% endif %}" 
+            class="mac-input w-full font-mono"
+          >
+        </div>
+      </div>
+
+      {% if is_edit %}
+      <div class="pt-2 border-t border-white/5">
+        <label class="inline-flex items-center gap-2 cursor-pointer text-xs">
+          <input 
+            type="checkbox" 
+            name="is_active" 
+            value="1" 
+            {% if segment.is_active %}checked{% endif %}
+            class="rounded border-slate-700 text-cyan-600 focus:ring-cyan-500 w-4 h-4 cursor-pointer"
+          >
+          <span class="text-slate-300 font-medium">Segment is Active for Financial Reporting</span>
+        </label>
+      </div>
+      {% endif %}
+
+      <!-- Bottom Action Buttons -->
+      <div class="pt-4 border-t border-white/5 flex items-center justify-end gap-3 text-xs">
+        <a 
+          href="{% if is_edit %}/modules/general-ledger/segments/{{ segment.id }}/view{% else %}/modules/general-ledger?tab=categories{% endif %}" 
+          class="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-medium"
+        >
+          Cancel
+        </a>
+        <button 
+          type="submit" 
+          class="mac-btn-primary px-5 py-2 rounded-xl font-semibold shadow-sm cursor-pointer"
+        >
+          {% if is_edit %}Update Segment{% else %}Create Segment{% endif %}
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}

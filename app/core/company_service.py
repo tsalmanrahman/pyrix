@@ -11,6 +11,18 @@ COMPANY_EMOJI_MAP = {
     "PRIME": "🛍️",
 }
 
+CURRENCY_MAP = {
+    "BDT": {"symbol": "৳", "name": "Bangladeshi Taka", "decimals": 2},
+    "GBP": {"symbol": "£", "name": "British Pound", "decimals": 2},
+    "USD": {"symbol": "$", "name": "US Dollar", "decimals": 2},
+    "EUR": {"symbol": "€", "name": "Euro", "decimals": 2},
+    "JPY": {"symbol": "¥", "name": "Japanese Yen", "decimals": 0},
+    "AED": {"symbol": "AED", "name": "UAE Dirham", "decimals": 2},
+    "AUD": {"symbol": "A$", "name": "Australian Dollar", "decimals": 2},
+    "CAD": {"symbol": "C$", "name": "Canadian Dollar", "decimals": 2},
+    "SGD": {"symbol": "S$", "name": "Singapore Dollar", "decimals": 2},
+}
+
 class CompanyService:
     COOKIE_NAME = "pyrix_active_company_id"
 
@@ -20,6 +32,15 @@ class CompanyService:
             return None
         code = comp.get("short_code", "")
         comp["logo_emoji"] = COMPANY_EMOJI_MAP.get(code, "🏢")
+        
+        # Dynamic Per-Company Currency Resolution
+        curr_code = comp.get("currency") or "BDT"
+        curr_info = CURRENCY_MAP.get(curr_code, {"symbol": curr_code, "name": curr_code, "decimals": 2})
+        comp["currency"] = curr_code
+        comp["currency_code"] = curr_code
+        comp["currency_symbol"] = curr_info["symbol"]
+        comp["currency_name"] = curr_info["name"]
+        comp["decimal_places"] = curr_info.get("decimals", 2)
         return comp
 
     @staticmethod
@@ -67,7 +88,7 @@ class CompanyService:
         except Exception:
             company = None
         if not company:
-            return {
+            return CompanyService._enrich({
                 "id": "00000000-0000-0000-0000-000000000000",
                 "code": 101,
                 "name": "Apex Precision Manufacturing Group Ltd",
@@ -75,12 +96,12 @@ class CompanyService:
                 "logo_emoji": "🏭",
                 "industry": "Precision Heavy Manufacturing",
                 "tagline": "Industrial Automation & SMT Microelectronics",
-                "currency": "USD",
+                "currency": "BDT",
                 "fiscal_year": "FY 2026-2027",
                 "headquarters": "Plant Delta 01 - Industrial Park",
                 "logo_icon": "factory",
                 "accent_color": "#2563EB"
-            }
+            })
         return CompanyService._enrich(company)
 
     @staticmethod

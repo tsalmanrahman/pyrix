@@ -1,63 +1,113 @@
 {% extends "base.html" %}
 
-{% block title %}{{ active_company.short_code }}-GL - {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}{% endblock %}
+{% block title %}{{ active_company.short_code }}-GL - {% if is_view_mode %}View {{ entity_title }}{% elif is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="space-y-6 max-w-4xl">
 
-  <!-- Minimalist Header Banner with Sleek Icon Back Button -->
+  <!-- Minimalist Header Banner with Far-Left Back Button & Focused Right Action -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <i data-lucide="{% if is_edit_mode %}edit-3{% else %}database{% endif %}" class="w-6 h-6 text-blue-400 shrink-0"></i>
-      <h2 class="text-lg font-bold text-white tracking-tight">
-        {% if is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
-      </h2>
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="/modules/general-ledger?tab={{ sub_tab|default('overview') }}" 
+        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="Back to List"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
+      <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+        <i data-lucide="{% if is_view_mode %}eye{% elif is_edit_mode %}edit-3{% else %}database{% endif %}" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Title & Scope -->
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-white tracking-tight truncate">
+          {% if is_view_mode %}View {{ entity_title }}{% elif is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
+        </h2>
+      </div>
     </div>
 
-    <!-- Sleek Tinted Icon Back Button (Indigo Glass) -->
-    <a 
-      href="/modules/general-ledger?tab={{ sub_tab|default('overview') }}" 
-      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
-      title="Back to List"
-    >
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-    </a>
+    <!-- Right Side: Exactly ONE Focused Action (Zero Delete Danger on Edit page) -->
+    <div class="flex items-center gap-2 shrink-0">
+      {% if is_view_mode and edit_url %}
+      <a 
+        href="{{ edit_url }}" 
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-500/10 hover:bg-blue-600 text-blue-600 hover:text-white dark:bg-blue-500/20 dark:hover:bg-blue-600 dark:text-blue-400 dark:hover:text-white border border-blue-500/20 shadow-sm hover:scale-105 active:scale-95 shrink-0"
+        title="Edit Record"
+      >
+        <i data-lucide="edit-3" class="w-4 h-4"></i>
+      </a>
+      {% elif is_edit_mode %}
+      <button 
+        type="submit" 
+        form="master-record-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Update Record"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% elif not is_view_mode %}
+      <button 
+        type="submit" 
+        form="master-record-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Save Record"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+      {% endif %}
+    </div>
   </div>
 
+  {% if request.query_params.get('error') %}
+  <div class="glass-card rounded-2xl p-4 border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs flex items-center justify-between gap-3 animate-shake">
+    <div class="flex items-center gap-2.5">
+      <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
+      <span class="font-medium">{{ request.query_params.get('error') }}</span>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Solid Form Container -->
-  <form action="{% if is_edit_mode %}/modules/general-ledger/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/general-ledger/master/{{ entity }}/new{% endif %}" method="POST" class="space-y-4">
+  <form id="master-record-form" data-unique-entity="gl-accounts" {% if record_id %}data-record-id="{{ record_id }}"{% elif record %}data-record-id="{{ record.id }}"{% endif %} action="{% if is_edit_mode %}/modules/general-ledger/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/general-ledger/master/{{ entity }}/new{% endif %}" method="POST" class="space-y-4">
+    <fieldset {% if is_view_mode %}disabled class="opacity-90 cursor-default space-y-4"{% else %}class="space-y-4"{% endif %}>
 
     <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
-      <h3 class="text-xs font-bold text-white tracking-tight flex items-center gap-2">
-        <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
-        <span>Master Record Parameters</span>
-      </h3>
-
       <!-- 1. GL Account (Chart of Accounts) -->
       {% if entity == 'gl-accounts' %}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Account Number / Code <span class="text-blue-400">*</span></label>
+            <label class="block text-slate-300 font-medium mb-1">Account Number</label>
             <input 
               type="text" 
               name="account_number" 
-              required 
-              value="{{ record.account_number if record else '' }}" 
-              class="mac-input w-full font-mono font-semibold text-blue-400" 
-              placeholder="e.g. 1040-00, 5020-00"
+              readonly 
+              value="{{ record.account_number }}" 
+              class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
             >
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
             <label class="block text-slate-300 font-medium mb-1">Account Name <span class="text-blue-400">*</span></label>
             <input 
               type="text" 
               name="account_name" 
               required 
+              data-unique-entity="gl-accounts"
+              data-unique-field="account_name"
               value="{{ record.account_name if record else '' }}" 
               class="mac-input w-full" 
               placeholder="e.g. Prepaid Insurance, Freight & Logistics Expense"
             >
           </div>
+
           <div>
             <label class="block text-slate-300 font-medium mb-1">Account Type <span class="text-blue-400">*</span></label>
             <select name="account_type" class="mac-input w-full bg-slate-900 font-medium" required>
@@ -136,17 +186,18 @@
               {% endfor %}
             </select>
           </div>
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Sub Account Code <span class="text-blue-400">*</span></label>
+            <label class="block text-slate-300 font-medium mb-1">Sub Account Code</label>
             <input 
               type="text" 
               name="sub_account_code" 
-              required 
-              value="{{ record.sub_account_code if record else '' }}" 
-              class="mac-input w-full font-mono font-semibold text-blue-400" 
-              placeholder="e.g. SUB-PLANT-01, SUB-EXPORT"
+              readonly 
+              value="{{ record.sub_account_code }}" 
+              class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
             >
           </div>
+          {% endif %}
           <div>
             <label class="block text-slate-300 font-medium mb-1">Sub Account Name <span class="text-blue-400">*</span></label>
             <input 
@@ -158,7 +209,7 @@
               placeholder="e.g. CNC Line 02 Special Tooling"
             >
           </div>
-          <div>
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
             <label class="block text-slate-300 font-medium mb-1">Sub Account Dimension Type</label>
             <select name="sub_account_type" class="mac-input w-full bg-slate-900 font-medium">
               <option value="DEPARTMENTAL" {% if record and record.sub_account_type == 'DEPARTMENTAL' %}selected{% endif %}>DEPARTMENTAL</option>
@@ -172,23 +223,26 @@
       <!-- 4. Departments -->
       {% elif entity == 'departments' %}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Department Code <span class="text-blue-400">*</span></label>
+            <label class="block text-slate-300 font-medium mb-1">Department Code</label>
             <input 
               type="text" 
               name="dept_code" 
-              required 
-              value="{{ record.dept_code if record else '' }}" 
-              class="mac-input w-full font-mono font-semibold text-blue-400" 
-              placeholder="e.g. DEP-QMS, DEP-RND"
+              readonly 
+              value="{{ record.dept_code }}" 
+              class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
             >
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
             <label class="block text-slate-300 font-medium mb-1">Department Name <span class="text-blue-400">*</span></label>
             <input 
               type="text" 
               name="dept_name" 
               required 
+              data-unique-entity="departments"
+              data-unique-field="dept_name"
               value="{{ record.dept_name if record else '' }}" 
               class="mac-input w-full" 
               placeholder="e.g. Quality Assurance & Metrology"
@@ -209,28 +263,32 @@
       <!-- 5. Cost Centres -->
       {% elif entity == 'cost-centres' %}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Cost Centre Code <span class="text-blue-400">*</span></label>
+            <label class="block text-slate-300 font-medium mb-1">Cost Centre Code</label>
             <input 
               type="text" 
               name="cost_centre_code" 
-              required 
-              value="{{ record.cost_centre_code if record else '' }}" 
-              class="mac-input w-full font-mono font-semibold text-blue-400" 
-              placeholder="e.g. CC-APX-301"
+              readonly 
+              value="{{ record.cost_centre_code }}" 
+              class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
             >
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
             <label class="block text-slate-300 font-medium mb-1">Cost Centre Name <span class="text-blue-400">*</span></label>
             <input 
               type="text" 
               name="cost_centre_name" 
               required 
+              data-unique-entity="cost-centres"
+              data-unique-field="name"
               value="{{ record.cost_centre_name if record else '' }}" 
               class="mac-input w-full" 
               placeholder="e.g. SMT Line Automated Optical Inspection"
             >
           </div>
+
           <div>
             <label class="block text-slate-300 font-medium mb-1">Parent Department</label>
             <select name="department_id" class="mac-input w-full bg-slate-900 font-medium">
@@ -253,17 +311,19 @@
       <!-- 6. Budget Sets -->
       {% elif entity == 'budget-sets' %}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          {% if is_edit_mode or is_view_mode or record %}
           <div>
-            <label class="block text-slate-400 font-medium mb-1">Budget Code (Auto-ID)</label>
+            <label class="block text-slate-300 font-medium mb-1">Budget Code</label>
             <input 
               type="text" 
               name="budget_code" 
               readonly 
-              class="mac-input w-full font-mono font-semibold text-blue-500" 
-              value="{{ record.budget_code if record else 'BUD-' ~ active_company.short_code ~ '-' ~ range(100, 999)|random }}"
+              class="mac-input w-full font-mono font-bold text-blue-500 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
+              value="{{ record.budget_code }}"
             >
           </div>
-          <div>
+          {% endif %}
+          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
             <label class="block text-slate-300 font-medium mb-1">Budget Title / Description <span class="text-blue-400">*</span></label>
             <input 
               type="text" 
@@ -333,25 +393,7 @@
       {% endif %}
 
     </div>
-
-    <!-- Submission Action Bar -->
-    <div class="flex items-center justify-end gap-2.5 pt-1">
-      {% if is_edit_mode %}
-      <button 
-        type="button" 
-        onclick="confirmDynamicDelete('{{ entity }}', '{{ record_id }}', '{{ entity_title }}')" 
-        class="h-9 px-4 rounded-xl text-xs font-semibold bg-rose-600/10 hover:bg-rose-600/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1.5 transition cursor-pointer"
-      >
-        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-        <span>Delete Record</span>
-      </button>
-      {% endif %}
-      <button type="submit" class="h-9 px-5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm">
-        <i data-lucide="check" class="w-3.5 h-3.5"></i>
-        <span>{% if is_edit_mode %}Update Record{% else %}Save Record{% endif %}</span>
-      </button>
-    </div>
-
+    </fieldset>
   </form>
 
 </div>

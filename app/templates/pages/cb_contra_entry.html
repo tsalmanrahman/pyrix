@@ -5,34 +5,50 @@
 {% block content %}
 <div class="space-y-6 max-w-4xl">
 
-  <!-- Header Banner -->
+  <!-- Minimalist Header Banner with Far-Left Back Button & Focused Right Action -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <i data-lucide="arrow-left-right" class="w-6 h-6 text-blue-400 shrink-0"></i>
-      <div>
-        <h2 class="text-lg font-bold text-white tracking-tight">Inter Bank-Cash Contra Transfer Studio</h2>
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="/modules/cash-book?tab=transfers" 
+        class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="Back to Contra Transfers"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:border-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
+      <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+        <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Title & Scope -->
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-white tracking-tight truncate">Inter Bank-Cash Contra Transfer Studio</h2>
+        <p class="text-[11px] text-slate-400 truncate">Transfer funds between corporate bank accounts and cash vaults</p>
       </div>
     </div>
 
-    <!-- Sleek Back Button -->
-    <a 
-      href="/modules/cash-book?tab=transfers" 
-      class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0"
-      title="Back to Contra Transfers"
-    >
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-    </a>
+    <!-- Right Side: Exactly ONE Focused Action -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button 
+        type="submit" 
+        form="contra-form"
+        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        title="Post Contra Transfer"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+    </div>
   </div>
 
   <!-- Form Container -->
-  <form action="/modules/cash-book/transfers/new" method="POST" class="space-y-5">
+  <form id="contra-form" action="/modules/cash-book/transfers/new" method="POST" class="space-y-5">
     
     <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-4">
-      <h3 class="text-xs font-bold text-white tracking-tight flex items-center gap-2">
-        <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
-        <span>Transfer Routing & Direction</span>
-      </h3>
-
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
         
         <!-- Operating Company -->
@@ -142,14 +158,6 @@
         <textarea name="narration" rows="2" placeholder="e.g. Daily cash collection deposit into primary treasury account" class="mac-input w-full"></textarea>
       </div>
 
-    </div>
-
-    <!-- Actions -->
-    <div class="flex items-center justify-end pt-2">
-      <button type="submit" class="h-10 px-6 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 transition cursor-pointer shadow-lg shadow-blue-600/20">
-        <i data-lucide="check" class="w-4 h-4"></i>
-        <span>Post Contra Transfer</span>
-      </button>
     </div>
 
   </form>

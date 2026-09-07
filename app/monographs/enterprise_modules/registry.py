@@ -38,7 +38,7 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
                     {"title": "GL Sub Accounts", "subtitle": "Sub-ledgers & party dimensions", "badge": str(counts.get("gl_subaccount_count", 4)), "url": "/modules/general-ledger?tab=subaccounts", "icon": "folder-tree", "color": "emerald"},
                     {"title": "Departments", "subtitle": "Corporate & plant cost divisions", "badge": str(counts.get("gl_dept_count", 4)), "url": "/modules/general-ledger?tab=departments", "icon": "users", "color": "purple"},
                     {"title": "Cost Centres", "subtitle": "Operating units & cost pools", "badge": str(counts.get("gl_costcentre_count", 1)), "url": "/modules/general-ledger?tab=costcentres", "icon": "target", "color": "teal"},
-                    {"title": "Categories & Segments", "subtitle": "Statutory groupings & reporting tags", "badge": "5", "url": "/modules/general-ledger?tab=categories", "icon": "tags", "color": "amber"},
+                    {"title": "Categories & Segments", "subtitle": "Statutory groupings & reporting tags", "badge": str(counts.get("gl_category_count", 7)), "url": "/modules/general-ledger?tab=categories", "icon": "tags", "color": "amber"},
                 ]
             },
             {
@@ -823,9 +823,10 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
                 "subtitle": "Multi-Entity Companies, Business Units, Cost Centers, Geo Locales, Multi-Currency Board & Printers",
                 "icon": "globe",
                 "theme_color": "blue",
-                "count_label": "6 Setup Areas",
+                "count_label": "7 Setup Areas",
                 "cards": [
                     {"title": "Company Profile & Multi-Entity Setup", "subtitle": "Subsidiaries, legal entity, registration & tax ID", "badge": "Companies", "url": "/modules/system-admin?tab=admin-companies", "icon": "building-2", "color": "blue"},
+                    {"title": "Document Numbering & Prefix Setup", "subtitle": "Automated code generation, series prefixes, zero-padding & format rules", "badge": "Prefixes & Codes", "url": "/modules/system-admin?tab=admin-sequences", "icon": "hash", "color": "blue"},
                     {"title": "Business Units & Cost Centers", "subtitle": "Divisional hierarchy, operating branches & profit centers", "badge": "Units & CC", "url": "/modules/system-admin?tab=admin-units", "icon": "network", "color": "indigo"},
                     {"title": "Countries, States & Locales", "subtitle": "ISO geographic directory, currency codes & locale formats", "badge": "Geo Locales", "url": "/modules/system-admin?tab=admin-geo", "icon": "map-pin", "color": "cyan"},
                     {"title": "Multi-Currency & Daily Rates", "subtitle": "ISO currency profiles & real-time exchange rate table", "badge": "Currencies", "url": "/modules/system-admin?tab=admin-currencies", "icon": "coins", "color": "amber"},

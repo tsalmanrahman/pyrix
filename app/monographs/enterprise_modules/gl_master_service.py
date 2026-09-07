@@ -8,6 +8,18 @@ class GLMasterService:
     # 1. GL Accounts (Chart of Accounts)
     # =========================================================================
     @staticmethod
+    def is_account_name_unique(account_name: str, exclude_id: Optional[str] = None) -> tuple[bool, Optional[str]]:
+        sql = "SELECT id, account_number FROM gl_accounts WHERE LOWER(TRIM(account_name)) = LOWER(TRIM(?)) AND COALESCE(isDelete, 0) = 0"
+        params = [account_name]
+        if exclude_id:
+            sql += " AND id != ?"
+            params.append(exclude_id)
+        row = db.query_one(sql, tuple(params))
+        if row:
+            return False, row.get("account_number")
+        return True, None
+
+    @staticmethod
     def get_all_accounts() -> List[Dict[str, Any]]:
         return db.query("SELECT * FROM gl_accounts WHERE COALESCE(isDelete, 0) = 0 ORDER BY account_number ASC")
 
@@ -17,6 +29,10 @@ class GLMasterService:
 
     @staticmethod
     def create_account(account_number: str, account_name: str, account_type: str, financial_statement: str, normal_balance: str) -> None:
+        is_unique, existing_code = GLMasterService.is_account_name_unique(account_name)
+        if not is_unique:
+            raise ValueError(f"Account name '{account_name.strip()}' already exists (Code: {existing_code}).")
+
         db.execute(
             """
             INSERT INTO gl_accounts (account_number, account_name, account_type, financial_statement, normal_balance, is_active, isDelete)
@@ -27,6 +43,10 @@ class GLMasterService:
 
     @staticmethod
     def update_account(account_id: str, account_number: str, account_name: str, account_type: str, financial_statement: str, normal_balance: str) -> None:
+        is_unique, existing_code = GLMasterService.is_account_name_unique(account_name, exclude_id=account_id)
+        if not is_unique:
+            raise ValueError(f"Account name '{account_name.strip()}' already exists (Code: {existing_code}).")
+
         db.execute(
             """
             UPDATE gl_accounts 
@@ -35,6 +55,7 @@ class GLMasterService:
             """,
             (account_number.strip(), account_name.strip(), account_type.strip(), financial_statement.strip(), normal_balance.strip(), account_id)
         )
+
 
     # =========================================================================
     # 2. GL Company Mappings

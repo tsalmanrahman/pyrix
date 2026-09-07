@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-GL - {% if is_edit %}Edit Statutory Category{% else %}New Statutory Category{% endif %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl">
+
+  <!-- Minimalist Header Banner with Far-Left Back Button & Focused Action -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="{% if is_edit %}/modules/general-ledger/categories/{{ category.id }}/view{% else %}/modules/general-ledger?tab=categories{% endif %}" 
+        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        title="Back"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
+      <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+        <i data-lucide="{% if is_edit %}edit-3{% else %}plus-circle{% endif %}" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Clean Title (No redundant subtitles) -->
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-white tracking-tight truncate">
+          {% if is_edit %}Edit Statutory Category{% else %}New Statutory Category{% endif %}
+        </h2>
+      </div>
+    </div>
+
+    <!-- Top Right Action -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button 
+        type="submit" 
+        form="form-category"
+        class="h-9 px-4 rounded-xl flex items-center gap-1.5 font-semibold text-xs transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+        title="Save Record"
+      >
+        <i data-lucide="check" class="w-4 h-4"></i>
+        <span>{% if is_edit %}Update Category{% else %}Save Category{% endif %}</span>
+      </button>
+    </div>
+  </div>
+
+  {% if request.query_params.get('error') %}
+  <div class="glass-card rounded-2xl p-4 border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs flex items-center justify-between gap-3 animate-shake">
+    <div class="flex items-center gap-2.5">
+      <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
+      <span class="font-medium">{{ request.query_params.get('error') }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Solid Form Container -->
+  <form id="form-category" data-unique-entity="gl-categories" {% if is_edit %}data-record-id="{{ category.id }}"{% endif %} action="{% if is_edit %}/modules/general-ledger/categories/{{ category.id }}/edit{% else %}/modules/general-ledger/categories/new{% endif %}" method="POST" class="space-y-4">
+    <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
+        <!-- Category Code -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Category Code <span class="text-blue-400">*</span>
+          </label>
+          <input 
+            type="text" 
+            name="category_code" 
+            required 
+            data-unique-entity="gl-categories"
+            data-unique-field="category_code"
+            {% if is_edit %}readonly value="{{ category.category_code }}" class="mac-input w-full font-mono font-bold text-amber-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
+            {% else %}value="{{ category_code|default('') }}" placeholder="e.g. CAT-CA-08" class="mac-input w-full font-mono font-bold uppercase" autofocus{% endif %}
+          >
+          <span class="text-[10px] text-slate-400 mt-1 block">Standardized taxonomy identification code</span>
+        </div>
+
+        <!-- Statement Section -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Financial Statement Section <span class="text-blue-400">*</span>
+          </label>
+          <select name="statement_section" required class="mac-input w-full font-medium">
+            <option value="BALANCE_SHEET" {% if is_edit and category.statement_section == 'BALANCE_SHEET' %}selected{% endif %}>Balance Sheet</option>
+            <option value="INCOME_STATEMENT" {% if is_edit and category.statement_section == 'INCOME_STATEMENT' %}selected{% endif %}>Income Statement</option>
+          </select>
+          <span class="text-[10px] text-slate-400 mt-1 block">Primary statement taxonomy classification</span>
+        </div>
+      </div>
+
+      <!-- Category Name -->
+      <div class="text-xs">
+        <label class="block text-slate-300 font-medium mb-1.5">
+          Category Name <span class="text-blue-400">*</span>
+        </label>
+        <input 
+          type="text" 
+          name="category_name" 
+          required 
+          data-unique-entity="gl-categories"
+          data-unique-field="category_name"
+          value="{% if is_edit %}{{ category.category_name }}{% endif %}"
+          placeholder="e.g. Current Assets & Liquidity" 
+          class="mac-input w-full font-medium"
+        >
+      </div>
+
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
+        <!-- Classification Type -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Classification Nature <span class="text-blue-400">*</span>
+          </label>
+          <select name="classification_type" required class="mac-input w-full font-mono">
+            <option value="ASSET" {% if is_edit and category.classification_type == 'ASSET' %}selected{% endif %}>ASSET</option>
+            <option value="LIABILITY" {% if is_edit and category.classification_type == 'LIABILITY' %}selected{% endif %}>LIABILITY</option>
+            <option value="EQUITY" {% if is_edit and category.classification_type == 'EQUITY' %}selected{% endif %}>EQUITY</option>
+            <option value="REVENUE" {% if is_edit and category.classification_type == 'REVENUE' %}selected{% endif %}>REVENUE</option>
+            <option value="EXPENSE" {% if is_edit and category.classification_type == 'EXPENSE' %}selected{% endif %}>EXPENSE</option>
+          </select>
+        </div>
+
+        <!-- Reporting Sort Order -->
+        <div>
+          <label class="block text-slate-300 font-medium mb-1.5">
+            Reporting Sort Order
+          </label>
+          <input 
+            type="number" 
+            name="reporting_sort" 
+            value="{% if is_edit %}{{ category.reporting_sort }}{% else %}15{% endif %}" 
+            class="mac-input w-full font-mono"
+          >
+          <span class="text-[10px] text-slate-400 mt-1 block">Integer order for statutory report generation</span>
+        </div>
+      </div>
+
+      <!-- Description / Scope Notes -->
+      <div class="text-xs">
+        <label class="block text-slate-300 font-medium mb-1.5">
+          Description / Statutory Scope Notes
+        </label>
+        <textarea 
+          name="description" 
+          rows="3" 
+          placeholder="Scope notes, statutory accounting policies, and reporting guidelines..." 
+          class="mac-input w-full"
+        >{% if is_edit %}{{ category.description|default('') }}{% endif %}</textarea>
+      </div>
+
+      {% if is_edit %}
+      <div class="pt-2 border-t border-white/5">
+        <label class="inline-flex items-center gap-2 cursor-pointer text-xs">
+          <input 
+            type="checkbox" 
+            name="is_active" 
+            value="1" 
+            {% if category.is_active %}checked{% endif %}
+            class="rounded border-slate-700 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+          >
+          <span class="text-slate-300 font-medium">Category is Active for Account Mapping</span>
+        </label>
+      </div>
+      {% endif %}
+
+      <!-- Bottom Action Buttons -->
+      <div class="pt-4 border-t border-white/5 flex items-center justify-end gap-3 text-xs">
+        <a 
+          href="{% if is_edit %}/modules/general-ledger/categories/{{ category.id }}/view{% else %}/modules/general-ledger?tab=categories{% endif %}" 
+          class="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition font-medium"
+        >
+          Cancel
+        </a>
+        <button 
+          type="submit" 
+          class="mac-btn-primary px-5 py-2 rounded-xl font-semibold shadow-sm cursor-pointer"
+        >
+          {% if is_edit %}Update Category{% else %}Create Category{% endif %}
+        </button>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}
