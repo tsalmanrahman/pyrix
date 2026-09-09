@@ -703,9 +703,15 @@
                 </td>
               
                 <td class="py-3 px-3 text-right">
-                  <button type="button" onclick="openRowActionMenu(this, event, 'admin_user_profiles', '{{ u.id }}', '{{ u.name or u.title or u.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
-                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                  </button>
+                  <div class="inline-flex items-center justify-end gap-1.5">
+                    <a href="/modules/system-admin?tab=admin-user-authorisation&user_id={{ u.user_id or u.id }}" class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-lg border border-emerald-200 dark:border-emerald-500/20 transition-colors shadow-sm" title="Configure Granular Permissions">
+                      <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                      <span>Permissions</span>
+                    </a>
+                    <button type="button" onclick="openRowActionMenu(this, event, 'admin_user_profiles', '{{ u.id }}', '{{ u.name or u.title or u.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                    </button>
+                  </div>
                 </td></tr>
             {% endfor %}
           </tbody>
@@ -784,6 +790,592 @@
         </div>
       </div>
     </div>
+
+  <!-- 2.2b User Authorization & Granular Permissions Matrix -->
+  {% elif current_tab == 'admin-user-authorisation' %}
+    <div class="glass-card rounded-2xl p-5 space-y-5 border border-slate-200 dark:border-white/10" id="userAuthMatrixContainer">
+      <!-- Top Title & Global Controls -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-white/10">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
+                <span>User Authorization &amp; Granular Permissions Matrix</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50">Enterprise RBAC</span>
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Configure user-specific access entitlements, granular Modify / Create / Delete rights, and closed financial year permissions.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <span id="permSaveStatus" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 transition-all">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Saved to Database</span>
+          </span>
+          <button type="button" onclick="resetPermissionsForm()" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset</span>
+          </button>
+          <button type="button" onclick="saveUserPermissions()" id="btnSavePermissions" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl inline-flex items-center gap-1.5 shadow-sm transition shadow-emerald-600/20 cursor-pointer">
+            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+            <span>Save Permissions</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scoping & Controls Filter Bar -->
+      <div class="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          <!-- User Selector -->
+          <div class="md:col-span-4 space-y-1">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="user" class="w-3.5 h-3.5 text-blue-500"></i>
+              <span>Select Enterprise User</span>
+            </label>
+            <div class="relative">
+              <select id="permUserSelect" onchange="onUserOrScopeChange()" class="w-full text-xs font-semibold bg-white dark:bg-[#18181b] border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+                {% for u in admin_all_active_users %}
+                  <option value="{{ u.id }}" {% if u.id == admin_selected_user_id %}selected{% endif %}>
+                    {{ u.full_name }} ({{ u.role_summary or u.job_title or 'Operator' }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Company Scope Selector -->
+          <div class="md:col-span-4 space-y-1">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="building-2" class="w-3.5 h-3.5 text-purple-500"></i>
+              <span>Company Scope</span>
+            </label>
+            <select id="permCompanySelect" onchange="onUserOrScopeChange()" class="w-full text-xs font-semibold bg-white dark:bg-[#18181b] border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+              <option value="ALL" {% if admin_selected_perm_company_id == 'ALL' %}selected{% endif %}>All Companies (Conglomerate Master Override)</option>
+              {% for c in companies_list %}
+                <option value="{{ c.id }}" {% if c.id == admin_selected_perm_company_id %}selected{% endif %}>
+                  {{ c.name }} ({{ c.currency }} - {{ c.short_code }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Special Entitlement: Closed Financial Years Access -->
+          <div class="md:col-span-4 space-y-1">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-500"></i>
+              <span>Special Financial Entitlement</span>
+            </label>
+            <label class="flex items-center gap-2.5 p-2 bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 rounded-xl cursor-pointer transition select-none">
+              <input type="checkbox" id="allowClosedYearsCheckbox" onchange="markDirty()" {% if admin_user_permissions_data.get('allow_closed_years') %}checked{% endif %} class="w-4 h-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-600">
+              <div class="text-[11px] leading-tight">
+                <span class="font-bold text-amber-900 dark:text-amber-300">Allow access to closed financial years</span>
+                <span class="block text-[10px] text-slate-500 dark:text-slate-400">Override period seal for audits &amp; retrospective entries</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Filter Buttons & Live Search -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-2 border-t border-slate-200 dark:border-white/5">
+          <!-- Module Filter Buttons -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none" id="moduleFilterContainer">
+            <button type="button" onclick="filterByModule('ALL', this)" class="module-filter-btn px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition">All</button>
+            <button type="button" onclick="filterByModule('AP', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">AP</button>
+            <button type="button" onclick="filterByModule('GL', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">GL</button>
+            <button type="button" onclick="filterByModule('AR', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">AR</button>
+            <button type="button" onclick="filterByModule('SLS', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">Sales</button>
+            <button type="button" onclick="filterByModule('INV', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">Inventory</button>
+            <button type="button" onclick="filterByModule('PROD', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">Production</button>
+            <button type="button" onclick="filterByModule('FA', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">Assets</button>
+            <button type="button" onclick="filterByModule('HR', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">HR</button>
+            <button type="button" onclick="filterByModule('CB', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">Cash</button>
+            <button type="button" onclick="filterByModule('ADM', this)" class="module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition">Admin</button>
+          </div>
+
+          <!-- Search Input -->
+          <div class="relative min-w-[240px]">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="matrixSearchInput" oninput="filterMatrixRows()" placeholder="Search function or menu path..." class="w-full text-xs bg-white dark:bg-[#18181b] border border-slate-200 dark:border-white/10 rounded-xl pl-9 pr-7 py-2 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+            <button type="button" onclick="clearMatrixSearch()" id="clearSearchBtn" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Presets & Summary Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200 dark:border-white/5 text-xs">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-slate-500 dark:text-slate-400 font-medium">Quick Presets:</span>
+            <button type="button" onclick="applyPreset('SUPER_ADMIN')" class="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20 font-bold transition">
+              Full Super Admin
+            </button>
+            <button type="button" onclick="applyPreset('AUDITOR')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 font-bold transition">
+              Auditor (Read-Only)
+            </button>
+            <button type="button" onclick="applyPreset('OPERATOR')" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 font-bold transition">
+              Standard Operator (Create+Edit)
+            </button>
+            <button type="button" onclick="applyPreset('REVOKE_ALL')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/20 font-bold transition">
+              Revoke All
+            </button>
+          </div>
+
+          <div class="text-slate-500 dark:text-slate-400">
+            Showing <span id="matrixVisibleCount" class="font-bold text-slate-800 dark:text-white">{{ admin_user_permissions_data.get('permissions', [])|length }}</span> of <span id="matrixTotalCount" class="font-bold text-slate-800 dark:text-white">{{ admin_user_permissions_data.get('permissions', [])|length }}</span> Functions | <span id="matrixActiveCount" class="font-bold text-emerald-600 dark:text-emerald-400">0</span> Active
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature-Action Matrix Grid -->
+      <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#121215]">
+        <table class="w-full text-left text-xs" id="matrixTable">
+          <thead>
+            <tr class="bg-slate-50/80 dark:bg-white/[0.03] border-b border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 font-bold select-none sticky top-0 z-10 backdrop-blur-md">
+              <th class="py-3 px-4 min-w-[280px]">
+                <span>ERP Function / Sub-Area</span>
+              </th>
+              <th class="py-3 px-2.5 text-center min-w-[90px]">
+                <div class="flex flex-col items-center">
+                  <span class="text-blue-600 dark:text-blue-400">View</span>
+                  <button type="button" onclick="toggleEntireColumn('can_view')" class="text-[10px] text-slate-400 hover:text-blue-500 font-normal underline cursor-pointer mt-0.5">Toggle All</button>
+                </div>
+              </th>
+              <th class="py-3 px-2.5 text-center min-w-[90px]">
+                <div class="flex flex-col items-center">
+                  <span class="text-emerald-600 dark:text-emerald-400">Create</span>
+                  <button type="button" onclick="toggleEntireColumn('can_create')" class="text-[10px] text-slate-400 hover:text-emerald-500 font-normal underline cursor-pointer mt-0.5">Toggle All</button>
+                </div>
+              </th>
+              <th class="py-3 px-2.5 text-center min-w-[100px]">
+                <div class="flex flex-col items-center">
+                  <span class="text-amber-600 dark:text-amber-400">Modify / Edit</span>
+                  <button type="button" onclick="toggleEntireColumn('can_edit')" class="text-[10px] text-slate-400 hover:text-amber-500 font-normal underline cursor-pointer mt-0.5">Toggle All</button>
+                </div>
+              </th>
+              <th class="py-3 px-2.5 text-center min-w-[90px]">
+                <div class="flex flex-col items-center">
+                  <span class="text-rose-600 dark:text-rose-400">Delete</span>
+                  <button type="button" onclick="toggleEntireColumn('can_delete')" class="text-[10px] text-slate-400 hover:text-rose-500 font-normal underline cursor-pointer mt-0.5">Toggle All</button>
+                </div>
+              </th>
+              <th class="py-3 px-2.5 text-center min-w-[90px]">
+                <div class="flex flex-col items-center">
+                  <span class="text-purple-600 dark:text-purple-400">Approve</span>
+                  <button type="button" onclick="toggleEntireColumn('can_approve')" class="text-[10px] text-slate-400 hover:text-purple-500 font-normal underline cursor-pointer mt-0.5">Toggle All</button>
+                </div>
+              </th>
+              <th class="py-3 px-2.5 text-center min-w-[90px]">
+                <div class="flex flex-col items-center">
+                  <span class="text-cyan-600 dark:text-cyan-400">Export</span>
+                  <button type="button" onclick="toggleEntireColumn('can_export')" class="text-[10px] text-slate-400 hover:text-cyan-500 font-normal underline cursor-pointer mt-0.5">Toggle All</button>
+                </div>
+              </th>
+              <th class="py-3 px-3 text-center min-w-[100px]">
+                <span>Row Action</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300 font-medium" id="matrixTableBody">
+            {% for p in admin_user_permissions_data.get('permissions', []) %}
+              <tr class="hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition perm-row" data-module="{{ p.module_code }}" data-fcode="{{ p.function_code }}" data-search="{{ p.function_name }} {{ p.function_code }} {{ p.menu_path }} {{ p.module_name }}">
+                <td class="py-3 px-4">
+                  <div class="flex items-start gap-2.5">
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider
+                      {% if p.module_code == 'AP' %}bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20
+                      {% elif p.module_code == 'GL' %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20
+                      {% elif p.module_code == 'AR' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20
+                      {% elif p.module_code == 'SLS' %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20
+                      {% elif p.module_code == 'INV' %}bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20
+                      {% elif p.module_code == 'PROD' %}bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20
+                      {% elif p.module_code == 'FA' %}bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20
+                      {% elif p.module_code == 'HR' %}bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20
+                      {% elif p.module_code == 'CB' %}bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20
+                      {% else %}bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20{% endif %}">
+                      {{ p.module_code }}
+                    </span>
+                    <div>
+                      <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>{{ p.function_name }}</span>
+                      </div>
+                      <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
+                        <span>{{ p.menu_path }}</span>
+                        <span class="font-mono text-[10px] text-slate-400 dark:text-slate-500">({{ p.function_code }})</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- View -->
+                <td class="py-3 px-2.5 text-center">
+                  <input type="checkbox" data-fcode="{{ p.function_code }}" data-action="can_view" onchange="onPermCheckboxChange(this)" {% if p.can_view %}checked{% endif %} class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer accent-blue-600">
+                </td>
+
+                <!-- Create -->
+                <td class="py-3 px-2.5 text-center">
+                  <input type="checkbox" data-fcode="{{ p.function_code }}" data-action="can_create" onchange="onPermCheckboxChange(this)" {% if p.can_create %}checked{% endif %} class="w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500 cursor-pointer accent-emerald-600">
+                </td>
+
+                <!-- Modify / Edit -->
+                <td class="py-3 px-2.5 text-center">
+                  <input type="checkbox" data-fcode="{{ p.function_code }}" data-action="can_edit" onchange="onPermCheckboxChange(this)" {% if p.can_edit %}checked{% endif %} class="w-4 h-4 rounded text-amber-600 border-slate-300 focus:ring-amber-500 cursor-pointer accent-amber-600">
+                </td>
+
+                <!-- Delete -->
+                <td class="py-3 px-2.5 text-center">
+                  <input type="checkbox" data-fcode="{{ p.function_code }}" data-action="can_delete" onchange="onPermCheckboxChange(this)" {% if p.can_delete %}checked{% endif %} class="w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer accent-rose-600">
+                </td>
+
+                <!-- Approve -->
+                <td class="py-3 px-2.5 text-center">
+                  <input type="checkbox" data-fcode="{{ p.function_code }}" data-action="can_approve" onchange="onPermCheckboxChange(this)" {% if p.can_approve %}checked{% endif %} class="w-4 h-4 rounded text-purple-600 border-slate-300 focus:ring-purple-500 cursor-pointer accent-purple-600">
+                </td>
+
+                <!-- Export -->
+                <td class="py-3 px-2.5 text-center">
+                  <input type="checkbox" data-fcode="{{ p.function_code }}" data-action="can_export" onchange="onPermCheckboxChange(this)" {% if p.can_export %}checked{% endif %} class="w-4 h-4 rounded text-cyan-600 border-slate-300 focus:ring-cyan-500 cursor-pointer accent-cyan-600">
+                </td>
+
+                <!-- Row Quick Toggle -->
+                <td class="py-3 px-3 text-center">
+                  <button type="button" onclick="toggleRowAccess('{{ p.function_code }}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition" title="Toggle Full Access for this function">
+                    Full Access
+                  </button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Floating Unsaved Changes Notification Bar -->
+      <div id="permFloatingBar" class="fixed bottom-6 right-6 hidden z-50">
+        <div class="flex items-center gap-3 px-4 py-3 bg-slate-900 dark:bg-zinc-800 text-white rounded-2xl shadow-2xl border border-slate-700/50 dark:border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span class="text-xs font-semibold">Unsaved Permission Changes</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="resetPermissionsForm()" class="px-2.5 py-1 text-xs text-slate-300 hover:text-white rounded-lg hover:bg-white/10 transition">Discard</button>
+            <button type="button" onclick="saveUserPermissions()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition">Save Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Client-Side JavaScript Engine -->
+    <script>
+      let isFormDirty = false;
+      let activeModuleFilter = 'ALL';
+
+      function markDirty() {
+        isFormDirty = true;
+        const statusEl = document.getElementById('permSaveStatus');
+        if (statusEl) {
+          statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 transition-all';
+          statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>Unsaved Changes</span>';
+        }
+        const floating = document.getElementById('permFloatingBar');
+        if (floating) floating.classList.remove('hidden');
+        updateActiveCount();
+      }
+
+      function markSaved() {
+        isFormDirty = false;
+        const statusEl = document.getElementById('permSaveStatus');
+        if (statusEl) {
+          statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 transition-all';
+          statusEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Saved to Database</span>';
+        }
+        const floating = document.getElementById('permFloatingBar');
+        if (floating) floating.classList.add('hidden');
+        updateActiveCount();
+      }
+
+      function onPermCheckboxChange(el) {
+        markDirty();
+      }
+
+      function updateActiveCount() {
+        const rows = document.querySelectorAll('.perm-row');
+        let activeRows = 0;
+        rows.forEach(r => {
+          const boxes = r.querySelectorAll('input[type="checkbox"]');
+          let hasAny = false;
+          boxes.forEach(b => { if (b.checked) hasAny = true; });
+          if (hasAny) activeRows++;
+        });
+        const activeCountEl = document.getElementById('matrixActiveCount');
+        if (activeCountEl) activeCountEl.innerText = activeRows;
+      }
+
+      function toggleRowAccess(fcode) {
+        const row = document.querySelector(`.perm-row[data-fcode="${fcode}"]`);
+        if (!row) return;
+        const boxes = row.querySelectorAll('input[type="checkbox"]');
+        const allChecked = Array.from(boxes).every(b => b.checked);
+        boxes.forEach(b => b.checked = !allChecked);
+        markDirty();
+      }
+
+      function toggleEntireColumn(actionKey) {
+        const visibleRows = Array.from(document.querySelectorAll('.perm-row')).filter(r => r.style.display !== 'none');
+        if (!visibleRows.length) return;
+        const boxes = visibleRows.map(r => r.querySelector(`input[data-action="${actionKey}"]`)).filter(Boolean);
+        const allChecked = boxes.every(b => b.checked);
+        boxes.forEach(b => b.checked = !allChecked);
+        markDirty();
+      }
+
+      function applyPreset(presetType) {
+        const visibleRows = Array.from(document.querySelectorAll('.perm-row')).filter(r => r.style.display !== 'none');
+        visibleRows.forEach(r => {
+          const v = r.querySelector('input[data-action="can_view"]');
+          const c = r.querySelector('input[data-action="can_create"]');
+          const e = r.querySelector('input[data-action="can_edit"]');
+          const d = r.querySelector('input[data-action="can_delete"]');
+          const a = r.querySelector('input[data-action="can_approve"]');
+          const x = r.querySelector('input[data-action="can_export"]');
+
+          if (presetType === 'SUPER_ADMIN') {
+            if (v) v.checked = true;
+            if (c) c.checked = true;
+            if (e) e.checked = true;
+            if (d) d.checked = true;
+            if (a) a.checked = true;
+            if (x) x.checked = true;
+          } else if (presetType === 'AUDITOR') {
+            if (v) v.checked = true;
+            if (c) c.checked = false;
+            if (e) e.checked = false;
+            if (d) d.checked = false;
+            if (a) a.checked = false;
+            if (x) x.checked = true;
+          } else if (presetType === 'OPERATOR') {
+            if (v) v.checked = true;
+            if (c) c.checked = true;
+            if (e) e.checked = true;
+            if (d) d.checked = false;
+            if (a) a.checked = false;
+            if (x) x.checked = true;
+          } else if (presetType === 'REVOKE_ALL') {
+            if (v) v.checked = false;
+            if (c) c.checked = false;
+            if (e) e.checked = false;
+            if (d) d.checked = false;
+            if (a) a.checked = false;
+            if (x) x.checked = false;
+          }
+        });
+        markDirty();
+      }
+
+      function filterByModule(moduleCode, btn) {
+        activeModuleFilter = moduleCode;
+        document.querySelectorAll('.module-filter-btn').forEach(b => {
+          b.className = 'module-filter-btn px-2 py-1 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition';
+        });
+        if (btn) {
+          btn.className = 'module-filter-btn px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-sm transition';
+        }
+        applyFilters();
+      }
+
+      function filterMatrixRows() {
+        const input = document.getElementById('matrixSearchInput');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (clearBtn) {
+          clearBtn.style.display = (input && input.value.trim().length > 0) ? 'block' : 'none';
+        }
+        applyFilters();
+      }
+
+      function clearMatrixSearch() {
+        const input = document.getElementById('matrixSearchInput');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (clearBtn) clearBtn.style.display = 'none';
+        applyFilters();
+      }
+
+      function applyFilters() {
+        const searchVal = (document.getElementById('matrixSearchInput')?.value || '').toLowerCase().trim();
+        const rows = document.querySelectorAll('.perm-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+          const mod = row.getAttribute('data-module');
+          const sText = (row.getAttribute('data-search') || '').toLowerCase();
+
+          const matchesMod = (activeModuleFilter === 'ALL' || mod === activeModuleFilter);
+          const matchesSearch = (!searchVal || sText.includes(searchVal));
+
+          if (matchesMod && matchesSearch) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        const visibleCountEl = document.getElementById('matrixVisibleCount');
+        if (visibleCountEl) visibleCountEl.innerText = visibleCount;
+      }
+
+      async function onUserOrScopeChange() {
+        const userSelect = document.getElementById('permUserSelect');
+        const compSelect = document.getElementById('permCompanySelect');
+        if (!userSelect || !compSelect) return;
+
+        const userId = userSelect.value;
+        const compId = compSelect.value;
+
+        // Update URL query parameters seamlessly
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('tab', 'admin-user-authorisation');
+        newUrl.searchParams.set('user_id', userId);
+        newUrl.searchParams.set('perm_company_id', compId);
+        window.history.replaceState({}, '', newUrl.toString());
+
+        // Fetch user permissions for selected user & company scope
+        try {
+          const res = await fetch(`/api/security/user-permissions?user_id=${encodeURIComponent(userId)}&company_id=${encodeURIComponent(compId)}`);
+          const json = await res.json();
+          if (json.status === 'success' && json.data) {
+            populateMatrixData(json.data);
+          }
+        } catch(err) {
+          console.error('Failed to load user permissions:', err);
+        }
+      }
+
+      function populateMatrixData(data) {
+        const closedBox = document.getElementById('allowClosedYearsCheckbox');
+        if (closedBox) closedBox.checked = !!data.allow_closed_years;
+
+        const permMap = {};
+        (data.permissions || []).forEach(p => {
+          permMap[p.function_code] = p;
+        });
+
+        const rows = document.querySelectorAll('.perm-row');
+        rows.forEach(row => {
+          const fcode = row.getAttribute('data-fcode');
+          const p = permMap[fcode];
+          ['can_view', 'can_create', 'can_edit', 'can_delete', 'can_approve', 'can_export'].forEach(act => {
+            const cb = row.querySelector(`input[data-action="${act}"]`);
+            if (cb) {
+              cb.checked = p ? !!p[act] : false;
+            }
+          });
+        });
+
+        markSaved();
+      }
+
+      function resetPermissionsForm() {
+        onUserOrScopeChange();
+      }
+
+      async function saveUserPermissions() {
+        const userSelect = document.getElementById('permUserSelect');
+        const compSelect = document.getElementById('permCompanySelect');
+        const closedBox = document.getElementById('allowClosedYearsCheckbox');
+        const btnSave = document.getElementById('btnSavePermissions');
+
+        if (!userSelect) return;
+        const userId = userSelect.value;
+        const compId = compSelect ? compSelect.value : 'ALL';
+        const allowClosedYears = closedBox ? closedBox.checked : false;
+
+        const permissions = [];
+        const rows = document.querySelectorAll('.perm-row');
+        rows.forEach(row => {
+          const fcode = row.getAttribute('data-fcode');
+          const mod = row.getAttribute('data-module');
+          const v = row.querySelector('input[data-action="can_view"]')?.checked || false;
+          const c = row.querySelector('input[data-action="can_create"]')?.checked || false;
+          const e = row.querySelector('input[data-action="can_edit"]')?.checked || false;
+          const d = row.querySelector('input[data-action="can_delete"]')?.checked || false;
+          const a = row.querySelector('input[data-action="can_approve"]')?.checked || false;
+          const x = row.querySelector('input[data-action="can_export"]')?.checked || false;
+
+          permissions.push({
+            function_code: fcode,
+            module_code: mod,
+            can_view: v,
+            can_create: c,
+            can_edit: e,
+            can_delete: d,
+            can_approve: a,
+            can_export: x
+          });
+        });
+
+        if (btnSave) {
+          btnSave.disabled = true;
+          btnSave.innerHTML = '<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Saving...</span>';
+          if (window.lucide) lucide.createIcons();
+        }
+
+        try {
+          const res = await fetch('/api/security/user-permissions/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: userId,
+              company_id: compId,
+              allow_closed_years: allowClosedYears,
+              permissions: permissions
+            })
+          });
+          const json = await res.json();
+          if (json.status === 'success') {
+            markSaved();
+            showMatrixToast('success', json.message || 'Permissions saved successfully.');
+          } else {
+            showMatrixToast('error', json.message || 'Failed to save permissions.');
+          }
+        } catch(err) {
+          console.error('Error saving permissions:', err);
+          showMatrixToast('error', 'Network error saving permissions: ' + err);
+        } finally {
+          if (btnSave) {
+            btnSave.disabled = false;
+            btnSave.innerHTML = '<i data-lucide="save" class="w-3.5 h-3.5"></i><span>Save Permissions</span>';
+            if (window.lucide) lucide.createIcons();
+          }
+        }
+      }
+
+      function showMatrixToast(type, msg) {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold transition-all duration-300 ${
+          type === 'success' 
+            ? 'bg-emerald-600 text-white shadow-emerald-600/30' 
+            : 'bg-rose-600 text-white shadow-rose-600/30'
+        }`;
+        toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle-2' : 'alert-circle'}" class="w-4 h-4"></i><span>${msg}</span>`;
+        document.body.appendChild(toast);
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(-10px)';
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        updateActiveCount();
+        if (window.lucide) lucide.createIcons();
+      });
+      setTimeout(updateActiveCount, 100);
+    </script>
 
   <!-- 2.3 Cost & Profit Center Scopes -->
   {% elif current_tab == 'admin-auth-scope' %}

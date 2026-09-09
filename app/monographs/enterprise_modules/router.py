@@ -1,3 +1,4 @@
+import uuid
 from fastapi import APIRouter, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from app.core.templates import templates
@@ -58,6 +59,7 @@ from app.monographs.enterprise_modules.admin_report_service import AdminReportSe
 from app.monographs.enterprise_modules.registry import get_module_suites_registry, get_active_suite_context
 from app.core.user_service import UserService
 from app.core.sequence_service import SequenceService
+from app.core.permission_service import PermissionService
 
 router = APIRouter(tags=["Enterprise Modules"])
 
@@ -722,6 +724,11 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
     admin_audit_logs = []
     admin_kpis = {}
     admin_license = {}
+    admin_all_active_users = []
+    admin_selected_user_id = None
+    admin_selected_perm_company_id = "ALL"
+    admin_user_permissions_data = {}
+    admin_permissions_catalog = []
 
 
     fa_movement_log = []
@@ -880,6 +887,14 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         admin_audit_logs = AdminReportService.get_audit_vault_logs(active_cid)
         admin_kpis = AdminReportService.get_executive_kpis(active_cid)
         admin_license = AdminReportService.get_system_license_info(active_cid)
+        admin_all_active_users = UserService.get_all_active_users()
+        admin_selected_user_id = request.query_params.get("user_id")
+        if not admin_selected_user_id and admin_all_active_users:
+            admin_selected_user_id = str(admin_all_active_users[0]["id"])
+        admin_selected_perm_company_id = request.query_params.get("perm_company_id", "ALL")
+        if admin_selected_user_id:
+            admin_user_permissions_data = PermissionService.get_user_permissions(admin_selected_user_id, admin_selected_perm_company_id)
+        admin_permissions_catalog = PermissionService.get_catalog()
 
     elif module["route_slug"] in ("production", "manufacturing", "production-management"):
         prod_processes = ProdMasterService.get_processes()
@@ -1313,6 +1328,11 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
             "admin_audit_logs": admin_audit_logs,
             "admin_kpis": admin_kpis,
             "admin_license": admin_license,
+            "admin_all_active_users": admin_all_active_users,
+            "admin_selected_user_id": admin_selected_user_id,
+            "admin_selected_perm_company_id": admin_selected_perm_company_id,
+            "admin_user_permissions_data": admin_user_permissions_data,
+            "admin_permissions_catalog": admin_permissions_catalog,
             "src_purchase_register": src_purchase_register,
             "src_kpi_summary": src_kpi_summary,
             "current_user": UserService.resolve_current_user(request),
@@ -1393,6 +1413,39 @@ async def handle_new_record_submit(
     return RedirectResponse(url=f"/modules/{slug}", status_code=303)
 
 # =========================================================================
+# =========================================================================
+# 🏢 Multi-Company GL Account Matrix & Real-time Account Profile API
+# =========================================================================
+@router.get("/api/gl/accounts/{account_id}/detail")
+async def get_gl_account_detail_api(account_id: str):
+    acc = GLMasterService.get_account_by_id(account_id)
+    if not acc:
+        return JSONResponse({"status": "error", "message": "Account not found."}, status_code=404)
+    matrix = GLMasterService.get_company_mappings_matrix(account_id)
+    
+    # Serialize datetime and UUID types for clean JSON response
+    clean_acc = {k: (v.isoformat() if hasattr(v, "isoformat") else (str(v) if isinstance(v, uuid.UUID) else v)) for k, v in acc.items()}
+    clean_matrix = [
+        {k: (v.isoformat() if hasattr(v, "isoformat") else (str(v) if isinstance(v, uuid.UUID) else v)) for k, v in row.items()}
+        for row in matrix
+    ]
+    return JSONResponse({"status": "success", "account": clean_acc, "matrix": clean_matrix})
+
+@router.post("/api/gl/company-mappings/matrix-save")
+async def save_company_mappings_matrix_api(request: Request):
+    try:
+        data = await request.json()
+        gl_account_id = data.get("gl_account_id")
+        mappings = data.get("mappings", [])
+        if not gl_account_id:
+            return JSONResponse({"status": "error", "message": "gl_account_id is required."}, status_code=400)
+        GLMasterService.save_company_mappings_matrix(gl_account_id, mappings)
+        return JSONResponse({"status": "success", "message": "Company mappings successfully saved across all subsidiaries."})
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
+
+# =========================================================================
 # Solid GL Master Data Creation Pages (/modules/general-ledger/master/{entity}/new)
 # =========================================================================
 @router.get("/modules/general-ledger/master/{entity}/new", response_class=HTMLResponse)
@@ -1403,12 +1456,12 @@ async def new_gl_master_record_page(request: Request, entity: str):
     db_health = db.check_health()
 
     entity_titles = {
-        "gl-accounts": "GL Account (Chart of Accounts)",
-        "company-mappings": "GL Account Mapping with Company",
-        "sub-accounts": "GL Sub Account",
-        "departments": "Department",
-        "cost-centres": "Cost Centre",
-        "budget-sets": "Budget Set"
+        "gl-accounts": "GL Account Profile",
+        "company-mappings": "GL Account & Company Mapping",
+        "sub-accounts": "GL Sub-Account Profile",
+        "departments": "Department Master",
+        "cost-centres": "Cost Centres Master",
+        "budget-sets": "Budget Set Profile"
     }
 
     if entity not in entity_titles:
@@ -1416,9 +1469,19 @@ async def new_gl_master_record_page(request: Request, entity: str):
 
     # Options needed for selects
     all_accounts = GLMasterService.get_all_accounts()
+    all_account_groups = GLMasterService.get_account_groups()
     all_departments = GLMasterService.get_all_departments()
     all_cost_centres = GLMasterService.get_cost_centres_for_company(str(active_company["id"]))
     all_companies = CompanyService.get_all_companies()
+
+    # Matrix lookup for company-mappings
+    selected_account_id = request.query_params.get("gl_account_id")
+    if not selected_account_id and all_accounts:
+        selected_account_id = str(all_accounts[0]["id"])
+
+    company_mapping_matrix = []
+    if selected_account_id:
+        company_mapping_matrix = GLMasterService.get_company_mappings_matrix(selected_account_id)
 
     entity_to_tab = {
         "gl-accounts": "coa",
@@ -1439,13 +1502,6 @@ async def new_gl_master_record_page(request: Request, entity: str):
         {"title": f"New {entity_titles[entity]}", "url": None}
     ]
 
-    gl_seq_map = {
-        "gl-accounts": "gl_accounts",
-        "sub-accounts": "gl_sub_accounts",
-        "departments": "gl_departments",
-        "cost-centres": "gl_cost_centres",
-        "budget-sets": "gl_budget_sets"
-    }
     auto_code = "[ Auto-Generated on Save ]"
 
     return templates.TemplateResponse(
@@ -1457,9 +1513,12 @@ async def new_gl_master_record_page(request: Request, entity: str):
             "sub_tab": sub_tab,
             "entity_title": entity_titles[entity],
             "all_accounts": all_accounts,
+            "all_account_groups": all_account_groups,
             "all_departments": all_departments,
             "all_cost_centres": all_cost_centres,
             "all_companies": all_companies,
+            "selected_account_id": selected_account_id,
+            "company_mapping_matrix": company_mapping_matrix,
             "active_company": active_company,
             "appearance": appearance,
             "db_health": db_health,
@@ -1477,17 +1536,25 @@ async def handle_new_gl_master_submit(
     account_number: Optional[str] = Form(None),
     account_name: Optional[str] = Form(None),
     account_type: Optional[str] = Form(None),
+    account_group: Optional[str] = Form(None),
+    account_class: Optional[str] = Form("POSTING"),
+    posting_form: Optional[str] = Form("DETAILED"),
     financial_statement: Optional[str] = Form(None),
     normal_balance: Optional[str] = Form(None),
+    maintain_quantity: Optional[str] = Form(None),
+    cost_centre_associated: Optional[str] = Form(None),
+    is_inactive: Optional[str] = Form(None),
     # Company Mapping fields
     gl_account_id: Optional[str] = Form(None),
     company_id: Optional[str] = Form(None),
     company_account_alias: Optional[str] = Form(None),
-    posting_currency: Optional[str] = Form("USD"),
+    posting_currency: Optional[str] = Form(None),
+    allow_direct_posting: Optional[str] = Form("1"),
     # Sub Account fields
     sub_account_code: Optional[str] = Form(None),
     sub_account_name: Optional[str] = Form(None),
     sub_account_type: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
     # Department fields
     dept_code: Optional[str] = Form(None),
     dept_name: Optional[str] = Form(None),
@@ -1502,10 +1569,17 @@ async def handle_new_gl_master_submit(
     fiscal_year: Optional[str] = Form(None),
     cost_centre_id: Optional[str] = Form(None),
     allocated_amount: Optional[float] = Form(0.0),
-    budget_status: Optional[str] = Form("APPROVED")
+    budget_status: Optional[str] = Form("APPROVED"),
+    is_locked: Optional[str] = Form(None)
 ):
     active_company = CompanyService.resolve_active_company(request)
     target_tab = "transactions"
+
+    is_maintain_qty = maintain_quantity in ["1", "true", "True", "on", "yes"]
+    is_cc_associated = cost_centre_associated in ["1", "true", "True", "on", "yes"]
+    is_inact = is_inactive in ["1", "true", "True", "on", "yes"]
+    is_allow_post = allow_direct_posting in ["1", "true", "True", "on", "yes"]
+    is_lck = is_locked in ["1", "true", "True", "on", "yes"]
 
     try:
         if entity == "gl-accounts":
@@ -1515,16 +1589,28 @@ async def handle_new_gl_master_submit(
             if not is_unique:
                 raise ValueError(f"Account name '{account_name.strip()}' already exists (Code: {existing_code}).")
             generated_code = SequenceService.get_next_code("gl_accounts")
-            GLMasterService.create_account(generated_code, account_name, account_type or "ASSET", financial_statement or "BALANCE_SHEET", normal_balance or "DEBIT")
+            GLMasterService.create_account(
+                generated_code, account_name, account_type or "ASSET", 
+                financial_statement or "BALANCE_SHEET", normal_balance or "DEBIT",
+                account_group=account_group, account_class=account_class or "POSTING",
+                posting_form=posting_form or "DETAILED", maintain_quantity=is_maintain_qty,
+                cost_centre_associated=is_cc_associated, is_inactive=is_inact
+            )
             target_tab = "coa"
         elif entity == "company-mappings" and gl_account_id:
             target_comp = company_id or str(active_company["id"])
             default_curr = active_company.get("currency") if active_company else "BDT"
-            GLMasterService.create_company_mapping(gl_account_id, target_comp, company_account_alias or "", posting_currency or default_curr)
+            GLMasterService.create_company_mapping(
+                gl_account_id, target_comp, company_account_alias or "", 
+                posting_currency or default_curr, allow_direct_posting=is_allow_post
+            )
             target_tab = "mapping"
         elif entity == "sub-accounts" and gl_account_id and sub_account_name:
             generated_code = SequenceService.get_next_code("gl_sub_accounts")
-            GLMasterService.create_sub_account(gl_account_id, generated_code, sub_account_name, sub_account_type or "DEPARTMENTAL")
+            GLMasterService.create_sub_account(
+                gl_account_id, generated_code, sub_account_name, 
+                sub_account_type or "DEPARTMENTAL", description=description, is_active=not is_inact
+            )
             target_tab = "subaccounts"
         elif entity == "departments" and dept_name:
             generated_code = SequenceService.get_next_code("gl_departments")
@@ -1539,7 +1625,9 @@ async def handle_new_gl_master_submit(
             generated_code = SequenceService.get_next_code("gl_budget_sets")
             target_comp = company_id or str(active_company["id"])
             GLMasterService.create_budget_set(
-                generated_code, budget_title, fiscal_year or active_company["fiscal_year"], target_comp, cost_centre_id, gl_account_id, allocated_amount or 0.0, budget_status or "APPROVED"
+                generated_code, budget_title, fiscal_year or active_company["fiscal_year"], 
+                target_comp, cost_centre_id, gl_account_id, allocated_amount or 0.0, 
+                budget_status or "APPROVED", description=description, is_locked=is_lck
             )
             target_tab = "budgets"
 
@@ -1566,12 +1654,12 @@ async def edit_gl_master_record_page(request: Request, entity: str, record_id: s
     view_url = f"/modules/general-ledger/master/{entity}/{record_id}/view"
 
     entity_titles = {
-        "gl-accounts": "GL Account (Chart of Accounts)",
-        "company-mappings": "GL Account Mapping with Company",
-        "sub-accounts": "GL Sub Account",
-        "departments": "Department",
-        "cost-centres": "Cost Centre",
-        "budget-sets": "Budget Set"
+        "gl-accounts": "GL Account Profile",
+        "company-mappings": "GL Account & Company Mapping",
+        "sub-accounts": "GL Sub-Account Profile",
+        "departments": "Department Master",
+        "cost-centres": "Cost Centres Master",
+        "budget-sets": "Budget Set Profile"
     }
 
     if entity not in entity_titles:
@@ -1595,9 +1683,20 @@ async def edit_gl_master_record_page(request: Request, entity: str, record_id: s
         raise HTTPException(status_code=404, detail="Record not found")
 
     all_accounts = GLMasterService.get_all_accounts()
+    all_account_groups = GLMasterService.get_account_groups()
     all_departments = GLMasterService.get_all_departments()
     all_cost_centres = GLMasterService.get_cost_centres_for_company(str(active_company["id"]))
     all_companies = CompanyService.get_all_companies()
+
+    # Matrix for company mapping
+    selected_account_id = None
+    company_mapping_matrix = []
+    if entity == "company-mappings" and record:
+        selected_account_id = str(record.get("gl_account_id"))
+        company_mapping_matrix = GLMasterService.get_company_mappings_matrix(selected_account_id)
+    elif entity == "gl-accounts" and record:
+        selected_account_id = str(record.get("id"))
+        company_mapping_matrix = GLMasterService.get_company_mappings_matrix(selected_account_id)
 
     entity_to_tab = {
         "gl-accounts": "coa",
@@ -1633,9 +1732,12 @@ async def edit_gl_master_record_page(request: Request, entity: str, record_id: s
             "edit_url": edit_url,
             "view_url": view_url,
             "all_accounts": all_accounts,
+            "all_account_groups": all_account_groups,
             "all_departments": all_departments,
             "all_cost_centres": all_cost_centres,
             "all_companies": all_companies,
+            "selected_account_id": selected_account_id,
+            "company_mapping_matrix": company_mapping_matrix,
             "active_company": active_company,
             "appearance": appearance,
             "db_health": db_health,
@@ -1653,17 +1755,25 @@ async def handle_edit_gl_master_submit(
     account_number: Optional[str] = Form(None),
     account_name: Optional[str] = Form(None),
     account_type: Optional[str] = Form(None),
+    account_group: Optional[str] = Form(None),
+    account_class: Optional[str] = Form("POSTING"),
+    posting_form: Optional[str] = Form("DETAILED"),
     financial_statement: Optional[str] = Form(None),
     normal_balance: Optional[str] = Form(None),
+    maintain_quantity: Optional[str] = Form(None),
+    cost_centre_associated: Optional[str] = Form(None),
+    is_inactive: Optional[str] = Form(None),
     # Company Mapping fields
     gl_account_id: Optional[str] = Form(None),
     company_id: Optional[str] = Form(None),
     company_account_alias: Optional[str] = Form(None),
-    posting_currency: Optional[str] = Form("USD"),
+    posting_currency: Optional[str] = Form(None),
+    allow_direct_posting: Optional[str] = Form("1"),
     # Sub Account fields
     sub_account_code: Optional[str] = Form(None),
     sub_account_name: Optional[str] = Form(None),
     sub_account_type: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
     # Department fields
     dept_code: Optional[str] = Form(None),
     dept_name: Optional[str] = Form(None),
@@ -1678,10 +1788,17 @@ async def handle_edit_gl_master_submit(
     fiscal_year: Optional[str] = Form(None),
     cost_centre_id: Optional[str] = Form(None),
     allocated_amount: Optional[float] = Form(0.0),
-    budget_status: Optional[str] = Form("APPROVED")
+    budget_status: Optional[str] = Form("APPROVED"),
+    is_locked: Optional[str] = Form(None)
 ):
     active_company = CompanyService.resolve_active_company(request)
     target_tab = "transactions"
+
+    is_maintain_qty = maintain_quantity in ["1", "true", "True", "on", "yes"]
+    is_cc_associated = cost_centre_associated in ["1", "true", "True", "on", "yes"]
+    is_inact = is_inactive in ["1", "true", "True", "on", "yes"]
+    is_allow_post = allow_direct_posting in ["1", "true", "True", "on", "yes"]
+    is_lck = is_locked in ["1", "true", "True", "on", "yes"]
 
     try:
         if entity == "gl-accounts":
@@ -1690,15 +1807,27 @@ async def handle_edit_gl_master_submit(
             is_unique, existing_code = GLMasterService.is_account_name_unique(account_name, exclude_id=record_id)
             if not is_unique:
                 raise ValueError(f"Account name '{account_name.strip()}' already exists (Code: {existing_code}).")
-            GLMasterService.update_account(record_id, account_number, account_name, account_type or "ASSET", financial_statement or "BALANCE_SHEET", normal_balance or "DEBIT")
+            GLMasterService.update_account(
+                record_id, account_number, account_name, account_type or "ASSET", 
+                financial_statement or "BALANCE_SHEET", normal_balance or "DEBIT",
+                account_group=account_group, account_class=account_class or "POSTING",
+                posting_form=posting_form or "DETAILED", maintain_quantity=is_maintain_qty,
+                cost_centre_associated=is_cc_associated, is_inactive=is_inact
+            )
             target_tab = "coa"
         elif entity == "company-mappings" and gl_account_id:
             target_comp = company_id or str(active_company["id"])
             default_curr = active_company.get("currency") if active_company else "BDT"
-            GLMasterService.update_company_mapping(record_id, gl_account_id, target_comp, company_account_alias or "", posting_currency or default_curr)
+            GLMasterService.update_company_mapping(
+                record_id, gl_account_id, target_comp, company_account_alias or "", 
+                posting_currency or default_curr, allow_direct_posting=is_allow_post
+            )
             target_tab = "mapping"
         elif entity == "sub-accounts" and gl_account_id and sub_account_code and sub_account_name:
-            GLMasterService.update_sub_account(record_id, gl_account_id, sub_account_code, sub_account_name, sub_account_type or "DEPARTMENTAL")
+            GLMasterService.update_sub_account(
+                record_id, gl_account_id, sub_account_code, sub_account_name, 
+                sub_account_type or "DEPARTMENTAL", description=description, is_active=not is_inact
+            )
             target_tab = "subaccounts"
         elif entity == "departments" and dept_code and dept_name:
             GLMasterService.update_department(record_id, dept_code, dept_name, head_of_dept or "")
@@ -1710,7 +1839,9 @@ async def handle_edit_gl_master_submit(
         elif entity == "budget-sets" and budget_title and gl_account_id:
             target_comp = company_id or str(active_company["id"])
             GLMasterService.update_budget_set(
-                record_id, budget_title, fiscal_year or active_company["fiscal_year"], target_comp, cost_centre_id, gl_account_id, allocated_amount or 0.0, budget_status or "APPROVED"
+                record_id, budget_title, fiscal_year or active_company["fiscal_year"], 
+                target_comp, cost_centre_id, gl_account_id, allocated_amount or 0.0, 
+                budget_status or "APPROVED", description=description, is_locked=is_lck
             )
             target_tab = "budgets"
 
@@ -4245,4 +4376,50 @@ async def api_update_sequence_rule(request: Request):
         return JSONResponse(result)
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+
+# =========================================================================
+# 🛡️ User Authorization & Granular Permissions API Endpoints
+# =========================================================================
+@router.get("/api/security/user-permissions")
+async def api_get_user_permissions(user_id: str = Query(...), company_id: str = Query("ALL")):
+    """Fetches user permissions merged with master catalog for the specified user and company scope."""
+    try:
+        data = PermissionService.get_user_permissions(user_id, company_id)
+        return JSONResponse({"status": "success", "data": data})
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
+
+@router.post("/api/security/user-permissions/save")
+async def api_save_user_permissions(request: Request):
+    """Saves user granular permissions matrix and closed financial years entitlement."""
+    try:
+        body = await request.json()
+        user_id = body.get("user_id")
+        if not user_id:
+            return JSONResponse({"status": "error", "message": "user_id is required."}, status_code=400)
+        
+        company_id = body.get("company_id", "ALL")
+        allow_closed_years = bool(body.get("allow_closed_years", False))
+        permissions = body.get("permissions", [])
+
+        current_user = UserService.resolve_current_user(request)
+        updated_by = str(current_user["id"]) if current_user else None
+
+        PermissionService.save_user_permissions(
+            user_id=user_id,
+            company_id=company_id,
+            allow_closed_years=allow_closed_years,
+            permissions_list=permissions,
+            updated_by=updated_by
+        )
+        return JSONResponse({
+            "status": "success",
+            "message": f"Permissions updated successfully ({len(permissions)} functions).",
+            "updated_count": len(permissions)
+        })
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
 

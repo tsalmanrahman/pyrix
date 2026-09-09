@@ -840,10 +840,11 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
                 "subtitle": "User Profiles, Granular RBAC Permissions Matrix, Data Scopes, Password Policies & Live Sessions",
                 "icon": "shield-check",
                 "theme_color": "emerald",
-                "count_label": "5 Security Areas",
+                "count_label": "6 Security Areas",
                 "cards": [
                     {"title": "Enterprise User Profiles", "subtitle": "User credentials directory, departments & MFA status", "badge": "Users", "url": "/modules/system-admin?tab=admin-users", "icon": "users", "color": "emerald"},
                     {"title": "Role-Based Access Control (RBAC)", "subtitle": "Function access matrix (View/Create/Edit/Delete/Approve)", "badge": "Roles & RBAC", "url": "/modules/system-admin?tab=admin-roles", "icon": "key-round", "color": "purple"},
+                    {"title": "User Authorization & Granular Permissions", "subtitle": "Direct user function assignment, modify/create/delete rights & closed year access", "badge": "User Matrix", "url": "/modules/system-admin?tab=admin-user-authorisation", "icon": "shield-check", "color": "emerald"},
                     {"title": "Cost & Profit Center Scopes", "subtitle": "Subsidiary, business unit & cost center data restrictions", "badge": "Data Scopes", "url": "/modules/system-admin?tab=admin-auth-scope", "icon": "lock", "color": "blue"},
                     {"title": "Password Vault & Security Policy", "subtitle": "Complexity rules, password renewal, reset & MFA keys", "badge": "Pass Vault", "url": "/modules/system-admin?tab=admin-passwords", "icon": "key", "color": "amber"},
                     {"title": "Live Sessions & Security Telemetry", "subtitle": "Real-time active logins, device IP & session management", "badge": "Live Sessions", "url": "/modules/system-admin?tab=admin-sessions", "icon": "radio", "color": "cyan"},

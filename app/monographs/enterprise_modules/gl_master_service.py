@@ -7,6 +7,33 @@ class GLMasterService:
     # =========================================================================
     # 1. GL Accounts (Chart of Accounts)
     # =========================================================================
+    STANDARD_ACCOUNT_GROUPS = [
+        "Current Assets",
+        "Non-Current Assets / Fixed Assets",
+        "Intangibles & Long-term Investments",
+        "Current Liabilities",
+        "Non-Current / Long-Term Liabilities",
+        "Shareholders' Equity / Paid-up Capital",
+        "Operating Revenue / Gross Sales",
+        "Non-Operating & Investment Income",
+        "Cost of Goods Sold (COGS)",
+        "Operating Expenses (OPEX)",
+        "Administrative & General Expenses",
+        "Selling & Distribution Expenses",
+        "Financial & Bank Charges",
+        "Taxation & Statutory Provisions"
+    ]
+
+    @staticmethod
+    def get_account_groups() -> List[str]:
+        # Return distinct groups from DB merged with standard groups
+        db_groups = db.query("SELECT DISTINCT account_group FROM gl_accounts WHERE account_group IS NOT NULL AND COALESCE(isDelete, 0) = 0")
+        groups = set(GLMasterService.STANDARD_ACCOUNT_GROUPS)
+        for g in db_groups:
+            if g.get("account_group"):
+                groups.add(g["account_group"])
+        return sorted(list(groups))
+
     @staticmethod
     def is_account_name_unique(account_name: str, exclude_id: Optional[str] = None) -> tuple[bool, Optional[str]]:
         sql = "SELECT id, account_number FROM gl_accounts WHERE LOWER(TRIM(account_name)) = LOWER(TRIM(?)) AND COALESCE(isDelete, 0) = 0"
@@ -28,21 +55,60 @@ class GLMasterService:
         return db.query_one("SELECT * FROM gl_accounts WHERE id = ? AND COALESCE(isDelete, 0) = 0", (account_id,))
 
     @staticmethod
-    def create_account(account_number: str, account_name: str, account_type: str, financial_statement: str, normal_balance: str) -> None:
+    def create_account(
+        account_number: str, 
+        account_name: str, 
+        account_type: str, 
+        financial_statement: str, 
+        normal_balance: str,
+        account_group: Optional[str] = None,
+        account_class: str = "POSTING",
+        posting_form: str = "DETAILED",
+        maintain_quantity: bool = False,
+        cost_centre_associated: bool = False,
+        is_inactive: bool = False
+    ) -> None:
         is_unique, existing_code = GLMasterService.is_account_name_unique(account_name)
         if not is_unique:
             raise ValueError(f"Account name '{account_name.strip()}' already exists (Code: {existing_code}).")
 
         db.execute(
             """
-            INSERT INTO gl_accounts (account_number, account_name, account_type, financial_statement, normal_balance, is_active, isDelete)
-            VALUES (?, ?, ?, ?, ?, 1, 0)
+            INSERT INTO gl_accounts (
+                account_number, account_name, account_type, financial_statement, normal_balance, 
+                account_group, account_class, posting_form, maintain_quantity, cost_centre_associated, 
+                is_inactive, is_active, isDelete
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
             """,
-            (account_number.strip(), account_name.strip(), account_type.strip(), financial_statement.strip(), normal_balance.strip())
+            (
+                account_number.strip(), account_name.strip(), account_type.strip(), 
+                financial_statement.strip(), normal_balance.strip(),
+                account_group.strip() if account_group else None,
+                account_class.strip() if account_class else "POSTING",
+                posting_form.strip() if posting_form else "DETAILED",
+                1 if maintain_quantity else 0,
+                1 if cost_centre_associated else 0,
+                1 if is_inactive else 0,
+                0 if is_inactive else 1
+            )
         )
 
     @staticmethod
-    def update_account(account_id: str, account_number: str, account_name: str, account_type: str, financial_statement: str, normal_balance: str) -> None:
+    def update_account(
+        account_id: str, 
+        account_number: str, 
+        account_name: str, 
+        account_type: str, 
+        financial_statement: str, 
+        normal_balance: str,
+        account_group: Optional[str] = None,
+        account_class: str = "POSTING",
+        posting_form: str = "DETAILED",
+        maintain_quantity: bool = False,
+        cost_centre_associated: bool = False,
+        is_inactive: bool = False
+    ) -> None:
         is_unique, existing_code = GLMasterService.is_account_name_unique(account_name, exclude_id=account_id)
         if not is_unique:
             raise ValueError(f"Account name '{account_name.strip()}' already exists (Code: {existing_code}).")
@@ -50,10 +116,23 @@ class GLMasterService:
         db.execute(
             """
             UPDATE gl_accounts 
-            SET account_number = ?, account_name = ?, account_type = ?, financial_statement = ?, normal_balance = ?
+            SET account_number = ?, account_name = ?, account_type = ?, financial_statement = ?, normal_balance = ?,
+                account_group = ?, account_class = ?, posting_form = ?, maintain_quantity = ?, cost_centre_associated = ?, 
+                is_inactive = ?, is_active = ?
             WHERE id = ?
             """,
-            (account_number.strip(), account_name.strip(), account_type.strip(), financial_statement.strip(), normal_balance.strip(), account_id)
+            (
+                account_number.strip(), account_name.strip(), account_type.strip(), 
+                financial_statement.strip(), normal_balance.strip(),
+                account_group.strip() if account_group else None,
+                account_class.strip() if account_class else "POSTING",
+                posting_form.strip() if posting_form else "DETAILED",
+                1 if maintain_quantity else 0,
+                1 if cost_centre_associated else 0,
+                1 if is_inactive else 0,
+                0 if is_inactive else 1,
+                account_id
+            )
         )
 
 
@@ -88,24 +167,83 @@ class GLMasterService:
         )
 
     @staticmethod
-    def create_company_mapping(gl_account_id: str, company_id: str, alias: str, currency: str) -> None:
+    def get_company_mappings_matrix(gl_account_id: str) -> List[Dict[str, Any]]:
+        """Returns mapping state across ALL conglomerate subsidiaries for a specific GL account."""
+        sql = """
+            SELECT 
+                c.id AS company_id,
+                c.short_code AS company_code,
+                c.name AS company_name,
+                c.currency AS base_currency,
+                m.id AS mapping_id,
+                m.company_account_alias,
+                COALESCE(m.posting_currency, c.currency) AS posting_currency,
+                COALESCE(m.allow_direct_posting, 1) AS allow_direct_posting,
+                CASE WHEN m.id IS NOT NULL AND COALESCE(m.is_enabled, 1) = 1 AND COALESCE(m.isDelete, 0) = 0 THEN 1 ELSE 0 END AS is_mapped
+            FROM companies c
+            LEFT JOIN gl_company_mappings m ON c.id = m.company_id AND m.gl_account_id = ? AND COALESCE(m.isDelete, 0) = 0
+            WHERE c.is_active = 1
+            ORDER BY c.sort_order ASC, c.short_code ASC
+        """
+        return db.query(sql, (gl_account_id,))
+
+    @staticmethod
+    def save_company_mappings_matrix(gl_account_id: str, mappings_data: List[Dict[str, Any]]) -> None:
+        """Batch saves/updates subsidiary mappings for an account."""
+        for item in mappings_data:
+            cid = item.get("company_id")
+            is_mapped = bool(item.get("is_mapped"))
+            alias = item.get("company_account_alias") or ""
+            curr = item.get("posting_currency") or "USD"
+            allow_posting = 1 if item.get("allow_direct_posting", True) else 0
+
+            existing = db.query_one(
+                "SELECT id FROM gl_company_mappings WHERE gl_account_id = ? AND company_id = ?",
+                (gl_account_id, cid)
+            )
+            if existing:
+                if is_mapped:
+                    db.execute(
+                        """
+                        UPDATE gl_company_mappings 
+                        SET company_account_alias = ?, posting_currency = ?, allow_direct_posting = ?, is_enabled = 1, isDelete = 0
+                        WHERE id = ?
+                        """,
+                        (alias.strip() if alias else None, curr.strip(), allow_posting, existing["id"])
+                    )
+                else:
+                    db.execute(
+                        "UPDATE gl_company_mappings SET is_enabled = 0, isDelete = 1 WHERE id = ?",
+                        (existing["id"],)
+                    )
+            elif is_mapped:
+                db.execute(
+                    """
+                    INSERT INTO gl_company_mappings (gl_account_id, company_id, company_account_alias, allow_direct_posting, posting_currency, is_enabled, isDelete)
+                    VALUES (?, ?, ?, ?, ?, 1, 0)
+                    """,
+                    (gl_account_id, cid, alias.strip() if alias else None, allow_posting, curr.strip())
+                )
+
+    @staticmethod
+    def create_company_mapping(gl_account_id: str, company_id: str, alias: str, currency: str, allow_direct_posting: bool = True) -> None:
         db.execute(
             """
             INSERT INTO gl_company_mappings (gl_account_id, company_id, company_account_alias, allow_direct_posting, posting_currency, is_enabled, isDelete)
-            VALUES (?, ?, ?, 1, ?, 1, 0)
+            VALUES (?, ?, ?, ?, ?, 1, 0)
             """,
-            (gl_account_id, company_id, alias.strip() if alias else None, currency.strip())
+            (gl_account_id, company_id, alias.strip() if alias else None, 1 if allow_direct_posting else 0, currency.strip())
         )
 
     @staticmethod
-    def update_company_mapping(mapping_id: str, gl_account_id: str, company_id: str, alias: str, currency: str) -> None:
+    def update_company_mapping(mapping_id: str, gl_account_id: str, company_id: str, alias: str, currency: str, allow_direct_posting: bool = True) -> None:
         db.execute(
             """
             UPDATE gl_company_mappings 
-            SET gl_account_id = ?, company_id = ?, company_account_alias = ?, posting_currency = ?
+            SET gl_account_id = ?, company_id = ?, company_account_alias = ?, posting_currency = ?, allow_direct_posting = ?
             WHERE id = ?
             """,
-            (gl_account_id, company_id, alias.strip() if alias else None, currency.strip(), mapping_id)
+            (gl_account_id, company_id, alias.strip() if alias else None, currency.strip(), 1 if allow_direct_posting else 0, mapping_id)
         )
 
     # =========================================================================
@@ -136,24 +274,24 @@ class GLMasterService:
         )
 
     @staticmethod
-    def create_sub_account(gl_account_id: str, sub_account_code: str, sub_account_name: str, sub_account_type: str) -> None:
+    def create_sub_account(gl_account_id: str, sub_account_code: str, sub_account_name: str, sub_account_type: str, description: Optional[str] = None, is_active: bool = True) -> None:
         db.execute(
             """
-            INSERT INTO gl_sub_accounts (gl_account_id, sub_account_code, sub_account_name, sub_account_type, is_active, isDelete)
-            VALUES (?, ?, ?, ?, 1, 0)
+            INSERT INTO gl_sub_accounts (gl_account_id, sub_account_code, sub_account_name, sub_account_type, description, is_active, isDelete)
+            VALUES (?, ?, ?, ?, ?, ?, 0)
             """,
-            (gl_account_id, sub_account_code.strip(), sub_account_name.strip(), sub_account_type.strip())
+            (gl_account_id, sub_account_code.strip(), sub_account_name.strip(), sub_account_type.strip(), description.strip() if description else None, 1 if is_active else 0)
         )
 
     @staticmethod
-    def update_sub_account(sub_account_id: str, gl_account_id: str, sub_account_code: str, sub_account_name: str, sub_account_type: str) -> None:
+    def update_sub_account(sub_account_id: str, gl_account_id: str, sub_account_code: str, sub_account_name: str, sub_account_type: str, description: Optional[str] = None, is_active: bool = True) -> None:
         db.execute(
             """
             UPDATE gl_sub_accounts 
-            SET gl_account_id = ?, sub_account_code = ?, sub_account_name = ?, sub_account_type = ?
+            SET gl_account_id = ?, sub_account_code = ?, sub_account_name = ?, sub_account_type = ?, description = ?, is_active = ?
             WHERE id = ?
             """,
-            (gl_account_id, sub_account_code.strip(), sub_account_name.strip(), sub_account_type.strip(), sub_account_id)
+            (gl_account_id, sub_account_code.strip(), sub_account_name.strip(), sub_account_type.strip(), description.strip() if description else None, 1 if is_active else 0, sub_account_id)
         )
 
     # =========================================================================
@@ -284,25 +422,65 @@ class GLMasterService:
         )
 
     @staticmethod
-    def create_budget_set(budget_code: str, budget_title: str, fiscal_year: str, company_id: str, cost_centre_id: Optional[str], gl_account_id: str, allocated_amount: float, status: str = "APPROVED") -> None:
+    def create_budget_set(
+        budget_code: str, 
+        budget_title: str, 
+        fiscal_year: str, 
+        company_id: str, 
+        cost_centre_id: Optional[str], 
+        gl_account_id: str, 
+        allocated_amount: float, 
+        status: str = "APPROVED",
+        description: Optional[str] = None,
+        is_locked: bool = False
+    ) -> None:
         db.execute(
             """
-            INSERT INTO gl_budget_sets (budget_code, budget_title, fiscal_year, company_id, cost_centre_id, gl_account_id, allocated_amount, utilized_amount, status, isDelete)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 0.0, ?, 0)
+            INSERT INTO gl_budget_sets (
+                budget_code, budget_title, fiscal_year, company_id, cost_centre_id, 
+                gl_account_id, allocated_amount, utilized_amount, status, description, is_locked, isDelete
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0.0, ?, ?, ?, 0)
             """,
-            (budget_code.strip(), budget_title.strip(), fiscal_year.strip(), company_id, cost_centre_id if cost_centre_id else None, gl_account_id, allocated_amount, status.strip())
+            (
+                budget_code.strip(), budget_title.strip(), fiscal_year.strip(), company_id, 
+                cost_centre_id if cost_centre_id else None, gl_account_id, allocated_amount, 
+                status.strip(), description.strip() if description else None, 1 if is_locked else 0
+            )
         )
 
     @staticmethod
-    def update_budget_set(budget_id: str, budget_title: str, fiscal_year: str, company_id: str, cost_centre_id: Optional[str], gl_account_id: str, allocated_amount: float, status: str = "APPROVED") -> None:
+    def update_budget_set(
+        budget_id: str, 
+        budget_title: str, 
+        fiscal_year: str, 
+        company_id: str, 
+        cost_centre_id: Optional[str], 
+        gl_account_id: str, 
+        allocated_amount: float, 
+        status: str = "APPROVED",
+        description: Optional[str] = None,
+        is_locked: bool = False
+    ) -> None:
         db.execute(
             """
             UPDATE gl_budget_sets 
-            SET budget_title = ?, fiscal_year = ?, company_id = ?, cost_centre_id = ?, gl_account_id = ?, allocated_amount = ?, status = ?
+            SET budget_title = ?, fiscal_year = ?, company_id = ?, cost_centre_id = ?, 
+                gl_account_id = ?, allocated_amount = ?, status = ?, description = ?, is_locked = ?
             WHERE id = ?
             """,
-            (budget_title.strip(), fiscal_year.strip(), company_id, cost_centre_id if cost_centre_id else None, gl_account_id, allocated_amount, status.strip(), budget_id)
+            (
+                budget_title.strip(), fiscal_year.strip(), company_id, 
+                cost_centre_id if cost_centre_id else None, gl_account_id, allocated_amount, 
+                status.strip(), description.strip() if description else None, 1 if is_locked else 0, 
+                budget_id
+            )
         )
+
+    @staticmethod
+    def is_budget_locked(budget_id: str) -> bool:
+        row = db.query_one("SELECT is_locked FROM gl_budget_sets WHERE id = ?", (budget_id,))
+        return bool(row and row.get("is_locked"))
 
     # =========================================================================
     # Safe Soft-Delete Operations for GL Master Entities (isDelete & isDeleteDate)

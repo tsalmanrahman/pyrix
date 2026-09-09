@@ -223,8 +223,14 @@ def initialize_tables():
                 account_number VARCHAR(50) NOT NULL UNIQUE,
                 account_name NVARCHAR(200) NOT NULL,
                 account_type VARCHAR(50) NOT NULL,
+                account_group VARCHAR(100) NULL,
+                account_class VARCHAR(50) DEFAULT 'POSTING',
+                posting_form VARCHAR(50) DEFAULT 'DETAILED',
                 financial_statement VARCHAR(50) NOT NULL,
                 normal_balance VARCHAR(10) NOT NULL,
+                maintain_quantity BIT DEFAULT 0,
+                cost_centre_associated BIT DEFAULT 0,
+                is_inactive BIT DEFAULT 0,
                 is_active BIT DEFAULT 1,
                 created_at DATETIME DEFAULT GETDATE()
             );
@@ -260,6 +266,7 @@ def initialize_tables():
                 sub_account_code VARCHAR(50) NOT NULL,
                 sub_account_name NVARCHAR(200) NOT NULL,
                 sub_account_type VARCHAR(50) NOT NULL,
+                description NVARCHAR(500) NULL,
                 is_active BIT DEFAULT 1,
                 created_at DATETIME DEFAULT GETDATE()
             );
@@ -308,6 +315,7 @@ def initialize_tables():
                 code INT IDENTITY(6001, 1) NOT NULL,
                 budget_code VARCHAR(50) NOT NULL UNIQUE,
                 budget_title NVARCHAR(200) NOT NULL,
+                description NVARCHAR(500) NULL,
                 fiscal_year VARCHAR(20) NOT NULL,
                 company_id UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES companies(id),
                 cost_centre_id UNIQUEIDENTIFIER NULL FOREIGN KEY REFERENCES admin_cost_centers(id),
@@ -315,6 +323,7 @@ def initialize_tables():
                 allocated_amount FLOAT NOT NULL,
                 utilized_amount FLOAT DEFAULT 0.0,
                 status VARCHAR(30) DEFAULT 'APPROVED',
+                is_locked BIT DEFAULT 0,
                 created_at DATETIME DEFAULT GETDATE()
             );
         END
@@ -2964,6 +2973,21 @@ def initialize_tables():
 
     for ddl in ddl_scripts:
         db.execute(ddl)
+
+    # GL Master Non-Destructive Migrations
+    gl_migrations = [
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_accounts') AND name = 'account_group') ALTER TABLE gl_accounts ADD account_group VARCHAR(100) NULL;",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_accounts') AND name = 'account_class') ALTER TABLE gl_accounts ADD account_class VARCHAR(50) DEFAULT 'POSTING';",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_accounts') AND name = 'posting_form') ALTER TABLE gl_accounts ADD posting_form VARCHAR(50) DEFAULT 'DETAILED';",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_accounts') AND name = 'maintain_quantity') ALTER TABLE gl_accounts ADD maintain_quantity BIT DEFAULT 0;",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_accounts') AND name = 'cost_centre_associated') ALTER TABLE gl_accounts ADD cost_centre_associated BIT DEFAULT 0;",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_accounts') AND name = 'is_inactive') ALTER TABLE gl_accounts ADD is_inactive BIT DEFAULT 0;",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_sub_accounts') AND name = 'description') ALTER TABLE gl_sub_accounts ADD description NVARCHAR(500) NULL;",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_budget_sets') AND name = 'description') ALTER TABLE gl_budget_sets ADD description NVARCHAR(500) NULL;",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_budget_sets') AND name = 'is_locked') ALTER TABLE gl_budget_sets ADD is_locked BIT DEFAULT 0;"
+    ]
+    for mig in gl_migrations:
+        db.execute(mig)
 
     logger.info("All tables verified/created with GUID primary keys and numeric Code.")
 

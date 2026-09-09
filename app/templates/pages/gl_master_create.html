@@ -3,7 +3,7 @@
 {% block title %}{{ active_company.short_code }}-GL - {% if is_view_mode %}View {{ entity_title }}{% elif is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}{% endblock %}
 
 {% block content %}
-<div class="space-y-6 max-w-4xl">
+<div class="space-y-6 w-full max-w-6xl">
 
   <!-- Minimalist Header Banner with Far-Left Back Button & Focused Right Action -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-white/10 flex items-center justify-between gap-4">
@@ -27,13 +27,13 @@
 
       <!-- Title & Scope -->
       <div class="min-w-0">
-        <h2 class="text-base font-bold text-white tracking-tight truncate">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
           {% if is_view_mode %}View {{ entity_title }}{% elif is_edit_mode %}Edit {{ entity_title }}{% else %}New {{ entity_title }}{% endif %}
         </h2>
       </div>
     </div>
 
-    <!-- Right Side: Exactly ONE Focused Action (Zero Delete Danger on Edit page) -->
+    <!-- Right Side Actions -->
     <div class="flex items-center gap-2 shrink-0">
       {% if is_view_mode and edit_url %}
       <a 
@@ -75,27 +75,37 @@
   {% endif %}
 
   <!-- Solid Form Container -->
-  <form id="master-record-form" data-unique-entity="gl-accounts" {% if record_id %}data-record-id="{{ record_id }}"{% elif record %}data-record-id="{{ record.id }}"{% endif %} action="{% if is_edit_mode %}/modules/general-ledger/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/general-ledger/master/{{ entity }}/new{% endif %}" method="POST" class="space-y-4">
-    <fieldset {% if is_view_mode %}disabled class="opacity-90 cursor-default space-y-4"{% else %}class="space-y-4"{% endif %}>
+  <form id="master-record-form" data-unique-entity="{% if entity == 'gl-accounts' %}gl-accounts{% elif entity == 'departments' %}departments{% elif entity == 'cost-centres' %}cost-centres{% endif %}" {% if record_id %}data-record-id="{{ record_id }}"{% elif record %}data-record-id="{{ record.id }}"{% endif %} action="{% if is_edit_mode %}/modules/general-ledger/master/{{ entity }}/{{ record_id }}/edit{% else %}/modules/general-ledger/master/{{ entity }}/new{% endif %}" method="POST" class="space-y-5">
+    <fieldset {% if is_view_mode %}disabled class="opacity-90 cursor-default space-y-5"{% else %}class="space-y-5"{% endif %}>
 
-    <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-4">
-      <!-- 1. GL Account (Chart of Accounts) -->
-      {% if entity == 'gl-accounts' %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+    <!-- ========================================================================= -->
+    <!-- 1. GL ACCOUNT PROFILE (Image 1 Parity) -->
+    <!-- ========================================================================= -->
+    {% if entity == 'gl-accounts' %}
+      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+        
+        <!-- Primary Identification (Dynamic Account ID Visibility) -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-5 text-xs items-start">
           {% if is_edit_mode or is_view_mode or record %}
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Account Number</label>
+          <div class="md:col-span-4 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">
+              GL Account ID / Number <span class="text-blue-400">*</span>
+            </label>
             <input 
               type="text" 
               name="account_number" 
               readonly 
-              value="{{ record.account_number }}" 
+              value="{{ record.account_number if record else auto_code }}" 
               class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
+              placeholder="e.g. 1511002"
             >
           </div>
           {% endif %}
-          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
-            <label class="block text-slate-300 font-medium mb-1">Account Name <span class="text-blue-400">*</span></label>
+
+          <div class="{% if is_edit_mode or is_view_mode or record %}md:col-span-8{% else %}md:col-span-12{% endif %} space-y-1.5">
+            <label class="block text-slate-300 font-semibold">
+              Account Name <span class="text-blue-400">*</span>
+            </label>
             <input 
               type="text" 
               name="account_name" 
@@ -103,114 +113,368 @@
               data-unique-entity="gl-accounts"
               data-unique-field="account_name"
               value="{{ record.account_name if record else '' }}" 
-              class="mac-input w-full" 
-              placeholder="e.g. Prepaid Insurance, Freight & Logistics Expense"
+              class="mac-input w-full font-medium" 
+              placeholder="e.g. Travelling & Conveyance for Marketing, Raw Material Inventory"
             >
           </div>
+        </div>
 
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Account Type <span class="text-blue-400">*</span></label>
-            <select name="account_type" class="mac-input w-full bg-slate-900 font-medium" required>
+        <!-- Classification & Groups -->
+        <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <!-- Account Type -->
+          <div class="space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Account Type <span class="text-blue-400">*</span></label>
+            <select name="account_type" id="glAccountTypeSelect" class="mac-input w-full bg-slate-900 font-medium" required>
               <option value="ASSET" {% if record and record.account_type == 'ASSET' %}selected{% endif %}>ASSET (Balance Sheet)</option>
               <option value="LIABILITY" {% if record and record.account_type == 'LIABILITY' %}selected{% endif %}>LIABILITY (Balance Sheet)</option>
               <option value="EQUITY" {% if record and record.account_type == 'EQUITY' %}selected{% endif %}>EQUITY (Balance Sheet)</option>
               <option value="REVENUE" {% if record and record.account_type == 'REVENUE' %}selected{% endif %}>REVENUE (Income Statement)</option>
-              <option value="EXPENSE" {% if record and record.account_type == 'EXPENSE' %}selected{% endif %}>EXPENSE (Income Statement)</option>
+              <option value="EXPENSE" {% if record and (record.account_type == 'EXPENSE' or not record.account_type) %}selected{% endif %}>EXPENSE (Income Statement)</option>
             </select>
           </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Financial Statement Classification</label>
+
+          <!-- Account Group -->
+          <div class="space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Account Group</label>
+            <input 
+              type="text" 
+              name="account_group" 
+              list="accountGroupsList"
+              value="{{ record.account_group if record and record.account_group else '' }}" 
+              class="mac-input w-full font-medium" 
+              placeholder="e.g. Current Assets, Operating Overhead"
+            >
+            <datalist id="accountGroupsList">
+              {% for grp in all_account_groups %}
+                <option value="{{ grp }}"></option>
+              {% endfor %}
+            </datalist>
+          </div>
+
+          <!-- Account Class -->
+          <div class="space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Account Class <span class="text-blue-400">*</span></label>
+            <select name="account_class" class="mac-input w-full bg-slate-900 font-medium">
+              <option value="POSTING" {% if not record or record.account_class == 'POSTING' %}selected{% endif %}>Posting Level (Direct Voucher Entry Allowed)</option>
+              <option value="HEADING" {% if record and record.account_class == 'HEADING' %}selected{% endif %}>Header / Group Level (Summary Heading Only)</option>
+              <option value="CONSOLIDATED" {% if record and record.account_class == 'CONSOLIDATED' %}selected{% endif %}>Consolidated Reporting Node</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Normal Balance & Statement Classification -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Financial Statement Classification</label>
             <select name="financial_statement" class="mac-input w-full bg-slate-900 font-medium">
-              <option value="BALANCE_SHEET" {% if record and record.financial_statement == 'BALANCE_SHEET' %}selected{% endif %}>BALANCE_SHEET</option>
-              <option value="INCOME_STATEMENT" {% if record and record.financial_statement == 'INCOME_STATEMENT' %}selected{% endif %}>INCOME_STATEMENT</option>
+              <option value="BALANCE_SHEET" {% if record and record.financial_statement == 'BALANCE_SHEET' %}selected{% endif %}>BALANCE_SHEET (Statement of Financial Position)</option>
+              <option value="INCOME_STATEMENT" {% if (record and record.financial_statement == 'INCOME_STATEMENT') or (not record and record_type in ['REVENUE', 'EXPENSE']) %}selected{% endif %}>INCOME_STATEMENT (Statement of Profit or Loss)</option>
             </select>
           </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Normal Balance</label>
+          <div class="space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Normal Balance</label>
             <select name="normal_balance" class="mac-input w-full bg-slate-900 font-medium">
-              <option value="DEBIT" {% if record and record.normal_balance == 'DEBIT' %}selected{% endif %}>DEBIT</option>
-              <option value="CREDIT" {% if record and record.normal_balance == 'CREDIT' %}selected{% endif %}>CREDIT</option>
+              <option value="DEBIT" {% if not record or record.normal_balance == 'DEBIT' %}selected{% endif %}>DEBIT (Asset & Expense Norm)</option>
+              <option value="CREDIT" {% if record and record.normal_balance == 'CREDIT' %}selected{% endif %}>CREDIT (Liability, Equity & Revenue Norm)</option>
             </select>
           </div>
         </div>
 
-      <!-- 2. GL Account Mapping with Company -->
-      {% elif entity == 'company-mappings' %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Master GL Account <span class="text-blue-400">*</span></label>
-            <select name="gl_account_id" class="mac-input w-full bg-slate-900 font-medium" required>
-              {% for acc in all_accounts %}
-                <option value="{{ acc.id }}" {% if record and record.gl_account_id == acc.id %}selected{% endif %}>{{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }})</option>
-              {% endfor %}
-            </select>
+        <!-- ========================================================================= -->
+        <!-- Bottom Section: Posting Representation & Operational Controls -->
+        <!-- ========================================================================= -->
+        <div class="pt-2 border-t border-white/5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-300 flex items-center gap-2">
+              <i data-lucide="sliders" class="w-3.5 h-3.5 text-blue-400"></i>
+              <span>Posting Representation & Operational Controls</span>
+            </h3>
           </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Target Operating Entity <span class="text-blue-400">*</span></label>
-            <select name="company_id" class="mac-input w-full bg-slate-900 font-medium" required>
-              {% for c in all_companies %}
-                <option value="{{ c.id }}" {% if record and record.company_id == c.id %}selected{% elif not record and c.id == active_company.id %}selected{% endif %}>[{{ c.short_code }}] {{ c.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Company Account Alias / Custom Code</label>
-            <input 
-              type="text" 
-              name="company_account_alias" 
-              value="{{ record.company_account_alias if record and record.company_account_alias else '' }}" 
-              class="mac-input w-full font-mono" 
-              placeholder="e.g. APX-GL-1010"
-            >
-          </div>
-          <div>
-            <label class="block text-slate-400 font-medium mb-1">Posting Currency</label>
-            <input 
-              type="text" 
-              name="posting_currency" 
-              readonly 
-              value="{{ record.posting_currency if record else active_company.currency }}" 
-              class="mac-input w-full font-mono font-medium"
-            >
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+
+            <!-- Left Card: Posting Form Representation (Detailed vs Consolidated) -->
+            <div class="lg:col-span-5 p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between space-y-3">
+              <div>
+                <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <i data-lucide="printer" class="w-3.5 h-3.5 text-blue-400"></i>
+                  <span>Posting Form Representation</span>
+                </span>
+              </div>
+
+              <!-- Segmented Pill Selector (Clean & Sleek) -->
+              <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-black/40 border border-white/10 text-xs">
+                <label class="relative flex items-center justify-center py-2 px-3 rounded-lg cursor-pointer transition select-none has-[:checked]:bg-blue-600 has-[:checked]:text-white text-slate-400 hover:text-slate-200">
+                  <input type="radio" name="posting_form" value="DETAILED" {% if not record or record.posting_form == 'DETAILED' %}checked{% endif %} class="sr-only">
+                  <span class="font-medium text-xs">Detailed Form</span>
+                </label>
+
+                <label class="relative flex items-center justify-center py-2 px-3 rounded-lg cursor-pointer transition select-none has-[:checked]:bg-blue-600 has-[:checked]:text-white text-slate-400 hover:text-slate-200">
+                  <input type="radio" name="posting_form" value="CONSOLIDATED" {% if record and record.posting_form == 'CONSOLIDATED' %}checked{% endif %} class="sr-only">
+                  <span class="font-medium text-xs">Consolidated</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Right Card: Operational Controls & Governance Safeguards -->
+            <div class="lg:col-span-7 p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between space-y-3">
+              <div>
+                <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span>Operational Controls & Safeguards</span>
+                </span>
+              </div>
+
+              <!-- Sleek Switch Rows -->
+              <div class="space-y-2 text-xs">
+                
+                <!-- 1. Maintain Quantity -->
+                <div class="py-2 px-3 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition">
+                  <span class="font-medium text-white text-xs">Maintain Quantity</span>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" name="maintain_quantity" value="1" {% if record and record.maintain_quantity %}checked{% endif %} class="sr-only peer">
+                    <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+
+                <!-- 2. Cost Centre Associated -->
+                <div class="py-2 px-3 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition">
+                  <span class="font-medium text-white text-xs">Cost Centre Associated</span>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" name="cost_centre_associated" value="1" {% if not record or record.cost_centre_associated %}checked{% endif %} class="sr-only peer">
+                    <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+
+                <!-- 3. Inactive Account -->
+                <div class="py-2 px-3 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition">
+                  <span class="font-medium text-white text-xs">Inactive Account</span>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" name="is_inactive" value="1" {% if record and (record.is_inactive or record.is_active == 0) %}checked{% endif %} class="sr-only peer">
+                    <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
+                  </label>
+                </div>
+
+              </div>
+            </div>
+
           </div>
         </div>
 
-      <!-- 3. GL Sub Accounts -->
-      {% elif entity == 'sub-accounts' %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Parent Master GL Account <span class="text-blue-400">*</span></label>
-            <select name="gl_account_id" class="mac-input w-full bg-slate-900 font-medium" required>
-              {% for acc in all_accounts %}
-                <option value="{{ acc.id }}" {% if record and record.gl_account_id == acc.id %}selected{% endif %}>{{ acc.account_number }} — {{ acc.account_name }}</option>
-              {% endfor %}
-            </select>
+      </div>
+
+    <!-- ========================================================================= -->
+    <!-- 2. GL ACCOUNT & MULTI-COMPANY MAPPING MATRIX (Image 2 Parity) -->
+    <!-- ========================================================================= -->
+    {% elif entity == 'company-mappings' %}
+      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+
+        <!-- Top Account Lookup with Dynamic Card -->
+        <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
+            <div class="md:col-span-5 space-y-1.5">
+              <label class="block text-slate-300 font-semibold flex items-center justify-between">
+                <span>Master GL Account ID <span class="text-blue-400">*</span></span>
+                <span class="text-[10px] text-blue-400 font-mono">Direct Selector</span>
+              </label>
+              <select name="gl_account_id" id="matrixAccountSelect" onchange="onMappingAccountChange(this.value)" class="mac-input w-full bg-slate-900 font-medium" required>
+                {% for acc in all_accounts %}
+                  <option value="{{ acc.id }}" data-name="{{ acc.account_name }}" data-number="{{ acc.account_number }}" data-type="{{ acc.account_type }}" data-balance="{{ acc.normal_balance }}" {% if (selected_account_id and selected_account_id == (acc.id|string)) or (record and record.gl_account_id == acc.id) %}selected{% endif %}>
+                    {{ acc.account_number }} — {{ acc.account_name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="md:col-span-7 space-y-1.5">
+              <label class="block text-slate-300 font-semibold">Master Account Canonical Description</label>
+              <div id="matrixAccountTitleCard" class="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
+                <div>
+                  <div id="cardAccountName" class="font-bold text-white text-xs truncate">Select an account above</div>
+                  <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                    <span id="cardAccountNumber" class="font-mono text-blue-400">#—</span>
+                    <span>•</span>
+                    <span id="cardAccountType" class="font-semibold text-slate-300">—</span>
+                  </div>
+                </div>
+                <div id="cardAccountBalance" class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-slate-800 text-slate-300 border border-white/5 shrink-0">
+                  DEBIT
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <!-- Multi-Company Matrix Grid Header & Fast Controls -->
+        <div class="flex items-center justify-between flex-wrap gap-3 pb-2 border-b border-white/5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i data-lucide="grid" class="w-4 h-4 text-blue-400"></i>
+              <span>Conglomerate Allocation Matrix ({{ all_companies|length }} Subsidiaries)</span>
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="setAllMatrixRows(true)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 transition flex items-center gap-1.5">
+              <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+              <span>Map All Entities</span>
+            </button>
+            <button type="button" onclick="setAllMatrixRows(false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition flex items-center gap-1.5">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              <span>Unmap All</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Multi-Company Table -->
+        <div class="overflow-x-auto rounded-xl border border-white/10 bg-black/20">
+          <table class="w-full text-left text-xs" id="matrixCompaniesTable">
+            <thead>
+              <tr class="border-b border-white/10 bg-white/[0.02] text-slate-400 font-bold">
+                <th class="py-3 px-3.5">Entity Code</th>
+                <th class="py-3 px-3.5">Subsidiary Legal Entity</th>
+                <th class="py-3 px-3.5 text-center">Base Currency</th>
+                <th class="py-3 px-3.5">Custom Alias / Code</th>
+                <th class="py-3 px-3.5 text-center">Allow Direct Posting</th>
+                <th class="py-3 px-3.5 text-center">Mapping Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-slate-300" id="matrixTableBody">
+              {% for comp in company_mapping_matrix %}
+              <tr class="matrix-row hover:bg-white/[0.02] transition" data-company-id="{{ comp.company_id }}">
+                <td class="py-3 px-3.5 font-mono font-bold text-blue-400">
+                  {{ comp.company_code }}
+                </td>
+                <td class="py-3 px-3.5">
+                  <div class="font-bold text-white">{{ comp.company_name }}</div>
+                  <div class="text-[10px] text-slate-500">Corporate Subsidiary</div>
+                </td>
+                <td class="py-3 px-3.5 text-center font-mono font-bold text-emerald-400">
+                  {{ comp.base_currency }}
+                </td>
+                <td class="py-3 px-3.5">
+                  <input 
+                    type="text" 
+                    class="matrix-alias-input mac-input py-1 px-2.5 font-mono text-xs w-36" 
+                    value="{{ comp.company_account_alias if comp.company_account_alias else '' }}" 
+                    placeholder="e.g. {{ comp.company_code }}-{{ comp.company_account_alias if comp.company_account_alias else '101' }}"
+                  >
+                </td>
+                <td class="py-3 px-3.5 text-center">
+                  <input 
+                    type="checkbox" 
+                    class="matrix-posting-checkbox w-4 h-4 rounded text-blue-600 accent-blue-600" 
+                    {% if comp.allow_direct_posting %}checked{% endif %}
+                  >
+                </td>
+                <td class="py-3 px-3.5 text-center">
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      class="matrix-map-toggle sr-only peer" 
+                      {% if comp.is_mapped %}checked{% endif %}
+                    >
+                    <div class="w-10 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 1-Click Matrix Save Feedback Bar -->
+        <div class="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 flex items-center justify-between flex-wrap gap-3">
+          <div class="text-xs text-blue-300">
+            <span class="font-bold">Sync across all entities:</span> Changes in the matrix are applied simultaneously to selected subsidiaries.
+          </div>
+          <button 
+            type="button" 
+            onclick="saveMatrixViaAjax()" 
+            id="btnSaveMatrixAjax"
+            class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer"
+          >
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Instant 1-Click Matrix Save</span>
+          </button>
+        </div>
+
+        <!-- Hidden Fallback Inputs for Traditional Form Submission -->
+        <input type="hidden" name="company_id" value="{{ active_company.id }}">
+        <input type="hidden" name="company_account_alias" id="fallbackAlias" value="">
+        <input type="hidden" name="posting_currency" value="{{ active_company.currency }}">
+      </div>
+
+    <!-- ========================================================================= -->
+    <!-- 3. GL SUB ACCOUNTS (Image 3 Parity) -->
+    <!-- ========================================================================= -->
+    {% elif entity == 'sub-accounts' %}
+      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+        
+        <!-- Parent Master GL Account with Dynamic Card -->
+        <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
+            <div class="md:col-span-5 space-y-1.5">
+              <label class="block text-slate-300 font-semibold">
+                Parent Master GL Account <span class="text-blue-400">*</span>
+              </label>
+              <select name="gl_account_id" id="subParentAccountSelect" onchange="onSubAccountParentChange(this)" class="mac-input w-full bg-slate-900 font-medium" required>
+                {% for acc in all_accounts %}
+                  <option value="{{ acc.id }}" data-name="{{ acc.account_name }}" data-number="{{ acc.account_number }}" data-type="{{ acc.account_type }}" data-balance="{{ acc.normal_balance }}" {% if record and record.gl_account_id == acc.id %}selected{% endif %}>
+                    {{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="md:col-span-7 space-y-1.5">
+              <label class="block text-slate-300 font-semibold">Parent GL Account Card</label>
+              <div id="subParentCard" class="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
+                <div>
+                  <div id="subParentName" class="font-bold text-white text-xs truncate">Select an account</div>
+                  <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+                    <span id="subParentNumber" class="font-mono text-emerald-400">#—</span>
+                    <span>•</span>
+                    <span id="subParentType" class="font-semibold text-slate-300">—</span>
+                  </div>
+                </div>
+                <div id="subParentBalance" class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-slate-800 text-slate-300 border border-white/5 shrink-0">
+                  DEBIT
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub Account Fields -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
           {% if is_edit_mode or is_view_mode or record %}
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Sub Account Code</label>
+          <div class="md:col-span-4 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Sub-Account ID / Code</label>
             <input 
               type="text" 
               name="sub_account_code" 
               readonly 
               value="{{ record.sub_account_code }}" 
-              class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
+              class="mac-input w-full font-mono font-bold text-emerald-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
             >
           </div>
           {% endif %}
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Sub Account Name <span class="text-blue-400">*</span></label>
+
+          <div class="{% if is_edit_mode or is_view_mode or record %}md:col-span-8{% else %}md:col-span-12{% endif %} space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Sub-Account Name <span class="text-blue-400">*</span></label>
             <input 
               type="text" 
               name="sub_account_name" 
               required 
               value="{{ record.sub_account_name if record else '' }}" 
-              class="mac-input w-full" 
-              placeholder="e.g. CNC Line 02 Special Tooling"
+              class="mac-input w-full font-medium" 
+              placeholder="e.g. Dhaka Metro Sales Roadshow Conveyance, Line 02 Special Tooling"
             >
           </div>
-          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
-            <label class="block text-slate-300 font-medium mb-1">Sub Account Dimension Type</label>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Dimension Type</label>
             <select name="sub_account_type" class="mac-input w-full bg-slate-900 font-medium">
               <option value="DEPARTMENTAL" {% if record and record.sub_account_type == 'DEPARTMENTAL' %}selected{% endif %}>DEPARTMENTAL</option>
               <option value="PROJECT" {% if record and record.sub_account_type == 'PROJECT' %}selected{% endif %}>PROJECT-BASED</option>
@@ -218,25 +482,51 @@
               <option value="GEOGRAPHIC" {% if record and record.sub_account_type == 'GEOGRAPHIC' %}selected{% endif %}>GEOGRAPHIC REGION</option>
             </select>
           </div>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Account Status</label>
+            <div class="pt-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="is_inactive" value="1" {% if record and (record.is_active == 0 or record.is_inactive) %}checked{% endif %} class="w-4 h-4 rounded text-rose-600 accent-rose-600">
+                <span class="text-xs text-rose-300 font-medium">Mark as Inactive Account</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="md:col-span-12 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Description / Analytical Notes</label>
+            <textarea 
+              name="description" 
+              rows="3" 
+              class="mac-input w-full" 
+              placeholder="Purpose, authorized personnel, or specific campaign budget scope..."
+            >{{ record.description if record and record.description else '' }}</textarea>
+          </div>
         </div>
 
-      <!-- 4. Departments -->
-      {% elif entity == 'departments' %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      </div>
+
+    <!-- ========================================================================= -->
+    <!-- 4. DEPARTMENTS (Image 4 Parity) -->
+    <!-- ========================================================================= -->
+    {% elif entity == 'departments' %}
+      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
           {% if is_edit_mode or is_view_mode or record %}
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Department Code</label>
+          <div class="md:col-span-4 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Department ID / Code</label>
             <input 
               type="text" 
               name="dept_code" 
               readonly 
               value="{{ record.dept_code }}" 
-              class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
+              class="mac-input w-full font-mono font-bold text-amber-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
             >
           </div>
           {% endif %}
-          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
-            <label class="block text-slate-300 font-medium mb-1">Department Name <span class="text-blue-400">*</span></label>
+
+          <div class="{% if is_edit_mode or is_view_mode or record %}md:col-span-8{% else %}md:col-span-12{% endif %} space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Department Name <span class="text-blue-400">*</span></label>
             <input 
               type="text" 
               name="dept_name" 
@@ -244,39 +534,45 @@
               data-unique-entity="departments"
               data-unique-field="dept_name"
               value="{{ record.dept_name if record else '' }}" 
-              class="mac-input w-full" 
-              placeholder="e.g. Quality Assurance & Metrology"
+              class="mac-input w-full font-medium" 
+              placeholder="e.g. Commercial Marketing & Brand Communications, Quality Assurance"
             >
           </div>
-          <div class="md:col-span-2">
-            <label class="block text-slate-300 font-medium mb-1">Department Head / Manager</label>
+
+          <div class="md:col-span-12 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Head of Department / Manager</label>
             <input 
               type="text" 
               name="head_of_dept" 
               value="{{ record.head_of_dept if record and record.head_of_dept else '' }}" 
-              class="mac-input w-full" 
-              placeholder="e.g. Chief Quality Officer"
+              class="mac-input w-full font-medium" 
+              placeholder="e.g. Elena Rostova (Chief Marketing Officer)"
             >
           </div>
         </div>
+      </div>
 
-      <!-- 5. Cost Centres -->
-      {% elif entity == 'cost-centres' %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+    <!-- ========================================================================= -->
+    <!-- 5. COST CENTRES (Image 5 Parity) -->
+    <!-- ========================================================================= -->
+    {% elif entity == 'cost-centres' %}
+      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
           {% if is_edit_mode or is_view_mode or record %}
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Cost Centre Code</label>
+          <div class="md:col-span-4 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Cost Centre ID / Code</label>
             <input 
               type="text" 
               name="cost_centre_code" 
               readonly 
               value="{{ record.cost_centre_code }}" 
-              class="mac-input w-full font-mono font-bold text-blue-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
+              class="mac-input w-full font-mono font-bold text-cyan-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
             >
           </div>
           {% endif %}
-          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
-            <label class="block text-slate-300 font-medium mb-1">Cost Centre Name <span class="text-blue-400">*</span></label>
+
+          <div class="{% if is_edit_mode or is_view_mode or record %}md:col-span-8{% else %}md:col-span-12{% endif %} space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Cost Centre Name <span class="text-blue-400">*</span></label>
             <input 
               type="text" 
               name="cost_centre_name" 
@@ -284,58 +580,91 @@
               data-unique-entity="cost-centres"
               data-unique-field="name"
               value="{{ record.cost_centre_name if record else '' }}" 
-              class="mac-input w-full" 
-              placeholder="e.g. SMT Line Automated Optical Inspection"
+              class="mac-input w-full font-medium" 
+              placeholder="e.g. HIL Cost Center, SMT Line 01 High-Speed Assembly"
             >
           </div>
 
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Parent Department</label>
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Parent Department Linkage</label>
             <select name="department_id" class="mac-input w-full bg-slate-900 font-medium">
-              <option value="">-- None / General --</option>
+              <option value="">-- General Administration / None --</option>
               {% for d in all_departments %}
                 <option value="{{ d.id }}" {% if record and record.department_id == d.id %}selected{% endif %}>{{ d.dept_code }} — {{ d.dept_name }}</option>
               {% endfor %}
             </select>
           </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Target Operating Entity <span class="text-blue-400">*</span></label>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Target Operating Subsidiary <span class="text-blue-400">*</span></label>
             <select name="company_id" class="mac-input w-full bg-slate-900 font-medium" required>
               {% for c in all_companies %}
                 <option value="{{ c.id }}" {% if record and record.company_id == c.id %}selected{% elif not record and c.id == active_company.id %}selected{% endif %}>[{{ c.short_code }}] {{ c.name }}</option>
               {% endfor %}
             </select>
           </div>
-        </div>
 
-      <!-- 6. Budget Sets -->
-      {% elif entity == 'budget-sets' %}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="md:col-span-12 pt-2">
+            <label class="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-white/[0.02] border border-white/5">
+              <input type="checkbox" name="is_profit_center" value="1" {% if record and record.is_profit_center %}checked{% endif %} class="w-4 h-4 rounded text-cyan-600 accent-cyan-600">
+              <span class="text-xs text-slate-300 font-medium">Is Profit Center (Generates Direct Billable Revenue alongside expense allocation)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    <!-- ========================================================================= -->
+    <!-- 6. BUDGET SET PROFILE (Image 6 Parity + Lock Budget Set) -->
+    <!-- ========================================================================= -->
+    {% elif entity == 'budget-sets' %}
+      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
           {% if is_edit_mode or is_view_mode or record %}
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Budget Code</label>
+          <div class="md:col-span-4 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Budget Set ID / Code</label>
             <input 
               type="text" 
               name="budget_code" 
               readonly 
-              class="mac-input w-full font-mono font-bold text-blue-500 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
+              class="mac-input w-full font-mono font-bold text-violet-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
               value="{{ record.budget_code }}"
             >
           </div>
           {% endif %}
-          <div class="{% if not (is_edit_mode or is_view_mode or record) %}md:col-span-2{% endif %}">
-            <label class="block text-slate-300 font-medium mb-1">Budget Title / Description <span class="text-blue-400">*</span></label>
+
+          <div class="{% if is_edit_mode or is_view_mode or record %}md:col-span-8{% else %}md:col-span-12{% endif %} space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Budget Set Name / Title <span class="text-blue-400">*</span></label>
             <input 
               type="text" 
               name="budget_title" 
               required 
               value="{{ record.budget_title if record else '' }}" 
-              class="mac-input w-full" 
-              placeholder="e.g. Q3 Factory Power & High-Voltage Grid Allocation"
+              class="mac-input w-full font-medium" 
+              placeholder="e.g. Budget Set 1 - FY2026 Operational Expenditure"
             >
           </div>
-          <div>
-            <label class="block text-slate-400 font-medium mb-1">Operating Fiscal Year</label>
+
+          <div class="md:col-span-12 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Description</label>
+            <textarea 
+              name="description" 
+              rows="3" 
+              class="mac-input w-full" 
+              placeholder="Scope, board approval minute reference, and baseline assumptions..."
+            >{{ record.description if record and record.description else '' }}</textarea>
+          </div>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Target Operating Subsidiary <span class="text-blue-400">*</span></label>
+            <select name="company_id" class="mac-input w-full bg-slate-900 font-medium" required>
+              {% for c in all_companies %}
+                <option value="{{ c.id }}" {% if record and record.company_id == c.id %}selected{% elif not record and c.id == active_company.id %}selected{% endif %}>[{{ c.short_code }}] {{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Operating Fiscal Year</label>
             <input 
               type="text" 
               name="fiscal_year" 
@@ -344,33 +673,28 @@
               class="mac-input w-full font-mono font-medium"
             >
           </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Target Operating Entity <span class="text-blue-400">*</span></label>
-            <select name="company_id" class="mac-input w-full bg-slate-900 font-medium" required>
-              {% for c in all_companies %}
-                <option value="{{ c.id }}" {% if record and record.company_id == c.id %}selected{% elif not record and c.id == active_company.id %}selected{% endif %}>[{{ c.short_code }}] {{ c.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Target GL Master Account <span class="text-blue-400">*</span></label>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Target Master GL Account <span class="text-blue-400">*</span></label>
             <select name="gl_account_id" class="mac-input w-full bg-slate-900 font-medium" required>
               {% for acc in all_accounts %}
                 <option value="{{ acc.id }}" {% if record and record.gl_account_id == acc.id %}selected{% endif %}>{{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }})</option>
               {% endfor %}
             </select>
           </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Assigned Cost Centre</label>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Assigned Cost Centre</label>
             <select name="cost_centre_id" class="mac-input w-full bg-slate-900 font-medium">
-              <option value="">-- Corporate Unassigned --</option>
+              <option value="">-- Corporate Common / Unassigned --</option>
               {% for cc in all_cost_centres %}
                 <option value="{{ cc.id }}" {% if record and record.cost_centre_id == cc.id %}selected{% endif %}>{{ cc.cost_centre_code }} — {{ cc.cost_centre_name }}</option>
               {% endfor %}
             </select>
           </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Allocated Budget Amount ({{ active_company.currency }}) <span class="text-blue-400">*</span></label>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Allocated Budget Amount ({{ active_company.currency }}) <span class="text-blue-400">*</span></label>
             <input 
               type="number" 
               step="any" 
@@ -381,20 +705,227 @@
               placeholder="0.00"
             >
           </div>
-          <div>
-            <label class="block text-slate-300 font-medium mb-1">Approval Status</label>
+
+          <div class="md:col-span-6 space-y-1.5">
+            <label class="block text-slate-300 font-semibold">Approval Status</label>
             <select name="budget_status" class="mac-input w-full bg-slate-900 font-medium">
-              <option value="APPROVED" {% if record and record.status == 'APPROVED' %}selected{% endif %}>APPROVED (Authorized for Postings)</option>
+              <option value="APPROVED" {% if not record or record.status == 'APPROVED' %}selected{% endif %}>APPROVED (Authorized for Postings)</option>
               <option value="DRAFT" {% if record and record.status == 'DRAFT' %}selected{% endif %}>DRAFT (Under Management Review)</option>
               <option value="REVISED" {% if record and record.status == 'REVISED' %}selected{% endif %}>REVISED (Supplemental Allocation)</option>
             </select>
           </div>
-        </div>
-      {% endif %}
 
-    </div>
+          <!-- Lock Budget Set Control (Matching Screenshot) -->
+          <div class="md:col-span-12 pt-2">
+            <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
+              <input 
+                type="checkbox" 
+                name="is_locked" 
+                value="1" 
+                id="lockBudgetSetCheckbox" 
+                {% if record and record.is_locked %}checked{% endif %} 
+                class="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 accent-amber-600 mt-0.5"
+              >
+              <div class="text-xs">
+                <label for="lockBudgetSetCheckbox" class="font-bold text-amber-300 flex items-center gap-1.5 cursor-pointer">
+                  <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                  <span>Lock Budget Set</span>
+                </label>
+                <p class="text-[11px] text-amber-200/70 mt-0.5">
+                  When locked, prevents further adjustments or postings against this budget set envelope to maintain strict fiscal governance.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    {% endif %}
+
     </fieldset>
   </form>
 
 </div>
+
+<script>
+  // Dynamic Title Card and Matrix Sync Script
+  document.addEventListener('DOMContentLoaded', function() {
+    // 1. Initial sub-account parent preview sync
+    const subSelect = document.getElementById('subParentAccountSelect');
+    if (subSelect) {
+      onSubAccountParentChange(subSelect);
+    }
+
+    // 2. Initial matrix account preview sync
+    const matrixSelect = document.getElementById('matrixAccountSelect');
+    if (matrixSelect) {
+      updateMatrixTitleCard(matrixSelect);
+    }
+  });
+
+  function onSubAccountParentChange(selectEl) {
+    const opt = selectEl.options[selectEl.selectedIndex];
+    if (!opt) return;
+    const nameEl = document.getElementById('subParentName');
+    const numEl = document.getElementById('subParentNumber');
+    const typeEl = document.getElementById('subParentType');
+    const balEl = document.getElementById('subParentBalance');
+
+    if (nameEl) nameEl.textContent = opt.dataset.name || opt.text;
+    if (numEl) numEl.textContent = '#' + (opt.dataset.number || '—');
+    if (typeEl) typeEl.textContent = opt.dataset.type || 'ASSET';
+    if (balEl) {
+      const bal = opt.dataset.balance || 'DEBIT';
+      balEl.textContent = bal;
+      balEl.className = bal === 'DEBIT' 
+        ? 'px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0' 
+        : 'px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0';
+    }
+  }
+
+  function updateMatrixTitleCard(selectEl) {
+    const opt = selectEl.options[selectEl.selectedIndex];
+    if (!opt) return;
+    const nameEl = document.getElementById('cardAccountName');
+    const numEl = document.getElementById('cardAccountNumber');
+    const typeEl = document.getElementById('cardAccountType');
+    const balEl = document.getElementById('cardAccountBalance');
+
+    if (nameEl) nameEl.textContent = opt.dataset.name || opt.text;
+    if (numEl) numEl.textContent = '#' + (opt.dataset.number || '—');
+    if (typeEl) typeEl.textContent = opt.dataset.type || 'ASSET';
+    if (balEl) {
+      const bal = opt.dataset.balance || 'DEBIT';
+      balEl.textContent = bal;
+      balEl.className = bal === 'DEBIT' 
+        ? 'px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0' 
+        : 'px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0';
+    }
+  }
+
+  async function onMappingAccountChange(accountId) {
+    const matrixSelect = document.getElementById('matrixAccountSelect');
+    if (matrixSelect) updateMatrixTitleCard(matrixSelect);
+
+    // Fetch matrix for the newly selected account
+    try {
+      const res = await fetch(`/api/gl/accounts/${accountId}/detail`);
+      const data = await res.json();
+      if (data.status === 'success' && data.matrix) {
+        renderMatrixRows(data.matrix);
+      }
+    } catch (e) {
+      console.error('Failed to reload matrix:', e);
+    }
+  }
+
+  function renderMatrixRows(matrix) {
+    const tbody = document.getElementById('matrixTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    matrix.forEach(comp => {
+      const tr = document.createElement('tr');
+      tr.className = 'matrix-row hover:bg-white/[0.02] transition';
+      tr.dataset.companyId = comp.company_id;
+
+      tr.innerHTML = `
+        <td class="py-3 px-3.5 font-mono font-bold text-purple-400">${comp.company_code}</td>
+        <td class="py-3 px-3.5">
+          <div class="font-bold text-white">${comp.company_name}</div>
+          <div class="text-[10px] text-slate-500">Corporate Subsidiary</div>
+        </td>
+        <td class="py-3 px-3.5 text-center font-mono font-bold text-emerald-400">${comp.base_currency}</td>
+        <td class="py-3 px-3.5">
+          <input 
+            type="text" 
+            class="matrix-alias-input mac-input py-1 px-2.5 font-mono text-xs w-36" 
+            value="${comp.company_account_alias || ''}" 
+            placeholder="e.g. ${comp.company_code}-101"
+          >
+        </td>
+        <td class="py-3 px-3.5 text-center">
+          <input 
+            type="checkbox" 
+            class="matrix-posting-checkbox w-4 h-4 rounded text-blue-600 accent-blue-600" 
+            ${comp.allow_direct_posting ? 'checked' : ''}
+          >
+        </td>
+        <td class="py-3 px-3.5 text-center">
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              class="matrix-map-toggle sr-only peer" 
+              ${comp.is_mapped ? 'checked' : ''}
+            >
+            <div class="w-10 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+
+  function setAllMatrixRows(isMapped) {
+    document.querySelectorAll('.matrix-map-toggle').forEach(el => el.checked = isMapped);
+  }
+
+  async function saveMatrixViaAjax() {
+    const accSelect = document.getElementById('matrixAccountSelect');
+    if (!accSelect) return;
+    const accountId = accSelect.value;
+    const btn = document.getElementById('btnSaveMatrixAjax');
+
+    const rows = document.querySelectorAll('.matrix-row');
+    const mappings = [];
+    rows.forEach(r => {
+      const cid = r.dataset.companyId;
+      const aliasInput = r.querySelector('.matrix-alias-input');
+      const postingCb = r.querySelector('.matrix-posting-checkbox');
+      const mapToggle = r.querySelector('.matrix-map-toggle');
+
+      mappings.push({
+        company_id: cid,
+        is_mapped: mapToggle ? mapToggle.checked : false,
+        company_account_alias: aliasInput ? aliasInput.value.trim() : '',
+        allow_direct_posting: postingCb ? postingCb.checked : true
+      });
+    });
+
+    const origText = btn.innerHTML;
+    btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Saving...`;
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/gl/company-mappings/matrix-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gl_account_id: accountId, mappings: mappings })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        btn.className = 'px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-2';
+        btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Saved Successfully!`;
+        setTimeout(() => {
+          btn.className = 'px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer';
+          btn.innerHTML = origText;
+          btn.disabled = false;
+          if (window.lucide) window.lucide.createIcons();
+        }, 2000);
+      } else {
+        alert('Error saving mappings: ' + (data.message || 'Unknown error'));
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+    } catch (err) {
+      alert('Network error while saving matrix: ' + err.message);
+      btn.innerHTML = origText;
+      btn.disabled = false;
+    }
+  }
+</script>
 {% endblock %}
