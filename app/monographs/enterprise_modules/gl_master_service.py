@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional
 import uuid
 from app.core.db import db
+from app.core.company_service import CompanyService
 
 class GLMasterService:
 
@@ -211,7 +212,8 @@ class GLMasterService:
             cid = item.get("company_id")
             is_mapped = bool(item.get("is_mapped"))
             alias = item.get("company_account_alias") or ""
-            curr = item.get("posting_currency") or "USD"
+            comp_obj = CompanyService.get_company_by_id(str(cid)) if cid else None
+            curr = item.get("posting_currency") or (comp_obj.get("currency") if comp_obj else "BDT")
             allow_posting = 1 if item.get("allow_direct_posting", True) else 0
 
             existing = db.query_one(
@@ -320,11 +322,24 @@ class GLMasterService:
     # =========================================================================
     @staticmethod
     def get_all_departments() -> List[Dict[str, Any]]:
-        return db.query("SELECT * FROM gl_departments WHERE COALESCE(isDelete, 0) = 0 ORDER BY dept_code ASC")
+        return db.query("""
+            SELECT d.*, COUNT(cc.id) AS cost_center_count
+            FROM gl_departments d
+            LEFT JOIN gl_cost_centres cc ON cc.department_id = d.id AND COALESCE(cc.isDelete, 0) = 0
+            WHERE COALESCE(d.isDelete, 0) = 0
+            GROUP BY d.id, d.code, d.dept_code, d.dept_name, d.head_of_dept, d.is_active, d.created_at, d.isDelete, d.isDeleteDate
+            ORDER BY d.dept_code ASC
+        """)
 
     @staticmethod
     def get_department_by_id(department_id: str) -> Optional[Dict[str, Any]]:
-        return db.query_one("SELECT * FROM gl_departments WHERE id = ? AND COALESCE(isDelete, 0) = 0", (department_id,))
+        return db.query_one("""
+            SELECT d.*, COUNT(cc.id) AS cost_center_count
+            FROM gl_departments d
+            LEFT JOIN gl_cost_centres cc ON cc.department_id = d.id AND COALESCE(cc.isDelete, 0) = 0
+            WHERE d.id = ? AND COALESCE(d.isDelete, 0) = 0
+            GROUP BY d.id, d.code, d.dept_code, d.dept_name, d.head_of_dept, d.is_active, d.created_at, d.isDelete, d.isDeleteDate
+        """, (department_id,))
 
     @staticmethod
     def create_department(dept_code: str, dept_name: str, head_of_dept: str) -> None:

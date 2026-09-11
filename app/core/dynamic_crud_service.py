@@ -365,6 +365,7 @@ class DynamicCrudService:
             "editable_fields": [
                 {"field": "name", "label": "Company Legal Name", "type": "text", "required": True},
                 {"field": "short_code", "label": "Short Code", "type": "text", "required": True},
+                {"field": "country", "label": "Country / Region", "type": "text"},
                 {"field": "currency", "label": "Base / Operating Currency", "type": "select", "options": ["BDT", "GBP", "USD", "EUR", "AED", "AUD", "CAD", "JPY", "SGD"], "required": True},
                 {"field": "industry", "label": "Industry Segment", "type": "text"},
                 {"field": "headquarters", "label": "Headquarters Location", "type": "text"},

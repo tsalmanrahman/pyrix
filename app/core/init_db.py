@@ -2984,7 +2984,8 @@ def initialize_tables():
         "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_accounts') AND name = 'is_inactive') ALTER TABLE gl_accounts ADD is_inactive BIT DEFAULT 0;",
         "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_sub_accounts') AND name = 'description') ALTER TABLE gl_sub_accounts ADD description NVARCHAR(500) NULL;",
         "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_budget_sets') AND name = 'description') ALTER TABLE gl_budget_sets ADD description NVARCHAR(500) NULL;",
-        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_budget_sets') AND name = 'is_locked') ALTER TABLE gl_budget_sets ADD is_locked BIT DEFAULT 0;"
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('gl_budget_sets') AND name = 'is_locked') ALTER TABLE gl_budget_sets ADD is_locked BIT DEFAULT 0;",
+        "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('companies') AND name = 'country') ALTER TABLE companies ADD country NVARCHAR(100) NULL;"
     ]
     for mig in gl_migrations:
         db.execute(mig)
@@ -3244,9 +3245,9 @@ def seed_gl_master_data():
                 db.execute(
                     """
                     INSERT INTO gl_company_mappings (gl_account_id, company_id, company_account_alias, allow_direct_posting, posting_currency, is_enabled)
-                    VALUES (?, ?, ?, 1, 'USD', 1)
+                    VALUES (?, ?, ?, 1, ?, 1)
                     """,
-                    (acc["id"], comp["id"], f"{acc['account_number']}")
+                    (acc["id"], comp["id"], f"{acc['account_number']}", comp.get("currency", "BDT"))
                 )
         logger.info("Seeded Multi-Company GL Account Mappings.")
 

@@ -27,7 +27,10 @@ class GLJournalService:
     def get_voucher_by_id(voucher_id: str) -> Optional[Dict[str, Any]]:
         return db.query_one(
             """
-            SELECT v.*, b.batch_number, b.batch_title, c.name AS company_name, c.short_code AS company_code, c.currency
+            SELECT v.*, b.batch_number, b.batch_title, c.name AS company_name, c.short_code AS company_code,
+                   COALESCE(v.currency, c.currency, 'BDT') AS currency,
+                   COALESCE(v.exchange_rate, 1.0) AS exchange_rate,
+                   v.fiscal_year, v.fiscal_period
             FROM gl_journal_vouchers v
             LEFT JOIN gl_journal_batches b ON v.batch_id = b.id
             JOIN companies c ON v.company_id = c.id
@@ -40,11 +43,13 @@ class GLJournalService:
     def get_voucher_lines(voucher_id: str) -> List[Dict[str, Any]]:
         return db.query(
             """
-            SELECT l.*, a.account_number, a.account_name, a.account_type, 
+            SELECT l.*, a.account_number, a.account_name, a.account_type,
+                   sa.sub_account_code, sa.sub_account_name,
                    cc.cost_center_code AS cost_centre_code, cc.name AS cost_centre_name,
                    d.dept_code, d.dept_name
             FROM gl_journal_voucher_lines l
             JOIN gl_accounts a ON l.gl_account_id = a.id
+            LEFT JOIN gl_sub_accounts sa ON l.sub_account_id = sa.id
             LEFT JOIN admin_cost_centers cc ON l.cost_centre_id = cc.id
             LEFT JOIN gl_departments d ON l.department_id = d.id
             WHERE l.voucher_id = ?
@@ -52,6 +57,33 @@ class GLJournalService:
             """,
             (voucher_id,)
         )
+
+    @staticmethod
+    def get_all_sub_accounts(gl_account_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        if gl_account_id:
+            return db.query(
+                """
+                SELECT sa.*, a.account_number, a.account_name
+                FROM gl_sub_accounts sa
+                JOIN gl_accounts a ON sa.gl_account_id = a.id
+                WHERE sa.gl_account_id = ? AND COALESCE(sa.isDelete, 0) = 0 AND COALESCE(sa.is_active, 1) = 1
+                ORDER BY sa.sub_account_code ASC
+                """,
+                (gl_account_id,)
+            )
+        return db.query(
+            """
+            SELECT sa.*, a.account_number, a.account_name
+            FROM gl_sub_accounts sa
+            JOIN gl_accounts a ON sa.gl_account_id = a.id
+            WHERE COALESCE(sa.isDelete, 0) = 0 AND COALESCE(sa.is_active, 1) = 1
+            ORDER BY sa.sub_account_code ASC
+            """
+        )
+
+    @staticmethod
+    def get_fiscal_periods() -> List[Dict[str, Any]]:
+        return db.query("SELECT * FROM admin_fiscal_periods ORDER BY start_date ASC")
 
     @staticmethod
     def create_journal_voucher(
@@ -63,6 +95,10 @@ class GLJournalService:
         lines: List[Dict[str, Any]],
         status: str = "POSTED",
         batch_id: Optional[str] = None,
+        currency: str = "BDT",
+        exchange_rate: float = 1.0,
+        fiscal_year: Optional[str] = None,
+        fiscal_period: Optional[int] = None,
         created_by: str = "Operator Admin"
     ) -> str:
         total_amount = sum(float(line.get("debit_amount", 0.0) or 0.0) for line in lines)
@@ -70,25 +106,50 @@ class GLJournalService:
         with db.get_cursor(commit=True) as cursor:
             cursor.execute(
                 """
-                INSERT INTO gl_journal_vouchers (voucher_number, batch_id, company_id, voucher_date, reference_number, narration, total_amount, status, created_by, isDelete)
+                INSERT INTO gl_journal_vouchers (
+                    voucher_number, batch_id, company_id, voucher_date, reference_number,
+                    narration, total_amount, status, currency, exchange_rate, fiscal_year,
+                    fiscal_period, created_by, isDelete
+                )
                 OUTPUT INSERTED.id
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
                 """,
-                (voucher_number.strip(), batch_id if batch_id else None, company_id, voucher_date, reference_number.strip() if reference_number else None, narration.strip(), total_amount, status, created_by)
+                (
+                    voucher_number.strip(),
+                    batch_id if batch_id else None,
+                    company_id,
+                    voucher_date,
+                    reference_number.strip() if reference_number else None,
+                    narration.strip(),
+                    total_amount,
+                    status,
+                    currency,
+                    float(exchange_rate or 1.0),
+                    fiscal_year,
+                    int(fiscal_period) if fiscal_period else None,
+                    created_by
+                )
             )
             voucher_id = str(cursor.fetchone()[0])
 
             for idx, line in enumerate(lines, start=1):
                 cursor.execute(
                     """
-                    INSERT INTO gl_journal_voucher_lines (voucher_id, gl_account_id, cost_centre_id, department_id, line_narration, debit_amount, credit_amount, sort_order)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO gl_journal_voucher_lines (
+                        voucher_id, gl_account_id, sub_account_id, cost_centre_id,
+                        department_id, project_code, job_id, line_narration,
+                        debit_amount, credit_amount, sort_order
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         voucher_id,
                         line["gl_account_id"],
+                        line.get("sub_account_id") if line.get("sub_account_id") else None,
                         line.get("cost_centre_id") if line.get("cost_centre_id") else None,
                         line.get("department_id") if line.get("department_id") else None,
+                        line.get("project_code") if line.get("project_code") else None,
+                        line.get("job_id") if line.get("job_id") else None,
                         line.get("line_narration", "").strip(),
                         float(line.get("debit_amount", 0.0) or 0.0),
                         float(line.get("credit_amount", 0.0) or 0.0),
@@ -104,7 +165,11 @@ class GLJournalService:
         reference_number: str,
         narration: str,
         lines: List[Dict[str, Any]],
-        status: str = "POSTED"
+        status: str = "POSTED",
+        currency: str = "BDT",
+        exchange_rate: float = 1.0,
+        fiscal_year: Optional[str] = None,
+        fiscal_period: Optional[int] = None
     ) -> None:
         total_amount = sum(float(line.get("debit_amount", 0.0) or 0.0) for line in lines)
 
@@ -112,24 +177,43 @@ class GLJournalService:
             cursor.execute(
                 """
                 UPDATE gl_journal_vouchers
-                SET voucher_date = ?, reference_number = ?, narration = ?, total_amount = ?, status = ?
+                SET voucher_date = ?, reference_number = ?, narration = ?, total_amount = ?,
+                    status = ?, currency = ?, exchange_rate = ?, fiscal_year = ?, fiscal_period = ?
                 WHERE id = ?
                 """,
-                (voucher_date, reference_number.strip() if reference_number else None, narration.strip(), total_amount, status, voucher_id)
+                (
+                    voucher_date,
+                    reference_number.strip() if reference_number else None,
+                    narration.strip(),
+                    total_amount,
+                    status,
+                    currency,
+                    float(exchange_rate or 1.0),
+                    fiscal_year,
+                    int(fiscal_period) if fiscal_period else None,
+                    voucher_id
+                )
             )
             # Recreate lines
             cursor.execute("DELETE FROM gl_journal_voucher_lines WHERE voucher_id = ?", (voucher_id,))
             for idx, line in enumerate(lines, start=1):
                 cursor.execute(
                     """
-                    INSERT INTO gl_journal_voucher_lines (voucher_id, gl_account_id, cost_centre_id, department_id, line_narration, debit_amount, credit_amount, sort_order)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO gl_journal_voucher_lines (
+                        voucher_id, gl_account_id, sub_account_id, cost_centre_id,
+                        department_id, project_code, job_id, line_narration,
+                        debit_amount, credit_amount, sort_order
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         voucher_id,
                         line["gl_account_id"],
+                        line.get("sub_account_id") if line.get("sub_account_id") else None,
                         line.get("cost_centre_id") if line.get("cost_centre_id") else None,
                         line.get("department_id") if line.get("department_id") else None,
+                        line.get("project_code") if line.get("project_code") else None,
+                        line.get("job_id") if line.get("job_id") else None,
                         line.get("line_narration", "").strip(),
                         float(line.get("debit_amount", 0.0) or 0.0),
                         float(line.get("credit_amount", 0.0) or 0.0),

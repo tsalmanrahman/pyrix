@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmartTableRowNavigation();
   initModalAutoHideManager();
   initUniversalFormValidation();
+  initSuiteSubnavSmartArrows();
 });
 
 /* ==========================================================================
@@ -1630,6 +1631,9 @@ function initDragToScroll() {
   const scrollContainers = document.querySelectorAll('.overflow-x-auto, .table-responsive');
 
   scrollContainers.forEach(container => {
+    // Exclude suite subnav as it has its own bespoke chevron & glide engine
+    if (container.id === 'dynamic-suite-subnav' || container.closest('#subnav-container')) return;
+
     // Hide ugly native scrollbar
     container.classList.add('no-scrollbar');
 
@@ -2692,6 +2696,108 @@ function setupDuplicateCheckers(form) {
     });
   });
 }
+
+/* ==========================================================================
+   🧭 DYNAMIC SUITE-CONTEXTUAL SUB-NAVIGATION CONTROLLER (SYSTEM-WIDE)
+   - Zero Scrollbar across all modern browsers.
+   - Smooth horizontal chevron sliding (< and >).
+   - Zero Clutter: chevrons & edge gradient masks are completely hidden
+     when tabs count is small (e.g. 2 or 4) or when there is no overflow.
+   - Dynamic boundary checks: chevrons auto-disable when at start or end.
+   - Automatic active tab centering on initial load.
+   ========================================================================== */
+function scrollSuiteSubnav(direction) {
+  const track = document.getElementById('dynamic-suite-subnav');
+  if (!track) return;
+  const scrollAmount = 260;
+  track.scrollBy({
+    left: direction === 'right' ? scrollAmount : -scrollAmount,
+    behavior: 'smooth'
+  });
+}
+window.scrollSuiteSubnav = scrollSuiteSubnav;
+
+function initSuiteSubnavSmartArrows() {
+  const container = document.getElementById('subnav-container');
+  const track = document.getElementById('dynamic-suite-subnav');
+  if (!container || !track) return;
+
+  const btnLeft = document.getElementById('subnav-btn-left');
+  const btnRight = document.getElementById('subnav-btn-right');
+  const fadeLeft = document.getElementById('subnav-fade-left');
+  const fadeRight = document.getElementById('subnav-fade-right');
+
+  if (!btnLeft || !btnRight) return;
+
+  function updateSubnavArrows() {
+    // Check if track overflows horizontally
+    const scrollLeft = track.scrollLeft;
+    const maxScroll = track.scrollWidth - track.clientWidth;
+
+    // Threshold of 8px to handle fractional pixel zoom/rounding
+    const hasOverflow = maxScroll > 8;
+
+    if (!hasOverflow) {
+      // Small number of tabs (e.g. 2 or 4 tabs) that fit on screen:
+      // Zero clutter - hide navigation buttons and edge fade masks completely
+      btnLeft.style.display = 'none';
+      btnRight.style.display = 'none';
+      if (fadeLeft) {
+        fadeLeft.style.display = 'none';
+        fadeLeft.style.opacity = '0';
+      }
+      if (fadeRight) {
+        fadeRight.style.display = 'none';
+        fadeRight.style.opacity = '0';
+      }
+      return;
+    }
+
+    // Overflow exists (e.g. 8 or 10 tabs, or lower resolution displays)
+    btnLeft.style.display = 'flex';
+    btnRight.style.display = 'flex';
+
+    // Left chevron & gradient mask state
+    const isAtStart = scrollLeft <= 5;
+    btnLeft.disabled = isAtStart;
+    if (fadeLeft) {
+      fadeLeft.style.display = isAtStart ? 'none' : 'block';
+      fadeLeft.style.opacity = isAtStart ? '0' : '1';
+    }
+
+    // Right chevron & gradient mask state
+    const isAtEnd = scrollLeft >= maxScroll - 5;
+    btnRight.disabled = isAtEnd;
+    if (fadeRight) {
+      fadeRight.style.display = isAtEnd ? 'none' : 'block';
+      fadeRight.style.opacity = isAtEnd ? '0' : '1';
+    }
+  }
+
+  // Bind scroll and window resize events
+  track.addEventListener('scroll', updateSubnavArrows, { passive: true });
+  window.addEventListener('resize', updateSubnavArrows, { passive: true });
+
+  // Ensure Lucide icons inside chevrons render properly
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+
+  // Initial evaluations after layout rendering
+  setTimeout(updateSubnavArrows, 50);
+  setTimeout(updateSubnavArrows, 250);
+
+  // Auto-scroll active tab into view if it was cut off or out of screen
+  const activeTab = track.querySelector('[data-subnav-active="true"]');
+  if (activeTab) {
+    setTimeout(() => {
+      activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      setTimeout(updateSubnavArrows, 350);
+    }, 100);
+  }
+}
+window.initSuiteSubnavSmartArrows = initSuiteSubnavSmartArrows;
+
 
 
 

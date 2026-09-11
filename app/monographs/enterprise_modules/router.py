@@ -1049,7 +1049,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         "gl_category_count": len(gl_categories),
         "gl_segment_count": len(gl_segments),
         "gl_integrity_label": gl_integrity.get("status_label", "100% HEALTHY"),
-        "gl_cost_spent": f"${gl_cost_analysis.get('kpis', {}).get('total_actual_spent', 0.0):,.0f}",
+        "gl_cost_spent": f"{active_company.get('currency_symbol', '৳')}{gl_cost_analysis.get('kpis', {}).get('total_actual_spent', 0.0):,.0f}",
         "ar_customers_count": len(ar_customers),
         "ar_customer_groups_count": len(ar_customer_groups),
         "ar_commercial_groups_count": len(ar_commercial_groups),
@@ -1985,6 +1985,12 @@ async def new_journal_voucher_page(request: Request):
     db_health = db.check_health()
     all_accounts = GLMasterService.get_all_accounts()
     all_cost_centres = GLMasterService.get_cost_centres_for_company(str(active_company["id"]))
+    all_sub_accounts = GLJournalService.get_all_sub_accounts()
+    fiscal_periods = GLJournalService.get_fiscal_periods()
+    all_batches = GLJournalService.get_batches_for_company(str(active_company["id"]))
+
+    batch_id = request.query_params.get("batch_id")
+    active_batch = GLJournalService.get_batch_by_id(batch_id) if batch_id else None
 
     breadcrumbs = [
         {"title": "Home", "url": "/"},
@@ -2006,8 +2012,13 @@ async def new_journal_voucher_page(request: Request):
             "db_health": db_health,
             "all_accounts": all_accounts,
             "all_cost_centres": all_cost_centres,
+            "all_sub_accounts": all_sub_accounts,
+            "fiscal_periods": fiscal_periods,
+            "all_batches": all_batches,
+            "active_batch": active_batch,
             "breadcrumbs": breadcrumbs,
             "is_edit_mode": False,
+            "is_view_mode": False,
             "voucher": None,
             "auto_voucher_number": auto_voucher_number,
             "lines": [],
@@ -2021,11 +2032,19 @@ async def handle_new_journal_submit(
     voucher_number: Optional[str] = Form(None),
     voucher_date: str = Form(...),
     reference_number: Optional[str] = Form(None),
-    narration: str = Form(...)
+    narration: str = Form(...),
+    currency: Optional[str] = Form(None),
+    exchange_rate: Optional[float] = Form(1.0),
+    fiscal_year: Optional[str] = Form(None),
+    fiscal_period: Optional[int] = Form(None),
+    batch_id: Optional[str] = Form(None)
 ):
     form_data = await request.form()
     account_ids = form_data.getlist("line_account_id[]")
+    sub_account_ids = form_data.getlist("line_sub_account_id[]")
     cost_centre_ids = form_data.getlist("line_cost_centre_id[]")
+    project_codes = form_data.getlist("line_project_code[]")
+    job_ids = form_data.getlist("line_job_id[]")
     narrations = form_data.getlist("line_narration[]")
     debits = form_data.getlist("line_debit[]")
     credits = form_data.getlist("line_credit[]")
@@ -2034,7 +2053,10 @@ async def handle_new_journal_submit(
     for i in range(len(account_ids)):
         lines.append({
             "gl_account_id": account_ids[i],
+            "sub_account_id": sub_account_ids[i] if i < len(sub_account_ids) and sub_account_ids[i] else None,
             "cost_centre_id": cost_centre_ids[i] if i < len(cost_centre_ids) and cost_centre_ids[i] else None,
+            "project_code": project_codes[i] if i < len(project_codes) and project_codes[i] else None,
+            "job_id": job_ids[i] if i < len(job_ids) and job_ids[i] else None,
             "line_narration": narrations[i] if i < len(narrations) else "",
             "debit_amount": float(debits[i]) if i < len(debits) and debits[i] else 0.0,
             "credit_amount": float(credits[i]) if i < len(credits) and credits[i] else 0.0
@@ -2044,13 +2066,20 @@ async def handle_new_journal_submit(
     actual_voucher_number = SequenceService.get_next_code("gl_journal_vouchers")
 
     active_company = CompanyService.resolve_active_company(request)
+    resolved_currency = currency or active_company.get("currency") or "BDT"
+
     GLJournalService.create_journal_voucher(
         company_id=str(active_company["id"]),
         voucher_number=actual_voucher_number,
         voucher_date=voucher_date,
         reference_number=reference_number or "",
         narration=narration,
-        lines=lines
+        lines=lines,
+        batch_id=batch_id if batch_id else None,
+        currency=resolved_currency,
+        exchange_rate=exchange_rate or 1.0,
+        fiscal_year=fiscal_year,
+        fiscal_period=fiscal_period
     )
     return RedirectResponse(url="/modules/general-ledger?tab=journals", status_code=303)
 
@@ -2068,6 +2097,10 @@ async def edit_journal_voucher_page(request: Request, voucher_id: str):
     db_health = db.check_health()
     all_accounts = GLMasterService.get_all_accounts()
     all_cost_centres = GLMasterService.get_cost_centres_for_company(str(active_company["id"]))
+    all_sub_accounts = GLJournalService.get_all_sub_accounts()
+    fiscal_periods = GLJournalService.get_fiscal_periods()
+    all_batches = GLJournalService.get_batches_for_company(str(active_company["id"]))
+    active_batch = GLJournalService.get_batch_by_id(voucher.get("batch_id")) if voucher.get("batch_id") else None
 
     is_view = request.url.path.endswith("/view") or request.query_params.get("mode") == "view"
     edit_url = f"/modules/general-ledger/journals/{voucher_id}/edit"
@@ -2091,6 +2124,10 @@ async def edit_journal_voucher_page(request: Request, voucher_id: str):
             "db_health": db_health,
             "all_accounts": all_accounts,
             "all_cost_centres": all_cost_centres,
+            "all_sub_accounts": all_sub_accounts,
+            "fiscal_periods": fiscal_periods,
+            "all_batches": all_batches,
+            "active_batch": active_batch,
             "breadcrumbs": breadcrumbs,
             "is_edit_mode": not is_view,
             "is_view_mode": is_view,
@@ -2108,11 +2145,18 @@ async def handle_edit_journal_submit(
     voucher_id: str,
     voucher_date: str = Form(...),
     reference_number: Optional[str] = Form(None),
-    narration: str = Form(...)
+    narration: str = Form(...),
+    currency: Optional[str] = Form(None),
+    exchange_rate: Optional[float] = Form(1.0),
+    fiscal_year: Optional[str] = Form(None),
+    fiscal_period: Optional[int] = Form(None)
 ):
     form_data = await request.form()
     account_ids = form_data.getlist("line_account_id[]")
+    sub_account_ids = form_data.getlist("line_sub_account_id[]")
     cost_centre_ids = form_data.getlist("line_cost_centre_id[]")
+    project_codes = form_data.getlist("line_project_code[]")
+    job_ids = form_data.getlist("line_job_id[]")
     narrations = form_data.getlist("line_narration[]")
     debits = form_data.getlist("line_debit[]")
     credits = form_data.getlist("line_credit[]")
@@ -2121,18 +2165,28 @@ async def handle_edit_journal_submit(
     for i in range(len(account_ids)):
         lines.append({
             "gl_account_id": account_ids[i],
+            "sub_account_id": sub_account_ids[i] if i < len(sub_account_ids) and sub_account_ids[i] else None,
             "cost_centre_id": cost_centre_ids[i] if i < len(cost_centre_ids) and cost_centre_ids[i] else None,
+            "project_code": project_codes[i] if i < len(project_codes) and project_codes[i] else None,
+            "job_id": job_ids[i] if i < len(job_ids) and job_ids[i] else None,
             "line_narration": narrations[i] if i < len(narrations) else "",
             "debit_amount": float(debits[i]) if i < len(debits) and debits[i] else 0.0,
             "credit_amount": float(credits[i]) if i < len(credits) and credits[i] else 0.0
         })
+
+    active_company = CompanyService.resolve_active_company(request)
+    resolved_currency = currency or active_company.get("currency") or "BDT"
 
     GLJournalService.update_journal_voucher(
         voucher_id=voucher_id,
         voucher_date=voucher_date,
         reference_number=reference_number or "",
         narration=narration,
-        lines=lines
+        lines=lines,
+        currency=resolved_currency,
+        exchange_rate=exchange_rate or 1.0,
+        fiscal_year=fiscal_year,
+        fiscal_period=fiscal_period
     )
     return RedirectResponse(url="/modules/general-ledger?tab=journals", status_code=303)
 

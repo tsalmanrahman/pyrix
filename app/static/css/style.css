@@ -855,3 +855,152 @@ select.mac-input {
   color: #e11d48;
 }
 
+/* ==========================================================================
+   📐 CONTENT-AWARE DYNAMIC TABLE & PAGE LAYOUT ENGINE
+   Automatically sizes table cards and columns to fit content length,
+   expanding as data lengthens and wrapping to multi-line only upon
+   reaching the user's screen boundary. Eliminates arbitrary empty voids.
+   ========================================================================== */
+/* Standalone tables outside the workspace stage (e.g. settings, security) */
+:not(.workspace-content-aware-stage) > .card-content-aware,
+:not(.workspace-content-aware-stage) > .workspace-table-card,
+:not(.workspace-content-aware-stage) > .glass-card:has(> .overflow-x-auto > table:not(.no-smart-table):not(#journal-lines-table)),
+:not(.workspace-content-aware-stage) > .glass-card:has(> table:not(.no-smart-table):not(#journal-lines-table)) {
+  width: fit-content !important;
+  min-width: min(100%, 720px) !important;
+  max-width: 100% !important;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.table-content-aware,
+.glass-card table:not(.no-smart-table) {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-content-aware th,
+.table-content-aware td,
+.glass-card table:not(.no-smart-table) th,
+.glass-card table:not(.no-smart-table) td {
+  white-space: nowrap;
+}
+
+/* Screen-boundary multiline wrapping for primary text columns */
+.table-content-aware .cell-wrap-boundary,
+.table-content-aware th.cell-wrap-boundary,
+.table-content-aware td.cell-wrap-boundary,
+.glass-card table:not(.no-smart-table) .cell-wrap-boundary,
+.glass-card table:not(.no-smart-table) th.cell-wrap-boundary,
+.glass-card table:not(.no-smart-table) td.cell-wrap-boundary {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  min-width: 180px;
+}
+
+/* ==========================================================================
+   📐 CONTENT-AWARE SYNCHRONIZED SECTIONS ENGINE (SYSTEM-WIDE)
+   1. Default Floor: Table length matches Sub Pages Bar length (~850px).
+   2. Synchronized Growth: If table content grows, Title Bar and Sub Pages
+      Bar grow alongside it until reaching the display's side.
+   3. Display Side Boundary: Screen boundary caps at 100% with multiline wrap.
+   ========================================================================== */
+.workspace-content-aware-stage {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: fit-content !important;
+  min-width: min(100%, 720px) !important;
+  max-width: 100% !important;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Force all cards inside the workspace stage to fill 100% of the stage width */
+.workspace-content-aware-stage .glass-card,
+.workspace-content-aware-stage > .glass-card,
+.workspace-content-aware-stage > div.glass-card,
+.workspace-content-aware-stage > div > .glass-card,
+.workspace-content-aware-stage > div.space-y-4 > .glass-card,
+.workspace-content-aware-stage .card-content-aware,
+.workspace-content-aware-stage .workspace-table-card,
+.workspace-content-aware-stage div.glass-card:has(table),
+.workspace-content-aware-stage div.glass-card:has(> .overflow-x-auto > table),
+.workspace-content-aware-stage div.glass-card:has(> .overflow-x-auto > table:not(#journal-lines-table)),
+.workspace-content-aware-stage div.glass-card:has(> table:not(#journal-lines-table)) {
+  width: 100% !important;
+  min-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Sub Pages Bar: defines natural minimum floor length, expands with table */
+.workspace-content-aware-stage #dynamic-suite-subnav,
+.subnav-content-aware {
+  width: max-content !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* ==========================================================================
+   🧭 DYNAMIC SUITE-CONTEXTUAL SUB-NAVIGATION (SYSTEM-WIDE CHEVRON ENGINE)
+   1. Zero Scrollbar: Completely hidden scrollbars across all rendering engines.
+   2. Sleek Floating Chevrons: Smooth left / right arrow navigation buttons.
+   3. Auto-Fade Edge Masks: Subtle gradient masks indicating overflow.
+   4. Zero Clutter: Completely hidden when tabs count is small (<= 4) or no overflow.
+   ========================================================================== */
+
+/* Zero scrollbar rules across all rendering engines */
+#dynamic-suite-subnav,
+.no-scrollbar {
+  scrollbar-width: none !important;      /* Firefox */
+  -ms-overflow-style: none !important;   /* IE and Edge */
+}
+
+#dynamic-suite-subnav::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;              /* Chrome, Safari, WebKit */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+#dynamic-suite-subnav {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Floating Navigation Chevrons */
+.subnav-nav-btn {
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+}
+
+.subnav-nav-btn:disabled,
+.subnav-nav-btn[disabled] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  cursor: default !important;
+  transform: scale(0.85) !important;
+}
+
+/* Sub-navigation Edge Gradient Fade Masks */
+.subnav-fade-mask {
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   ⚡ DYNAMIC JOURNAL ENTRY & TRANSACTION BATCH ENGINE
+   ========================================================================== */
+.quick-entry-hidden {
+  display: none !important;
+}
+
+.journal-kpi-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+
+

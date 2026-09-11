@@ -43,9 +43,10 @@ def test_sub_accounts():
     html = res.text
     assert "SUB-001" in html, "Expected SUB-001 in edit mode"
     assert "Master Account Hierarchy" in html, "Expected Master Account Hierarchy header"
+    assert "Controlling Parent GL Account" not in html, "Marked area 'Controlling Parent GL Account' must not be shown!"
     assert "dim-type-btn" in html, "Expected dimension type chips"
     assert "Parent GL Account Card" not in html, "Muddy card must not be in edit mode"
-    print("PASS: Edit mode rendered with Master Account Hierarchy and dimension chips!")
+    print("PASS: Edit mode rendered with Master Account Hierarchy and marked area removed!")
 
     print("\n=== TEST 3: Sub-Account NEW Mode ===")
     res = client.get(
@@ -55,6 +56,7 @@ def test_sub_accounts():
     assert res.status_code == 200, f"Expected 200, got {res.status_code}"
     html = res.text
     assert "Master Account Hierarchy" in html
+    assert "Controlling Parent GL Account" not in html, "Marked area must not be shown in new mode!"
     assert "dim-type-btn" in html
     assert "Active for Postings" in html
     print("PASS: New record mode rendered cleanly!")

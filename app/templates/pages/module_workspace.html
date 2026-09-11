@@ -3,7 +3,7 @@
 {% block title %}{{ active_company.short_code }}-{{ module.short_code }}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="{% if current_tab == 'overview' or not current_tab %}w-full max-w-full{% else %}workspace-content-aware-stage{% endif %} space-y-4">
 
   <!-- Dynamic Contextual Module / Sub-Page Header Banner with Integrated Search -->
   <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap">
@@ -260,43 +260,43 @@
         </a>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs density-compact" id="glSubAccountsTable">
+        <table class="table-content-aware w-full text-left text-xs density-compact" id="glSubAccountsTable">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Sub Account Code</th>
-              <th class="py-2 px-2.5">Sub Account Name</th>
-              <th class="py-2 px-2.5">Parent Master Account</th>
-              <th class="py-2 px-2.5">Dimension Type</th>
-              <th class="py-2 px-2.5 text-center">Status</th>
-              <th class="py-2 px-2.5 text-center">Actions</th>
+              <th class="py-2.5 px-3 w-32 whitespace-nowrap">Sub Account Code</th>
+              <th class="py-2.5 px-3 cell-wrap-boundary">Sub Account Name</th>
+              <th class="py-2.5 px-3 whitespace-nowrap">Parent Master Account</th>
+              <th class="py-2.5 px-3 whitespace-nowrap">Dimension Type</th>
+              <th class="py-2.5 px-3 w-24 text-center whitespace-nowrap">Status</th>
+              <th class="py-2.5 px-3 w-20 text-center whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for s in gl_subaccounts %}
               <tr id="row-sub-{{ s.id }}" data-view-url="/modules/general-ledger/master/sub-accounts/{{ s.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400 whitespace-nowrap">
                   <a href="/modules/general-ledger/master/sub-accounts/{{ s.id }}/view" class="table-id-link" title="Click to view details">{{ s.sub_account_code }}</a>
                 </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5">
+                <td class="table-cell-dynamic py-1.5 px-2.5 cell-wrap-boundary">
                   <div class="font-medium text-slate-200">{{ s.sub_account_name }}</div>
                   {% if s.description %}
                     <div class="text-[10px] text-slate-400 font-sans mt-0.5">{{ s.description }}</div>
                   {% endif %}
                 </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400 font-mono">{{ s.parent_account_number }} — {{ s.parent_account_name }}</td>
-                <td class="table-cell-dynamic py-1.5 px-2.5">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400 font-mono whitespace-nowrap">{{ s.parent_account_number }} — {{ s.parent_account_name }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 whitespace-nowrap">
                   <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5">
                     {{ s.sub_account_type }}
                   </span>
                 </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center whitespace-nowrap">
                   {% if s.is_active == 0 or s.is_inactive %}
                     <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">Inactive</span>
                   {% else %}
                     <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                   {% endif %}
                 </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center whitespace-nowrap">
                   <button 
                     type="button" 
                     onclick="openRowActionMenu(this, event, 'sub_accounts', '{{ s.id }}', '{{ s.sub_account_name }}', '/modules/general-ledger/master/sub-accounts/{{ s.id }}/edit', 'deleteMasterRecord(\'sub-accounts\', \'{{ s.id }}\', \'{{ s.sub_account_code }}\', \'row-sub-{{ s.id }}\')')" 
@@ -331,28 +331,38 @@
         </a>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs density-compact" id="glDepartmentsTable">
+        <table class="table-content-aware w-full text-left text-xs density-compact" id="glDepartmentsTable">
           <thead>
-            <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Dept Code</th>
-              <th class="py-2 px-2.5">Department Name</th>
-              <th class="py-2 px-2.5">Head of Department</th>
-              <th class="py-2 px-2.5 text-center">Status</th>
-              <th class="py-2 px-2.5 text-center">Actions</th>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-400 font-medium font-semibold text-xs">
+              <th class="py-2.5 px-3 w-28 whitespace-nowrap">Dept Code</th>
+              <th class="py-2.5 px-3 cell-wrap-boundary">Department Name</th>
+              <th class="py-2.5 px-3 w-44 text-center whitespace-nowrap">Cost Center Mapping</th>
+              <th class="py-2.5 px-3 w-24 text-center whitespace-nowrap">Status</th>
+              <th class="py-2.5 px-3 w-20 text-center whitespace-nowrap">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-white/5 text-slate-300">
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-300">
             {% for d in gl_departments %}
-              <tr id="row-dept-{{ d.id }}" data-view-url="/modules/general-ledger/master/departments/{{ d.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400">
+              <tr id="row-dept-{{ d.id }}" data-view-url="/modules/general-ledger/master/departments/{{ d.id }}/view" tabindex="0" class="interactive-table-row hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
+                <td class="table-cell-dynamic py-2 px-3 font-mono font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
                   <a href="/modules/general-ledger/master/departments/{{ d.id }}/view" class="table-id-link" title="Click to view details">{{ d.dept_code }}</a>
                 </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 font-medium text-slate-200">{{ d.dept_name }}</td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400">{{ d.head_of_dept if d.head_of_dept else '—' }}</td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
-                  <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+                <td class="table-cell-dynamic py-2 px-3 font-medium text-slate-900 dark:text-white cell-wrap-boundary">{{ d.dept_name }}</td>
+                <td class="table-cell-dynamic py-2 px-3 text-center whitespace-nowrap">
+                  {% if d.cost_center_count and d.cost_center_count > 0 %}
+                    <span class="px-2.5 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
+                      {{ d.cost_center_count }} Cost Center{{ 's' if d.cost_center_count > 1 else '' }}
+                    </span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10">
+                      Direct Allocation
+                    </span>
+                  {% endif %}
                 </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-2 px-3 text-center whitespace-nowrap">
+                  <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
+                </td>
+                <td class="table-cell-dynamic py-2 px-3 text-center whitespace-nowrap">
                   <button 
                     type="button" 
                     onclick="openRowActionMenu(this, event, 'departments', '{{ d.id }}', '{{ d.dept_name }}', '/modules/general-ledger/master/departments/{{ d.id }}/edit', 'deleteMasterRecord(\'departments\', \'{{ d.id }}\', \'{{ d.dept_code }} - {{ d.dept_name }}\', \'row-dept-{{ d.id }}\')')" 
@@ -387,30 +397,30 @@
         </a>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs density-compact" id="glCostCentresTable">
+        <table class="table-content-aware w-full text-left text-xs density-compact" id="glCostCentresTable">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Cost Centre Code</th>
-              <th class="py-2 px-2.5">Cost Centre Name</th>
-              <th class="py-2 px-2.5">Department</th>
-              <th class="py-2 px-2.5">Company Scope</th>
-              <th class="py-2 px-2.5 text-center">Status</th>
-              <th class="py-2 px-2.5 text-center">Actions</th>
+              <th class="py-2.5 px-3 w-32 whitespace-nowrap">Cost Centre Code</th>
+              <th class="py-2.5 px-3 cell-wrap-boundary">Cost Centre Name</th>
+              <th class="py-2.5 px-3 whitespace-nowrap">Department</th>
+              <th class="py-2.5 px-3 whitespace-nowrap">Company Scope</th>
+              <th class="py-2.5 px-3 w-24 text-center whitespace-nowrap">Status</th>
+              <th class="py-2.5 px-3 w-20 text-center whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for cc in gl_costcentres %}
               <tr id="row-cc-{{ cc.id }}" data-view-url="/modules/general-ledger/master/cost-centres/{{ cc.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400 whitespace-nowrap">
                   <a href="/modules/general-ledger/master/cost-centres/{{ cc.id }}/view" class="table-id-link" title="Click to view details">{{ cc.cost_centre_code }}</a>
                 </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 font-medium text-slate-200">{{ cc.cost_centre_name }}</td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400 font-mono">{{ cc.dept_code if cc.dept_code else 'Corporate' }} — {{ cc.dept_name if cc.dept_name else '' }}</td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono text-slate-300">[{{ cc.company_code }}]</td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-medium text-slate-200 cell-wrap-boundary">{{ cc.cost_centre_name }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400 font-mono whitespace-nowrap">{{ cc.dept_code if cc.dept_code else 'Corporate' }} — {{ cc.dept_name if cc.dept_name else '' }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono text-slate-300 whitespace-nowrap">[{{ cc.company_code }}]</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center whitespace-nowrap">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center whitespace-nowrap">
                   <button 
                     type="button" 
                     onclick="openRowActionMenu(this, event, 'cost_centres', '{{ cc.id }}', '{{ cc.cost_centre_name }}', '/modules/general-ledger/master/cost-centres/{{ cc.id }}/edit', 'deleteMasterRecord(\'cost-centres\', \'{{ cc.id }}\', \'{{ cc.cost_centre_code }} - {{ cc.cost_centre_name }}\', \'row-cc-{{ cc.id }}\')')" 
@@ -806,158 +816,6 @@
                   >
                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                   </button>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  <!-- 7. Double-Entry Journal Vouchers Table -->
-  {% elif module.route_slug == 'general-ledger' and current_tab == 'journals' %}
-    <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="file-spread" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Journal Vouchers (JV): {{ active_company.name }}</span>
-        </h3>
-        <div class="flex items-center gap-2">
-          <a href="/modules/general-ledger/journals/new" class="h-7 px-3 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 transition cursor-pointer shadow-sm">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-            <span>New Journal Entry</span>
-          </a>
-        </div>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Voucher Number</th>
-              <th class="py-2 px-2.5">Date</th>
-              <th class="py-2 px-2.5">Reference</th>
-              <th class="py-2 px-2.5">Narration / Purpose</th>
-              <th class="py-2 px-2.5 text-center">Lines</th>
-              <th class="py-2 px-2.5 text-right">Total Amount ({{ active_company.currency }})</th>
-              <th class="py-2 px-2.5 text-center">Status</th>
-              <th class="py-2 px-2.5 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5 text-slate-300">
-            {% for v in gl_vouchers %}
-              <tr id="row-jv-{{ v.id }}" data-view-url="/modules/general-ledger/journals/{{ v.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
-                  <a href="/modules/general-ledger/journals/{{ v.id }}/view" class="table-id-link" title="Click to view details">{{ v.voucher_number }}</a>
-                </td>
-                <td class="py-2.5 px-2.5 font-mono text-slate-300">{{ v.voucher_date }}</td>
-                <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ v.reference_number if v.reference_number else '—' }}</td>
-                <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ v.narration }}</td>
-                <td class="py-2.5 px-2.5 text-center font-mono font-bold text-slate-300">
-                  <span class="px-2 py-0.5 rounded bg-slate-800 border border-white/5 text-[10px]">{{ v.line_count }} lines</span>
-                </td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-100">{{ v.total_amount|money }}</td>
-                <td class="py-2.5 px-2.5 text-center">
-                  <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    {{ v.status }}
-                  </span>
-                </td>
-                <td class="py-2.5 px-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <a 
-                      href="/modules/general-ledger/vouchers/{{ v.id }}/print" 
-                      class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
-                      title="Print Journal Voucher"
-                    >
-                      <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                    </a>
-                    <button 
-                      type="button" 
-                      onclick="openRowActionMenu(this, event, 'gl_vouchers', '{{ v.id }}', '{{ v.voucher_number }}', '/modules/general-ledger/journals/{{ v.id }}/edit', 'deleteVoucherRecord(\'{{ v.id }}\', \'{{ v.voucher_number }}\', \'row-jv-{{ v.id }}\')')" 
-                      class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
-                      title="More actions"
-                    >
-                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  <!-- 8. Batch Processing & Status Table -->
-  {% elif module.route_slug == 'general-ledger' and current_tab == 'batches' %}
-    <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="package" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Journal Batches & Processing Status: {{ active_company.name }}</span>
-        </h3>
-        <div class="flex items-center gap-2">
-          <button 
-            onclick="triggerAutoBatchGeneration()" 
-            class="h-7 px-3 rounded-lg text-xs font-medium bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5 transition cursor-pointer"
-          >
-            <i data-lucide="zap" class="w-3.5 h-3.5 text-indigo-400"></i>
-            <span>Generate Batch from Auto Journals</span>
-          </button>
-        </div>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
-              <th class="py-2 px-2.5">Batch Number</th>
-              <th class="py-2 px-2.5">Batch Title</th>
-              <th class="py-2 px-2.5">Type</th>
-              <th class="py-2 px-2.5 text-center">Vouchers</th>
-              <th class="py-2 px-2.5 text-right">Debit Total</th>
-              <th class="py-2 px-2.5 text-right">Credit Total</th>
-              <th class="py-2 px-2.5 text-center">Status</th>
-              <th class="py-2 px-2.5 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5 text-slate-300">
-            {% for b in gl_batches %}
-              <tr id="row-bat-{{ b.id }}" data-entity="gl_batch" data-id="{{ b.id }}" data-title="Batch {{ b.batch_number }}" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
-                  <a href="javascript:void(0)" onclick="openDynamicViewModal('gl_batch', '{{ b.id }}', 'Batch {{ b.batch_number }}')" class="table-id-link" title="Click to view batch details">{{ b.batch_number }}</a>
-                </td>
-                <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ b.batch_title }}</td>
-                <td class="py-2.5 px-2.5">
-                  <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5">{{ b.batch_type }}</span>
-                </td>
-                <td class="py-2.5 px-2.5 text-center font-mono font-bold text-slate-300">{{ b.voucher_count }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-cyan-400">{{ b.total_debit|money }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-amber-400">{{ b.total_credit|money }}</td>
-                <td class="py-2.5 px-2.5 text-center">
-                  <span class="px-2 py-0.5 text-[9px] font-medium rounded-full {% if b.status == 'POSTED' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-amber-500/10 text-amber-400 border border-amber-500/20{% endif %}">
-                    {{ b.status }}
-                  </span>
-                </td>
-                <td class="py-2.5 px-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    {% if b.status != 'POSTED' %}
-                      <button 
-                        onclick="postBatchRecord('{{ b.id }}', '{{ b.batch_number }}')" 
-                        class="btn-action-add h-6 px-2 rounded text-[10px] font-bold flex items-center gap-1 transition cursor-pointer" 
-                        title="Post Batch to Ledger"
-                      >
-                        <i data-lucide="check" class="w-3 h-3"></i>
-                        <span>Post</span>
-                      </button>
-                    {% endif %}
-                    <button 
-                      type="button"
-                      onclick="openRowActionMenu(this, event, 'gl_batch', '{{ b.id }}', 'Batch {{ b.batch_number }}', null, 'deleteBatchRecord(\'{{ b.id }}\', \'{{ b.batch_number }}\', \'row-bat-{{ b.id }}\')')" 
-                      class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
-                      title="More actions"
-                    >
-                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                    </button>
-                  </div>
                 </td>
               </tr>
             {% endfor %}

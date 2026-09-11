@@ -26,8 +26,52 @@ CURRENCY_MAP = {
     "SGD": {"symbol": "S$", "name": "Singapore Dollar", "decimals": 2},
 }
 
+COUNTRY_CURRENCY_MAP = {
+    "bangladesh": "BDT",
+    "bd": "BDT",
+    "dhaka": "BDT",
+    "united kingdom": "GBP",
+    "uk": "GBP",
+    "great britain": "GBP",
+    "london": "GBP",
+    "united states": "USD",
+    "usa": "USD",
+    "us": "USD",
+    "america": "USD",
+    "european union": "EUR",
+    "germany": "EUR",
+    "france": "EUR",
+    "italy": "EUR",
+    "spain": "EUR",
+    "netherlands": "EUR",
+    "united arab emirates": "AED",
+    "uae": "AED",
+    "dubai": "AED",
+    "abu dhabi": "AED",
+    "saudi arabia": "SAR",
+    "ksa": "SAR",
+    "india": "INR",
+    "japan": "JPY",
+    "tokyo": "JPY",
+    "singapore": "SGD",
+    "canada": "CAD",
+    "australia": "AUD",
+}
+
 class CompanyService:
     COOKIE_NAME = "pyrix_active_company_id"
+
+    @staticmethod
+    def resolve_currency_by_location(location_str: Optional[str]) -> Dict[str, Any]:
+        """Resolves official currency code, symbol, and name based on location/country text."""
+        if not location_str:
+            return {"currency_code": "USD", **CURRENCY_MAP["USD"]}
+        clean = location_str.strip().lower()
+        for loc_key, curr_code in COUNTRY_CURRENCY_MAP.items():
+            if loc_key in clean:
+                info = CURRENCY_MAP.get(curr_code, {"symbol": curr_code, "name": curr_code, "decimals": 2})
+                return {"currency_code": curr_code, **info}
+        return {"currency_code": "USD", **CURRENCY_MAP["USD"]}
 
     @staticmethod
     def _enrich(comp: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
@@ -35,9 +79,26 @@ class CompanyService:
             return None
         code = comp.get("short_code", "")
         comp["logo_emoji"] = COMPANY_EMOJI_MAP.get(code, "🏢")
+
+        # Resolve country
+        country = comp.get("country")
+        if not country and comp.get("headquarters"):
+            hq_lower = comp["headquarters"].lower()
+            if "bangladesh" in hq_lower or "dhaka" in hq_lower:
+                country = "Bangladesh"
+            elif "uk" in hq_lower or "london" in hq_lower or "kingdom" in hq_lower:
+                country = "United Kingdom"
+            elif "usa" in hq_lower or "detroit" in hq_lower or "states" in hq_lower:
+                country = "United States"
+        comp["country"] = country or "Bangladesh"
         
         # Dynamic Per-Company Currency Resolution
-        curr_code = comp.get("currency") or "BDT"
+        curr_code = comp.get("currency")
+        if not curr_code:
+            # Fallback based on country/location
+            loc_resolved = CompanyService.resolve_currency_by_location(comp.get("country") or comp.get("headquarters"))
+            curr_code = loc_resolved["currency_code"]
+
         curr_info = CURRENCY_MAP.get(curr_code, {"symbol": curr_code, "name": curr_code, "decimals": 2})
         comp["currency"] = curr_code
         comp["currency_code"] = curr_code
