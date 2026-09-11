@@ -16,6 +16,29 @@ document.addEventListener('DOMContentLoaded', () => {
   initUniversalFormValidation();
 });
 
+/* ==========================================================================
+   🔒 COMPANY SWITCHER EDIT-PAGE GUARD
+   Prevents changing company while editing or creating records to safeguard
+   data integrity and tenant boundaries.
+   Zero UI changes: Button remains 100% identical on all pages.
+   ========================================================================== */
+function isCompanySwitchingAllowed() {
+  const path = window.location.pathname.toLowerCase();
+  if (path.endsWith('/edit') || path.includes('/edit/') || path.endsWith('/new')) {
+    return false;
+  }
+
+  const activeEditForm = document.querySelector('form#master-record-form, form#ar-record-form, form#cb-record-form, form.record-edit-form');
+  if (activeEditForm && !activeEditForm.querySelector('fieldset[disabled]')) {
+    const action = (activeEditForm.getAttribute('action') || '').toLowerCase();
+    if (action.includes('/edit') || action.includes('/new')) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 
 function initLucide() {
   if (window.lucide) {
@@ -880,6 +903,9 @@ function closeAllTablePopovers() {
 }
 
 function setupSmartTable(table, tableIdx, totalTables) {
+  if (table.hasAttribute('data-no-smart-table') || table.classList.contains('no-smart-table') || table.getAttribute('data-no-smart-table') === 'true') {
+    return;
+  }
   const thead = table.querySelector('thead');
   const tbody = table.querySelector('tbody');
   if (!thead || !tbody) return;

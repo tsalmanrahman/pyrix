@@ -11,10 +11,11 @@
       <!-- Far-Left Back Button -->
       <a 
         href="/modules/general-ledger?tab=journals" 
-        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
         title="Back to Journal List"
       >
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
       </a>
 
       <!-- Subtle Vertical Divider -->
@@ -27,41 +28,44 @@
 
       <!-- Title & Scope -->
       <div class="min-w-0">
-        <h2 class="text-base font-bold text-white tracking-tight truncate">
-          {% if is_view_mode %}View Journal Voucher{% elif is_edit_mode %}Edit Journal Voucher{% else %}New Double-Entry Journal Voucher (JV){% endif %}
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          {% if is_view_mode %}View Journal Voucher #{{ voucher.voucher_number }}{% elif is_edit_mode %}Edit Journal Voucher #{{ voucher.voucher_number }}{% else %}New Double-Entry Journal Voucher{% endif %}
         </h2>
       </div>
     </div>
 
-    <!-- Right Side: Single Focused Action & Print (Zero Delete Danger on Edit page) -->
+    <!-- Right Side Actions -->
     <div class="flex items-center gap-2 shrink-0">
       {% if is_view_mode and edit_url %}
       <a 
         href="{{ edit_url }}" 
-        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-500/10 hover:bg-blue-600 text-blue-600 hover:text-white dark:bg-blue-500/20 dark:hover:bg-blue-600 dark:text-blue-400 dark:hover:text-white border border-blue-500/20 shadow-sm hover:scale-105 active:scale-95 shrink-0"
+        class="h-9 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/15 dark:hover:bg-blue-500/25 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30 text-xs font-semibold hover:scale-[1.02] active:scale-95 shadow-sm shrink-0"
         title="Edit Voucher"
       >
-        <i data-lucide="edit-3" class="w-4 h-4"></i>
+        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Edit</span>
       </a>
       {% elif is_edit_mode %}
       <button 
         id="submit-voucher-btn" 
         type="submit" 
         form="journal-form"
-        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="h-9 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 shrink-0 text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
         title="Update & Post Voucher"
       >
-        <i data-lucide="check" class="w-4 h-4"></i>
+        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <span>Update</span>
       </button>
       {% elif not is_view_mode %}
       <button 
         id="submit-voucher-btn" 
         type="submit" 
         form="journal-form"
-        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="h-9 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 shrink-0 text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
         title="Post Journal Voucher"
       >
-        <i data-lucide="check" class="w-4 h-4"></i>
+        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <span>Post</span>
       </button>
       {% endif %}
 
@@ -69,10 +73,11 @@
       <a 
         href="/modules/general-ledger/vouchers/{{ voucher.id }}/print" 
         target="_blank"
-        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shadow-sm hover:scale-105 active:scale-95 shrink-0"
+        class="h-9 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shadow-sm hover:scale-[1.02] active:scale-95 shrink-0 text-xs font-semibold"
         title="Print Journal Voucher"
       >
-        <i data-lucide="printer" class="w-4 h-4 text-blue-400"></i>
+        <i data-lucide="printer" class="w-3.5 h-3.5 text-blue-500"></i>
+        <span class="hidden sm:inline">Print</span>
       </a>
       {% endif %}
     </div>

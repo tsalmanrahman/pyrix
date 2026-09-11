@@ -12,10 +12,11 @@
       <!-- Sleek Iconic Back Button (Dynamic Hierarchical Navigation Level) -->
       <a 
         href="{% if current_tab and current_tab != 'overview' %}/modules/{{ module.route_slug }}{% else %}{{ back_url|default('/') }}{% endif %}" 
-        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
         title="{% if current_tab and current_tab != 'overview' %}Back to {{ module.name }} Master Hub{% else %}{{ back_title|default('Back to Home') }}{% endif %}"
       >
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
       </a>
 
       <div class="h-5 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
@@ -93,21 +94,13 @@
         </h3>
         
         <div class="flex items-center gap-2">
-          <!-- Dynamic Row Density Switcher (Compact Default) -->
-          <div class="flex items-center gap-0.5 bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg p-0.5 text-[11px]">
-            <button type="button" onclick="setGLTableDensity('compact')" id="btnGLDensityCompact" class="px-2 py-0.5 rounded bg-blue-600 text-white font-medium transition" title="Compact Density (32px)">
-              Compact
-            </button>
-            <button type="button" onclick="setGLTableDensity('standard')" id="btnGLDensityStandard" class="px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition" title="Standard Density (40px)">
-              Standard
-            </button>
-            <button type="button" onclick="setGLTableDensity('comfortable')" id="btnGLDensityComfortable" class="px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition" title="Comfortable Density (50px)">
-              Comfortable
-            </button>
-          </div>
-
-          <a href="/modules/general-ledger/master/gl-accounts/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add GL Account">
+          <a 
+            href="/modules/general-ledger/master/gl-accounts/new" 
+            class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+            title="Create GL Account"
+          >
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Create</span>
           </a>
         </div>
       </div>
@@ -118,7 +111,6 @@
               <th class="py-2 px-2.5">Account Number</th>
               <th class="py-2 px-2.5">Account Name</th>
               <th class="py-2 px-2.5">Type & Class</th>
-              <th class="py-2 px-2.5 text-center">Posting Form</th>
               <th class="py-2 px-2.5 text-center">Normal Balance</th>
               <th class="py-2 px-2.5 text-center">Controls</th>
               <th class="py-2 px-2.5 text-center">Status</th>
@@ -145,11 +137,6 @@
                       </span>
                     {% endif %}
                   </div>
-                </td>
-                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
-                  <span class="text-[10px] font-mono text-slate-400 font-medium">
-                    {{ a.posting_form|default('DETAILED') }}
-                  </span>
                 </td>
                 <td class="table-cell-dynamic py-1.5 px-2.5 text-center font-mono font-semibold {% if a.normal_balance == 'DEBIT' %}text-cyan-400{% else %}text-amber-400{% endif %}">
                   {{ a.normal_balance }}
@@ -199,12 +186,17 @@
           <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>GL Account Matrix: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/general-ledger/master/company-mappings/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Mapping">
+        <a 
+          href="/modules/general-ledger/master/company-mappings/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Company Mapping"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
+        <table class="w-full text-left text-xs density-compact" id="glMappingsTable">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
               <th class="py-2 px-2.5">Master Account</th>
@@ -219,17 +211,21 @@
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for m in gl_mappings %}
               <tr id="row-map-{{ m.id }}" data-view-url="/modules/general-ledger/master/company-mappings/{{ m.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400">
                   <a href="/modules/general-ledger/master/company-mappings/{{ m.id }}/view" class="table-id-link" title="Click to view details">{{ m.account_number }}</a>
                 </td>
-                <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ m.account_name }}</td>
-                <td class="py-2.5 px-2.5 font-mono text-slate-300">[{{ m.company_code }}]</td>
-                <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ m.company_account_alias if m.company_account_alias else '—' }}</td>
-                <td class="py-2.5 px-2.5 text-center font-mono text-slate-200">{{ m.posting_currency }}</td>
-                <td class="py-2.5 px-2.5 text-center">
-                  <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ENABLED</span>
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-medium text-slate-200">{{ m.account_name }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono text-slate-300">[{{ m.company_code }}]</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono text-slate-400">{{ m.company_account_alias if m.company_account_alias else '—' }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center font-mono text-slate-200">{{ m.posting_currency }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
+                  {% if m.allow_direct_posting %}
+                    <span class="px-2 py-0.5 text-[9px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ALLOWED</span>
+                  {% else %}
+                    <span class="px-2 py-0.5 text-[9px] font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">LOCKED</span>
+                  {% endif %}
                 </td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   <button 
                     type="button" 
                     onclick="openRowActionMenu(this, event, 'company_mappings', '{{ m.id }}', '{{ m.account_name }} Mapping', '/modules/general-ledger/master/company-mappings/{{ m.id }}/edit', 'deleteMasterRecord(\'company-mappings\', \'{{ m.id }}\', \'{{ m.account_number }} Mapping\', \'row-map-{{ m.id }}\')')" 
@@ -254,12 +250,17 @@
           <i data-lucide="folder-tree" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>GL Sub Accounts Master: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/general-ledger/master/sub-accounts/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Sub Account">
+        <a 
+          href="/modules/general-ledger/master/sub-accounts/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Sub Account"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
+        <table class="w-full text-left text-xs density-compact" id="glSubAccountsTable">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
               <th class="py-2 px-2.5">Sub Account Code</th>
@@ -273,29 +274,29 @@
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for s in gl_subaccounts %}
               <tr id="row-sub-{{ s.id }}" data-view-url="/modules/general-ledger/master/sub-accounts/{{ s.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400">
                   <a href="/modules/general-ledger/master/sub-accounts/{{ s.id }}/view" class="table-id-link" title="Click to view details">{{ s.sub_account_code }}</a>
                 </td>
-                <td class="py-2.5 px-2.5">
+                <td class="table-cell-dynamic py-1.5 px-2.5">
                   <div class="font-medium text-slate-200">{{ s.sub_account_name }}</div>
                   {% if s.description %}
                     <div class="text-[10px] text-slate-400 font-sans mt-0.5">{{ s.description }}</div>
                   {% endif %}
                 </td>
-                <td class="py-2.5 px-2.5 text-slate-400 font-mono">{{ s.parent_account_number }} — {{ s.parent_account_name }}</td>
-                <td class="py-2.5 px-2.5">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400 font-mono">{{ s.parent_account_number }} — {{ s.parent_account_name }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5">
                   <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5">
                     {{ s.sub_account_type }}
                   </span>
                 </td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   {% if s.is_active == 0 or s.is_inactive %}
                     <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">Inactive</span>
                   {% else %}
                     <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                   {% endif %}
                 </td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   <button 
                     type="button" 
                     onclick="openRowActionMenu(this, event, 'sub_accounts', '{{ s.id }}', '{{ s.sub_account_name }}', '/modules/general-ledger/master/sub-accounts/{{ s.id }}/edit', 'deleteMasterRecord(\'sub-accounts\', \'{{ s.id }}\', \'{{ s.sub_account_code }}\', \'row-sub-{{ s.id }}\')')" 
@@ -320,12 +321,17 @@
           <i data-lucide="users" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Departments Master: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/general-ledger/master/departments/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Department">
+        <a 
+          href="/modules/general-ledger/master/departments/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Department"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
+        <table class="w-full text-left text-xs density-compact" id="glDepartmentsTable">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
               <th class="py-2 px-2.5">Dept Code</th>
@@ -338,15 +344,15 @@
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for d in gl_departments %}
               <tr id="row-dept-{{ d.id }}" data-view-url="/modules/general-ledger/master/departments/{{ d.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400">
                   <a href="/modules/general-ledger/master/departments/{{ d.id }}/view" class="table-id-link" title="Click to view details">{{ d.dept_code }}</a>
                 </td>
-                <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ d.dept_name }}</td>
-                <td class="py-2.5 px-2.5 text-slate-400">{{ d.head_of_dept if d.head_of_dept else '—' }}</td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-medium text-slate-200">{{ d.dept_name }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400">{{ d.head_of_dept if d.head_of_dept else '—' }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   <button 
                     type="button" 
                     onclick="openRowActionMenu(this, event, 'departments', '{{ d.id }}', '{{ d.dept_name }}', '/modules/general-ledger/master/departments/{{ d.id }}/edit', 'deleteMasterRecord(\'departments\', \'{{ d.id }}\', \'{{ d.dept_code }} - {{ d.dept_name }}\', \'row-dept-{{ d.id }}\')')" 
@@ -371,12 +377,17 @@
           <i data-lucide="target" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Cost Centres Master: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/general-ledger/master/cost-centres/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Cost Centre">
+        <a 
+          href="/modules/general-ledger/master/cost-centres/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Cost Centre"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
+        <table class="w-full text-left text-xs density-compact" id="glCostCentresTable">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
               <th class="py-2 px-2.5">Cost Centre Code</th>
@@ -390,16 +401,16 @@
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for cc in gl_costcentres %}
               <tr id="row-cc-{{ cc.id }}" data-view-url="/modules/general-ledger/master/cost-centres/{{ cc.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400">
                   <a href="/modules/general-ledger/master/cost-centres/{{ cc.id }}/view" class="table-id-link" title="Click to view details">{{ cc.cost_centre_code }}</a>
                 </td>
-                <td class="py-2.5 px-2.5 font-medium text-slate-200">{{ cc.cost_centre_name }}</td>
-                <td class="py-2.5 px-2.5 text-slate-400 font-mono">{{ cc.dept_code if cc.dept_code else 'Corporate' }} — {{ cc.dept_name if cc.dept_name else '' }}</td>
-                <td class="py-2.5 px-2.5 font-mono text-slate-300">[{{ cc.company_code }}]</td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-medium text-slate-200">{{ cc.cost_centre_name }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400 font-mono">{{ cc.dept_code if cc.dept_code else 'Corporate' }} — {{ cc.dept_name if cc.dept_name else '' }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono text-slate-300">[{{ cc.company_code }}]</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   <button 
                     type="button" 
                     onclick="openRowActionMenu(this, event, 'cost_centres', '{{ cc.id }}', '{{ cc.cost_centre_name }}', '/modules/general-ledger/master/cost-centres/{{ cc.id }}/edit', 'deleteMasterRecord(\'cost-centres\', \'{{ cc.id }}\', \'{{ cc.cost_centre_code }} - {{ cc.cost_centre_name }}\', \'row-cc-{{ cc.id }}\')')" 
@@ -733,12 +744,17 @@
           <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Annual Budget Sets Master: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/general-ledger/master/budget-sets/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Budget Set">
+        <a 
+          href="/modules/general-ledger/master/budget-sets/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Budget Set"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
+        <table class="w-full text-left text-xs density-compact" id="glBudgetSetsTable">
           <thead>
             <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
               <th class="py-2 px-2.5">Budget Code</th>
@@ -755,21 +771,21 @@
           <tbody class="divide-y divide-white/5 text-slate-300">
             {% for b in gl_budgets %}
               <tr id="row-bud-{{ b.id }}" data-view-url="/modules/general-ledger/master/budget-sets/{{ b.id }}/view" tabindex="0" class="interactive-table-row hover:bg-white/[0.02] transition">
-                <td class="py-2.5 px-2.5 font-mono font-bold text-blue-400">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono font-bold text-blue-400">
                   <a href="/modules/general-ledger/master/budget-sets/{{ b.id }}/view" class="table-id-link" title="Click to view details">{{ b.budget_code }}</a>
                 </td>
-                <td class="py-2.5 px-2.5">
+                <td class="table-cell-dynamic py-1.5 px-2.5">
                   <div class="font-medium text-slate-200">{{ b.budget_title }}</div>
                   {% if b.description %}
                     <div class="text-[10px] text-slate-400 font-sans mt-0.5 truncate max-w-xs">{{ b.description }}</div>
                   {% endif %}
                 </td>
-                <td class="py-2.5 px-2.5 font-mono text-slate-400">{{ b.fiscal_year }}</td>
-                <td class="py-2.5 px-2.5 text-slate-300 font-mono">{{ b.account_number }}</td>
-                <td class="py-2.5 px-2.5 text-slate-400 font-mono">{{ b.cost_centre_code if b.cost_centre_code else 'Unassigned' }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono font-bold text-slate-100">{{ b.allocated_amount|money }}</td>
-                <td class="py-2.5 px-2.5 text-right font-mono text-amber-400">{{ b.utilized_amount|money }}</td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 font-mono text-slate-400">{{ b.fiscal_year }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-300 font-mono">{{ b.account_number }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-slate-400 font-mono">{{ b.cost_centre_code if b.cost_centre_code else 'Unassigned' }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-right font-mono font-bold text-slate-100">{{ b.allocated_amount|money }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-right font-mono text-amber-400">{{ b.utilized_amount|money }}</td>
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   <div class="flex flex-col items-center gap-1">
                     <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                       {{ b.status }}
@@ -781,7 +797,7 @@
                     {% endif %}
                   </div>
                 </td>
-                <td class="py-2.5 px-2.5 text-center">
+                <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   <button 
                     type="button" 
                     onclick="openRowActionMenu(this, event, 'budget_sets', '{{ b.id }}', '{{ b.budget_set_name if b.budget_set_name else b.budget_code }}', '/modules/general-ledger/master/budget-sets/{{ b.id }}/edit', 'deleteMasterRecord(\'budget-sets\', \'{{ b.id }}\', \'{{ b.budget_code }}\', \'row-bud-{{ b.id }}\')')" 
@@ -1006,8 +1022,13 @@
           <i data-lucide="user-check" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Cashier Stations Master: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/cash-book/master/cashiers/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Cashier Station">
+        <a 
+          href="/modules/cash-book/master/cashiers/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Cashier Station"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
@@ -1060,8 +1081,13 @@
           <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Corporate Banking Partners Master: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/cash-book/master/banks/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Bank Partner">
+        <a 
+          href="/modules/cash-book/master/banks/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Bank Partner"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
@@ -1112,8 +1138,13 @@
           <i data-lucide="building-2" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Bank Branch Locations Master: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/cash-book/master/branches/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Branch">
+        <a 
+          href="/modules/cash-book/master/branches/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Bank Branch"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
@@ -1164,8 +1195,13 @@
           <i data-lucide="credit-card" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Corporate Treasury Bank Accounts: {{ active_company.name }}</span>
         </h3>
-        <a href="/modules/cash-book/master/accounts/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Bank Account">
+        <a 
+          href="/modules/cash-book/master/accounts/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Bank Account"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
       <div class="overflow-x-auto">
@@ -1600,58 +1636,14 @@
     })
     .catch(err => alert('Network error: ' + err));
   }
-
-  // Dynamic Row Height Density Controller
-  function setGLTableDensity(mode) {
-    const table = document.getElementById('glAccountsTable');
-    if (!table) return;
-
-    table.classList.remove('density-compact', 'density-standard', 'density-comfortable');
-    table.classList.add('density-' + mode);
-    localStorage.setItem('pyrix_gl_density', mode);
-
-    const btnC = document.getElementById('btnGLDensityCompact');
-    const btnS = document.getElementById('btnGLDensityStandard');
-    const btnF = document.getElementById('btnGLDensityComfortable');
-
-    if (btnC && btnS && btnF) {
-      const inactiveClass = 'px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition';
-      const activeClass = 'px-2 py-0.5 rounded bg-blue-600 text-white font-medium transition';
-      btnC.className = inactiveClass;
-      btnS.className = inactiveClass;
-      btnF.className = inactiveClass;
-
-      if (mode === 'standard') {
-        btnS.className = activeClass;
-      } else if (mode === 'comfortable') {
-        btnF.className = activeClass;
-      } else {
-        btnC.className = activeClass;
-      }
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const saved = localStorage.getItem('pyrix_gl_density') || 'compact';
-    setGLTableDensity(saved);
-  });
 </script>
 
 <style>
-  .density-compact .table-cell-dynamic {
+  .density-compact .table-cell-dynamic,
+  .density-compact td,
+  .table-cell-dynamic {
     padding-top: 0.35rem !important;
     padding-bottom: 0.35rem !important;
-  }
-  .density-standard .table-cell-dynamic {
-    padding-top: 0.625rem !important;
-    padding-bottom: 0.625rem !important;
-  }
-  .density-comfortable .table-cell-dynamic {
-    padding-top: 0.875rem !important;
-    padding-bottom: 0.875rem !important;
-  }
-  .table-cell-dynamic {
-    transition: padding 0.15s ease-in-out;
   }
 </style>
 {% endblock %}

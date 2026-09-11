@@ -17,8 +17,13 @@
       </h3>
       <div class="flex items-center gap-2">
         <input type="text" placeholder="Filter vouchers..." onkeyup="filterTable('gl-vouchers-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
-        <a href="/modules/general-ledger/journals/new" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition" title="Add Journal Voucher">
+        <a 
+          href="/modules/general-ledger/journals/new" 
+          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+          title="Create Journal Voucher"
+        >
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Create</span>
         </a>
       </div>
     </div>
@@ -150,8 +155,13 @@
         <i data-lucide="clock-4" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
         <span>Automatic Batch Profiles: {{ active_company.name }}</span>
       </h3>
-      <button onclick="document.getElementById('modal-new-profile').classList.remove('hidden')" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="Create Batch Profile">
+      <button 
+        onclick="document.getElementById('modal-new-profile').classList.remove('hidden')" 
+        class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+        title="Create Batch Profile"
+      >
         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        <span>Create</span>
       </button>
     </div>
 

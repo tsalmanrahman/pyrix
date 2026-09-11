@@ -157,13 +157,30 @@ class GLMasterService:
     def get_mapping_by_id(mapping_id: str) -> Optional[Dict[str, Any]]:
         return db.query_one(
             """
-            SELECT m.*, a.account_number, a.account_name, c.short_code AS company_code
+            SELECT m.*, 
+                   a.account_number, a.account_name, a.account_type, a.normal_balance, a.account_class,
+                   c.name AS company_name, c.short_code AS company_code, c.currency AS company_currency
             FROM gl_company_mappings m
             JOIN gl_accounts a ON m.gl_account_id = a.id
             JOIN companies c ON m.company_id = c.id
             WHERE m.id = ? AND COALESCE(m.isDelete, 0) = 0
             """,
             (mapping_id,)
+        )
+
+    @staticmethod
+    def get_mapping_by_account_and_company(gl_account_id: str, company_id: str) -> Optional[Dict[str, Any]]:
+        return db.query_one(
+            """
+            SELECT m.*, 
+                   a.account_number, a.account_name, a.account_type, a.normal_balance, a.account_class,
+                   c.name AS company_name, c.short_code AS company_code, c.currency AS company_currency
+            FROM gl_company_mappings m
+            JOIN gl_accounts a ON m.gl_account_id = a.id
+            JOIN companies c ON m.company_id = c.id
+            WHERE m.gl_account_id = ? AND m.company_id = ? AND COALESCE(m.isDelete, 0) = 0
+            """,
+            (gl_account_id, company_id)
         )
 
     @staticmethod
@@ -265,7 +282,11 @@ class GLMasterService:
     def get_sub_account_by_id(sub_account_id: str) -> Optional[Dict[str, Any]]:
         return db.query_one(
             """
-            SELECT s.*, a.account_number AS parent_account_number, a.account_name AS parent_account_name
+            SELECT s.*, 
+                   a.account_number AS parent_account_number, 
+                   a.account_name AS parent_account_name,
+                   a.account_type AS parent_account_type,
+                   a.normal_balance AS parent_normal_balance
             FROM gl_sub_accounts s
             JOIN gl_accounts a ON s.gl_account_id = a.id
             WHERE s.id = ? AND COALESCE(s.isDelete, 0) = 0

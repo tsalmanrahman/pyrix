@@ -11,10 +11,11 @@
       <!-- Far-Left Back Button -->
       <a 
         href="/modules/general-ledger?tab={{ sub_tab|default('overview') }}" 
-        class="btn-action-back w-9 h-9 rounded-xl transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
         title="Back to List"
       >
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
       </a>
 
       <!-- Subtle Vertical Divider -->
@@ -38,28 +39,31 @@
       {% if is_view_mode and edit_url %}
       <a 
         href="{{ edit_url }}" 
-        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-500/10 hover:bg-blue-600 text-blue-600 hover:text-white dark:bg-blue-500/20 dark:hover:bg-blue-600 dark:text-blue-400 dark:hover:text-white border border-blue-500/20 shadow-sm hover:scale-105 active:scale-95 shrink-0"
+        class="h-9 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/15 dark:hover:bg-blue-500/25 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30 text-xs font-semibold hover:scale-[1.02] active:scale-95 shadow-sm shrink-0"
         title="Edit Record"
       >
-        <i data-lucide="edit-3" class="w-4 h-4"></i>
+        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Edit</span>
       </a>
       {% elif is_edit_mode %}
       <button 
         type="submit" 
         form="master-record-form"
-        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        class="h-9 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 shrink-0 text-xs font-bold"
         title="Update Record"
       >
-        <i data-lucide="check" class="w-4 h-4"></i>
+        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <span>Update</span>
       </button>
       {% elif not is_view_mode %}
       <button 
         type="submit" 
         form="master-record-form"
-        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        class="h-9 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 shrink-0 text-xs font-bold"
         title="Save Record"
       >
-        <i data-lucide="check" class="w-4 h-4"></i>
+        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <span>Save</span>
       </button>
       {% endif %}
     </div>
@@ -180,83 +184,67 @@
           </div>
         </div>
 
+        <!-- Hidden posting_form for backend standard detailed behavior -->
+        <input type="hidden" name="posting_form" value="DETAILED">
+
         <!-- ========================================================================= -->
-        <!-- Bottom Section: Posting Representation & Operational Controls -->
+        <!-- Bottom Section: Sleek Integrated Governance & Operational Controls -->
         <!-- ========================================================================= -->
-        <div class="pt-2 border-t border-white/5 space-y-4">
+        <div class="pt-2 border-t border-white/5 space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-semibold text-slate-300 flex items-center gap-2">
-              <i data-lucide="sliders" class="w-3.5 h-3.5 text-blue-400"></i>
-              <span>Posting Representation & Operational Controls</span>
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-400"></i>
+              <span>Account Governance & Operational Controls</span>
             </h3>
+            <span class="text-[11px] text-slate-500">Fine-tune accounting safeguards</span>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
 
-            <!-- Left Card: Posting Form Representation (Detailed vs Consolidated) -->
-            <div class="lg:col-span-5 p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between space-y-3">
-              <div>
-                <span class="text-xs font-bold text-white flex items-center gap-1.5">
-                  <i data-lucide="printer" class="w-3.5 h-3.5 text-blue-400"></i>
-                  <span>Posting Form Representation</span>
-                </span>
-              </div>
-
-              <!-- Segmented Pill Selector (Clean & Sleek) -->
-              <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-black/40 border border-white/10 text-xs">
-                <label class="relative flex items-center justify-center py-2 px-3 rounded-lg cursor-pointer transition select-none has-[:checked]:bg-blue-600 has-[:checked]:text-white text-slate-400 hover:text-slate-200">
-                  <input type="radio" name="posting_form" value="DETAILED" {% if not record or record.posting_form == 'DETAILED' %}checked{% endif %} class="sr-only">
-                  <span class="font-medium text-xs">Detailed Form</span>
-                </label>
-
-                <label class="relative flex items-center justify-center py-2 px-3 rounded-lg cursor-pointer transition select-none has-[:checked]:bg-blue-600 has-[:checked]:text-white text-slate-400 hover:text-slate-200">
-                  <input type="radio" name="posting_form" value="CONSOLIDATED" {% if record and record.posting_form == 'CONSOLIDATED' %}checked{% endif %} class="sr-only">
-                  <span class="font-medium text-xs">Consolidated</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Right Card: Operational Controls & Governance Safeguards -->
-            <div class="lg:col-span-7 p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-between space-y-3">
-              <div>
-                <span class="text-xs font-bold text-white flex items-center gap-1.5">
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-                  <span>Operational Controls & Safeguards</span>
-                </span>
-              </div>
-
-              <!-- Sleek Switch Rows -->
-              <div class="space-y-2 text-xs">
-                
-                <!-- 1. Maintain Quantity -->
-                <div class="py-2 px-3 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition">
-                  <span class="font-medium text-white text-xs">Maintain Quantity</span>
-                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input type="checkbox" name="maintain_quantity" value="1" {% if record and record.maintain_quantity %}checked{% endif %} class="sr-only peer">
-                    <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
+            <!-- 1. Cost Centre Associated -->
+            <label class="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer flex items-center justify-between gap-3 group select-none">
+              <div class="space-y-0.5 min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="target" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+                  <span class="text-xs font-semibold text-white group-hover:text-blue-300 transition truncate">Require Cost Centre</span>
                 </div>
-
-                <!-- 2. Cost Centre Associated -->
-                <div class="py-2 px-3 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition">
-                  <span class="font-medium text-white text-xs">Cost Centre Associated</span>
-                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input type="checkbox" name="cost_centre_associated" value="1" {% if not record or record.cost_centre_associated %}checked{% endif %} class="sr-only peer">
-                    <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-
-                <!-- 3. Inactive Account -->
-                <div class="py-2 px-3 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between hover:bg-white/[0.02] transition">
-                  <span class="font-medium text-white text-xs">Inactive Account</span>
-                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input type="checkbox" name="is_inactive" value="1" {% if record and (record.is_inactive or record.is_active == 0) %}checked{% endif %} class="sr-only peer">
-                    <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
-                  </label>
-                </div>
-
+                <p class="text-[10px] text-slate-400 leading-tight">Enforce department on journal entries</p>
               </div>
-            </div>
+              <div class="relative inline-flex items-center shrink-0">
+                <input type="checkbox" name="cost_centre_associated" value="1" {% if not record or record.cost_centre_associated %}checked{% endif %} class="sr-only peer">
+                <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+              </div>
+            </label>
+
+            <!-- 2. Maintain Quantity -->
+            <label class="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer flex items-center justify-between gap-3 group select-none">
+              <div class="space-y-0.5 min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="scale" class="w-3.5 h-3.5 text-cyan-400 shrink-0"></i>
+                  <span class="text-xs font-semibold text-white group-hover:text-blue-300 transition truncate">Track Physical Quantity</span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-tight">Allow units (e.g. kg, pcs) on ledger</p>
+              </div>
+              <div class="relative inline-flex items-center shrink-0">
+                <input type="checkbox" name="maintain_quantity" value="1" {% if record and record.maintain_quantity %}checked{% endif %} class="sr-only peer">
+                <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+              </div>
+            </label>
+
+            <!-- 3. Inactive Account -->
+            <label class="p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer flex items-center justify-between gap-3 group select-none">
+              <div class="space-y-0.5 min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="power-off" class="w-3.5 h-3.5 text-rose-400 shrink-0"></i>
+                  <span class="text-xs font-semibold text-white group-hover:text-rose-300 transition truncate">Inactive Account</span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-tight">Block account from new postings</p>
+              </div>
+              <div class="relative inline-flex items-center shrink-0">
+                <input type="checkbox" name="is_inactive" value="1" {% if record and (record.is_inactive or record.is_active == 0) %}checked{% endif %} class="sr-only peer">
+                <div class="w-9 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
+              </div>
+            </label>
 
           </div>
         </div>
@@ -267,244 +255,580 @@
     <!-- 2. GL ACCOUNT & MULTI-COMPANY MAPPING MATRIX (Image 2 Parity) -->
     <!-- ========================================================================= -->
     {% elif entity == 'company-mappings' %}
-      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+      
+      {% if is_view_mode %}
+        <!-- ======================================================= -->
+        <!-- VIEW MODE: Primary Mapping Spotlight + Conglomerate Overview -->
+        <!-- ======================================================= -->
+        <div class="space-y-6">
 
-        <!-- Top Account Lookup with Dynamic Card -->
-        <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
-            <div class="md:col-span-5 space-y-1.5">
-              <label class="block text-slate-300 font-semibold flex items-center justify-between">
-                <span>Master GL Account ID <span class="text-blue-400">*</span></span>
-                <span class="text-[10px] text-blue-400 font-mono">Direct Selector</span>
-              </label>
-              <select name="gl_account_id" id="matrixAccountSelect" onchange="onMappingAccountChange(this.value)" class="mac-input w-full bg-slate-900 font-medium" required>
-                {% for acc in all_accounts %}
-                  <option value="{{ acc.id }}" data-name="{{ acc.account_name }}" data-number="{{ acc.account_number }}" data-type="{{ acc.account_type }}" data-balance="{{ acc.normal_balance }}" {% if (selected_account_id and selected_account_id == (acc.id|string)) or (record and record.gl_account_id == acc.id) %}selected{% endif %}>
-                    {{ acc.account_number }} — {{ acc.account_name }}
-                  </option>
-                {% endfor %}
-              </select>
+          <!-- Primary Mapping Profile Card (Focused Subsidiary Spotlight) -->
+          <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
+            <div class="flex items-center justify-between pb-3.5 border-b border-white/5">
+              <div class="flex items-center gap-2">
+                <i data-lucide="badge-check" class="w-4 h-4 text-emerald-400"></i>
+                <h3 class="text-xs font-bold text-white">
+                  Mapping Profile: {{ record.company_name if record and record.company_name else active_company.name }}
+                </h3>
+              </div>
             </div>
 
-            <div class="md:col-span-7 space-y-1.5">
-              <label class="block text-slate-300 font-semibold">Master Account Canonical Description</label>
-              <div id="matrixAccountTitleCard" class="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
-                <div>
-                  <div id="cardAccountName" class="font-bold text-white text-xs truncate">Select an account above</div>
-                  <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                    <span id="cardAccountNumber" class="font-mono text-blue-400">#—</span>
-                    <span>•</span>
-                    <span id="cardAccountType" class="font-semibold text-slate-300">—</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+              
+              <!-- Left Column: Master Global GL Account Details -->
+              <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-3">
+                <span class="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+                  <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                  <span>Global Master Account</span>
+                </span>
+                <div class="space-y-2">
+                  <div>
+                    <span class="text-slate-400 text-xs font-medium">Account Code &amp; Title</span>
+                    <div class="text-sm font-bold text-white font-mono flex items-center gap-2 mt-0.5">
+                      <a href="/modules/general-ledger/master/gl-accounts/{{ record.gl_account_id }}/view" class="text-blue-400 hover:underline" title="View Master GL Account">{{ record.account_number }}</a>
+                      <span class="text-slate-500">&bull;</span>
+                      <span class="text-slate-100 font-sans">{{ record.account_name }}</span>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2 pt-1 text-xs">
+                    <div>
+                      <span class="text-slate-400 text-xs font-medium">Account Type</span>
+                      <div class="font-semibold text-slate-200 mt-0.5">{{ record.account_type|title if record and record.account_type else 'Asset' }}</div>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 text-xs font-medium">Normal Balance</span>
+                      <div class="font-mono font-bold text-cyan-400 mt-0.5">{{ record.normal_balance|title if record and record.normal_balance else 'Debit' }}</div>
+                    </div>
                   </div>
                 </div>
-                <div id="cardAccountBalance" class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-slate-800 text-slate-300 border border-white/5 shrink-0">
-                  DEBIT
+              </div>
+
+              <!-- Right Column: Local Subsidiary Specific Assignment -->
+              <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-3">
+                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                  <i data-lucide="building" class="w-3.5 h-3.5"></i>
+                  <span>Assigned Subsidiary Scope</span>
+                </span>
+                <div class="space-y-2">
+                  <div>
+                    <span class="text-slate-400 text-xs font-medium">Corporate Legal Entity</span>
+                    <div class="text-sm font-bold text-white flex items-center gap-1.5 mt-0.5">
+                      <span class="font-mono text-cyan-400">[{{ record.company_code|default(active_company.short_code) }}]</span>
+                      <span>{{ record.company_name|default(active_company.name) }}</span>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-3 gap-2 pt-1 text-xs">
+                    <div>
+                      <span class="text-slate-400 text-xs font-medium">Local Alias</span>
+                      <div class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded border border-white/10 w-fit mt-0.5">
+                        {{ record.company_account_alias if record.company_account_alias else '—' }}
+                      </div>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 text-xs font-medium">Currency</span>
+                      <div class="font-mono font-bold text-emerald-400 mt-0.5">{{ record.posting_currency|default('USD') }}</div>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 text-xs font-medium">Direct Posting</span>
+                      <div class="font-semibold text-emerald-400 flex items-center gap-1 mt-0.5">
+                        {% if record.allow_direct_posting %}
+                          <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Allowed</span>
+                        {% else %}
+                          <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Locked</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Read-Only Conglomerate Allocation Overview (Clean Table, No Form Clutter) -->
+          <div class="glass-card rounded-2xl p-5 border border-white/10 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-white/5">
+              <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i data-lucide="network" class="w-4 h-4 text-blue-400"></i>
+                <span>Conglomerate Allocation Overview ({{ company_mapping_matrix|length }} Operating Subsidiaries)</span>
+              </span>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/30">
+              <table class="w-full text-left text-xs no-smart-table" data-no-smart-table="true">
+                <thead>
+                  <tr class="border-b border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.02] text-slate-500 dark:text-slate-400 font-semibold">
+                    <th class="py-2.5 px-3">Entity Code</th>
+                    <th class="py-2.5 px-3">Subsidiary Legal Entity</th>
+                    <th class="py-2.5 px-3 text-center">Local Currency</th>
+                    <th class="py-2.5 px-3">Local Alias</th>
+                    <th class="py-2.5 px-3 text-center">Direct Posting</th>
+                    <th class="py-2.5 px-3 text-center">Mapping Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-white/5 text-slate-700 dark:text-slate-300">
+                  {% for comp in company_mapping_matrix %}
+                  {% set is_current_rec = record and (comp.company_id|string == record.company_id|string) %}
+                  <tr class="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition {% if is_current_rec %}bg-blue-50/70 dark:bg-blue-500/10 border-l-2 border-blue-600 dark:border-blue-400{% endif %}">
+                    <td class="py-2 px-3 font-mono font-bold {% if is_current_rec %}text-blue-700 dark:text-blue-400{% else %}text-blue-600 dark:text-blue-400{% endif %}">
+                      {{ comp.company_code }}
+                    </td>
+                    <td class="py-2 px-3 font-medium text-slate-900 dark:text-white">
+                      {{ comp.company_name }}
+                      {% if is_current_rec %}
+                        <span class="ml-2 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">Active Record</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-2 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ comp.posting_currency|default(comp.base_currency) }}</td>
+                    <td class="py-2 px-3 font-mono text-slate-600 dark:text-slate-300">{{ comp.company_account_alias if comp.company_account_alias else '—' }}</td>
+                    <td class="py-2 px-3 text-center">
+                      {% if comp.allow_direct_posting %}
+                        <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Allowed</span>
+                      {% else %}
+                        <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Locked</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-2 px-3 text-center">
+                      {% if comp.is_mapped %}
+                        {% if is_current_rec %}
+                          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">Current Mapping</span>
+                        {% elif comp.mapping_id %}
+                          <button type="button" onclick="switchCompanyAndNavigate('{{ comp.company_id }}', '/modules/general-ledger/master/company-mappings/{{ comp.mapping_id }}/view')" class="px-2 py-0.5 text-[9px] font-bold rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition inline-flex items-center gap-1 cursor-pointer" title="Switch company to view this mapping">
+                            <span>Mapped</span>
+                            <span class="text-[8px] opacity-70">↗</span>
+                          </button>
+                        {% else %}
+                          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">Mapped</span>
+                        {% endif %}
+                      {% else %}
+                        <span class="px-2 py-0.5 text-[9px] font-medium rounded bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-white/5">Not Mapped</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      {% else %}
+        <!-- ======================================================= -->
+        <!-- CREATE / EDIT MODE: Account Selector + Focused Edit & Matrix Sync -->
+        <!-- ======================================================= -->
+        <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+
+          <!-- Sleek Single-Bar Master Account Selector -->
+          <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex-1 space-y-1">
+              <label class="block text-xs font-semibold text-slate-300">
+                Master GL Account <span class="text-blue-400">*</span>
+              </label>
+              <div class="relative">
+                <select name="gl_account_id" id="matrixAccountSelect" onchange="onMappingAccountChange(this.value)" class="mac-input w-full py-2 px-3 text-xs bg-slate-900 font-medium text-white appearance-none pr-8 cursor-pointer" required>
+                  {% for acc in all_accounts %}
+                    <option value="{{ acc.id }}" data-name="{{ acc.account_name }}" data-number="{{ acc.account_number }}" data-type="{{ acc.account_type }}" data-balance="{{ acc.normal_balance }}" {% if (selected_account_id and selected_account_id == (acc.id|string)) or (record and record.gl_account_id == acc.id) %}selected{% endif %}>
+                      {{ acc.account_number }} — {{ acc.account_name }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
                 </div>
               </div>
             </div>
+
+            <!-- Clean Live Metadata Badges -->
+            <div class="flex items-center gap-2 pt-1 md:pt-5 shrink-0">
+              <span id="badgeAccountType" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-white/5 border border-white/10 text-slate-300">
+                ASSET
+              </span>
+              <span id="badgeAccountBalance" class="px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                DEBIT
+              </span>
+            </div>
           </div>
-        </div>
 
-        <!-- Multi-Company Matrix Grid Header & Fast Controls -->
-        <div class="flex items-center justify-between flex-wrap gap-3 pb-2 border-b border-white/5">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-white flex items-center gap-1.5">
-              <i data-lucide="grid" class="w-4 h-4 text-blue-400"></i>
-              <span>Conglomerate Allocation Matrix ({{ all_companies|length }} Subsidiaries)</span>
-            </span>
+          <!-- Multi-Company Matrix Header & Minimal Quick Actions -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between pb-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-white">Subsidiary Allocations</span>
+                <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  {{ all_companies|length }} Entities
+                </span>
+              </div>
+
+              <!-- Minimal Quick Actions -->
+              <div class="flex items-center gap-3 text-xs">
+                <button type="button" onclick="setAllMatrixRows(true)" class="text-blue-400 hover:text-blue-300 font-semibold transition flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                  <span>Map all</span>
+                </button>
+                <span class="text-white/20">&bull;</span>
+                <button type="button" onclick="setAllMatrixRows(false)" class="text-slate-400 hover:text-slate-200 transition flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                  <span>Unmap all</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Multi-Company Table (data-no-smart-table prevents pagination/filter injection) -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/30">
+              <table class="w-full text-left text-xs no-smart-table" id="matrixCompaniesTable" data-no-smart-table="true">
+                <thead>
+                  <tr class="border-b border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-white/[0.02] text-slate-500 dark:text-slate-400 font-semibold">
+                    <th class="py-2.5 px-3.5 w-20">Code</th>
+                    <th class="py-2.5 px-3.5">Operating Entity</th>
+                    <th class="py-2.5 px-3.5 text-center w-24">Currency</th>
+                    <th class="py-2.5 px-3.5 w-44">Local Alias / Code</th>
+                    <th class="py-2.5 px-3.5 text-center w-36">Direct Posting</th>
+                    <th class="py-2.5 px-3.5 text-center w-28">Mapping</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-white/5 text-slate-700 dark:text-slate-300" id="matrixTableBody">
+                  {% for comp in company_mapping_matrix %}
+                  <tr class="matrix-row hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition {% if not comp.is_mapped %}opacity-45{% endif %} {% if record and (comp.company_id|string == record.company_id|string) %}bg-blue-50/70 dark:bg-blue-500/10 border-l-2 border-blue-600 dark:border-blue-400{% endif %}" data-company-id="{{ comp.company_id }}">
+                    <td class="py-2.5 px-3.5 font-mono font-bold {% if record and (comp.company_id|string == record.company_id|string) %}text-blue-700 dark:text-blue-400{% else %}text-blue-600 dark:text-blue-400{% endif %}">
+                      {{ comp.company_code }}
+                    </td>
+                    <td class="py-2.5 px-3.5">
+                      <span class="font-medium text-slate-900 dark:text-white">{{ comp.company_name }}</span>
+                      {% if record and (comp.company_id|string == record.company_id|string) %}
+                        <span class="ml-2 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">Active Record</span>
+                      {% endif %}
+                    </td>
+                    <td class="py-2.5 px-3.5 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {{ comp.base_currency }}
+                    </td>
+                    <td class="py-2.5 px-3.5">
+                      <input 
+                        type="text" 
+                        class="matrix-alias-input mac-input py-1 px-2.5 font-mono text-xs w-full" 
+                        value="{{ comp.company_account_alias if comp.company_account_alias else '' }}" 
+                        placeholder="e.g. {{ comp.company_code }}-101"
+                        {% if not comp.is_mapped %}disabled{% endif %}
+                      >
+                    </td>
+                    <td class="py-2.5 px-3.5 text-center">
+                      <input 
+                        type="checkbox" 
+                        class="matrix-posting-checkbox w-4 h-4 rounded text-blue-600 accent-blue-600 cursor-pointer" 
+                        {% if comp.allow_direct_posting %}checked{% endif %}
+                        {% if not comp.is_mapped %}disabled{% endif %}
+                      >
+                    </td>
+                    <td class="py-2.5 px-3.5 text-center">
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          class="matrix-map-toggle sr-only peer" 
+                          onchange="onMatrixRowToggle(this)"
+                          {% if comp.is_mapped %}checked{% endif %}
+                        >
+                        <div class="w-9 h-5 bg-slate-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div class="flex items-center gap-2">
-            <button type="button" onclick="setAllMatrixRows(true)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 transition flex items-center gap-1.5">
-              <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
-              <span>Map All Entities</span>
-            </button>
-            <button type="button" onclick="setAllMatrixRows(false)" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition flex items-center gap-1.5">
-              <i data-lucide="x" class="w-3.5 h-3.5"></i>
-              <span>Unmap All</span>
-            </button>
-          </div>
+          <!-- Hidden Fallback Inputs for Traditional Form Submission -->
+          <input type="hidden" name="company_id" value="{{ record.company_id if record and record.company_id else active_company.id }}">
+          <input type="hidden" name="company_account_alias" id="fallbackAlias" value="{{ record.company_account_alias if record else '' }}">
+          <input type="hidden" name="posting_currency" value="{{ record.posting_currency if record and record.posting_currency else active_company.currency }}">
         </div>
-
-        <!-- Multi-Company Table -->
-        <div class="overflow-x-auto rounded-xl border border-white/10 bg-black/20">
-          <table class="w-full text-left text-xs" id="matrixCompaniesTable">
-            <thead>
-              <tr class="border-b border-white/10 bg-white/[0.02] text-slate-400 font-bold">
-                <th class="py-3 px-3.5">Entity Code</th>
-                <th class="py-3 px-3.5">Subsidiary Legal Entity</th>
-                <th class="py-3 px-3.5 text-center">Base Currency</th>
-                <th class="py-3 px-3.5">Custom Alias / Code</th>
-                <th class="py-3 px-3.5 text-center">Allow Direct Posting</th>
-                <th class="py-3 px-3.5 text-center">Mapping Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5 text-slate-300" id="matrixTableBody">
-              {% for comp in company_mapping_matrix %}
-              <tr class="matrix-row hover:bg-white/[0.02] transition" data-company-id="{{ comp.company_id }}">
-                <td class="py-3 px-3.5 font-mono font-bold text-blue-400">
-                  {{ comp.company_code }}
-                </td>
-                <td class="py-3 px-3.5">
-                  <div class="font-bold text-white">{{ comp.company_name }}</div>
-                  <div class="text-[10px] text-slate-500">Corporate Subsidiary</div>
-                </td>
-                <td class="py-3 px-3.5 text-center font-mono font-bold text-emerald-400">
-                  {{ comp.base_currency }}
-                </td>
-                <td class="py-3 px-3.5">
-                  <input 
-                    type="text" 
-                    class="matrix-alias-input mac-input py-1 px-2.5 font-mono text-xs w-36" 
-                    value="{{ comp.company_account_alias if comp.company_account_alias else '' }}" 
-                    placeholder="e.g. {{ comp.company_code }}-{{ comp.company_account_alias if comp.company_account_alias else '101' }}"
-                  >
-                </td>
-                <td class="py-3 px-3.5 text-center">
-                  <input 
-                    type="checkbox" 
-                    class="matrix-posting-checkbox w-4 h-4 rounded text-blue-600 accent-blue-600" 
-                    {% if comp.allow_direct_posting %}checked{% endif %}
-                  >
-                </td>
-                <td class="py-3 px-3.5 text-center">
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      class="matrix-map-toggle sr-only peer" 
-                      {% if comp.is_mapped %}checked{% endif %}
-                    >
-                    <div class="w-10 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 1-Click Matrix Save Feedback Bar -->
-        <div class="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 flex items-center justify-between flex-wrap gap-3">
-          <div class="text-xs text-blue-300">
-            <span class="font-bold">Sync across all entities:</span> Changes in the matrix are applied simultaneously to selected subsidiaries.
-          </div>
-          <button 
-            type="button" 
-            onclick="saveMatrixViaAjax()" 
-            id="btnSaveMatrixAjax"
-            class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer"
-          >
-            <i data-lucide="save" class="w-4 h-4"></i>
-            <span>Instant 1-Click Matrix Save</span>
-          </button>
-        </div>
-
-        <!-- Hidden Fallback Inputs for Traditional Form Submission -->
-        <input type="hidden" name="company_id" value="{{ active_company.id }}">
-        <input type="hidden" name="company_account_alias" id="fallbackAlias" value="">
-        <input type="hidden" name="posting_currency" value="{{ active_company.currency }}">
-      </div>
+      {% endif %}
 
     <!-- ========================================================================= -->
     <!-- 3. GL SUB ACCOUNTS (Image 3 Parity) -->
     <!-- ========================================================================= -->
     {% elif entity == 'sub-accounts' %}
-      <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-5">
-        
-        <!-- Parent Master GL Account with Dynamic Card -->
-        <div class="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
-            <div class="md:col-span-5 space-y-1.5">
-              <label class="block text-slate-300 font-semibold">
-                Parent Master GL Account <span class="text-blue-400">*</span>
-              </label>
-              <select name="gl_account_id" id="subParentAccountSelect" onchange="onSubAccountParentChange(this)" class="mac-input w-full bg-slate-900 font-medium" required>
-                {% for acc in all_accounts %}
-                  <option value="{{ acc.id }}" data-name="{{ acc.account_name }}" data-number="{{ acc.account_number }}" data-type="{{ acc.account_type }}" data-balance="{{ acc.normal_balance }}" {% if record and record.gl_account_id == acc.id %}selected{% endif %}>
-                    {{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }})
-                  </option>
-                {% endfor %}
-              </select>
+      
+      {% if is_view_mode %}
+        <!-- ======================================================= -->
+        <!-- VIEW MODE: Hierarchy Spotlight Profile -->
+        <!-- ======================================================= -->
+        <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+
+          <!-- Top Spotlight Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-white/5 gap-3">
+            <div class="flex items-center gap-3">
+              <span class="px-3 py-1.5 rounded-xl font-mono text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
+                {{ record.sub_account_code }}
+              </span>
+              <div>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Sub-Account Profile</div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ record.sub_account_name }}</h3>
+              </div>
             </div>
 
-            <div class="md:col-span-7 space-y-1.5">
-              <label class="block text-slate-300 font-semibold">Parent GL Account Card</label>
-              <div id="subParentCard" class="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- Dimension Tag -->
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 flex items-center gap-1.5">
+                {% if record.sub_account_type == 'PRODUCT_LINE' %}
+                  <i data-lucide="box" class="w-3.5 h-3.5"></i>
+                {% elif record.sub_account_type == 'PROJECT' %}
+                  <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+                {% elif record.sub_account_type == 'GEOGRAPHIC' %}
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                {% elif record.sub_account_type in ['SALES_CHANNEL', 'CHANNEL'] %}
+                  <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                {% else %}
+                  <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+                {% endif %}
+                <span>{{ record.sub_account_type|replace('_', ' ') }}</span>
+              </span>
+
+              <!-- Status Tag -->
+              {% if record.is_active and not record.is_inactive %}
+                <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>ACTIVE FOR POSTINGS</span>
+                </span>
+              {% else %}
+                <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                  <span>INACTIVE / BLOCKED</span>
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Spotlight Details Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+            
+            <!-- Parent Master GL Account Card -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+              <span class="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 uppercase tracking-wider">
+                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                <span>Controlling Parent GL Account</span>
+              </span>
+              <div class="space-y-2">
                 <div>
-                  <div id="subParentName" class="font-bold text-white text-xs truncate">Select an account</div>
-                  <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
-                    <span id="subParentNumber" class="font-mono text-emerald-400">#—</span>
-                    <span>•</span>
-                    <span id="subParentType" class="font-semibold text-slate-300">—</span>
+                  <span class="text-slate-400 text-[10px] uppercase font-semibold">Account Code &amp; Title</span>
+                  <div class="text-sm font-bold text-slate-900 dark:text-white font-mono flex items-center gap-2 mt-0.5">
+                    <a href="/modules/general-ledger/master/gl-accounts/{{ record.gl_account_id }}/view" class="text-blue-600 dark:text-blue-400 hover:underline" title="View Master GL Account">
+                      {{ record.parent_account_number }}
+                    </a>
+                    <span class="text-slate-400">&bull;</span>
+                    <span class="font-sans font-semibold text-slate-800 dark:text-slate-200">{{ record.parent_account_name }}</span>
                   </div>
                 </div>
-                <div id="subParentBalance" class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-slate-800 text-slate-300 border border-white/5 shrink-0">
-                  DEBIT
+
+                <div class="flex items-center gap-2 pt-1 flex-wrap">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
+                    {{ record.parent_account_type|default('REVENUE') }}
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
+                    NORMAL BALANCE: {{ record.parent_normal_balance|default('CREDIT') }}
+                  </span>
                 </div>
               </div>
             </div>
+
+            <!-- Analytical Purpose & Description -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+              <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 uppercase tracking-wider">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                <span>Analytical Notes &amp; Scope</span>
+              </span>
+              <div class="space-y-1">
+                <span class="text-slate-400 text-[10px] uppercase font-semibold">Analytical Purpose</span>
+                <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {{ record.description if record.description else 'No specific analytical restrictions or notes assigned to this sub-account. Available for all general ledger vouchers tagging this account.' }}
+                </p>
+              </div>
+            </div>
+
           </div>
+
         </div>
 
-        <!-- Sub Account Fields -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
-          {% if is_edit_mode or is_view_mode or record %}
-          <div class="md:col-span-4 space-y-1.5">
-            <label class="block text-slate-300 font-semibold">Sub-Account ID / Code</label>
-            <input 
-              type="text" 
-              name="sub_account_code" 
-              readonly 
-              value="{{ record.sub_account_code }}" 
-              class="mac-input w-full font-mono font-bold text-emerald-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none" 
-            >
-          </div>
-          {% endif %}
+      {% else %}
+        <!-- ======================================================= -->
+        <!-- CREATE / EDIT MODE: Hierarchy Flow -->
+        <!-- ======================================================= -->
+        <div class="glass-card rounded-2xl p-6 border border-white/10 space-y-6">
+          
+          <!-- Unified Master Account Hierarchy Header Bar -->
+          <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/5 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                  <i data-lucide="layers" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <span class="text-xs font-bold text-slate-900 dark:text-white">Master Account Hierarchy</span>
+                  <span class="text-[11px] text-slate-500 dark:text-slate-400 ml-1.5">&bull; Controlling Parent GL Account <span class="text-blue-500">*</span></span>
+                </div>
+              </div>
 
-          <div class="{% if is_edit_mode or is_view_mode or record %}md:col-span-8{% else %}md:col-span-12{% endif %} space-y-1.5">
-            <label class="block text-slate-300 font-semibold">Sub-Account Name <span class="text-blue-400">*</span></label>
-            <input 
-              type="text" 
-              name="sub_account_name" 
-              required 
-              value="{{ record.sub_account_name if record else '' }}" 
-              class="mac-input w-full font-medium" 
-              placeholder="e.g. Dhaka Metro Sales Roadshow Conveyance, Line 02 Special Tooling"
-            >
-          </div>
+              <!-- Dynamic Theme-Adaptive Metadata Ribbon -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span id="subParentNumber" class="px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">
+                  #{{ record.parent_account_number if record and record.parent_account_number else '—' }}
+                </span>
+                <span id="subParentType" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
+                  {{ record.parent_account_type if record and record.parent_account_type else 'ASSET' }}
+                </span>
+                <span id="subParentBalance" class="px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
+                  NORMAL BALANCE: {{ record.parent_normal_balance if record and record.parent_normal_balance else 'DEBIT' }}
+                </span>
+              </div>
+            </div>
 
-          <div class="md:col-span-6 space-y-1.5">
-            <label class="block text-slate-300 font-semibold">Dimension Type</label>
-            <select name="sub_account_type" class="mac-input w-full bg-slate-900 font-medium">
-              <option value="DEPARTMENTAL" {% if record and record.sub_account_type == 'DEPARTMENTAL' %}selected{% endif %}>DEPARTMENTAL</option>
-              <option value="PROJECT" {% if record and record.sub_account_type == 'PROJECT' %}selected{% endif %}>PROJECT-BASED</option>
-              <option value="PRODUCT_LINE" {% if record and record.sub_account_type == 'PRODUCT_LINE' %}selected{% endif %}>PRODUCT-LINE</option>
-              <option value="GEOGRAPHIC" {% if record and record.sub_account_type == 'GEOGRAPHIC' %}selected{% endif %}>GEOGRAPHIC REGION</option>
-            </select>
-          </div>
-
-          <div class="md:col-span-6 space-y-1.5">
-            <label class="block text-slate-300 font-semibold">Account Status</label>
-            <div class="pt-2">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="is_inactive" value="1" {% if record and (record.is_active == 0 or record.is_inactive) %}checked{% endif %} class="w-4 h-4 rounded text-rose-600 accent-rose-600">
-                <span class="text-xs text-rose-300 font-medium">Mark as Inactive Account</span>
-              </label>
+            <!-- Account Selector -->
+            <div class="relative">
+              <select name="gl_account_id" id="subParentAccountSelect" onchange="onSubAccountParentChange(this)" class="w-full py-2.5 px-3.5 text-xs font-semibold rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-sm appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer" required>
+                {% for acc in all_accounts %}
+                  <option value="{{ acc.id }}" data-name="{{ acc.account_name }}" data-number="{{ acc.account_number }}" data-type="{{ acc.account_type }}" data-balance="{{ acc.normal_balance }}" {% if (record and record.gl_account_id == acc.id) or (not record and loop.first) %}selected{% endif %}>
+                    {{ acc.account_number }} — {{ acc.account_name }} ({{ acc.account_type }} &bull; {{ acc.normal_balance }})
+                  </option>
+                {% endfor %}
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </div>
             </div>
           </div>
 
-          <div class="md:col-span-12 space-y-1.5">
-            <label class="block text-slate-300 font-semibold">Description / Analytical Notes</label>
-            <textarea 
-              name="description" 
-              rows="3" 
-              class="mac-input w-full" 
-              placeholder="Purpose, authorized personnel, or specific campaign budget scope..."
-            >{{ record.description if record and record.description else '' }}</textarea>
-          </div>
-        </div>
+          <!-- Sub Account Fields -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 text-xs">
+            
+            {% if is_edit_mode or record %}
+            <div class="md:col-span-4 space-y-1.5">
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <span>Sub-Account ID / Code</span>
+                <span class="text-[10px] text-slate-400 font-normal">System Generated</span>
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  name="sub_account_code" 
+                  readonly 
+                  value="{{ record.sub_account_code if record else auto_code }}" 
+                  class="w-full py-2.5 px-3.5 font-mono font-bold text-xs rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-emerald-600 dark:text-emerald-400 select-none cursor-not-allowed"
+                >
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                  <i data-lucide="lock" class="w-3.5 h-3.5 opacity-60"></i>
+                </div>
+              </div>
+            </div>
+            {% endif %}
 
-      </div>
+            <div class="{% if is_edit_mode or record %}md:col-span-8{% else %}md:col-span-12{% endif %} space-y-1.5">
+              <label class="block font-semibold text-slate-700 dark:text-slate-300">
+                Sub-Account Name <span class="text-blue-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                name="sub_account_name" 
+                required 
+                value="{{ record.sub_account_name if record else '' }}" 
+                class="w-full py-2.5 px-3.5 text-xs font-medium rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30" 
+                placeholder="e.g. High-Precision Export Contracts, Plant 02 Tooling Maintenance"
+              >
+            </div>
+
+            <!-- Dimension Type: Interactive Visual Chips -->
+            <div class="md:col-span-7 space-y-2">
+              <label class="block font-semibold text-slate-700 dark:text-slate-300">
+                Analytical Dimension Type
+              </label>
+              
+              <input type="hidden" name="sub_account_type" id="subAccountTypeInput" value="{{ record.sub_account_type if record and record.sub_account_type else 'DEPARTMENTAL' }}">
+              
+              {% set current_dim = record.sub_account_type if record and record.sub_account_type else 'DEPARTMENTAL' %}
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                
+                <!-- 1. Departmental -->
+                <button type="button" data-type="DEPARTMENTAL" onclick="selectDimensionType('DEPARTMENTAL')" class="dim-type-btn p-2.5 rounded-xl border {% if current_dim == 'DEPARTMENTAL' %}border-2 border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold shadow-sm{% else %}border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] text-slate-600 dark:text-slate-300 font-medium hover:border-blue-300 dark:hover:border-blue-500/50{% endif %} text-left text-xs flex flex-col gap-1 transition-all cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="check" class="dim-check-icon w-3 h-3 text-blue-600 dark:text-blue-400 {% if current_dim != 'DEPARTMENTAL' %}hidden{% endif %}"></i>
+                  </div>
+                  <span class="truncate text-[11px]">Departmental</span>
+                </button>
+
+                <!-- 2. Project -->
+                <button type="button" data-type="PROJECT" onclick="selectDimensionType('PROJECT')" class="dim-type-btn p-2.5 rounded-xl border {% if current_dim == 'PROJECT' %}border-2 border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold shadow-sm{% else %}border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] text-slate-600 dark:text-slate-300 font-medium hover:border-blue-300 dark:hover:border-blue-500/50{% endif %} text-left text-xs flex flex-col gap-1 transition-all cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="check" class="dim-check-icon w-3 h-3 text-blue-600 dark:text-blue-400 {% if current_dim != 'PROJECT' %}hidden{% endif %}"></i>
+                  </div>
+                  <span class="truncate text-[11px]">Project-Based</span>
+                </button>
+
+                <!-- 3. Product Line -->
+                <button type="button" data-type="PRODUCT_LINE" onclick="selectDimensionType('PRODUCT_LINE')" class="dim-type-btn p-2.5 rounded-xl border {% if current_dim == 'PRODUCT_LINE' %}border-2 border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold shadow-sm{% else %}border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] text-slate-600 dark:text-slate-300 font-medium hover:border-blue-300 dark:hover:border-blue-500/50{% endif %} text-left text-xs flex flex-col gap-1 transition-all cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <i data-lucide="box" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="check" class="dim-check-icon w-3 h-3 text-blue-600 dark:text-blue-400 {% if current_dim != 'PRODUCT_LINE' %}hidden{% endif %}"></i>
+                  </div>
+                  <span class="truncate text-[11px]">Product-Line</span>
+                </button>
+
+                <!-- 4. Geographic -->
+                <button type="button" data-type="GEOGRAPHIC" onclick="selectDimensionType('GEOGRAPHIC')" class="dim-type-btn p-2.5 rounded-xl border {% if current_dim == 'GEOGRAPHIC' %}border-2 border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold shadow-sm{% else %}border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] text-slate-600 dark:text-slate-300 font-medium hover:border-blue-300 dark:hover:border-blue-500/50{% endif %} text-left text-xs flex flex-col gap-1 transition-all cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="check" class="dim-check-icon w-3 h-3 text-blue-600 dark:text-blue-400 {% if current_dim != 'GEOGRAPHIC' %}hidden{% endif %}"></i>
+                  </div>
+                  <span class="truncate text-[11px]">Geographic</span>
+                </button>
+
+                <!-- 5. Sales Channel -->
+                <button type="button" data-type="SALES_CHANNEL" onclick="selectDimensionType('SALES_CHANNEL')" class="dim-type-btn p-2.5 rounded-xl border {% if current_dim == 'SALES_CHANNEL' or current_dim == 'CHANNEL' %}border-2 border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold shadow-sm{% else %}border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] text-slate-600 dark:text-slate-300 font-medium hover:border-blue-300 dark:hover:border-blue-500/50{% endif %} text-left text-xs flex flex-col gap-1 transition-all cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="check" class="dim-check-icon w-3 h-3 text-blue-600 dark:text-blue-400 {% if current_dim != 'SALES_CHANNEL' and current_dim != 'CHANNEL' %}hidden{% endif %}"></i>
+                  </div>
+                  <span class="truncate text-[11px]">Sales Channel</span>
+                </button>
+
+              </div>
+            </div>
+
+            <!-- Posting Status: Modern Toggle Card -->
+            <div class="md:col-span-5 space-y-2">
+              <label class="block font-semibold text-slate-700 dark:text-slate-300">
+                Posting Status
+              </label>
+              <label class="p-3 rounded-xl bg-slate-50/50 dark:bg-white/[0.02] hover:bg-slate-100/50 dark:hover:bg-white/[0.04] border border-slate-200 dark:border-white/10 transition-all cursor-pointer flex items-center justify-between gap-3 group select-none">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50 animate-pulse"></span>
+                  <div>
+                    <div class="font-bold text-slate-900 dark:text-white text-xs">Active for Postings</div>
+                    <div class="text-[10px] text-slate-500 dark:text-slate-400">Can be tagged on general ledger vouchers</div>
+                  </div>
+                </div>
+                <div class="relative inline-flex items-center shrink-0">
+                  <input type="checkbox" name="is_inactive" value="1" {% if record and (record.is_active == 0 or record.is_inactive) %}checked{% endif %} class="sr-only peer">
+                  <div class="w-9 h-5 bg-slate-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Description / Analytical Notes -->
+            <div class="md:col-span-12 space-y-1.5">
+              <label class="block font-semibold text-slate-700 dark:text-slate-300">Description &amp; Analytical Purpose</label>
+              <textarea 
+                name="description" 
+                rows="3" 
+                class="w-full py-2.5 px-3.5 text-xs font-medium rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30" 
+                placeholder="Specify project scope, authorized personnel, or specific commercial budget purpose..."
+              >{{ record.description if record and record.description else '' }}</textarea>
+            </div>
+
+          </div>
+
+        </div>
+      {% endif %}
 
     <!-- ========================================================================= -->
     <!-- 4. DEPARTMENTS (Image 4 Parity) -->
@@ -761,45 +1085,67 @@
     if (matrixSelect) {
       updateMatrixTitleCard(matrixSelect);
     }
+
+    // 3. Intercept form submission for company-mappings to ensure all matrix data is synced
+    const masterForm = document.getElementById('master-record-form');
+    if (masterForm && '{{ entity }}' === 'company-mappings') {
+      masterForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await saveMatrixViaAjax(true);
+      });
+    }
   });
 
   function onSubAccountParentChange(selectEl) {
     const opt = selectEl.options[selectEl.selectedIndex];
     if (!opt) return;
-    const nameEl = document.getElementById('subParentName');
     const numEl = document.getElementById('subParentNumber');
     const typeEl = document.getElementById('subParentType');
     const balEl = document.getElementById('subParentBalance');
 
-    if (nameEl) nameEl.textContent = opt.dataset.name || opt.text;
-    if (numEl) numEl.textContent = '#' + (opt.dataset.number || '—');
+    if (numEl) numEl.textContent = opt.dataset.number ? '#' + opt.dataset.number : '#—';
     if (typeEl) typeEl.textContent = opt.dataset.type || 'ASSET';
     if (balEl) {
       const bal = opt.dataset.balance || 'DEBIT';
-      balEl.textContent = bal;
+      balEl.textContent = 'NORMAL BALANCE: ' + bal;
       balEl.className = bal === 'DEBIT' 
-        ? 'px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0' 
-        : 'px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0';
+        ? 'px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/30' 
+        : 'px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30';
     }
+  }
+
+  function selectDimensionType(type) {
+    const input = document.getElementById('subAccountTypeInput');
+    if (input) input.value = type;
+    const buttons = document.querySelectorAll('.dim-type-btn');
+    buttons.forEach(btn => {
+      const isTarget = btn.getAttribute('data-type') === type;
+      if (isTarget) {
+        btn.className = 'dim-type-btn p-2.5 rounded-xl border-2 border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold shadow-sm text-left text-xs flex flex-col gap-1 transition-all cursor-pointer';
+        const checkIcon = btn.querySelector('.dim-check-icon');
+        if (checkIcon) checkIcon.classList.remove('hidden');
+      } else {
+        btn.className = 'dim-type-btn p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] text-slate-600 dark:text-slate-300 font-medium hover:border-blue-300 dark:hover:border-blue-500/50 text-left text-xs flex flex-col gap-1 transition-all cursor-pointer';
+        const checkIcon = btn.querySelector('.dim-check-icon');
+        if (checkIcon) checkIcon.classList.add('hidden');
+      }
+    });
+    if (window.lucide) window.lucide.createIcons();
   }
 
   function updateMatrixTitleCard(selectEl) {
     const opt = selectEl.options[selectEl.selectedIndex];
     if (!opt) return;
-    const nameEl = document.getElementById('cardAccountName');
-    const numEl = document.getElementById('cardAccountNumber');
-    const typeEl = document.getElementById('cardAccountType');
-    const balEl = document.getElementById('cardAccountBalance');
+    const typeEl = document.getElementById('badgeAccountType');
+    const balEl = document.getElementById('badgeAccountBalance');
 
-    if (nameEl) nameEl.textContent = opt.dataset.name || opt.text;
-    if (numEl) numEl.textContent = '#' + (opt.dataset.number || '—');
     if (typeEl) typeEl.textContent = opt.dataset.type || 'ASSET';
     if (balEl) {
       const bal = opt.dataset.balance || 'DEBIT';
       balEl.textContent = bal;
       balEl.className = bal === 'DEBIT' 
-        ? 'px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0' 
-        : 'px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0';
+        ? 'px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' 
+        : 'px-2.5 py-1 text-[11px] font-mono font-bold rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20';
     }
   }
 
@@ -819,46 +1165,69 @@
     }
   }
 
+  function onMatrixRowToggle(toggle) {
+    const row = toggle.closest('.matrix-row');
+    if (!row) return;
+    const isMapped = toggle.checked;
+    if (isMapped) {
+      row.classList.remove('opacity-45');
+    } else {
+      row.classList.add('opacity-45');
+    }
+    const aliasInput = row.querySelector('.matrix-alias-input');
+    const postingCb = row.querySelector('.matrix-posting-checkbox');
+    if (aliasInput) aliasInput.disabled = !isMapped;
+    if (postingCb) postingCb.disabled = !isMapped;
+  }
+
   function renderMatrixRows(matrix) {
     const tbody = document.getElementById('matrixTableBody');
     if (!tbody) return;
     tbody.innerHTML = '';
+    const currentCompId = "{{ record.company_id if record else '' }}";
 
     matrix.forEach(comp => {
+      const isCurrent = currentCompId && String(comp.company_id) === String(currentCompId);
       const tr = document.createElement('tr');
-      tr.className = 'matrix-row hover:bg-white/[0.02] transition';
+      tr.className = `matrix-row hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition ${comp.is_mapped ? '' : 'opacity-45'} ${isCurrent ? 'bg-blue-50/70 dark:bg-blue-500/10 border-l-2 border-blue-600 dark:border-blue-400' : ''}`;
       tr.dataset.companyId = comp.company_id;
 
+      const codeClass = isCurrent ? 'text-blue-700 dark:text-blue-400' : 'text-blue-600 dark:text-blue-400';
+      const badgeHtml = isCurrent ? '<span class="ml-2 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">Active Record</span>' : '';
+
       tr.innerHTML = `
-        <td class="py-3 px-3.5 font-mono font-bold text-purple-400">${comp.company_code}</td>
-        <td class="py-3 px-3.5">
-          <div class="font-bold text-white">${comp.company_name}</div>
-          <div class="text-[10px] text-slate-500">Corporate Subsidiary</div>
+        <td class="py-2.5 px-3.5 font-mono font-bold ${codeClass}">${comp.company_code}</td>
+        <td class="py-2.5 px-3.5">
+          <span class="font-medium text-slate-900 dark:text-white">${comp.company_name}</span>
+          ${badgeHtml}
         </td>
-        <td class="py-3 px-3.5 text-center font-mono font-bold text-emerald-400">${comp.base_currency}</td>
-        <td class="py-3 px-3.5">
+        <td class="py-2.5 px-3.5 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">${comp.base_currency}</td>
+        <td class="py-2.5 px-3.5">
           <input 
             type="text" 
-            class="matrix-alias-input mac-input py-1 px-2.5 font-mono text-xs w-36" 
+            class="matrix-alias-input mac-input py-1 px-2.5 font-mono text-xs w-full" 
             value="${comp.company_account_alias || ''}" 
             placeholder="e.g. ${comp.company_code}-101"
+            ${comp.is_mapped ? '' : 'disabled'}
           >
         </td>
-        <td class="py-3 px-3.5 text-center">
+        <td class="py-2.5 px-3.5 text-center">
           <input 
             type="checkbox" 
-            class="matrix-posting-checkbox w-4 h-4 rounded text-blue-600 accent-blue-600" 
+            class="matrix-posting-checkbox w-4 h-4 rounded text-blue-600 accent-blue-600 cursor-pointer" 
             ${comp.allow_direct_posting ? 'checked' : ''}
+            ${comp.is_mapped ? '' : 'disabled'}
           >
         </td>
-        <td class="py-3 px-3.5 text-center">
+        <td class="py-2.5 px-3.5 text-center">
           <label class="relative inline-flex items-center cursor-pointer">
             <input 
               type="checkbox" 
               class="matrix-map-toggle sr-only peer" 
+              onchange="onMatrixRowToggle(this)"
               ${comp.is_mapped ? 'checked' : ''}
             >
-            <div class="w-10 h-5 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+            <div class="w-9 h-5 bg-slate-300 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </td>
       `;
@@ -871,14 +1240,18 @@
   }
 
   function setAllMatrixRows(isMapped) {
-    document.querySelectorAll('.matrix-map-toggle').forEach(el => el.checked = isMapped);
+    document.querySelectorAll('.matrix-map-toggle').forEach(el => {
+      el.checked = isMapped;
+      onMatrixRowToggle(el);
+    });
   }
 
-  async function saveMatrixViaAjax() {
+  async function saveMatrixViaAjax(redirectOnSuccess = false) {
     const accSelect = document.getElementById('matrixAccountSelect');
     if (!accSelect) return;
     const accountId = accSelect.value;
     const btn = document.getElementById('btnSaveMatrixAjax');
+    const topBtn = document.querySelector('button[form="master-record-form"][type="submit"]');
 
     const rows = document.querySelectorAll('.matrix-row');
     const mappings = [];
@@ -896,9 +1269,17 @@
       });
     });
 
-    const origText = btn.innerHTML;
-    btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Saving...`;
-    btn.disabled = true;
+    let origText = btn ? btn.innerHTML : '';
+    let origTopText = topBtn ? topBtn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Saving...`;
+      btn.disabled = true;
+    }
+    if (topBtn) {
+      topBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
+      topBtn.disabled = true;
+    }
+    if (window.lucide) window.lucide.createIcons();
 
     try {
       const res = await fetch('/api/gl/company-mappings/matrix-save', {
@@ -908,23 +1289,48 @@
       });
       const data = await res.json();
       if (data.status === 'success') {
-        btn.className = 'px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-2';
-        btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Saved Successfully!`;
-        setTimeout(() => {
-          btn.className = 'px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer';
-          btn.innerHTML = origText;
-          btn.disabled = false;
+        if (redirectOnSuccess) {
+          window.location.href = "{{ view_url if is_edit_mode else '/modules/general-ledger?tab=mapping' }}";
+          return;
+        }
+        if (btn) {
+          btn.className = 'px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-2';
+          btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Saved Successfully!`;
+          setTimeout(() => {
+            btn.className = 'px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-2 cursor-pointer';
+            btn.innerHTML = origText;
+            btn.disabled = false;
+            if (window.lucide) window.lucide.createIcons();
+          }, 2000);
+        }
+        if (topBtn) {
+          topBtn.innerHTML = origTopText;
+          topBtn.disabled = false;
           if (window.lucide) window.lucide.createIcons();
-        }, 2000);
+        }
       } else {
         alert('Error saving mappings: ' + (data.message || 'Unknown error'));
-        btn.innerHTML = origText;
-        btn.disabled = false;
+        if (btn) {
+          btn.innerHTML = origText;
+          btn.disabled = false;
+        }
+        if (topBtn) {
+          topBtn.innerHTML = origTopText;
+          topBtn.disabled = false;
+        }
+        if (window.lucide) window.lucide.createIcons();
       }
     } catch (err) {
       alert('Network error while saving matrix: ' + err.message);
-      btn.innerHTML = origText;
-      btn.disabled = false;
+      if (btn) {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }
+      if (topBtn) {
+        topBtn.innerHTML = origTopText;
+        topBtn.disabled = false;
+      }
+      if (window.lucide) window.lucide.createIcons();
     }
   }
 </script>

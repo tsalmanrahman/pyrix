@@ -11,10 +11,11 @@
       <!-- Far-Left Back Button -->
       <a 
         href="/modules/cash-book?tab=transfers" 
-        class="btn-action-back w-9 h-9 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-105 active:scale-95"
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
         title="Back to Contra Transfers"
       >
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
       </a>
 
       <!-- Subtle Vertical Divider -->
@@ -27,20 +28,21 @@
 
       <!-- Title & Scope -->
       <div class="min-w-0">
-        <h2 class="text-base font-bold text-white tracking-tight truncate">Inter Bank-Cash Contra Transfer Studio</h2>
-        <p class="text-[11px] text-slate-400 truncate">Transfer funds between corporate bank accounts and cash vaults</p>
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">Inter Bank-Cash Contra Transfer Studio</h2>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Transfer funds between corporate bank accounts and cash vaults</p>
       </div>
     </div>
 
-    <!-- Right Side: Exactly ONE Focused Action -->
+    <!-- Right Side Actions -->
     <div class="flex items-center gap-2 shrink-0">
       <button 
         type="submit" 
         form="contra-form"
-        class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-105 active:scale-95 shrink-0"
+        class="h-9 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 shrink-0 text-xs font-bold"
         title="Post Contra Transfer"
       >
-        <i data-lucide="check" class="w-4 h-4"></i>
+        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <span>Transfer</span>
       </button>
     </div>
   </div>

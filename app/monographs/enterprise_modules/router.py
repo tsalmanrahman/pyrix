@@ -1517,6 +1517,7 @@ async def new_gl_master_record_page(request: Request, entity: str):
             "all_departments": all_departments,
             "all_cost_centres": all_cost_centres,
             "all_companies": all_companies,
+            "companies_list": all_companies,
             "selected_account_id": selected_account_id,
             "company_mapping_matrix": company_mapping_matrix,
             "active_company": active_company,
@@ -1682,6 +1683,44 @@ async def edit_gl_master_record_page(request: Request, entity: str, record_id: s
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
 
+    entity_to_tab = {
+        "gl-accounts": "coa",
+        "company-mappings": "mapping",
+        "sub-accounts": "subaccounts",
+        "departments": "departments",
+        "cost-centres": "costcentres",
+        "budget-sets": "budgets"
+    }
+    sub_tab = entity_to_tab.get(entity, "overview")
+
+    # Reconcile operating company scope for company-owned records
+    if record.get("company_id") and str(record["company_id"]) != str(active_company["id"]):
+        if is_view:
+            if entity == "company-mappings":
+                active_mapping = GLMasterService.get_mapping_by_account_and_company(
+                    str(record["gl_account_id"]), str(active_company["id"])
+                )
+                if active_mapping:
+                    return RedirectResponse(
+                        url=f"/modules/general-ledger/master/company-mappings/{active_mapping['id']}/view",
+                        status_code=303
+                    )
+                else:
+                    return RedirectResponse(
+                        url="/modules/general-ledger?tab=mapping",
+                        status_code=303
+                    )
+            else:
+                return RedirectResponse(
+                    url=f"/modules/general-ledger?tab={sub_tab}",
+                    status_code=303
+                )
+        else:
+            return RedirectResponse(
+                url=f"/modules/general-ledger?tab={sub_tab}",
+                status_code=303
+            )
+
     all_accounts = GLMasterService.get_all_accounts()
     all_account_groups = GLMasterService.get_account_groups()
     all_departments = GLMasterService.get_all_departments()
@@ -1698,15 +1737,6 @@ async def edit_gl_master_record_page(request: Request, entity: str, record_id: s
         selected_account_id = str(record.get("id"))
         company_mapping_matrix = GLMasterService.get_company_mappings_matrix(selected_account_id)
 
-    entity_to_tab = {
-        "gl-accounts": "coa",
-        "company-mappings": "mapping",
-        "sub-accounts": "subaccounts",
-        "departments": "departments",
-        "cost-centres": "costcentres",
-        "budget-sets": "budgets"
-    }
-    sub_tab = entity_to_tab.get(entity, "overview")
     sub_title = GL_SUB_AREAS.get(sub_tab, {}).get("title", entity_titles.get(entity, "List"))
 
     breadcrumbs = [
@@ -1736,6 +1766,7 @@ async def edit_gl_master_record_page(request: Request, entity: str, record_id: s
             "all_departments": all_departments,
             "all_cost_centres": all_cost_centres,
             "all_companies": all_companies,
+            "companies_list": all_companies,
             "selected_account_id": selected_account_id,
             "company_mapping_matrix": company_mapping_matrix,
             "active_company": active_company,
@@ -1868,6 +1899,14 @@ async def edit_module_record_page(request: Request, slug: str, record_id: str):
         raise HTTPException(status_code=404, detail="Transaction record not found")
 
     active_company = CompanyService.resolve_active_company(request)
+
+    # Reconcile operating company scope for company-owned records
+    if record.get("company_id") and str(record["company_id"]) != str(active_company["id"]):
+        return RedirectResponse(
+            url=f"/modules/{slug}",
+            status_code=303
+        )
+
     appearance = AppearanceService.get_appearance()
     db_health = db.check_health()
 
@@ -2792,6 +2831,15 @@ async def edit_cb_master_record_page(request: Request, entity: str, record_id: s
         raise HTTPException(status_code=404, detail="Record not found")
 
     active_company = CompanyService.resolve_active_company(request)
+    ent_meta = CB_MASTER_ENTITIES[entity]
+
+    # Reconcile operating company scope for company-owned records
+    if record.get("company_id") and str(record["company_id"]) != str(active_company["id"]):
+        return RedirectResponse(
+            url=f"/modules/cash-book?tab={ent_meta['tab']}",
+            status_code=303
+        )
+
     companies_list = CompanyService.get_all_companies()
     appearance = AppearanceService.get_appearance()
     banks_list = CashBookService.get_banks()
@@ -3063,6 +3111,16 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
 
     module = EnterpriseModuleService.get_module_by_slug("accounts-receivable")
     active_company = CompanyService.resolve_active_company(request)
+    ent_meta = AR_MASTER_ENTITIES[entity]
+    sub_tab = ent_meta["tab"]
+
+    # Reconcile operating company scope for company-owned records
+    if record.get("company_id") and str(record["company_id"]) != str(active_company["id"]):
+        return RedirectResponse(
+            url=f"/modules/accounts-receivable?tab={sub_tab}",
+            status_code=303
+        )
+
     companies_list = CompanyService.get_all_companies()
     appearance = AppearanceService.get_appearance()
     db_health = db.check_health()
@@ -3071,8 +3129,6 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
     edit_url = f"/modules/accounts-receivable/master/{entity}/{record_id}/edit"
     view_url = f"/modules/accounts-receivable/master/{entity}/{record_id}/view"
 
-    ent_meta = AR_MASTER_ENTITIES[entity]
-    sub_tab = ent_meta["tab"]
     sub_title = AR_SUB_AREAS.get(sub_tab, {}).get("title", ent_meta["title"])
 
     breadcrumbs = [

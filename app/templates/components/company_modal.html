@@ -23,7 +23,7 @@
 
     <!-- Companies List Grid (2-Line Cards with Physical Facility Address) -->
     <div class="space-y-2 max-h-[460px] overflow-y-auto pr-1" id="company-list-container" role="radiogroup" aria-label="Select Company">
-      {% for comp in companies_list %}
+      {% for comp in (companies_list or all_companies or []) %}
         <div 
           onclick="selectCompany('{{ comp.id }}')"
           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCompany('{{ comp.id }}');}"
@@ -80,10 +80,76 @@
 </div>
 
 <script>
-function openCompanyModal() {
+async function openCompanyModal() {
+  if (typeof isCompanySwitchingAllowed === 'function' && !isCompanySwitchingAllowed()) {
+    if (typeof showToast === 'function') {
+      showToast('Company cannot be changed while editing a record.', 'info');
+    }
+    return;
+  }
   const modal = document.getElementById('company-switcher-modal');
   if (modal) {
     modal.classList.remove('hidden');
+  }
+  const container = document.getElementById('company-list-container');
+  if (container && container.querySelectorAll('.company-item-card').length === 0) {
+    try {
+      const res = await fetch('/api/companies/list');
+      const data = await res.json();
+      if (data.companies && data.companies.length > 0) {
+        const activeCompId = '{{ active_company.id if active_company else "" }}';
+        container.innerHTML = data.companies.map(comp => {
+          const isTarget = String(comp.id) === String(activeCompId);
+          return `
+            <div 
+              onclick="selectCompany('${comp.id}')"
+              onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCompany('${comp.id}');}"
+              data-company-id="${comp.id}"
+              role="radio"
+              tabindex="0"
+              aria-checked="${isTarget ? 'true' : 'false'}"
+              class="company-item-card rounded-xl p-3.5 flex items-center justify-between gap-3 cursor-pointer border transition-all duration-150 group outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${isTarget ? 'border-blue-500/60 bg-blue-50/50 dark:bg-blue-500/10 shadow-sm' : 'border-slate-200 dark:border-white/5 bg-white dark:bg-white/[0.02] hover:border-blue-400 hover:bg-slate-50 dark:hover:bg-white/[0.05]'}"
+            >
+              <div class="flex items-start gap-3 min-w-0 flex-1">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-white/5 border border-blue-100 dark:border-white/10 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform shrink-0 mt-0.5">
+                  <i data-lucide="${comp.logo_icon || 'building-2'}" class="w-4.5 h-4.5"></i>
+                </div>
+                <div class="space-y-1 min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-2 py-0.5 text-[10px] font-mono font-bold uppercase rounded bg-slate-100 dark:bg-blue-500/15 text-slate-700 dark:text-blue-400 border border-slate-200 dark:border-blue-500/30 shrink-0">
+                      ${comp.short_code}
+                    </span>
+                    <span class="px-1.5 py-0.2 text-[9px] font-mono font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                      ${comp.currency_symbol || '$'} ${comp.currency || 'USD'}
+                    </span>
+                    <h4 class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition leading-snug">
+                      ${comp.name}
+                    </h4>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-blue-500 shrink-0"></i>
+                    <span class="truncate">${comp.headquarters || 'Main Corporate Facility'}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="shrink-0 flex items-center justify-center pl-2">
+                <div 
+                  class="company-radio-outer w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${isTarget ? 'border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-500/20 shadow-sm shadow-blue-500/20' : 'border-slate-300 dark:border-slate-600 group-hover:border-blue-400 dark:group-hover:border-blue-400 bg-transparent'}"
+                  aria-hidden="true"
+                >
+                  <div 
+                    class="company-radio-dot w-2.5 h-2.5 rounded-full transition-all duration-200 ${isTarget ? 'bg-blue-600 dark:bg-blue-400 scale-100' : 'bg-transparent scale-0 group-hover:scale-75 group-hover:bg-blue-400/50'}"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        if (window.lucide) window.lucide.createIcons();
+      }
+    } catch (err) {
+      console.error('Failed to load companies dynamically:', err);
+    }
   }
 }
 
@@ -149,10 +215,50 @@ async function selectCompany(companyId) {
   }
 }
 
+async function switchCompanyAndNavigate(companyId, targetUrl) {
+  if (typeof isCompanySwitchingAllowed === 'function' && !isCompanySwitchingAllowed()) {
+    if (typeof showToast === 'function') {
+      showToast('Company cannot be changed while editing a record.', 'info');
+    }
+    return;
+  }
+  const formData = new FormData();
+  formData.append('company_id', companyId);
+  try {
+    const res = await fetch('/api/company/switch', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (typeof showToast === 'function') {
+        showToast(`Switched operating scope to ${data.company.name}`);
+      }
+      setTimeout(() => {
+        window.location.href = targetUrl || window.location.href;
+      }, 150);
+    } else {
+      if (typeof showToast === 'function') {
+        showToast(data.error || 'Failed to switch company', 'error');
+      }
+    }
+  } catch (err) {
+    if (typeof showToast === 'function') {
+      showToast('Failed to switch company context.', 'error');
+    }
+  }
+}
+
 // Global keyboard shortcut: Ctrl+Shift+C
 document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
     e.preventDefault();
+    if (typeof isCompanySwitchingAllowed === 'function' && !isCompanySwitchingAllowed()) {
+      if (typeof showToast === 'function') {
+        showToast('Company cannot be changed while editing a record.', 'info');
+      }
+      return;
+    }
     openCompanyModal();
   }
 });
