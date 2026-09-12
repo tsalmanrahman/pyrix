@@ -518,7 +518,10 @@
         <i data-lucide="layers-2" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
         <span>Adjustment of Advance with Bills: {{ active_company.name }}</span>
       </h3>
-      <button type="button" onclick="openArModal('modal-add-adv-adj')" class="btn-action-add w-7 h-7 rounded-lg flex items-center justify-center transition cursor-pointer" title="New Advance Adjustment"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
+      <a href="/modules/accounts-receivable/advance-settlement-studio" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" title="Open Advance Settlement Studio">
+        <i data-lucide="layers-2" class="w-3.5 h-3.5"></i>
+        <span>Settlement Studio</span>
+      </a>
     </div>
 
     <div class="overflow-x-auto">
@@ -622,7 +625,17 @@
         <i data-lucide="{% if 'debit' in current_tab %}file-plus{% else %}file-minus{% endif %}" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
         <span>{{ current_page_title }}: {{ active_company.name }}</span>
       </h3>
-      
+      {% if 'debit' in current_tab %}
+      <a href="/modules/accounts-receivable/debit-note-studio" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/30 shadow-sm shadow-rose-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" title="Commercial Debit Note Studio">
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        <span>New Debit Note</span>
+      </a>
+      {% elif 'credit' in current_tab %}
+      <a href="/modules/accounts-receivable/credit-note-studio" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/30 shadow-sm shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" title="Commercial Credit Note Studio">
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        <span>New Credit Note</span>
+      </a>
+      {% endif %}
     </div>
 
     {% set notes_list = ar_debit_notes_ref if current_tab == 'debit-notes-ref' else (ar_debit_notes_direct if current_tab == 'debit-notes-direct' else (ar_credit_notes_ref if current_tab == 'credit-notes-ref' else ar_credit_notes_direct)) %}
@@ -960,10 +973,16 @@
           <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Accounts Receivable Schedule</h3>
         </div>
       </div>
-      <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-200 text-xs font-semibold flex items-center gap-1.5 transition">
-        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-        <span>Print Schedule</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <a href="/modules/accounts-receivable/reports-studio?report=schedule" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Advanced Filter & Analytics Studio">
+          <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+          <span>Reports Studio</span>
+        </a>
+        <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-200 text-xs font-semibold flex items-center gap-1.5 transition">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Schedule</span>
+        </button>
+      </div>
     </div>
 
     <!-- Table -->
@@ -1017,6 +1036,10 @@
             </option>
           {% endfor %}
         </select>
+        <a href="/modules/accounts-receivable/reports-studio?report=customer-statement" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-200 text-xs font-semibold flex items-center gap-1.5 transition" title="Advanced Filter & Analytics Studio">
+          <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+          <span>Reports Studio</span>
+        </a>
         <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white font-semibold flex items-center gap-1.5 shadow-sm">
           <i data-lucide="printer" class="w-3.5 h-3.5"></i>
           <span>Print Statement</span>
@@ -1067,6 +1090,16 @@
           <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Customer - Sales, Collection & Outstanding</h3>
         </div>
       </div>
+      <div class="flex items-center gap-2">
+        <a href="/modules/accounts-receivable/reports-studio?report=sales-collection" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Advanced Filter & Analytics Studio">
+          <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+          <span>Reports Studio</span>
+        </a>
+        <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-200 text-xs font-semibold flex items-center gap-1.5 transition">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print</span>
+        </button>
+      </div>
     </div>
 
     <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
@@ -1107,6 +1140,16 @@
         <div>
           <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Aged Trial Balance of Accounts Receivables</h3>
         </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/modules/accounts-receivable/reports-studio?report=aged-trial" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Advanced Filter & Analytics Studio">
+          <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+          <span>Reports Studio</span>
+        </a>
+        <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-200 text-xs font-semibold flex items-center gap-1.5 transition">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print</span>
+        </button>
       </div>
     </div>
 

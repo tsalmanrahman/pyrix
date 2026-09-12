@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-AP - Credit Note Studio{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl mx-auto">
+
+  <!-- Header Banner -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <a 
+        href="/modules/accounts-payable?tab=credit-notes" 
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
+        title="Back to Credit Notes"
+      >
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
+      </a>
+
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <i data-lucide="file-plus-2" class="w-4 h-4"></i>
+      </div>
+
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          AP Credit Note Studio
+        </h2>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Vendor Credits, Volume Rebates &amp; Post-Bill Price Settlements</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        <span>Payables Adjustment Active</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Credit Note Form -->
+  <form method="POST" action="/modules/accounts-payable/credit-notes/studio" class="space-y-6">
+    <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-text" class="w-4 h-4 text-amber-500"></i>
+          <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Credit Note Parameters</span>
+        </div>
+        <span class="text-[11px] font-mono text-slate-400">{{ auto_note_no }}</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Credit Note Number *</label>
+          <input 
+            type="text" 
+            name="note_number" 
+            value="{{ auto_note_no }}" 
+            required 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Note Date *</label>
+          <input 
+            type="date" 
+            name="note_date" 
+            id="cn-date-input" 
+            required 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Vendor *</label>
+          <select name="vendor_id" required class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-semibold">
+            {% for v in vendors %}
+              <option value="{{ v.id }}">{{ v.vendor_name }} ({{ v.vendor_code }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Reason Code</label>
+          <select name="reason_code" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-medium">
+            <option value="VOLUME_REBATE">Annual / Quarterly Volume Incentive Rebate</option>
+            <option value="SPECIAL_DISCOUNT">Special Commercial Settlement Discount</option>
+            <option value="UNDERBILLING_RECLASSIFY">Vendor Rate Reclassification</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Linked Purchase Bill Number (Optional)</label>
+          <input 
+            type="text" 
+            name="purchase_bill_id" 
+            placeholder="e.g. PB-202609-8412 (Leave blank for direct)" 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">GL Allocation Account</label>
+          <select name="gl_account_id" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
+            {% for acc in gl_accounts %}
+              <option value="{{ acc.id }}">{{ acc.account_number }} - {{ acc.account_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Subtotal Credit *</label>
+          <input 
+            type="number" 
+            step="0.01" 
+            name="subtotal_amount" 
+            id="cn-subtotal" 
+            value="30000.00" 
+            oninput="calcCreditNoteTotal()" 
+            required 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold text-right text-amber-600 dark:text-amber-400"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">VAT Adjustment Amount (+)</label>
+          <input 
+            type="number" 
+            step="0.01" 
+            name="vat_amount" 
+            id="cn-vat" 
+            value="4500.00" 
+            oninput="calcCreditNoteTotal()" 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono text-right text-indigo-600 dark:text-indigo-400"
+          >
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Credit Note Narrative / Settlement Memo</label>
+          <textarea 
+            name="reason_description" 
+            rows="2" 
+            placeholder="Official memorandum detailing agreed volume rebate tier or invoice adjustment..." 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-900 dark:text-white">Total Credited Adjustment Amount</span>
+        <span class="text-base font-bold font-mono text-amber-600 dark:text-amber-400" id="cn-total-display">৳34,500.00</span>
+        <input type="hidden" name="gross_amount" id="cn-gross-input" value="34500.00">
+      </div>
+
+      <div class="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-white/5">
+        <a 
+          href="/modules/accounts-payable?tab=credit-notes" 
+          class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition"
+        >
+          Cancel
+        </a>
+        <button 
+          type="submit" 
+          class="px-5 py-2 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-500 text-white shadow-md shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+        >
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Post Credit Note</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+</div>
+
+<script>
+function calcCreditNoteTotal() {
+  const sub = parseFloat(document.getElementById('cn-subtotal').value) || 0;
+  const vat = parseFloat(document.getElementById('cn-vat').value) || 0;
+  const total = sub + vat;
+  document.getElementById('cn-total-display').innerText = '৳' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('cn-gross-input').value = total.toFixed(2);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const d = document.getElementById('cn-date-input');
+  if (d && !d.value) {
+    d.value = new Date().toISOString().split('T')[0];
+  }
+});
+</script>
+{% endblock %}

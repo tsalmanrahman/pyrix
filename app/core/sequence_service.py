@@ -119,6 +119,16 @@ DEFAULT_SEQUENCES = [
         "padding_digits": 4,
         "next_number": 1,
     },
+    {
+        "entity_key": "ar_notes",
+        "entity_name": "Commercial Debit & Credit Notes",
+        "module_slug": "accounts-receivable",
+        "prefix": "CRN",
+        "include_year": "YY",
+        "delimiter": "-",
+        "padding_digits": 4,
+        "next_number": 101,
+    },
     # Sourcing & Procurement Module
     {
         "entity_key": "sourcing_vendors",

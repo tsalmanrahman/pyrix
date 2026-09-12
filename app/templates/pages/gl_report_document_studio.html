@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ doc.parameters.report_title }} - Pyrix Document Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            serif: ['"Playfair Display"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+    }
+    .dark .glass-card {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(20px);
+    }
+
+    /* Modern A4 Physical Printable Paper Canvas */
+    .a4-viewport-canvas {
+      background: #1e293b;
+      padding: 2.5rem 1rem;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-x: auto;
+    }
+    .dark .a4-viewport-canvas {
+      background: #090d16;
+    }
+
+    .a4-paper {
+      background: #ffffff;
+      color: #0f172a;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 16mm 18mm;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      position: relative;
+      transform-origin: top center;
+      transition: transform 0.2s ease;
+    }
+
+    .a4-paper-landscape {
+      width: 297mm !important;
+      min-height: 210mm !important;
+      padding: 14mm 16mm !important;
+    }
+
+    .accounting-double-total {
+      border-top: 1px solid #0f172a;
+      border-bottom: 3px double #0f172a;
+    }
+    .accounting-single-total {
+      border-top: 1px solid #0f172a;
+      border-bottom: 1px solid #0f172a;
+    }
+
+    .paper-watermark {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .paper-watermark span {
+      font-size: 5.5rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      color: rgba(148, 163, 184, 0.06);
+      transform: rotate(-32deg);
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    @media print {
+      body { background: transparent !important; padding: 0 !important; margin: 0 !important; }
+      .no-print { display: none !important; }
+      .a4-viewport-canvas { background: transparent !important; padding: 0 !important; min-height: auto !important; }
+      .a4-paper { box-shadow: none !important; border: none !important; width: 100% !important; min-height: auto !important; padding: 0 !important; margin: 0 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+  <!-- Top Floating Studio Command Ribbon (no-print) -->
+  <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 px-6 py-3 no-print text-white shadow-xl">
+    <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
+      
+      <!-- Left: Back to Parameters & Document Information -->
+      <div class="flex items-center gap-3">
+        <a href="/modules/general-ledger?tab=financial-statements" class="px-3 py-1.5 rounded-xl border border-white/15 hover:bg-white/10 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer" title="Back to GL Workspace">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back to Parameters</span>
+        </a>
+        <div class="h-5 w-px bg-white/20"></div>
+        <div>
+          <span class="text-xs font-bold tracking-tight block">{{ doc.parameters.report_title }}</span>
+          <span class="text-[10px] text-slate-400 font-mono">
+            {% if doc.parameters.report_type == 'fin_stmt' %}
+            Period {{ doc.parameters.period_number }} ({{ doc.parameters.month_name }}) &bull; {{ doc.parameters.budget_set }}
+            {% elif doc.parameters.report_type in ['tb_std', 'tb_summary'] %}
+            Financial Year {{ doc.parameters.financial_year }} &bull; Period {{ doc.parameters.period_from }} ({{ doc.parameters.from_month }}) to {{ doc.parameters.period_to }} ({{ doc.parameters.to_month }})
+            {% elif doc.parameters.report_type in ['gl_tx_detail_0', 'gl_tx_detail_2', 'gl_tx_detail_3'] %}
+            Period {{ doc.parameters.period_from }} to {{ doc.parameters.period_to }} &bull; Cost Centre: {{ doc.parameters.cost_centre_name }}
+            {% elif doc.parameters.report_type == 'cost_centre_reports' %}
+            Cost Centre: {{ doc.parameters.cost_centre_name }} &bull; FY {{ doc.parameters.financial_year }} (Period {{ doc.parameters.period_from }} - {{ doc.parameters.period_to }})
+            {% elif doc.parameters.report_type in ['coa_report', 'gl_master_data'] %}
+            Order by: {{ doc.parameters.order_by|title }} &bull; Active Chart of Accounts
+            {% elif doc.parameters.report_type == 'batch_status' %}
+            01 Batch Status &bull; FY {{ doc.parameters.financial_year }} &bull; Batch: {{ doc.parameters.batch_no }}
+            {% else %}
+            Period {{ doc.parameters.period_number }} &bull; {{ doc.parameters.financial_year }}
+            {% endif %}
+          </span>
+        </div>
+      </div>
+
+      <!-- Center: Zoom & Page Controls -->
+      <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-xl border border-white/10 text-xs">
+        <button onclick="zoomPaper(-0.1)" class="p-1 hover:text-blue-400 cursor-pointer"><i data-lucide="zoom-out" class="w-3.5 h-3.5"></i></button>
+        <span id="zoom-lbl" class="font-mono px-2">100%</span>
+        <button onclick="zoomPaper(0.1)" class="p-1 hover:text-blue-400 cursor-pointer"><i data-lucide="zoom-in" class="w-3.5 h-3.5"></i></button>
+        <div class="h-4 w-px bg-white/20 mx-1"></div>
+        <span class="text-slate-400 text-[11px] font-mono">
+          {% if doc.parameters.report_type in ['tb_std', 'tb_summary', 'gl_tx_detail_0', 'gl_tx_detail_2', 'gl_tx_detail_3', 'cost_centre_reports', 'batch_status'] %}
+          A4 Landscape Sheet
+          {% else %}
+          A4 Portrait Sheet
+          {% endif %}
+        </span>
+      </div>
+
+      <!-- Right: Action Buttons -->
+      <div class="flex items-center gap-2.5">
+        <button onclick="exportTableToCSV('active-report-table', '{{ doc.parameters.report_name }}.csv')" class="px-3 py-1.5 rounded-xl border border-white/15 hover:bg-white/10 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span>Export to Excel</span>
+        </button>
+        <button onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Document (PDF)</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Physical A4 Canvas Viewport -->
+  <main class="a4-viewport-canvas">
+    <div id="pdf-paper-sheet" class="a4-paper {% if doc.parameters.report_type in ['tb_std', 'tb_summary', 'gl_tx_detail_0', 'gl_tx_detail_2', 'gl_tx_detail_3', 'cost_centre_reports', 'batch_status'] %}a4-paper-landscape{% endif %}">
+      
+      <!-- Security Watermark -->
+      <div class="paper-watermark">
+        <span>Official Document</span>
+      </div>
+
+      <div class="relative z-10 space-y-6">
+
+        <!-- Corporate Letterhead -->
+        <div class="border-b-2 border-slate-900 pb-4 flex items-start justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs font-mono">PX</div>
+              <span class="text-base font-extrabold tracking-tight text-slate-900">{{ active_company.name }}</span>
+            </div>
+            <div class="text-[11px] text-slate-600 mt-1 space-y-0.5">
+              <div>Headquarters: Gulshan-2 Commercial Area, Dhaka-1212, Bangladesh</div>
+              <div class="font-mono">TIN: 4892-1082-9011 &bull; VAT Registration: BIN-002194881-0101</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="inline-block px-2.5 py-1 rounded bg-slate-100 border border-slate-300 text-[10px] font-bold font-mono text-slate-800">
+              {% if doc.parameters.report_type == 'fin_stmt' %}
+              Form FS-01 &bull; Statutory
+              {% elif doc.parameters.report_type in ['tb_std', 'tb_summary'] %}
+              Form TB-01 &bull; Trial Balance
+              {% elif doc.parameters.report_type in ['gl_tx_detail_0', 'gl_tx_detail_2', 'gl_tx_detail_3'] %}
+              Form TX-02 &bull; GL Audit
+              {% elif doc.parameters.report_type == 'cost_centre_reports' %}
+              Form CC-05 &bull; Cost Analysis
+              {% elif doc.parameters.report_type in ['coa_report', 'gl_master_data'] %}
+              Form COA-01 &bull; Master Register
+              {% elif doc.parameters.report_type == 'batch_status' %}
+              Form BAT-01 &bull; Batch Audit
+              {% else %}
+              Form GL-01 &bull; Official Register
+              {% endif %}
+            </span>
+            <div class="text-[10px] text-slate-500 font-mono mt-1">Currency: {{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</div>
+          </div>
+        </div>
+
+        <!-- Document Title -->
+        <div class="text-center space-y-1">
+          <h2 class="text-base font-bold tracking-wide text-slate-900 font-serif">{{ doc.parameters.report_title }}</h2>
+          <div class="text-xs font-medium text-slate-700">
+            {% if doc.parameters.report_type == 'fin_stmt' %}
+            Period {{ doc.parameters.period_number }} ({{ doc.parameters.month_name }}) Ended {{ doc.parameters.date_as_of }} &bull; Comparative Analysis vs Prior Year ({{ doc.parameters.date_prior_as_of }})
+            {% elif doc.parameters.report_type in ['tb_std', 'tb_summary'] %}
+            Financial Year {{ doc.parameters.financial_year }} &bull; Period {{ doc.parameters.period_from }} ({{ doc.parameters.from_month }}) to Period {{ doc.parameters.period_to }} ({{ doc.parameters.to_month }})
+            {% elif doc.parameters.report_type in ['gl_tx_detail_0', 'gl_tx_detail_2', 'gl_tx_detail_3'] %}
+            Detailed Chronological Audit Register &bull; Period {{ doc.parameters.period_from }} to {{ doc.parameters.period_to }} &bull; Cost Centre: {{ doc.parameters.cost_centre_name }}
+            {% elif doc.parameters.report_type == 'cost_centre_reports' %}
+            Departmental Cost &amp; Performance Statement &bull; Selected Cost Centre: {{ doc.parameters.cost_centre_name }}
+            {% elif doc.parameters.report_type in ['coa_report', 'gl_master_data'] %}
+            Master Chart of Accounts Specification Register &bull; Sorted by: {{ doc.parameters.order_by|title }}
+            {% elif doc.parameters.report_type == 'batch_status' %}
+            Operational Batch Status &amp; Integrity Audit Register &bull; Financial Year {{ doc.parameters.financial_year }}
+            {% endif %}
+          </div>
+          <div class="text-[10px] text-slate-500 font-mono">
+            Reporting Framework: IFRS / IAS &bull; Budget Set: {{ doc.parameters.budget_set }} &bull; Destination: {{ doc.parameters.destination }}
+          </div>
+        </div>
+
+        <!-- REPORT TYPE BRANCH 1: Financial Statements (CYTD vs LYTD Balance Sheet) -->
+        {% if doc.parameters.report_type == 'fin_stmt' %}
+        <div class="space-y-4 text-xs">
+          <div>
+            <div class="bg-slate-100 font-bold text-slate-900 px-2.5 py-1.5 text-xs border-y border-slate-300 flex items-center justify-between">
+              <span>Assets Section</span>
+              <span class="font-mono text-[10px] text-slate-500">Amounts in {{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</span>
+            </div>
+            <table class="w-full text-left mt-1 border-collapse" id="active-report-table">
+              <thead>
+                <tr class="border-b border-slate-300 text-[11px] text-slate-600 font-bold">
+                  <th class="py-1.5 px-2">Account Description</th>
+                  <th class="py-1.5 px-2 w-14 text-center">Note</th>
+                  <th class="py-1.5 px-2 w-28 text-right">CYTD ({{ doc.parameters.date_as_of }})</th>
+                  <th class="py-1.5 px-2 w-28 text-right">LYTD ({{ doc.parameters.date_prior_as_of }})</th>
+                  <th class="py-1.5 px-2 w-24 text-right">Variance</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <!-- Non-Current Assets -->
+                <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="5" class="py-1 px-2 text-[11px]">Non-Current Assets</td></tr>
+                {% for item in doc.balance_sheet.non_current_assets %}
+                <tr>
+                  <td class="py-1 px-4">{{ item.name }}</td>
+                  <td class="py-1 px-2 text-center font-mono text-[11px] text-blue-600">{{ item.note }}</td>
+                  <td class="py-1 px-2 text-right font-mono">{{ item.cytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono text-slate-600">{{ item.lytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono text-emerald-600 font-semibold">+{{ item.variance|money }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="font-bold">
+                  <td class="py-1 px-2">Total Non-Current Assets</td>
+                  <td></td>
+                  <td class="py-1 px-2 text-right font-mono accounting-single-total">{{ doc.balance_sheet.total_non_current_cytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono accounting-single-total text-slate-600">{{ doc.balance_sheet.total_non_current_lytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono accounting-single-total text-emerald-600">+{{ doc.balance_sheet.total_non_current_variance|money }}</td>
+                </tr>
+
+                <!-- Current Assets -->
+                <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="5" class="py-1 px-2 text-[11px]">Current Assets</td></tr>
+                {% for item in doc.balance_sheet.current_assets %}
+                <tr>
+                  <td class="py-1 px-4">{{ item.name }}</td>
+                  <td class="py-1 px-2 text-center font-mono text-[11px] text-blue-600">{{ item.note }}</td>
+                  <td class="py-1 px-2 text-right font-mono">{{ item.cytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono text-slate-600">{{ item.lytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono text-emerald-600 font-semibold">+{{ item.variance|money }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="font-bold">
+                  <td class="py-1 px-2">Total Current Assets</td>
+                  <td></td>
+                  <td class="py-1 px-2 text-right font-mono accounting-single-total">{{ doc.balance_sheet.total_current_cytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono accounting-single-total text-slate-600">{{ doc.balance_sheet.total_current_lytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono accounting-single-total text-emerald-600">+{{ doc.balance_sheet.total_current_variance|money }}</td>
+                </tr>
+
+                <!-- Grand Total Assets with Double Underline -->
+                <tr class="font-extrabold text-slate-900 bg-slate-50">
+                  <td class="py-1.5 px-2">Total Assets</td>
+                  <td></td>
+                  <td class="py-1.5 px-2 text-right font-mono accounting-double-total">{{ doc.balance_sheet.total_assets_cytd|money }}</td>
+                  <td class="py-1.5 px-2 text-right font-mono accounting-double-total text-slate-600">{{ doc.balance_sheet.total_assets_lytd|money }}</td>
+                  <td class="py-1.5 px-2 text-right font-mono accounting-double-total text-emerald-600">+{{ doc.balance_sheet.total_assets_variance|money }}</td>
+                </tr>
+
+                <!-- Equity and Liabilities -->
+                <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="5" class="py-1 px-2 text-[11px]">Equity and Liabilities</td></tr>
+                {% for item in doc.balance_sheet.equity_and_liabilities %}
+                <tr>
+                  <td class="py-1 px-4">{{ item.name }}</td>
+                  <td class="py-1 px-2 text-center font-mono text-[11px] text-blue-600">{{ item.note }}</td>
+                  <td class="py-1 px-2 text-right font-mono">{{ item.cytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono text-slate-600">{{ item.lytd|money }}</td>
+                  <td class="py-1 px-2 text-right font-mono {% if item.variance > 0 %}text-emerald-600{% else %}text-slate-400{% endif %} font-semibold">{% if item.variance > 0 %}+{{ item.variance|money }}{% else %}0.00{% endif %}</td>
+                </tr>
+                {% endfor %}
+                <tr class="font-extrabold text-slate-900 bg-slate-50">
+                  <td class="py-1.5 px-2">Total Equity and Liabilities</td>
+                  <td></td>
+                  <td class="py-1.5 px-2 text-right font-mono accounting-double-total">{{ doc.balance_sheet.total_equity_liabilities_cytd|money }}</td>
+                  <td class="py-1.5 px-2 text-right font-mono accounting-double-total text-slate-600">{{ doc.balance_sheet.total_equity_liabilities_lytd|money }}</td>
+                  <td class="py-1.5 px-2 text-right font-mono accounting-double-total text-emerald-600">+{{ doc.balance_sheet.total_equity_liabilities_variance|money }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Notes Section if Attached -->
+          {% if doc.notes %}
+          <div class="space-y-2 pt-2">
+            <div class="bg-slate-100 font-bold text-slate-900 px-2.5 py-1.5 text-xs border-y border-slate-300 flex items-center justify-between">
+              <span>Attached Statutory Notes to the Financial Statements</span>
+              <span class="text-[10px] text-blue-600 font-mono">IFRS Compliant Disclosure Annexure</span>
+            </div>
+            <div class="space-y-1.5 text-[11px] text-slate-700 bg-slate-50 p-3 rounded border border-slate-200">
+              <div><span class="font-bold text-slate-900 font-mono">Note 4 (PPE):</span> Property, plant and equipment continuity schedule includes additions of ৳2.3M in industrial plant machinery amortized on a straight-line basis.</div>
+              <div><span class="font-bold text-slate-900 font-mono">Note 7 (Trade Receivables):</span> Receivables are recognized net of expected credit losses (ECL) in accordance with IFRS 9 criteria.</div>
+              <div><span class="font-bold text-slate-900 font-mono">Note 15 (IFRS 8 Operating Segments):</span> Segment revenue distribution: Commercial Manufacturing (64.5%), Enterprise Software (24.3%), Regional Wholesale (11.2%).</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- REPORT TYPE BRANCH 2: Trial Balance (Standard & Summary) -->
+        {% elif doc.parameters.report_type in ['tb_std', 'tb_summary'] %}
+        <div class="space-y-4 text-xs">
+          <div class="bg-slate-100 font-bold text-slate-900 px-2.5 py-1.5 text-xs border-y border-slate-300 flex items-center justify-between">
+            <span>Trial Balance Audit Schedule (Opening, Movement &amp; Closing)</span>
+            <span class="font-mono text-[10px] text-slate-500">Amounts in {{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</span>
+          </div>
+          <table class="w-full text-left mt-1 border-collapse" id="active-report-table">
+            <thead>
+              <tr class="border-b border-slate-300 text-[11px] text-slate-600 font-bold">
+                <th class="py-1.5 px-2 w-20">Account</th>
+                <th class="py-1.5 px-2">Account Description</th>
+                <th class="py-1.5 px-2 w-24">Type</th>
+                <th class="py-1.5 px-2 w-28 text-right">Opening Debit</th>
+                <th class="py-1.5 px-2 w-28 text-right">Opening Credit</th>
+                <th class="py-1.5 px-2 w-28 text-right">Movement Debit</th>
+                <th class="py-1.5 px-2 w-28 text-right">Movement Credit</th>
+                <th class="py-1.5 px-2 w-28 text-right">Closing Debit</th>
+                <th class="py-1.5 px-2 w-28 text-right">Closing Credit</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for row in doc.trial_balance.records %}
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-1.5 px-2 font-mono font-bold text-slate-900">{{ row.account_number }}</td>
+                <td class="py-1.5 px-2 text-slate-800 font-medium">{{ row.account_name }}</td>
+                <td class="py-1.5 px-2 text-slate-500 text-[10px]">{{ row.account_type }}</td>
+                <td class="py-1.5 px-2 text-right font-mono text-slate-600">{% if row.open_debit > 0 %}{{ row.open_debit|money }}{% else %}-{% endif %}</td>
+                <td class="py-1.5 px-2 text-right font-mono text-slate-600">{% if row.open_credit > 0 %}{{ row.open_credit|money }}{% else %}-{% endif %}</td>
+                <td class="py-1.5 px-2 text-right font-mono text-slate-700">{% if row.movement_debit > 0 %}{{ row.movement_debit|money }}{% else %}-{% endif %}</td>
+                <td class="py-1.5 px-2 text-right font-mono text-slate-700">{% if row.movement_credit > 0 %}{{ row.movement_credit|money }}{% else %}-{% endif %}</td>
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-slate-900">{% if row.closing_debit > 0 %}{{ row.closing_debit|money }}{% else %}-{% endif %}</td>
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-slate-900">{% if row.closing_credit > 0 %}{{ row.closing_credit|money }}{% else %}-{% endif %}</td>
+              </tr>
+              {% endfor %}
+              <!-- Grand Totals Row -->
+              <tr class="font-extrabold text-slate-900 bg-slate-50">
+                <td colspan="3" class="py-2 px-2 text-right">Grand Totals:</td>
+                <td class="py-2 px-2 text-right font-mono accounting-single-total">{{ doc.trial_balance.totals.open_debit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-single-total">{{ doc.trial_balance.totals.open_credit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-single-total">{{ doc.trial_balance.totals.movement_debit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-single-total">{{ doc.trial_balance.totals.movement_credit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ doc.trial_balance.totals.closing_debit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ doc.trial_balance.totals.closing_credit|money }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold flex items-center justify-between">
+            <span class="flex items-center gap-1.5"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i> Trial Balance Audit Status: Completely Balanced (Total Debit = Total Credit)</span>
+            <span class="font-mono">Net Variance: ৳0.00</span>
+          </div>
+        </div>
+
+        <!-- REPORT TYPE BRANCH 3: GL Transactions (0-, 2- by CC, 3- Journals) -->
+        {% elif doc.parameters.report_type in ['gl_tx_detail_0', 'gl_tx_detail_2', 'gl_tx_detail_3'] %}
+        <div class="space-y-4 text-xs">
+          <div class="bg-slate-100 font-bold text-slate-900 px-2.5 py-1.5 text-xs border-y border-slate-300 flex items-center justify-between">
+            <span>General Ledger Transactions Detail Register (Chronological Audit Trail)</span>
+            <span class="font-mono text-[10px] text-slate-500">Amounts in {{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</span>
+          </div>
+          <table class="w-full text-left mt-1 border-collapse" id="active-report-table">
+            <thead>
+              <tr class="border-b border-slate-300 text-[11px] text-slate-600 font-bold">
+                <th class="py-1.5 px-2 w-20">Date</th>
+                <th class="py-1.5 px-2 w-24">Voucher No</th>
+                <th class="py-1.5 px-2 w-20">Reference</th>
+                <th class="py-1.5 px-2 w-14 text-center">Module</th>
+                <th class="py-1.5 px-2 w-20">Cost Centre</th>
+                <th class="py-1.5 px-2 w-48">Account</th>
+                <th class="py-1.5 px-2">Line Narration / Description</th>
+                <th class="py-1.5 px-2 w-24 text-right">Debit</th>
+                <th class="py-1.5 px-2 w-24 text-right">Credit</th>
+                <th class="py-1.5 px-2 w-28 text-right">Running Balance</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for row in doc.transactions %}
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-1.5 px-2 font-mono text-slate-700 whitespace-nowrap">{{ row.voucher_date }}</td>
+                <td class="py-1.5 px-2 font-mono font-bold text-blue-700 whitespace-nowrap">{{ row.voucher_number }}</td>
+                <td class="py-1.5 px-2 font-mono text-slate-500 text-[11px]">{{ row.reference_number }}</td>
+                <td class="py-1.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-[10px] font-bold">{{ row.source_module }}</span></td>
+                <td class="py-1.5 px-2 font-mono text-slate-600 text-[11px]">{{ row.cost_centre_code }}</td>
+                <td class="py-1.5 px-2 font-mono text-slate-800 text-[11px]"><span class="font-bold">{{ row.account_number }}</span> {{ row.account_name }}</td>
+                <td class="py-1.5 px-2 text-slate-600">{{ row.line_narration }}</td>
+                <td class="py-1.5 px-2 text-right font-mono text-slate-900 font-medium">{% if row.debit_amount > 0 %}{{ row.debit_amount|money }}{% else %}-{% endif %}</td>
+                <td class="py-1.5 px-2 text-right font-mono text-slate-900 font-medium">{% if row.credit_amount > 0 %}{{ row.credit_amount|money }}{% else %}-{% endif %}</td>
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-slate-900">{{ row.running_balance|money }} {{ row.balance_type }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- REPORT TYPE BRANCH 4: Cost Centre Statement (Screenshot 5: 20 HIL Cost Center) -->
+        {% elif doc.parameters.report_type == 'cost_centre_reports' %}
+        <div class="space-y-4 text-xs">
+          <div class="bg-slate-100 font-bold text-slate-900 px-2.5 py-1.5 text-xs border-y border-slate-300 flex items-center justify-between">
+            <span>Departmental Statement: {{ doc.parameters.cost_centre_name }}</span>
+            <span class="font-mono text-[10px] text-slate-500">Amounts in {{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</span>
+          </div>
+          <table class="w-full text-left mt-1 border-collapse" id="active-report-table">
+            <thead>
+              <tr class="border-b border-slate-300 text-[11px] text-slate-600 font-bold">
+                <th class="py-1.5 px-2 w-20">Account</th>
+                <th class="py-1.5 px-2">Account Description</th>
+                <th class="py-1.5 px-2 w-24">Cost Centre</th>
+                <th class="py-1.5 px-2 w-28">Category</th>
+                <th class="py-1.5 px-2 w-32 text-right">Actual Amount</th>
+                <th class="py-1.5 px-2 w-32 text-right">Budget Target</th>
+                <th class="py-1.5 px-2 w-32 text-right">Variance</th>
+                <th class="py-1.5 px-2 w-24 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for item in doc.cost_centre_statement.lines %}
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-1.5 px-2 font-mono font-bold text-slate-900">{{ item.account_number }}</td>
+                <td class="py-1.5 px-2 text-slate-800 font-medium">{{ item.account_name }}</td>
+                <td class="py-1.5 px-2 font-mono text-slate-600">{{ item.cost_centre_code }}</td>
+                <td class="py-1.5 px-2 text-slate-500 text-[11px]">{{ item.category }}</td>
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-slate-900">{{ item.actual_amount|money }}</td>
+                <td class="py-1.5 px-2 text-right font-mono text-slate-600">{{ item.budget_amount|money }}</td>
+                <td class="py-1.5 px-2 text-right font-mono {% if item.variance >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} font-semibold">
+                  {% if item.variance >= 0 %}+{{ item.variance|money }}{% else %}-{{ (item.variance * -1)|money }}{% endif %}
+                </td>
+                <td class="py-1.5 px-2 text-center">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono {% if item.variance_type == 'F' %}bg-emerald-100 text-emerald-800{% else %}bg-rose-100 text-rose-800{% endif %}">
+                    {{ item.variance_type }} ({{ 'Favorable' if item.variance_type == 'F' else 'Adverse' }})
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+              <!-- Totals -->
+              <tr class="font-extrabold text-slate-900 bg-slate-50">
+                <td colspan="4" class="py-2 px-2 text-right">Departmental Totals:</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ doc.cost_centre_statement.total_actual|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ doc.cost_centre_statement.total_budget|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total text-emerald-600">+{{ doc.cost_centre_statement.total_variance|money }}</td>
+                <td class="py-2 px-2 text-center font-mono font-bold text-emerald-700">Favorable</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- REPORT TYPE BRANCH 5: Chart of Accounts Master Register (Screenshots 2 & 3) -->
+        {% elif doc.parameters.report_type in ['coa_report', 'gl_master_data'] %}
+        <div class="space-y-4 text-xs">
+          <div class="bg-slate-100 font-bold text-slate-900 px-2.5 py-1.5 text-xs border-y border-slate-300 flex items-center justify-between">
+            <span>General Ledger Chart of Accounts Register &bull; Sorted by {{ doc.parameters.order_by|title }}</span>
+            <span class="font-mono text-[10px] text-slate-500">Official Master Data Specification</span>
+          </div>
+          <table class="w-full text-left mt-1 border-collapse" id="active-report-table">
+            <thead>
+              <tr class="border-b border-slate-300 text-[11px] text-slate-600 font-bold">
+                <th class="py-1.5 px-2 w-24">Account Code</th>
+                <th class="py-1.5 px-2">Account Description / Title</th>
+                <th class="py-1.5 px-2 w-48">Account Group</th>
+                <th class="py-1.5 px-2 w-28">Type</th>
+                <th class="py-1.5 px-2 w-28">Normal Balance</th>
+                <th class="py-1.5 px-2 w-20 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for acc in doc.chart_of_accounts %}
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-1.5 px-2 font-mono font-bold text-slate-900">{{ acc.account_number }}</td>
+                <td class="py-1.5 px-2 text-slate-800 font-medium">{{ acc.account_name }}</td>
+                <td class="py-1.5 px-2 text-slate-600 text-[11px] font-mono">{{ acc.group_name }}</td>
+                <td class="py-1.5 px-2 text-slate-600">{{ acc.account_type }}</td>
+                <td class="py-1.5 px-2 font-mono text-slate-600">{{ acc.normal_balance }}</td>
+                <td class="py-1.5 px-2 text-center">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">Active</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- REPORT TYPE BRANCH 6: 01 Batch Status Operational Register (Screenshot 4) -->
+        {% elif doc.parameters.report_type == 'batch_status' %}
+        <div class="space-y-4 text-xs">
+          <div class="bg-slate-100 font-bold text-slate-900 px-2.5 py-1.5 text-xs border-y border-slate-300 flex items-center justify-between">
+            <span>01 Batch Status Operational Audit Register</span>
+            <span class="font-mono text-[10px] text-slate-500">Amounts in {{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</span>
+          </div>
+          <table class="w-full text-left mt-1 border-collapse" id="active-report-table">
+            <thead>
+              <tr class="border-b border-slate-300 text-[11px] text-slate-600 font-bold">
+                <th class="py-1.5 px-2 w-32">Batch Number</th>
+                <th class="py-1.5 px-2">Batch Description / Purpose</th>
+                <th class="py-1.5 px-2 w-28">Date</th>
+                <th class="py-1.5 px-2 w-20 text-center">Vouchers</th>
+                <th class="py-1.5 px-2 w-32 text-right">Total Debit</th>
+                <th class="py-1.5 px-2 w-32 text-right">Total Credit</th>
+                <th class="py-1.5 px-2 w-24 text-center">Balanced</th>
+                <th class="py-1.5 px-2 w-24 text-center">Batch Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for b in doc.batch_status_data.records %}
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-1.5 px-2 font-mono font-bold text-blue-700">{{ b.batch_number }}</td>
+                <td class="py-1.5 px-2 text-slate-800 font-medium">{{ b.description }}</td>
+                <td class="py-1.5 px-2 font-mono text-slate-600">{{ b.batch_date }}</td>
+                <td class="py-1.5 px-2 font-mono text-center text-slate-700">{{ b.voucher_count }}</td>
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-slate-900">{{ b.total_debit|money }}</td>
+                <td class="py-1.5 px-2 text-right font-mono font-bold text-slate-900">{{ b.total_credit|money }}</td>
+                <td class="py-1.5 px-2 text-center">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-100 text-emerald-800">Yes</span>
+                </td>
+                <td class="py-1.5 px-2 text-center">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono {% if b.status == 'Posted' %}bg-blue-100 text-blue-800{% else %}bg-amber-100 text-amber-800{% endif %}">
+                    {{ b.status }}
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+              <!-- Totals -->
+              <tr class="font-extrabold text-slate-900 bg-slate-50">
+                <td colspan="4" class="py-2 px-2 text-right">Batch Register Totals:</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ doc.batch_status_data.total_debit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ doc.batch_status_data.total_credit|money }}</td>
+                <td class="py-2 px-2 text-center font-mono font-bold text-emerald-700">100%</td>
+                <td class="py-2 px-2 text-center text-[10px] font-mono">Audited</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        <!-- Formal 4-Tier Sign-Off Block -->
+        <div class="pt-8 border-t border-slate-300 grid grid-cols-4 gap-4 text-center text-[10px] text-slate-600">
+          <div>
+            <div class="h-10 border-b border-dashed border-slate-400"></div>
+            <div class="font-bold text-slate-900 mt-1.5">Md. Tariqul Islam</div>
+            <div>Prepared by (Senior Accountant)</div>
+          </div>
+          <div>
+            <div class="h-10 border-b border-dashed border-slate-400"></div>
+            <div class="font-bold text-slate-900 mt-1.5">Farhana Ahmed, ACA</div>
+            <div>Checked by (Internal Audit)</div>
+          </div>
+          <div>
+            <div class="h-10 border-b border-dashed border-slate-400"></div>
+            <div class="font-bold text-slate-900 mt-1.5">Kamrul Hasan, FCA</div>
+            <div>Head of Finance &amp; Accounts</div>
+          </div>
+          <div>
+            <div class="h-10 border-b border-dashed border-slate-400"></div>
+            <div class="font-bold text-slate-900 mt-1.5">Salman Rahman</div>
+            <div>Managing Director / CEO</div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-mono">
+          <span>Pyrix Document Ref: DOC-{{ doc.parameters.report_type|upper }}-{{ doc.parameters.financial_year }}-P{{ doc.parameters.period_number }}</span>
+          <span>Official Audited Management Record &bull; Page 1 of 1</span>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    let currentZoom = 1.0;
+    function zoomPaper(delta) {
+      currentZoom = Math.max(0.6, Math.min(1.4, currentZoom + delta));
+      const sheet = document.getElementById('pdf-paper-sheet');
+      if (sheet) sheet.style.transform = `scale(${currentZoom})`;
+      const lbl = document.getElementById('zoom-lbl');
+      if (lbl) lbl.textContent = `${Math.round(currentZoom * 100)}%`;
+    }
+
+    function exportTableToCSV(tableId, filename) {
+      const table = document.getElementById(tableId);
+      if (!table) return;
+      let csv = [];
+      const rows = table.querySelectorAll('tr');
+      rows.forEach(row => {
+        let cols = [];
+        const cells = row.querySelectorAll('th, td');
+        cells.forEach(cell => {
+          let text = cell.innerText.replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ').trim();
+          text = text.replace(/"/g, '""');
+          cols.push(`"${text}"`);
+        });
+        if (cols.length > 0) csv.push(cols.join(','));
+      });
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', filename || 'export.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Auto-trigger print if destination was direct printer
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('destination') === 'printer') {
+        setTimeout(() => {
+          window.print();
+        }, 600);
+      }
+    });
+  </script>
+</body>
+</html>

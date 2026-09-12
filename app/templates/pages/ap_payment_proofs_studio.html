@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-AP - Proof of Payment Vault{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl mx-auto">
+
+  <!-- Header Banner -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <a 
+        href="/modules/accounts-payable?tab=payment-proofs" 
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
+        title="Back to Payment Proofs"
+      >
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
+      </a>
+
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <div class="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+        <i data-lucide="file-check-2" class="w-4 h-4"></i>
+      </div>
+
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          Proof of Payment Audit Evidence Vault
+        </h2>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Bank Advices, EFTN Remittance Slips &amp; Vendor Receipt Archival</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        <span>Statutory Audit Lock Active</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Form for Uploading Proof of Payment -->
+  <form method="POST" action="/modules/accounts-payable/payment-proofs" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <div class="md:col-span-2 space-y-6">
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-4 h-4 text-blue-500"></i>
+              <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Treasury Remittance Evidence Parameters</span>
+            </div>
+            <span class="text-[11px] text-slate-400">External Audit Evidence</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Vendor Disbursement Voucher *</label>
+              <select name="payment_id" required class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-semibold">
+                {% for pmt in payments %}
+                  <option value="{{ pmt.id }}">
+                    {{ pmt.payment_number }} - {{ pmt.vendor_name }} ({{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(pmt.net_disbursement_amount) }}) - Date: {{ pmt.payment_date }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Evidence Document Type *</label>
+              <select name="document_type" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-medium">
+                <option value="BANK_ADVICE">Corporate Bank Remittance Advice (EFTN / RTGS)</option>
+                <option value="CHEQUE_COUNTERFOIL">Bank Cheque Counterfoil Scan</option>
+                <option value="NBR_ECHALLAN">NBR AIT Withholding e-Challan Deposit Proof</option>
+                <option value="VENDOR_RECEIPT">Vendor Official Money Receipt (MR)</option>
+                <option value="SWIFT_MESSAGE">International Telegraphic Transfer (SWIFT MT103)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">File Asset Name</label>
+              <input 
+                type="text" 
+                name="file_name" 
+                value="City_Bank_BEFTN_Remittance_Slip_Signed.pdf" 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+              >
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Audit Trail Notes &amp; Bank Transaction Reference</label>
+              <textarea 
+                name="remarks" 
+                rows="2" 
+                placeholder="Specify bank transaction reference number, EFTN trace sequence or cheque handover signature..." 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right 1 Col: Vault Dropzone & Commit -->
+      <div class="space-y-6">
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-blue-500"></i>
+              <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Audit File Vault</span>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-white/10">Encrypted</span>
+          </div>
+
+          <div class="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl p-6 text-center space-y-2 hover:border-blue-400 transition bg-slate-50/50 dark:bg-white/[0.02]">
+            <i data-lucide="file-check" class="w-8 h-8 text-blue-500 mx-auto"></i>
+            <div class="text-xs font-bold text-slate-800 dark:text-slate-200">Drag &amp; drop proof slip or browse</div>
+            <div class="text-[10px] text-slate-400">Archived with SHA-256 audit fingerprint</div>
+            <input type="file" class="hidden" id="proof-upload-input">
+            <button type="button" onclick="document.getElementById('proof-upload-input').click()" class="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 hover:bg-blue-100 transition cursor-pointer">
+              Select Proof File
+            </button>
+          </div>
+
+          <div class="pt-2 space-y-2">
+            <button 
+              type="submit" 
+              class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:scale-[1.01] active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>Archive Evidence to Vault</span>
+            </button>
+            <a 
+              href="/modules/accounts-payable?tab=payment-proofs" 
+              class="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 font-semibold text-xs transition flex items-center justify-center"
+            >
+              Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}

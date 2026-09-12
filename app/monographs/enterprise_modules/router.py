@@ -1,4 +1,5 @@
 import uuid
+import datetime
 from fastapi import APIRouter, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from app.core.templates import templates
@@ -56,6 +57,17 @@ from app.monographs.enterprise_modules.admin_security_service import AdminSecuri
 from app.monographs.enterprise_modules.admin_tax_service import AdminTaxService
 from app.monographs.enterprise_modules.admin_maintenance_service import AdminMaintenanceService
 from app.monographs.enterprise_modules.admin_report_service import AdminReportService
+from app.monographs.enterprise_modules.ap_service import (
+    APMasterService,
+    APTransactionService,
+    APKnockOffService,
+    APDisbursementService,
+    APTaxRemittanceService,
+    APNoteService,
+    APReversalService,
+    APDocumentService,
+    APReportService
+)
 from app.monographs.enterprise_modules.registry import get_module_suites_registry, get_active_suite_context
 from app.core.user_service import UserService
 from app.core.sequence_service import SequenceService
@@ -288,11 +300,12 @@ GL_SUB_AREAS = {
     "cost-analysis": {"title": "Cost Analysis by Cost Centre", "icon": "bar-chart-3", "entity": None},
     "account-balances": {"title": "Real-Time Account Balance Inquiry", "icon": "activity", "entity": None},
 
-    # 5. Financial Reporting & Statements Suite (7 Specialized Reports)
+    # 5. Financial Reporting & Statements Suite (6 Modern Parameter-Driven Studios)
     "financial-statements": {"title": "Balance Sheet & Income Statement (P&L)", "icon": "file-text", "entity": None},
-    "trial-balance": {"title": "Trial Balance Suite", "icon": "scale", "entity": None},
-    "gl-transaction-details": {"title": "General Ledger Transaction Details", "icon": "list-filter", "entity": None},
-    "cost-centre-pnl": {"title": "Cost-Centre wise Profit & Loss", "icon": "layers", "entity": None},
+    "trial-balance": {"title": "Trial Balance Audit Schedule", "icon": "scale", "entity": None},
+    "gl-transaction-details": {"title": "General Ledger Transaction Register", "icon": "list-filter", "entity": None},
+    "sub-account-balances": {"title": "Sub-Account Balance Breakdown", "icon": "layers", "entity": None},
+    "cost-centre-pnl": {"title": "Cost-Centre wise Profit & Loss", "icon": "pie-chart", "entity": None},
     "notes-to-accounts": {"title": "Notes to the Accounts", "icon": "file-code-2", "entity": None},
 }
 
@@ -338,6 +351,36 @@ AR_SUB_AREAS = {
     "aged-trial-balance": {"title": "Aged Trial Balance of Accounts Receivables", "icon": "scale", "entity": "aged-trial-balance"},
     "collections-register": {"title": "Collection from Customers Report", "icon": "receipt", "entity": "collections-register"},
     "notes-summary": {"title": "Debit Note / Credit Note Summary Report", "icon": "file-minus-2", "entity": "notes-summary"},
+}
+
+AP_SUB_AREAS = {
+    # 1. Master Setup Suite (4 Sub-Areas)
+    "vendors": {"title": "Vendor Directory", "icon": "users", "entity": "vendors"},
+    "vendor-mapping": {"title": "Vendor-Company Mapping Matrix", "icon": "network", "entity": "vendor-mapping"},
+    "payment-terms": {"title": "Payment Terms & Aging Matrix", "icon": "clock-3", "entity": "payment-terms"},
+    "control-accounts": {"title": "AP GL Control Account Sets", "icon": "scale", "entity": "control-accounts"},
+
+    # 2. Transaction Processing & Invoicing Suite (5 Operations)
+    "invoices": {"title": "Purchase Bills Entry Studio", "icon": "receipt", "entity": "invoices"},
+    "landowner-bills": {"title": "Landowner Payment Schedule Bills", "icon": "landmark", "entity": "landowner-bills"},
+    "advance-adjustments": {"title": "Advance Adjustments & Prepayment Knock-Off", "icon": "layers-2", "entity": "advance-adjustments"},
+    "debit-notes": {"title": "AP Debit Notes", "icon": "file-minus-2", "entity": "debit-notes"},
+    "credit-notes": {"title": "AP Credit Notes", "icon": "file-plus-2", "entity": "credit-notes"},
+
+    # 3. Disbursements, Remittance & Treasury Suite (4 Operations)
+    "payment-orders": {"title": "Payment Orders", "icon": "clipboard-check", "entity": "payment-orders"},
+    "payments": {"title": "Vendor Disbursements & Auto-AIT", "icon": "wallet", "entity": "payments"},
+    "ait-remittance": {"title": "Payment of AIT to Authority", "icon": "building", "entity": "ait-remittance"},
+    "reversals": {"title": "Reverse Transactions", "icon": "rotate-ccw", "entity": "reversals"},
+
+    # 4. Document Vault, Audit & Reconciliation Suite (2 Vaults)
+    "grn-verification": {"title": "GRN Verification Document Vault", "icon": "folder-lock", "entity": "grn-verification"},
+    "payment-proofs": {"title": "Proof of Payment Audit Evidence Vault", "icon": "file-check-2", "entity": "payment-proofs"},
+
+    # 5. Financial Reporting, Tax & Statements Suite (3 Reports)
+    "ap-schedule": {"title": "Accounts Payable Movement Schedule", "icon": "calendar-range", "entity": "ap-schedule"},
+    "vendor-statement": {"title": "Vendor Account Statement", "icon": "file-text", "entity": "vendor-statement"},
+    "tax-1099": {"title": "Tax 1099 / AIT Withholding Certificates", "icon": "file-spreadsheet", "entity": "tax-1099"},
 }
 
 
@@ -474,6 +517,73 @@ SOURCING_SUB_AREAS = {
     "lc-maturity": {"title": "LC Settlement & Maturity Schedule", "icon": "calendar-clock", "entity": "lc-maturity"},
 }
 
+# =========================================================================
+# 📄 Standalone Modern Financial PDF & Document Studio (Pops up in New Page)
+# =========================================================================
+@router.get("/modules/general-ledger/reports/view-document", response_class=HTMLResponse)
+async def view_gl_report_document(
+    request: Request,
+    report_name: str = Query("bs_cytd_lytd"),
+    fy: str = Query("2026-2027"),
+    period: str = Query("1"),
+    period_from: str = Query("1"),
+    period_to: str = Query("1"),
+    val_mode: str = Query("actual"),
+    data_source: str = Query("actual"),
+    budget_set: str = Query("b1"),
+    include_notes: bool = Query(True),
+    segments: str = Query("all"),
+    cost_centre: str = Query("20"),
+    cost_centre_mode: str = Query("selected"),
+    cc_acct_filter: str = Query("all"),
+    account_mode: str = Query("all"),
+    acct_from: Optional[str] = Query(None),
+    acct_to: Optional[str] = Query(None),
+    group_code: str = Query("1"),
+    order_by: str = Query("code"),
+    batch_no: str = Query("all"),
+    main_level_only: bool = Query(False),
+    exclude_zero: bool = Query(True),
+    destination: str = Query("pdf_view")
+):
+    active_company = CompanyService.resolve_active_company(request) or {
+        "id": "default", "name": "Pyrix Enterprise Systems Limited",
+        "currency": "BDT", "currency_symbol": "৳"
+    }
+    doc = GLReportService.get_comparative_document_data(
+        company_id=str(active_company.get("id", "")),
+        report_name=report_name,
+        fy=fy,
+        period=period,
+        period_from=period_from,
+        period_to=period_to,
+        data_source=data_source or val_mode,
+        budget_set=budget_set,
+        include_notes=include_notes,
+        segments=segments,
+        cost_centre=cost_centre,
+        cost_centre_mode=cost_centre_mode,
+        cc_acct_filter=cc_acct_filter,
+        account_mode=account_mode,
+        acct_from=acct_from,
+        acct_to=acct_to,
+        group_code=group_code,
+        order_by=order_by,
+        batch_no=batch_no,
+        main_level_only=main_level_only,
+        exclude_zero=exclude_zero,
+        destination=destination
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/gl_report_document_studio.html",
+        context={
+            "request": request,
+            "active_company": active_company,
+            "doc": doc,
+        }
+    )
+
 @router.get("/modules/{slug}", response_class=HTMLResponse)
 async def module_workspace_page(request: Request, slug: str, tab: Optional[str] = Query(None)):
     module = EnterpriseModuleService.get_module_by_slug(slug)
@@ -511,6 +621,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
     gl_transaction_details = []
     gl_cost_centre_pnl = []
     gl_notes_to_accounts = []
+    gl_sub_account_balances = {"parent_account": {}, "records": [], "total_sub_balance": 0.0, "total_pct": 100.0}
     gl_categories = []
     gl_segments = []
     gl_category_kpis = {}
@@ -558,6 +669,26 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
     ar_collections_register = {"receipts": [], "totals": {}, "mode_breakdown": {}}
     ar_notes_summary = {"notes": [], "totals": {}}
     selected_customer_id = request.query_params.get("customer_id", "")
+
+    # Accounts Payable Collections
+    ap_vendors = []
+    ap_mappings = []
+    ap_payment_terms = []
+    ap_control_sets = []
+    ap_purchase_bills = []
+    ap_landowner_bills = []
+    ap_advance_adjustments = []
+    ap_debit_notes = []
+    ap_credit_notes = []
+    ap_payment_orders = []
+    ap_vendor_payments = []
+    ap_ait_remittances = []
+    ap_grn_docs = []
+    ap_payment_docs = []
+    ap_schedule = {"rows": [], "totals": {}}
+    ap_statement = {"vendor": None, "lines": [], "totals": {}}
+    ap_tax_1099 = {"records": [], "totals": {}}
+    selected_vendor_id = request.query_params.get("vendor_id", "")
 
     # Sourcing & Procurement Collections
     src_vendors = []
@@ -747,11 +878,30 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         gl_integrity = GLProcessService.check_data_integrity(str(active_company["id"]))
         gl_cost_analysis = GLAnalysisService.get_cost_analysis(str(active_company["id"]))
         gl_account_balances = GLAnalysisService.get_account_balance_inquiry(str(active_company["id"]))
-        gl_financial_statements = GLReportService.get_financial_statements(str(active_company["id"]))
-        gl_trial_balance = GLReportService.get_trial_balance_suite(str(active_company["id"]))
-        gl_transaction_details = GLReportService.get_transaction_details_report(str(active_company["id"]))
-        gl_cost_centre_pnl = GLReportService.get_cost_centre_pnl(str(active_company["id"]))
-        gl_notes_to_accounts = GLReportService.get_notes_to_accounts(str(active_company["id"]))
+        # Financial Report Parameters & Modern Document Generation
+        rpt_fy = request.query_params.get("fy", "2026-2027")
+        rpt_period = request.query_params.get("period", "ytd")
+        rpt_framework = request.query_params.get("framework", "ifrs")
+        rpt_as_of = request.query_params.get("as_of_date", "2027-03-31")
+        rpt_tb_format = request.query_params.get("tb_format", "closing")
+        rpt_acc_range = request.query_params.get("account_range", "all")
+        rpt_suppress_zero = request.query_params.get("suppress_zero", "true").lower() == "true"
+        rpt_from_date = request.query_params.get("from_date")
+        rpt_to_date = request.query_params.get("to_date")
+        rpt_module = request.query_params.get("module_filter", "all")
+        rpt_cc = request.query_params.get("cost_centre", "all")
+        rpt_query = request.query_params.get("q")
+        rpt_parent = request.query_params.get("parent", "1020")
+        rpt_dim = request.query_params.get("dimension", "all")
+        rpt_cc_pnl = request.query_params.get("cc", "CC-200")
+        rpt_note_range = request.query_params.get("note_range", "all")
+
+        gl_financial_statements = GLReportService.get_financial_statements(str(active_company["id"]), fy=rpt_fy, period=rpt_period, framework=rpt_framework)
+        gl_trial_balance = GLReportService.get_trial_balance_suite(str(active_company["id"]), as_of_date=rpt_as_of, format_mode=rpt_tb_format, account_range=rpt_acc_range, suppress_zero=rpt_suppress_zero)
+        gl_transaction_details = GLReportService.get_transaction_details_report(str(active_company["id"]), from_date=rpt_from_date, to_date=rpt_to_date, module_filter=rpt_module, cost_centre_code=rpt_cc, query=rpt_query)
+        gl_sub_account_balances = GLReportService.get_sub_account_balances_report(str(active_company["id"]), parent_account_id=rpt_parent, dimension=rpt_dim)
+        gl_cost_centre_pnl = GLReportService.get_cost_centre_pnl(str(active_company["id"]), cost_centre_code=rpt_cc_pnl)
+        gl_notes_to_accounts = GLReportService.get_notes_to_accounts(str(active_company["id"]), fy=rpt_fy, note_range=rpt_note_range)
         gl_categories = GLCategoryService.get_categories()
         gl_segments = GLCategoryService.get_segments()
         gl_category_kpis = GLCategoryService.get_summary_kpis()
@@ -802,6 +952,39 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         ar_atb = ARReportService.get_aged_trial_balance(str(active_company["id"]))
         ar_collections_register = ARReportService.get_collections_register(str(active_company["id"]))
         ar_notes_summary = ARReportService.get_notes_summary_report(str(active_company["id"]))
+
+    elif slug == "accounts-payable":
+        active_cid = str(active_company["id"]) if active_company else None
+        ap_vendors = SourcingMasterService.get_all_vendors()
+        ap_mappings = APMasterService.get_vendor_company_mappings(active_cid)
+        ap_payment_terms = APMasterService.get_payment_terms()
+        ap_control_sets = APMasterService.get_control_account_sets(active_cid)
+        gl_accounts = GLMasterService.get_all_accounts()
+
+        # Load Transaction Collections
+        ap_purchase_bills = APTransactionService.get_purchase_bills(active_cid)
+        ap_landowner_bills = APTransactionService.get_purchase_bills(active_cid, bill_type="LANDOWNER_CONTRACT")
+        ap_advance_adjustments = APKnockOffService.get_advance_adjustments(active_cid)
+        ap_debit_notes = APNoteService.get_ap_notes(active_cid, note_type="DEBIT")
+        ap_credit_notes = APNoteService.get_ap_notes(active_cid, note_type="CREDIT")
+
+        # Load Treasury & Disbursement Collections
+        ap_payment_orders = APDisbursementService.get_payment_orders(active_cid)
+        ap_vendor_payments = APDisbursementService.get_vendor_payments(active_cid)
+        ap_ait_remittances = APTaxRemittanceService.get_ait_remittances(active_cid)
+
+        # Load Document Vault Collections
+        ap_grn_docs = APDocumentService.get_grn_documents(active_cid)
+        ap_payment_docs = APDocumentService.get_payment_documents(active_cid)
+
+        # Load Financial Reporting Collections
+        if not selected_vendor_id and ap_vendors:
+            selected_vendor_id = str(ap_vendors[0]["id"])
+        
+        ap_schedule = APReportService.get_ap_schedule_report(active_cid)
+        if selected_vendor_id:
+            ap_statement = APReportService.get_vendor_statement(selected_vendor_id, company_id=active_cid)
+        ap_tax_1099 = APReportService.get_tax_1099_summary(active_cid)
 
     elif slug == "sourcing":
         src_vendors = SourcingMasterService.get_all_vendors()
@@ -1009,7 +1192,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
     current_tab = tab if tab else "overview"
 
     # Multi-level dynamic title, icon, breadcrumbs, and back navigation
-    all_sub_areas = {**GL_SUB_AREAS, **CB_SUB_AREAS, **AR_SUB_AREAS, **SOURCING_SUB_AREAS, **SALES_SUB_AREAS}
+    all_sub_areas = {**GL_SUB_AREAS, **CB_SUB_AREAS, **AR_SUB_AREAS, **AP_SUB_AREAS, **SOURCING_SUB_AREAS, **SALES_SUB_AREAS}
     if current_tab in all_sub_areas and current_tab != "overview":
         sub_info = all_sub_areas[current_tab]
         current_page_title = sub_info["title"]
@@ -1103,6 +1286,20 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
         "src_lc_count": len(src_lc_list),
         "src_dispatches_count": len(src_cnf_dispatches),
         "src_lc_total": f"{active_company.get('currency_symbol', '৳')}{src_kpi_summary.get('total_lc_amount', 0):,.0f}",
+        "ap_vendor_count": len(ap_vendors),
+        "ap_mapping_count": len(ap_mappings),
+        "ap_payment_terms_count": len(ap_payment_terms),
+        "ap_control_sets_count": len(ap_control_sets),
+        "ap_purchase_bills_count": len(ap_purchase_bills),
+        "ap_landowner_bills_count": len(ap_landowner_bills),
+        "ap_advances_count": len(ap_advance_adjustments),
+        "ap_debit_notes_count": len(ap_debit_notes),
+        "ap_credit_notes_count": len(ap_credit_notes),
+        "ap_payment_orders_count": len(ap_payment_orders),
+        "ap_vendor_payments_count": len(ap_vendor_payments),
+        "ap_ait_remittances_count": len(ap_ait_remittances),
+        "ap_grn_docs_count": len(ap_grn_docs),
+        "ap_payment_docs_count": len(ap_payment_docs),
     }
     module_suites = get_module_suites_registry(slug, context_counts)
     active_suite = get_active_suite_context(slug, current_tab, module_suites)
@@ -1137,6 +1334,7 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
             "gl_financial_statements": gl_financial_statements,
             "gl_trial_balance": gl_trial_balance,
             "gl_transaction_details": gl_transaction_details,
+            "gl_sub_account_balances": gl_sub_account_balances,
             "gl_cost_centre_pnl": gl_cost_centre_pnl,
             "gl_notes_to_accounts": gl_notes_to_accounts,
             "gl_categories": gl_categories,
@@ -1175,6 +1373,24 @@ async def module_workspace_page(request: Request, slug: str, tab: Optional[str] 
             "ar_collections_register": ar_collections_register,
             "ar_notes_summary": ar_notes_summary,
             "selected_customer_id": selected_customer_id,
+            "ap_vendors": ap_vendors,
+            "ap_mappings": ap_mappings,
+            "ap_payment_terms": ap_payment_terms,
+            "ap_control_sets": ap_control_sets,
+            "ap_purchase_bills": ap_purchase_bills,
+            "ap_landowner_bills": ap_landowner_bills,
+            "ap_advance_adjustments": ap_advance_adjustments,
+            "ap_debit_notes": ap_debit_notes,
+            "ap_credit_notes": ap_credit_notes,
+            "ap_payment_orders": ap_payment_orders,
+            "ap_vendor_payments": ap_vendor_payments,
+            "ap_ait_remittances": ap_ait_remittances,
+            "ap_grn_docs": ap_grn_docs,
+            "ap_payment_docs": ap_payment_docs,
+            "ap_schedule": ap_schedule,
+            "ap_statement": ap_statement,
+            "ap_tax_1099": ap_tax_1099,
+            "selected_vendor_id": selected_vendor_id,
             "gl_accounts": gl_accounts,
             "src_vendors": src_vendors,
             "src_enlistments": src_enlistments,
@@ -3105,6 +3321,9 @@ async def new_ar_master_page(request: Request, entity: str):
     }
     auto_code = "[ Auto-Generated on Save ]"
 
+    business_units = AdminMasterService.get_business_units(str(active_company["id"]))
+    cost_centres = AdminMasterService.get_cost_centers(str(active_company["id"]))
+
     return templates.TemplateResponse(
         request=request,
         name="pages/ar_master_create.html",
@@ -3127,6 +3346,8 @@ async def new_ar_master_page(request: Request, entity: str):
             "ar_group_categories": ar_group_categories,
             "ar_control_sets": ar_control_sets,
             "gl_accounts": gl_accounts,
+            "business_units": business_units,
+            "cost_centres": cost_centres,
             "auto_code": auto_code,
             "active_tab": "module_accounts-receivable"
         }
@@ -3199,6 +3420,14 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
     ar_group_categories = ARMasterService.get_group_categories()
     ar_control_sets = ARMasterService.get_control_account_sets(str(active_company["id"]))
     gl_accounts = GLMasterService.get_all_accounts()
+    business_units = AdminMasterService.get_business_units(str(active_company["id"]))
+    cost_centres = AdminMasterService.get_cost_centers(str(active_company["id"]))
+
+    existing_mappings = []
+    if entity == "customers" and record_id:
+        existing_mappings = ARMasterService.get_customer_company_mappings()
+    mapped_company_ids = [str(m["company_id"]) for m in existing_mappings if str(m.get("customer_id")) == str(record_id) and m.get("is_enabled", 1)]
+    company_mappings_map = {str(m["company_id"]): m for m in existing_mappings if str(m.get("customer_id")) == str(record_id)}
 
     return templates.TemplateResponse(
         request=request,
@@ -3225,6 +3454,10 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
             "ar_group_categories": ar_group_categories,
             "ar_control_sets": ar_control_sets,
             "gl_accounts": gl_accounts,
+            "business_units": business_units,
+            "cost_centres": cost_centres,
+            "mapped_company_ids": mapped_company_ids,
+            "company_mappings_map": company_mappings_map,
             "active_tab": "module_accounts-receivable"
         }
     )
@@ -3237,7 +3470,11 @@ async def edit_ar_master_page(request: Request, entity: str, record_id: str):
 async def create_ar_customer_action(request: Request):
     form = await request.form()
     gen_code = SequenceService.get_next_code("ar_customers")
-    ARMasterService.create_customer(
+    
+    is_shipping_same = 1 if form.get("is_shipping_same") in ("1", "true", "on", "yes") else 0
+    shipping_addr = form.get("billing_address", "") if is_shipping_same else form.get("shipping_address", "")
+
+    cust_id = ARMasterService.create_customer(
         customer_code=gen_code,
         customer_name=form.get("customer_name", ""),
         ar_customer_group_id=form.get("ar_customer_group_id") or None,
@@ -3250,14 +3487,48 @@ async def create_ar_customer_action(request: Request):
         credit_limit=float(form.get("credit_limit", 1000000.0)),
         payment_terms_days=int(form.get("payment_terms_days", 30)),
         discount_percentage=float(form.get("discount_percentage", 0.0)),
-        currency=form.get("currency", "USD"),
-        billing_address=form.get("billing_address") or None
+        currency=form.get("currency", "BDT"),
+        billing_address=form.get("billing_address") or None,
+        trade_name=form.get("trade_name") or None,
+        salutation=form.get("salutation") or None,
+        designation=form.get("designation") or None,
+        website=form.get("website") or None,
+        shipping_address=shipping_addr or None,
+        is_shipping_same=is_shipping_same,
+        tin_number=form.get("tin_number") or None,
+        assigned_sales_rep=form.get("assigned_sales_rep") or None,
+        business_unit_id=form.get("business_unit_id") or None,
+        cost_centre_id=form.get("cost_centre_id") or None,
+        ar_control_gl_id=form.get("ar_control_gl_id") or None
     )
+
+    # Multi-Company Mapping synchronization
+    if cust_id:
+        mapped_company_ids = form.getlist("mapped_company_ids")
+        all_companies = CompanyService.get_all_companies()
+        company_sync_payload = []
+        for comp in all_companies:
+            cid = str(comp["id"])
+            is_enabled = cid in mapped_company_ids
+            credit_limit_val = float(form.get(f"company_credit_{cid}", 500000.0))
+            alias_val = form.get(f"company_alias_{cid}", "")
+            company_sync_payload.append({
+                "company_id": cid,
+                "allocated_credit_limit": credit_limit_val,
+                "subsidiary_account_code": alias_val,
+                "is_enabled": is_enabled
+            })
+        ARMasterService.sync_customer_company_mappings(cust_id, company_sync_payload)
+
     return RedirectResponse(url="/modules/accounts-receivable?tab=customers", status_code=303)
 
 @router.post("/modules/accounts-receivable/master/customers/{customer_id}/edit")
 async def update_ar_customer_action(customer_id: str, request: Request):
     form = await request.form()
+    
+    is_shipping_same = 1 if form.get("is_shipping_same") in ("1", "true", "on", "yes") else 0
+    shipping_addr = form.get("billing_address", "") if is_shipping_same else form.get("shipping_address", "")
+
     ARMasterService.update_customer(
         customer_id=customer_id,
         customer_code=form.get("customer_code", ""),
@@ -3272,10 +3543,56 @@ async def update_ar_customer_action(customer_id: str, request: Request):
         credit_limit=float(form.get("credit_limit", 1000000.0)),
         payment_terms_days=int(form.get("payment_terms_days", 30)),
         discount_percentage=float(form.get("discount_percentage", 0.0)),
-        currency=form.get("currency", "USD"),
-        billing_address=form.get("billing_address") or None
+        currency=form.get("currency", "BDT"),
+        billing_address=form.get("billing_address") or None,
+        trade_name=form.get("trade_name") or None,
+        salutation=form.get("salutation") or None,
+        designation=form.get("designation") or None,
+        website=form.get("website") or None,
+        shipping_address=shipping_addr or None,
+        is_shipping_same=is_shipping_same,
+        tin_number=form.get("tin_number") or None,
+        assigned_sales_rep=form.get("assigned_sales_rep") or None,
+        business_unit_id=form.get("business_unit_id") or None,
+        cost_centre_id=form.get("cost_centre_id") or None,
+        ar_control_gl_id=form.get("ar_control_gl_id") or None
     )
+
+    # Multi-Company Mapping synchronization
+    mapped_company_ids = form.getlist("mapped_company_ids")
+    all_companies = CompanyService.get_all_companies()
+    company_sync_payload = []
+    for comp in all_companies:
+        cid = str(comp["id"])
+        is_enabled = cid in mapped_company_ids
+        credit_limit_val = float(form.get(f"company_credit_{cid}", 500000.0))
+        alias_val = form.get(f"company_alias_{cid}", "")
+        company_sync_payload.append({
+            "company_id": cid,
+            "allocated_credit_limit": credit_limit_val,
+            "subsidiary_account_code": alias_val,
+            "is_enabled": is_enabled
+        })
+    ARMasterService.sync_customer_company_mappings(customer_id, company_sync_payload)
+
     return RedirectResponse(url="/modules/accounts-receivable?tab=customers", status_code=303)
+
+@router.post("/api/modules/accounts-receivable/customer-groups/quick-add")
+async def api_quick_add_customer_group(request: Request):
+    data = await request.json()
+    group_name = (data.get("group_name") or "").strip()
+    if not group_name:
+        return JSONResponse({"success": False, "error": "Group name is required."}, status_code=400)
+    
+    credit_limit = float(data.get("default_credit_limit", 1000000.0))
+    grace_days = int(data.get("grace_period_days", 30))
+
+    res = ARMasterService.create_ar_customer_group_quick(
+        group_name=group_name,
+        default_credit_limit=credit_limit,
+        grace_period_days=grace_days
+    )
+    return JSONResponse({"success": True, "group": res})
 
 @router.post("/modules/accounts-receivable/master/{entity}")
 async def create_ar_master_record(entity: str, request: Request):
@@ -3316,6 +3633,7 @@ async def create_ar_master_record(entity: str, request: Request):
             assigned_sales_rep=form.get("assigned_sales_rep") or None
         )
     elif entity == "ship-to-addresses":
+        is_default = bool(form.get("is_default") in ("1", "true", "on", "yes"))
         ARMasterService.create_ship_to_address(
             customer_id=form.get("customer_id", ""),
             location_name=form.get("location_name", ""),
@@ -3324,7 +3642,18 @@ async def create_ar_master_record(entity: str, request: Request):
             division_state=form.get("division_state") or None,
             contact_person=form.get("contact_person") or None,
             contact_phone=form.get("contact_phone") or None,
-            is_default=bool(form.get("is_default"))
+            is_default=is_default,
+            consignee_name=form.get("consignee_name") or None,
+            address_line_2=form.get("address_line_2") or None,
+            postal_code=form.get("postal_code") or None,
+            country_code=form.get("country_code", "BD"),
+            upazila_area_code=form.get("upazila_area_code") or None,
+            fax_number=form.get("fax_number") or None,
+            mobile_number=form.get("mobile_number") or None,
+            email_address=form.get("email_address") or None,
+            contact_salutation=form.get("contact_salutation", "Mr."),
+            contact_designation=form.get("contact_designation") or None,
+            site_usage_type=form.get("site_usage_type", "Primary")
         )
     elif entity == "control-accounts":
         gen_code = SequenceService.get_next_code("ar_control_accounts")
@@ -3335,7 +3664,13 @@ async def create_ar_master_record(entity: str, request: Request):
             ar_control_gl_id=form.get("ar_control_gl_id") or None,
             sales_discount_gl_id=form.get("sales_discount_gl_id") or None,
             bad_debt_provision_gl_id=form.get("bad_debt_provision_gl_id") or None,
-            advance_received_gl_id=form.get("advance_received_gl_id") or None
+            advance_received_gl_id=form.get("advance_received_gl_id") or None,
+            advance_income_tax_gl_id=form.get("advance_income_tax_gl_id") or None,
+            vat_on_sales_gl_id=form.get("vat_on_sales_gl_id") or None,
+            charges_realisation_gl_id_1=form.get("charges_realisation_gl_id_1") or None,
+            charges_realisation_gl_id_2=form.get("charges_realisation_gl_id_2") or None,
+            ar_adjustment_gl_id=form.get("ar_adjustment_gl_id") or None,
+            sales_revenue_gl_id=form.get("sales_revenue_gl_id") or None
         )
     elif entity == "reminder-criteria":
         gen_code = SequenceService.get_next_code("ar_reminder_criteria")
@@ -3363,13 +3698,17 @@ async def create_ar_master_record(entity: str, request: Request):
         )
     elif entity == "adjustment-types":
         gen_code = SequenceService.get_next_code("ar_adjustment_types")
+        is_sales = 1 if form.get("is_adjustment_with_sales") in ("1", "true", "on", "yes", "with_sales") else 0
+        offset_gl = form.get("offset_gl_account_id") or form.get("default_offset_gl_id") or None
         ARMasterService.create_adjustment_type(
             adjustment_code=gen_code,
             adjustment_name=form.get("adjustment_name", ""),
             adjustment_category=form.get("adjustment_category", "CREDIT"),
-            default_offset_gl_id=form.get("default_offset_gl_id") or None,
+            default_offset_gl_id=offset_gl,
             is_tax_applicable=bool(form.get("is_tax_applicable")),
-            requires_manager_approval=bool(form.get("requires_manager_approval", True))
+            requires_manager_approval=bool(form.get("requires_manager_approval", True)),
+            is_adjustment_with_sales=is_sales,
+            offset_gl_account_id=offset_gl
         )
 
     return RedirectResponse(url=f"/modules/accounts-receivable?tab={tab}", status_code=303)
@@ -3432,6 +3771,7 @@ async def update_ar_master_record(entity: str, record_id: str, request: Request)
             assigned_sales_rep=form.get("assigned_sales_rep") or None
         )
     elif entity == "ship-to-addresses":
+        is_default = bool(form.get("is_default") in ("1", "true", "on", "yes"))
         ARMasterService.update_ship_to_address(
             address_id=record_id,
             customer_id=form.get("customer_id", ""),
@@ -3441,7 +3781,18 @@ async def update_ar_master_record(entity: str, record_id: str, request: Request)
             division_state=form.get("division_state") or None,
             contact_person=form.get("contact_person") or None,
             contact_phone=form.get("contact_phone") or None,
-            is_default=bool(form.get("is_default"))
+            is_default=is_default,
+            consignee_name=form.get("consignee_name") or None,
+            address_line_2=form.get("address_line_2") or None,
+            postal_code=form.get("postal_code") or None,
+            country_code=form.get("country_code", "BD"),
+            upazila_area_code=form.get("upazila_area_code") or None,
+            fax_number=form.get("fax_number") or None,
+            mobile_number=form.get("mobile_number") or None,
+            email_address=form.get("email_address") or None,
+            contact_salutation=form.get("contact_salutation", "Mr."),
+            contact_designation=form.get("contact_designation") or None,
+            site_usage_type=form.get("site_usage_type", "Primary")
         )
     elif entity == "control-accounts":
         ARMasterService.update_control_account_set(
@@ -3452,7 +3803,13 @@ async def update_ar_master_record(entity: str, record_id: str, request: Request)
             ar_control_gl_id=form.get("ar_control_gl_id") or None,
             sales_discount_gl_id=form.get("sales_discount_gl_id") or None,
             bad_debt_provision_gl_id=form.get("bad_debt_provision_gl_id") or None,
-            advance_received_gl_id=form.get("advance_received_gl_id") or None
+            advance_received_gl_id=form.get("advance_received_gl_id") or None,
+            advance_income_tax_gl_id=form.get("advance_income_tax_gl_id") or None,
+            vat_on_sales_gl_id=form.get("vat_on_sales_gl_id") or None,
+            charges_realisation_gl_id_1=form.get("charges_realisation_gl_id_1") or None,
+            charges_realisation_gl_id_2=form.get("charges_realisation_gl_id_2") or None,
+            ar_adjustment_gl_id=form.get("ar_adjustment_gl_id") or None,
+            sales_revenue_gl_id=form.get("sales_revenue_gl_id") or None
         )
     elif entity == "reminder-criteria":
         ARMasterService.update_reminder_criteria(
@@ -3479,14 +3836,18 @@ async def update_ar_master_record(entity: str, record_id: str, request: Request)
             bad_debt_provision_pct=float(form.get("bad_debt_provision_pct", 5.0))
         )
     elif entity == "adjustment-types":
+        is_sales = 1 if form.get("is_adjustment_with_sales") in ("1", "true", "on", "yes", "with_sales") else 0
+        offset_gl = form.get("offset_gl_account_id") or form.get("default_offset_gl_id") or None
         ARMasterService.update_adjustment_type(
             adjustment_id=record_id,
             adjustment_code=form.get("adjustment_code", ""),
             adjustment_name=form.get("adjustment_name", ""),
             adjustment_category=form.get("adjustment_category", "CREDIT"),
-            default_offset_gl_id=form.get("default_offset_gl_id") or None,
+            default_offset_gl_id=offset_gl,
             is_tax_applicable=bool(form.get("is_tax_applicable")),
-            requires_manager_approval=bool(form.get("requires_manager_approval", True))
+            requires_manager_approval=bool(form.get("requires_manager_approval", True)),
+            is_adjustment_with_sales=is_sales,
+            offset_gl_account_id=offset_gl
         )
 
     return RedirectResponse(url=f"/modules/accounts-receivable?tab={tab}", status_code=303)
@@ -3615,8 +3976,450 @@ async def api_delete_ar_transaction(entity: str, record_id: str):
     return {"success": True, "entity": entity, "record_id": record_id}
 
 # =========================================================================
-# Accounts Receivable Credit Management Process Operations
+# Accounts Receivable Advance Settlement & Auto Knock-Off Studio
 # =========================================================================
+@router.get("/modules/accounts-receivable/advance-settlement-studio", response_class=HTMLResponse)
+async def ar_advance_settlement_studio_page(request: Request, customer_id: Optional[str] = None):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-receivable")
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Receivable", "url": "/modules/accounts-receivable"},
+        {"title": "Transactions", "url": "/modules/accounts-receivable?tab=advance-adjustments"},
+        {"title": "Advance Knock-Off Settlement Workbench", "url": None}
+    ]
+
+    ar_customers = ARMasterService.get_all_customers()
+    selected_customer_id = customer_id
+    if not selected_customer_id and ar_customers:
+        selected_customer_id = str(ar_customers[0]["id"])
+
+    unsettled_advances = []
+    unpaid_invoices = []
+    if selected_customer_id:
+        unsettled_advances = ARMasterService.get_unsettled_advances_by_customer(selected_customer_id)
+        unpaid_invoices = ARMasterService.get_unpaid_invoices_by_customer(selected_customer_id)
+
+    advance_adjustments = ARMasterService.get_advance_adjustments(str(active_company["id"]))
+    auto_voucher = SequenceService.get_next_code("ar_advance_adjustments")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ar_advance_settlement_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "ar_customers": ar_customers,
+            "selected_customer_id": selected_customer_id,
+            "unsettled_advances": unsettled_advances,
+            "unpaid_invoices": unpaid_invoices,
+            "advance_adjustments": advance_adjustments,
+            "auto_voucher": auto_voucher,
+            "active_tab": "module_accounts-receivable"
+        }
+    )
+
+@router.get("/api/modules/accounts-receivable/customer-settlement-data")
+async def api_customer_settlement_data(customer_id: str):
+    advances = ARMasterService.get_unsettled_advances_by_customer(customer_id)
+    invoices = ARMasterService.get_unpaid_invoices_by_customer(customer_id)
+    return {
+        "success": True,
+        "customer_id": customer_id,
+        "unsettled_advances": advances,
+        "unpaid_invoices": invoices
+    }
+
+@router.post("/modules/accounts-receivable/advance-settlement-studio/post")
+async def post_advance_settlement_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = form.get("customer_id", "")
+    voucher_no = form.get("voucher_number") or SequenceService.get_next_code("ar_advance_adjustments")
+    adj_date = form.get("adjustment_date", "2026-09-12")
+    narration = form.get("narration") or "Advance settlement knock-off with sales invoices"
+
+    allocations = []
+    adv_refs = form.getlist("advance_ref_number[]")
+    inv_nums = form.getlist("invoice_number[]")
+    orig_amts = form.getlist("original_advance_amount[]")
+    adj_amts = form.getlist("adjusted_amount[]")
+    unadj_bals = form.getlist("unadjusted_balance[]")
+
+    if adv_refs and inv_nums and adj_amts:
+        for i in range(len(adj_amts)):
+            amt = float(adj_amts[i]) if adj_amts[i] else 0.0
+            if amt > 0:
+                allocations.append({
+                    "advance_ref_number": adv_refs[i] if i < len(adv_refs) else "MR-ADV",
+                    "invoice_number": inv_nums[i] if i < len(inv_nums) else "INV-DUE",
+                    "original_advance_amount": float(orig_amts[i]) if i < len(orig_amts) and orig_amts[i] else amt,
+                    "adjusted_amount": amt,
+                    "unadjusted_balance": float(unadj_bals[i]) if i < len(unadj_bals) and unadj_bals[i] else 0.0
+                })
+    else:
+        mr_ref = form.get("advance_ref_number") or "MR-2026-0819"
+        inv_no = form.get("invoice_number") or "INV-2026-00412"
+        amt = float(form.get("adjusted_amount", 500000.0))
+        allocations.append({
+            "advance_ref_number": mr_ref,
+            "invoice_number": inv_no,
+            "original_advance_amount": amt,
+            "adjusted_amount": amt,
+            "unadjusted_balance": 0.0
+        })
+
+    res = ARMasterService.post_advance_knock_off_settlement(
+        customer_id=cid,
+        voucher_number=voucher_no,
+        adjustment_date=adj_date,
+        company_id=str(active_company["id"]),
+        allocations=allocations,
+        narration=narration
+    )
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JSONResponse(res)
+
+    return RedirectResponse(url="/modules/accounts-receivable?tab=advance-adjustments", status_code=303)
+
+# =========================================================================
+# Accounts Receivable Commercial Debit Note Studio
+# =========================================================================
+@router.get("/modules/accounts-receivable/debit-note-studio", response_class=HTMLResponse)
+async def ar_debit_note_studio_page(request: Request, note_id: Optional[str] = None):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-receivable")
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Receivable", "url": "/modules/accounts-receivable"},
+        {"title": "Debit Notes", "url": "/modules/accounts-receivable?tab=debit-notes-ref"},
+        {"title": "Commercial Debit Note Studio", "url": None}
+    ]
+
+    ar_customers = ARMasterService.get_all_customers()
+    adjustment_types = ARMasterService.get_adjustment_types()
+    gl_accounts = GLMasterService.get_all_accounts()
+    debit_notes = ARMasterService.get_debit_notes(str(active_company["id"]))
+    
+    selected_note = None
+    if note_id:
+        selected_note = ARMasterService.get_debit_note_by_id(note_id)
+    elif debit_notes:
+        selected_note = ARMasterService.get_debit_note_by_id(str(debit_notes[0]["id"]))
+
+    auto_note_number = SequenceService.get_next_code("ar_notes")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ar_debit_note_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "ar_customers": ar_customers,
+            "adjustment_types": adjustment_types,
+            "gl_accounts": gl_accounts,
+            "debit_notes": debit_notes,
+            "selected_note": selected_note,
+            "auto_note_number": auto_note_number,
+            "active_tab": "module_accounts-receivable"
+        }
+    )
+
+@router.post("/modules/accounts-receivable/debit-note-studio/save")
+async def save_debit_note_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    
+    note_no = form.get("note_number") or SequenceService.get_next_code("ar_notes")
+    note_date = form.get("note_date", "2026-09-12")
+    cid = form.get("customer_id", "")
+    inv_ref = form.get("invoice_ref_number") or None
+    dn_type = form.get("debit_note_type", "REF")
+    salesrep = form.get("salesperson_name") or None
+    reason_code = form.get("reason_code", "Price adjustment")
+    reason_desc = form.get("reason_description") or ""
+    subtotal = float(form.get("subtotal_amount", 0.0))
+    vat_pct = float(form.get("vat_percentage", 0.0))
+    vat_amt = float(form.get("vat_amount", 0.0))
+    gross_total = float(form.get("gross_debit_amount", subtotal + vat_amt))
+    gl_id = form.get("gl_account_id") or None
+    status = "DRAFT" if form.get("is_draft") in ("1", "true", "yes") else "POSTED"
+
+    res = ARMasterService.create_debit_note(
+        note_number=note_no,
+        note_date=note_date,
+        company_id=str(active_company["id"]),
+        customer_id=cid,
+        debit_note_type=dn_type,
+        invoice_ref_number=inv_ref,
+        salesperson_name=salesrep,
+        reason_code=reason_code,
+        reason_description=reason_desc,
+        subtotal_amount=subtotal,
+        vat_percentage=vat_pct,
+        vat_amount=vat_amt,
+        gross_debit_amount=gross_total,
+        gl_account_id=gl_id,
+        status=status
+    )
+
+    new_id = str(res["id"]) if res else ""
+    return RedirectResponse(url=f"/modules/accounts-receivable/debit-note-studio?note_id={new_id}", status_code=303)
+
+# =========================================================================
+# Accounts Receivable Commercial Credit Note Studio
+# =========================================================================
+@router.get("/modules/accounts-receivable/credit-note-studio", response_class=HTMLResponse)
+async def ar_credit_note_studio_page(request: Request, note_id: Optional[str] = None):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-receivable")
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Receivable", "url": "/modules/accounts-receivable"},
+        {"title": "Credit Notes", "url": "/modules/accounts-receivable?tab=credit-notes-ref"},
+        {"title": "Commercial Credit Note Studio", "url": None}
+    ]
+
+    ar_customers = ARMasterService.get_all_customers()
+    adjustment_types = ARMasterService.get_adjustment_types()
+    gl_accounts = GLMasterService.get_all_accounts()
+    credit_notes = ARMasterService.get_credit_notes(str(active_company["id"]))
+    
+    selected_note = None
+    if note_id:
+        selected_note = ARMasterService.get_credit_note_by_id(note_id)
+    elif credit_notes:
+        selected_note = ARMasterService.get_credit_note_by_id(str(credit_notes[0]["id"]))
+
+    auto_note_number = SequenceService.get_next_code("ar_notes")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ar_credit_note_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "ar_customers": ar_customers,
+            "adjustment_types": adjustment_types,
+            "gl_accounts": gl_accounts,
+            "credit_notes": credit_notes,
+            "selected_note": selected_note,
+            "auto_note_number": auto_note_number,
+            "active_tab": "module_accounts-receivable"
+        }
+    )
+
+@router.post("/modules/accounts-receivable/credit-note-studio/save")
+async def save_credit_note_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    
+    raw_note_no = form.get("note_number")
+    if not raw_note_no or db.query_one("SELECT id FROM ar_notes WHERE note_number = ?", (raw_note_no,)):
+        note_no = SequenceService.get_next_code("ar_notes", increment=True)
+        while db.query_one("SELECT id FROM ar_notes WHERE note_number = ?", (note_no,)):
+            note_no = SequenceService.get_next_code("ar_notes", increment=True)
+    else:
+        note_no = raw_note_no
+        try:
+            SequenceService.get_next_code("ar_notes", increment=True)
+        except Exception:
+            pass
+    note_date = form.get("note_date", "2026-09-12")
+    cid = form.get("customer_id", "")
+    inv_ref = form.get("invoice_ref_number") or None
+    cn_type = form.get("credit_note_type", "REF")
+    salesrep = form.get("salesperson_name") or None
+    reason_code = form.get("reason_code", "Price adjustment")
+    reason_desc = form.get("reason_description") or ""
+    subtotal = float(form.get("subtotal_amount", 0.0))
+    vat_pct = float(form.get("vat_percentage", 0.0))
+    vat_amt = float(form.get("vat_amount", 0.0))
+    gross_total = float(form.get("gross_credit_amount", subtotal + vat_amt))
+    gl_id = form.get("gl_account_id") or None
+    status = "DRAFT" if form.get("is_draft") in ("1", "true", "yes") else "POSTED"
+
+    res = ARMasterService.create_credit_note(
+        note_number=note_no,
+        note_date=note_date,
+        company_id=str(active_company["id"]),
+        customer_id=cid,
+        credit_note_type=cn_type,
+        invoice_ref_number=inv_ref,
+        salesperson_name=salesrep,
+        reason_code=reason_code,
+        reason_description=reason_desc,
+        subtotal_amount=subtotal,
+        vat_percentage=vat_pct,
+        vat_amount=vat_amt,
+        gross_credit_amount=gross_total,
+        gl_account_id=gl_id,
+        status=status
+    )
+
+    new_id = str(res["id"]) if res else ""
+    return RedirectResponse(url=f"/modules/accounts-receivable/credit-note-studio?note_id={new_id}", status_code=303)
+
+# =========================================================================
+# Accounts Receivable Intelligence & Executive Reports Studio
+# =========================================================================
+@router.get("/modules/accounts-receivable/reports-studio", response_class=HTMLResponse)
+async def ar_reports_studio_page(
+    request: Request,
+    report_type: str = "04-customer-statement",
+    business_unit_id: Optional[str] = None,
+    salesperson_name: Optional[str] = None,
+    customer_id: Optional[str] = None,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    is_consolidated: bool = False,
+    treasury_type: Optional[str] = None,
+    cashier_id: Optional[str] = None,
+    bank_account_id: Optional[str] = None,
+    sort_order: Optional[str] = "cash_bank"
+):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-receivable")
+    active_company = CompanyService.resolve_active_company(request)
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Receivable", "url": "/modules/accounts-receivable"},
+        {"title": "Reports", "url": "/modules/accounts-receivable?tab=ar-schedule"},
+        {"title": "AR Intelligence & Reports Studio", "url": None}
+    ]
+
+    ar_customers = ARMasterService.get_all_customers()
+    business_units = db.query("SELECT * FROM admin_business_units WHERE COALESCE(is_active, 1) = 1 ORDER BY unit_name ASC")
+    salespersons = db.query("SELECT * FROM salespersons WHERE COALESCE(is_active, 1) = 1 ORDER BY full_name ASC")
+    all_cashiers = db.query("SELECT id, cashier_code, cashier_name FROM cb_cashiers WHERE COALESCE(isDelete, 0) = 0 ORDER BY cashier_name ASC")
+    all_bank_accounts = db.query("SELECT id, account_number, account_title, account_type FROM cb_bank_accounts WHERE COALESCE(isDelete, 0) = 0 ORDER BY account_title ASC")
+
+    # If is_consolidated or report_type is consolidated
+    effective_consolidated = is_consolidated or ("consolidated" in (report_type or "").lower())
+
+    report_data = ARMasterService.get_ar_filtered_report_data(
+        report_type=report_type,
+        business_unit_id=business_unit_id,
+        salesperson_name=salesperson_name,
+        customer_id=customer_id,
+        company_id=str(active_company["id"]) if (active_company and not effective_consolidated) else None,
+        from_date=from_date,
+        to_date=to_date,
+        is_consolidated=effective_consolidated,
+        cashier_id=cashier_id if treasury_type != "bank" else None,
+        bank_account_id=bank_account_id if treasury_type != "cashier" else None,
+        sort_order=sort_order
+    )
+
+    selected_customer = None
+    if customer_id:
+        selected_customer = ARMasterService.get_customer_by_id(customer_id)
+    elif ar_customers:
+        selected_customer = ARMasterService.get_customer_by_id(str(ar_customers[0]["id"]))
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ar_reports_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "ar_customers": ar_customers,
+            "business_units": business_units,
+            "salespersons": salespersons,
+            "all_cashiers": all_cashiers,
+            "all_bank_accounts": all_bank_accounts,
+            "report_data": report_data,
+            "selected_customer": selected_customer,
+            "active_report_type": report_type,
+            "selected_business_unit_id": business_unit_id,
+            "selected_salesperson_name": salesperson_name,
+            "selected_customer_id": customer_id,
+            "from_date": from_date,
+            "to_date": to_date,
+            "is_consolidated": effective_consolidated,
+            "treasury_type": treasury_type or ("bank" if bank_account_id else "cashier"),
+            "cashier_id": cashier_id,
+            "bank_account_id": bank_account_id,
+            "sort_order": sort_order or "cash_bank",
+            "active_tab": "module_accounts-receivable"
+        }
+    )
+
+def serialize_for_json(obj):
+    if isinstance(obj, dict):
+        return {k: serialize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [serialize_for_json(item) for item in obj]
+    elif hasattr(obj, "isoformat"):
+        return obj.isoformat()
+    elif hasattr(obj, "__float__"):
+        return float(obj)
+    elif isinstance(obj, uuid.UUID):
+        return str(obj)
+    return obj
+
+@router.get("/api/modules/accounts-receivable/reports-data")
+async def api_ar_reports_data(
+    report_type: str = "04-customer-statement",
+    report: Optional[str] = None,
+    business_unit_id: Optional[str] = None,
+    salesperson_name: Optional[str] = None,
+    customer_id: Optional[str] = None,
+    company_id: Optional[str] = None,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    is_consolidated: bool = False,
+    cashier_id: Optional[str] = None,
+    bank_account_id: Optional[str] = None,
+    sort_order: Optional[str] = "cash_bank"
+):
+    selected_rep = report or report_type
+    data = ARMasterService.get_ar_filtered_report_data(
+        report_type=selected_rep,
+        business_unit_id=business_unit_id,
+        salesperson_name=salesperson_name,
+        customer_id=customer_id,
+        company_id=company_id,
+        from_date=from_date,
+        to_date=to_date,
+        is_consolidated=is_consolidated,
+        cashier_id=cashier_id,
+        bank_account_id=bank_account_id,
+        sort_order=sort_order
+    )
+    return JSONResponse(serialize_for_json(data))
 @router.post("/modules/accounts-receivable/process/generate-reminders")
 async def generate_batch_reminders_action(request: Request):
     form = await request.form()
@@ -3685,6 +4488,814 @@ async def get_customer_statement_api(
         company_id=company_id
     )
     return {"success": True, "statement": stmt}
+
+# =========================================================================
+# 🏢 Accounts Payable & Sourcing Enterprise Studio Suite (Parity with Legacy ERP)
+# =========================================================================
+
+@router.get("/modules/accounts-payable/purchase-bills/studio", response_class=HTMLResponse)
+async def ap_purchase_bill_studio_page(request: Request, bill_id: Optional[str] = None):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Purchase Bills", "url": "/modules/accounts-payable?tab=invoices"},
+        {"title": "Purchase Bills Entry Studio", "url": None}
+    ]
+
+    bill = APTransactionService.get_purchase_bill_by_id(bill_id) if bill_id else None
+    vendors = SourcingMasterService.get_all_vendors()
+    control_sets = APMasterService.get_control_account_sets(cid)
+    payment_terms = APMasterService.get_payment_terms()
+    gl_accounts = GLMasterService.get_all_accounts()
+    auto_bill_no = f"PB-{datetime.date.today().strftime('%Y%m')}-{str(uuid.uuid4())[:4].upper()}"
+
+    selected_vendor_id = bill.get("vendor_id") if bill else (str(vendors[0]["id"]) if vendors else None)
+    available_grns = APTransactionService.get_available_grns_for_vendor(selected_vendor_id, cid) if selected_vendor_id else []
+    recent_bills = APTransactionService.get_purchase_bills(cid)[:8]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_purchase_bill_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "bill": bill,
+            "vendors": vendors,
+            "control_sets": control_sets,
+            "payment_terms": payment_terms,
+            "gl_accounts": gl_accounts,
+            "auto_bill_no": auto_bill_no,
+            "available_grns": available_grns,
+            "recent_bills": recent_bills,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/purchase-bills/studio")
+async def ap_save_purchase_bill_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    subtotal = float(form.get("subtotal_amount", 0.0))
+    vat_amt = float(form.get("vat_amount", 0.0))
+    ait_amt = float(form.get("ait_amount", 0.0))
+    disc_amt = float(form.get("discount_amount", 0.0))
+    net_amt = float(form.get("net_payable_amount", subtotal + vat_amt - ait_amt - disc_amt))
+
+    data = {
+        "id": form.get("bill_id") or None,
+        "company_id": cid,
+        "bill_number": form.get("bill_number"),
+        "bill_type": form.get("bill_type", "PURCHASE_BILL"),
+        "vendor_id": form.get("vendor_id"),
+        "control_account_set_id": form.get("control_account_set_id") or None,
+        "payment_term_id": form.get("payment_term_id") or None,
+        "bill_date": form.get("bill_date", str(datetime.date.today())),
+        "due_date": form.get("due_date", str(datetime.date.today())),
+        "purchase_order_number": form.get("purchase_order_number") or None,
+        "vendor_challan_number": form.get("vendor_challan_number") or None,
+        "currency": form.get("currency", "BDT"),
+        "exchange_rate": float(form.get("exchange_rate", 1.0)),
+        "subtotal_amount": subtotal,
+        "vat_amount": vat_amt,
+        "ait_amount": ait_amt,
+        "discount_amount": disc_amt,
+        "net_payable_amount": net_amt,
+        "paid_amount": 0.0,
+        "adjusted_advance_amount": 0.0,
+        "outstanding_amount": net_amt,
+        "expense_gl_account_id": form.get("expense_gl_account_id") or None,
+        "ap_gl_account_id": form.get("ap_gl_account_id") or None,
+        "status": "APPROVED",
+        "description": form.get("description") or ""
+    }
+
+    APTransactionService.save_purchase_bill(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=invoices", status_code=303)
+
+@router.get("/modules/accounts-payable/landowner-bills/new", response_class=HTMLResponse)
+async def ap_landowner_bill_studio_page(request: Request):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Landowner Bills", "url": "/modules/accounts-payable?tab=landowner-bills"},
+        {"title": "Landowner Milestone Schedule Studio", "url": None}
+    ]
+
+    vendors = SourcingMasterService.get_all_vendors()
+    control_sets = APMasterService.get_control_account_sets(cid)
+    gl_accounts = GLMasterService.get_all_accounts()
+    recent_landowner_bills = APTransactionService.get_purchase_bills(cid, bill_type="LANDOWNER_CONTRACT")[:8]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_landowner_bill_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "vendors": vendors,
+            "control_sets": control_sets,
+            "gl_accounts": gl_accounts,
+            "recent_landowner_bills": recent_landowner_bills,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/landowner-bills/new")
+async def ap_save_landowner_bill_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    gross_val = float(form.get("gross_milestone_amount", 0.0))
+    tax_pct = float(form.get("tax_deduction_pct", 5.0))
+    holding_pct = float(form.get("holding_tax_pct", 2.0))
+
+    ait_calc = round(gross_val * (tax_pct / 100.0), 2)
+    holding_calc = round(gross_val * (holding_pct / 100.0), 2)
+    net_val = round(gross_val - ait_calc - holding_calc, 2)
+
+    data = {
+        "company_id": cid,
+        "vendor_id": form.get("vendor_id"),
+        "project_name": form.get("project_name"),
+        "agreement_deed_no": form.get("agreement_deed_no"),
+        "installment_title": form.get("installment_title"),
+        "installment_due_date": form.get("installment_due_date", str(datetime.date.today())),
+        "gross_milestone_amount": gross_val,
+        "tax_deduction_pct": tax_pct,
+        "tax_amount": ait_calc,
+        "holding_tax_amount": holding_calc,
+        "net_payable_amount": net_val,
+        "description": form.get("description") or f"Property Milestone: {form.get('project_name')} - {form.get('installment_title')}"
+    }
+
+    APTransactionService.save_landowner_bill(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=landowner-bills", status_code=303)
+
+@router.get("/modules/accounts-payable/advance-settlement-studio", response_class=HTMLResponse)
+async def ap_advance_settlement_studio_page(request: Request, vendor_id: Optional[str] = None):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Advance Adjustments", "url": "/modules/accounts-payable?tab=advance-adjustments"},
+        {"title": "Advance Knock-Off Settlement Workbench", "url": None}
+    ]
+
+    ap_vendors = SourcingMasterService.get_all_vendors()
+    selected_vendor_id = vendor_id or (str(ap_vendors[0]["id"]) if ap_vendors else None)
+
+    unsettled_advances = []
+    open_bills = []
+    if selected_vendor_id and cid:
+        unsettled_advances = APKnockOffService.get_unsettled_advances_for_vendor(selected_vendor_id, cid)
+        open_bills = APKnockOffService.get_open_bills_for_vendor(selected_vendor_id, cid)
+
+    recent_adjustments = APKnockOffService.get_advance_adjustments(cid)[:8]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_advance_settlement_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "ap_vendors": ap_vendors,
+            "selected_vendor_id": selected_vendor_id,
+            "unsettled_advances": unsettled_advances,
+            "open_bills": open_bills,
+            "recent_adjustments": recent_adjustments,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.get("/api/modules/accounts-payable/vendor-settlement-data")
+async def api_vendor_settlement_data(request: Request, vendor_id: str):
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    advances = APKnockOffService.get_unsettled_advances_for_vendor(vendor_id, cid)
+    bills = APKnockOffService.get_open_bills_for_vendor(vendor_id, cid)
+    return {
+        "success": True,
+        "vendor_id": vendor_id,
+        "unsettled_advances": advances,
+        "open_bills": bills
+    }
+
+@router.post("/modules/accounts-payable/advance-settlement-studio/post")
+async def ap_post_advance_settlement_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    adj_amt = float(form.get("adjustment_amount", 0.0))
+    voucher_no = f"ADJ-{datetime.date.today().strftime('%Y%m')}-{str(uuid.uuid4())[:4].upper()}"
+
+    data = {
+        "company_id": cid,
+        "voucher_number": voucher_no,
+        "adjustment_date": form.get("adjustment_date", str(datetime.date.today())),
+        "vendor_id": form.get("vendor_id"),
+        "purchase_bill_id": form.get("purchase_bill_id") or None,
+        "payment_voucher_id": form.get("advance_voucher_id") or None,
+        "adjustment_amount": adj_amt,
+        "remarks": form.get("remarks") or "Prepayment knock-off against purchase bill"
+    }
+
+    APKnockOffService.save_advance_adjustment(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=advance-adjustments", status_code=303)
+
+@router.get("/modules/accounts-payable/payment-orders/new", response_class=HTMLResponse)
+async def ap_payment_order_studio_page(request: Request):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Payment Orders", "url": "/modules/accounts-payable?tab=payment-orders"},
+        {"title": "Payment Order Allocation Studio", "url": None}
+    ]
+
+    vendors = SourcingMasterService.get_all_vendors()
+    recent_orders = APDisbursementService.get_payment_orders(cid)[:8]
+    auto_order_no = f"PO-{datetime.date.today().strftime('%Y%m')}-{str(uuid.uuid4())[:4].upper()}"
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_payment_order_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "vendors": vendors,
+            "recent_orders": recent_orders,
+            "auto_order_no": auto_order_no,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/payment-orders/new")
+async def ap_save_payment_order_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    amount = float(form.get("total_proposed_amount", 0.0))
+    data = {
+        "company_id": cid,
+        "order_number": form.get("order_number"),
+        "order_date": form.get("order_date", str(datetime.date.today())),
+        "vendor_id": form.get("vendor_id"),
+        "priority": form.get("priority", "NORMAL"),
+        "status": "APPROVED",
+        "total_proposed_amount": amount,
+        "remarks": form.get("remarks") or ""
+    }
+
+    APDisbursementService.save_payment_order(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=payment-orders", status_code=303)
+
+@router.get("/modules/accounts-payable/payments/new", response_class=HTMLResponse)
+async def ap_vendor_payment_studio_page(request: Request, order_id: Optional[str] = None):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Vendor Payments", "url": "/modules/accounts-payable?tab=payments"},
+        {"title": "Disbursement & Auto-AIT Studio", "url": None}
+    ]
+
+    vendors = SourcingMasterService.get_all_vendors()
+    payment_orders = APDisbursementService.get_payment_orders(cid)
+    bank_accounts = CashBookService.get_bank_accounts(cid)
+    recent_payments = APDisbursementService.get_vendor_payments(cid)[:8]
+    auto_payment_no = f"PMT-{datetime.date.today().strftime('%Y%m')}-{str(uuid.uuid4())[:4].upper()}"
+
+    selected_order = APDisbursementService.get_payment_order_by_id(order_id) if order_id else None
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_payment_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "vendors": vendors,
+            "payment_orders": payment_orders,
+            "bank_accounts": bank_accounts,
+            "recent_payments": recent_payments,
+            "auto_payment_no": auto_payment_no,
+            "selected_order": selected_order,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/payments/new")
+async def ap_save_vendor_payment_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    gross_amt = float(form.get("gross_payment_amount", 0.0))
+    ait_rate = float(form.get("ait_rate_pct", 5.0))
+    ait_amt = float(form.get("withheld_ait_amount", round(gross_amt * (ait_rate / 100.0), 2)))
+    vat_amt = float(form.get("withheld_vat_amount", 0.0))
+    net_amt = float(form.get("net_disbursement_amount", gross_amt - ait_amt - vat_amt))
+
+    data = {
+        "company_id": cid,
+        "payment_number": form.get("payment_number"),
+        "payment_date": form.get("payment_date", str(datetime.date.today())),
+        "vendor_id": form.get("vendor_id"),
+        "payment_order_id": form.get("payment_order_id") or None,
+        "payment_method": form.get("payment_method", "BANK_TRANSFER"),
+        "bank_account_id": form.get("bank_account_id") or None,
+        "cheque_number": form.get("cheque_number") or None,
+        "cheque_date": form.get("cheque_date") or None,
+        "currency": form.get("currency", "BDT"),
+        "gross_payment_amount": gross_amt,
+        "ait_rate_pct": ait_rate,
+        "withheld_ait_amount": ait_amt,
+        "withheld_vat_amount": vat_amt,
+        "net_disbursement_amount": net_amt,
+        "status": "CLEARED",
+        "description": form.get("description") or ""
+    }
+
+    APDisbursementService.save_vendor_payment(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=payments", status_code=303)
+
+@router.get("/modules/accounts-payable/ait-remittance/new", response_class=HTMLResponse)
+async def ap_ait_remittance_studio_page(request: Request):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "AIT Remittance", "url": "/modules/accounts-payable?tab=ait-remittance"},
+        {"title": "AIT Remittance to Authority Studio", "url": None}
+    ]
+
+    pending_lines = APTaxRemittanceService.get_pending_withheld_ait_lines(cid)
+    bank_accounts = CashBookService.get_bank_accounts(cid)
+    recent_remittances = APTaxRemittanceService.get_ait_remittances(cid)[:8]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_ait_remittance_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "pending_lines": pending_lines,
+            "bank_accounts": bank_accounts,
+            "recent_remittances": recent_remittances,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/ait-remittance/new")
+async def ap_save_ait_remittance_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    total_amt = float(form.get("total_remitted_amount", 0.0))
+    data = {
+        "company_id": cid,
+        "challan_number": form.get("challan_number"),
+        "remittance_date": form.get("remittance_date", str(datetime.date.today())),
+        "challan_date": form.get("challan_date", str(datetime.date.today())),
+        "tax_authority_name": form.get("tax_authority_name", "National Board of Revenue (NBR)"),
+        "tax_zone": form.get("tax_zone", "Zone 01"),
+        "tax_circle": form.get("tax_circle", "Circle 02"),
+        "assessment_year": form.get("assessment_year", "2026-2027"),
+        "remittance_mode": form.get("remittance_mode", "TREASURY_CHALLAN"),
+        "bank_name": form.get("bank_name", "Bangladesh Bank"),
+        "bank_branch": form.get("bank_branch", "Principal Branch"),
+        "total_remitted_amount": total_amt,
+        "remarks": form.get("remarks") or ""
+    }
+
+    APTaxRemittanceService.save_ait_remittance(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=ait-remittance", status_code=303)
+
+@router.get("/modules/accounts-payable/debit-notes/studio", response_class=HTMLResponse)
+async def ap_debit_note_studio_page(request: Request, note_id: Optional[str] = None):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Debit Notes", "url": "/modules/accounts-payable?tab=debit-notes"},
+        {"title": "AP Debit Note Studio", "url": None}
+    ]
+
+    note = APNoteService.get_ap_note_by_id(note_id) if note_id else None
+    vendors = SourcingMasterService.get_all_vendors()
+    gl_accounts = GLMasterService.get_all_accounts()
+    recent_notes = APNoteService.get_ap_notes(cid, note_type="DEBIT")[:8]
+    auto_note_no = f"DN-{datetime.date.today().strftime('%Y%m')}-{str(uuid.uuid4())[:4].upper()}"
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_debit_note_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "note": note,
+            "vendors": vendors,
+            "gl_accounts": gl_accounts,
+            "recent_notes": recent_notes,
+            "auto_note_no": auto_note_no,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/debit-notes/studio")
+async def ap_save_debit_note_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    subtotal = float(form.get("subtotal_amount", 0.0))
+    vat_amt = float(form.get("vat_amount", 0.0))
+    gross_amt = float(form.get("gross_amount", subtotal + vat_amt))
+
+    data = {
+        "company_id": cid,
+        "note_number": form.get("note_number"),
+        "note_type": "DEBIT",
+        "note_date": form.get("note_date", str(datetime.date.today())),
+        "vendor_id": form.get("vendor_id"),
+        "purchase_bill_id": form.get("purchase_bill_id") or None,
+        "reason_code": form.get("reason_code", "RETURN"),
+        "reason_description": form.get("reason_description") or "",
+        "subtotal_amount": subtotal,
+        "vat_amount": vat_amt,
+        "gross_amount": gross_amt,
+        "gl_account_id": form.get("gl_account_id") or None,
+        "status": "APPROVED"
+    }
+
+    APNoteService.save_ap_note(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=debit-notes", status_code=303)
+
+@router.get("/modules/accounts-payable/credit-notes/studio", response_class=HTMLResponse)
+async def ap_credit_note_studio_page(request: Request, note_id: Optional[str] = None):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Credit Notes", "url": "/modules/accounts-payable?tab=credit-notes"},
+        {"title": "AP Credit Note Studio", "url": None}
+    ]
+
+    note = APNoteService.get_ap_note_by_id(note_id) if note_id else None
+    vendors = SourcingMasterService.get_all_vendors()
+    gl_accounts = GLMasterService.get_all_accounts()
+    recent_notes = APNoteService.get_ap_notes(cid, note_type="CREDIT")[:8]
+    auto_note_no = f"CN-{datetime.date.today().strftime('%Y%m')}-{str(uuid.uuid4())[:4].upper()}"
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_credit_note_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "note": note,
+            "vendors": vendors,
+            "gl_accounts": gl_accounts,
+            "recent_notes": recent_notes,
+            "auto_note_no": auto_note_no,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/credit-notes/studio")
+async def ap_save_credit_note_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    subtotal = float(form.get("subtotal_amount", 0.0))
+    vat_amt = float(form.get("vat_amount", 0.0))
+    gross_amt = float(form.get("gross_amount", subtotal + vat_amt))
+
+    data = {
+        "company_id": cid,
+        "note_number": form.get("note_number"),
+        "note_type": "CREDIT",
+        "note_date": form.get("note_date", str(datetime.date.today())),
+        "vendor_id": form.get("vendor_id"),
+        "purchase_bill_id": form.get("purchase_bill_id") or None,
+        "reason_code": form.get("reason_code", "PRICE_REBATE"),
+        "reason_description": form.get("reason_description") or "",
+        "subtotal_amount": subtotal,
+        "vat_amount": vat_amt,
+        "gross_amount": gross_amt,
+        "gl_account_id": form.get("gl_account_id") or None,
+        "status": "APPROVED"
+    }
+
+    APNoteService.save_ap_note(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=credit-notes", status_code=303)
+
+@router.get("/modules/accounts-payable/reversals/new", response_class=HTMLResponse)
+async def ap_reversals_studio_page(request: Request):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Reversals", "url": "/modules/accounts-payable?tab=reversals"},
+        {"title": "Transaction Reversal Studio", "url": None}
+    ]
+
+    posted_bills = APTransactionService.get_purchase_bills(cid)[:12]
+    posted_payments = APDisbursementService.get_vendor_payments(cid)[:12]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_transaction_reversal_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "posted_bills": posted_bills,
+            "posted_payments": posted_payments,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/reversals/new")
+async def ap_execute_reversal_action(request: Request):
+    form = await request.form()
+    target_type = form.get("target_type", "BILL")
+    target_id = form.get("target_id")
+    reason = form.get("reversal_reason") or "Audited reversal"
+
+    if target_type == "BILL" and target_id:
+        APReversalService.reverse_purchase_bill(target_id, reason)
+    elif target_type == "PAYMENT" and target_id:
+        APReversalService.reverse_vendor_payment(target_id, reason)
+
+    return RedirectResponse(url="/modules/accounts-payable?tab=reversals", status_code=303)
+
+@router.get("/modules/accounts-payable/grn-verification", response_class=HTMLResponse)
+async def ap_grn_verification_studio_page(request: Request):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "GRN Verification Vault", "url": None}
+    ]
+
+    grn_documents = APDocumentService.get_grn_documents(cid)
+    vendors = SourcingMasterService.get_all_vendors()
+    grn_list = InvTransactionService.get_grn_list(cid)[:15]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_grn_verification_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "grn_documents": grn_documents,
+            "vendors": vendors,
+            "grn_list": grn_list,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/grn-verification")
+async def ap_save_grn_verification_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    data = {
+        "company_id": cid,
+        "grn_id": form.get("grn_id") or None,
+        "grn_number": form.get("grn_number"),
+        "vendor_id": form.get("vendor_id") or None,
+        "document_type": form.get("document_type", "INSPECTION_CERTIFICATE"),
+        "file_name": form.get("file_name", "GRN_Inspection_Report.pdf"),
+        "file_path": form.get("file_path", "/vault/ap_grn/inspection.pdf"),
+        "verification_status": form.get("verification_status", "VERIFIED"),
+        "remarks": form.get("remarks") or ""
+    }
+
+    APDocumentService.save_grn_document(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=grn-verification", status_code=303)
+
+@router.get("/modules/accounts-payable/payment-proofs", response_class=HTMLResponse)
+async def ap_payment_proofs_studio_page(request: Request):
+    module = EnterpriseModuleService.get_module_by_slug("accounts-payable")
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+    companies_list = CompanyService.get_all_companies()
+    appearance = AppearanceService.get_appearance()
+    db_health = db.check_health()
+
+    breadcrumbs = [
+        {"title": "Home", "url": "/"},
+        {"title": "Accounts Payable", "url": "/modules/accounts-payable"},
+        {"title": "Payment Proofs Vault", "url": None}
+    ]
+
+    payment_documents = APDocumentService.get_payment_documents(cid)
+    payments = APDisbursementService.get_vendor_payments(cid)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/ap_payment_proofs_studio.html",
+        context={
+            "module": module,
+            "active_company": active_company,
+            "companies_list": companies_list,
+            "appearance": appearance,
+            "db_health": db_health,
+            "breadcrumbs": breadcrumbs,
+            "payment_documents": payment_documents,
+            "payments": payments,
+            "active_tab": "module_accounts-payable"
+        }
+    )
+
+@router.post("/modules/accounts-payable/payment-proofs")
+async def ap_save_payment_proof_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    data = {
+        "company_id": cid,
+        "payment_id": form.get("payment_id") or None,
+        "document_type": form.get("document_type", "BANK_ADVICE"),
+        "file_name": form.get("file_name", "Treasury_Remittance_Slip.pdf"),
+        "file_path": form.get("file_path", "/vault/ap_proofs/remittance.pdf"),
+        "remarks": form.get("remarks") or ""
+    }
+
+    APDocumentService.save_payment_document(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=payment-proofs", status_code=303)
+
+@router.post("/modules/accounts-payable/master/control-accounts/save")
+async def ap_save_control_account_set_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    data = {
+        "id": form.get("set_id") or None,
+        "company_id": cid,
+        "set_code": form.get("set_code"),
+        "set_name": form.get("set_name"),
+        "accounts_payable_gl_id": form.get("accounts_payable_gl_id") or None,
+        "purchase_gl_id": form.get("purchase_gl_id") or None,
+        "advance_to_vendors_gl_id": form.get("advance_to_vendors_gl_id") or None,
+        "special_purchase_discount_gl_id": form.get("special_purchase_discount_gl_id") or None,
+        "ap_adjustment_gl_id": form.get("ap_adjustment_gl_id") or None,
+        "vat_on_purchase_gl_id": form.get("vat_on_purchase_gl_id") or None,
+        "advance_income_tax_gl_id": form.get("advance_income_tax_gl_id") or None,
+        "bad_ap_gl_id": form.get("bad_ap_gl_id") or None,
+        "tax_others_gl_id": form.get("tax_others_gl_id") or None,
+        "freight_gl_id": form.get("freight_gl_id") or None,
+        "design_consultants_fees_gl_id": form.get("design_consultants_fees_gl_id") or None,
+        "is_active": True
+    }
+
+    APMasterService.save_control_account_set(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=control-accounts", status_code=303)
+
+@router.post("/modules/accounts-payable/master/payment-terms/save")
+async def ap_save_payment_term_action(request: Request):
+    form = await request.form()
+    data = {
+        "id": form.get("term_id") or None,
+        "term_code": form.get("term_code"),
+        "term_name": form.get("term_name"),
+        "incoterm": form.get("incoterm", "DDP"),
+        "credit_days": int(form.get("credit_days", 30)),
+        "validity_period_months": int(form.get("validity_period_months", 12)),
+        "description": form.get("description") or "",
+        "is_active": True
+    }
+    APMasterService.save_payment_term(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=payment-terms", status_code=303)
+
+@router.post("/modules/accounts-payable/master/vendor-mapping/save")
+async def ap_save_vendor_mapping_action(request: Request):
+    form = await request.form()
+    active_company = CompanyService.resolve_active_company(request)
+    cid = str(active_company["id"]) if active_company else None
+
+    data = {
+        "id": form.get("mapping_id") or None,
+        "vendor_id": form.get("vendor_id"),
+        "company_id": cid,
+        "is_approved": True,
+        "credit_limit": float(form.get("credit_limit", 1000000.0)),
+        "is_active": True
+    }
+    APMasterService.save_vendor_company_mapping(data)
+    return RedirectResponse(url="/modules/accounts-payable?tab=vendor-mapping", status_code=303)
 
 # =========================================================================
 # General Ledger Transaction & Batch Automation Operations

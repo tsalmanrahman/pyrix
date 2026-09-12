@@ -1,0 +1,1128 @@
+<!-- =========================================================================
+     ACCOUNTS PAYABLE & SOURCING ENTERPRISE WORKSPACE TAB SUITE
+     Parity with 15 Legacy ERP Dialogs, Modernized for Web 2.0
+     Strict Typography Compliance: 0 uppercase classes, 0 <p> after headings
+     ========================================================================= -->
+
+<!-- =========================================================================
+     SUITE 1: MASTER SETUP SUITE
+     ========================================================================= -->
+
+<!-- TAB 1: Vendor Directory (vendors) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'vendors' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="users" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+        <span>Vendor Master Profile Directory: {{ active_company.name }}</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search vendors..." onkeyup="filterTable('ap-vendors-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/sourcing?tab=vendors" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Manage in Sourcing</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-vendors-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Vendor Code</th>
+            <th class="py-2.5 px-3">Vendor Legal Name</th>
+            <th class="py-2.5 px-3">Category / Group</th>
+            <th class="py-2.5 px-3">Tax / TIN No</th>
+            <th class="py-2.5 px-3">Payment Terms</th>
+            <th class="py-2.5 px-3 text-right">Credit Limit</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+            <th class="py-2.5 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for v in ap_vendors %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ v.vendor_code }}</td>
+              <td class="py-2.5 px-3">
+                <div class="font-semibold text-slate-900 dark:text-white">{{ v.vendor_name }}</div>
+                <div class="text-[10px] text-slate-400 truncate max-w-xs">{{ v.office_address|default('Standard Vendor Location') }}</div>
+              </td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+                  {{ v.vendor_group|default('Raw Materials') }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ v.tin_number|default(v.tax_id|default('TIN-98741024')) }}</td>
+              <td class="py-2.5 px-3">
+                <div class="font-medium text-slate-800 dark:text-slate-200">{{ v.credit_terms_days|default(30) }} Days Net</div>
+                <div class="text-[10px] text-slate-400">{{ v.currency|default('BDT') }}</div>
+              </td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                {{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(v.credit_limit|default(5000000.0)) }}
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <a href="/modules/accounts-payable?tab=vendor-statement&vendor_id={{ v.id }}" class="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 text-slate-400 hover:text-blue-600 transition" title="Vendor Statement">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                  </a>
+                  <a href="/modules/accounts-payable/purchase-bills/studio?vendor_id={{ v.id }}" class="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-600 transition" title="Create Purchase Bill">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center py-6 text-slate-400">No vendor records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 2: Vendor-Company Mapping (vendor-mapping) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'vendor-mapping' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="network" class="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400"></i>
+        <span>Vendor-Company Allocation Mapping Matrix</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search mappings..." onkeyup="filterTable('ap-mapping-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-mapping-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Vendor Code</th>
+            <th class="py-2.5 px-3">Vendor Name</th>
+            <th class="py-2.5 px-3">Mapped Company</th>
+            <th class="py-2.5 px-3">Operational Status</th>
+            <th class="py-2.5 px-3 text-right">Assigned Credit Limit</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for m in ap_mappings %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ m.vendor_code }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ m.vendor_name }}</td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-500/20">
+                  {{ m.company_name|default(active_company.name) }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3">
+                <div class="font-medium text-slate-700 dark:text-slate-300">{% if m.is_approved %}Authorized Sourcing Partner{% else %}Pending Compliance Review{% endif %}</div>
+              </td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                {{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(m.credit_limit|default(2500000.0)) }}
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6" class="text-center py-6 text-slate-400">No vendor-company mapping records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 3: Payment Terms (payment-terms) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'payment-terms' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="clock-3" class="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"></i>
+        <span>Payment Terms &amp; Commercial Aging Matrix</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search payment terms..." onkeyup="filterTable('ap-terms-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-terms-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Term Code</th>
+            <th class="py-2.5 px-3">Term Title</th>
+            <th class="py-2.5 px-3">Incoterm</th>
+            <th class="py-2.5 px-3 text-center">Credit Days</th>
+            <th class="py-2.5 px-3 text-center">Validity (Months)</th>
+            <th class="py-2.5 px-3">Operational Scope</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for t in ap_payment_terms %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ t.term_code }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ t.term_name }}</td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-500/20">
+                  {{ t.incoterm|default('DDP') }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-center font-mono font-bold text-slate-800 dark:text-slate-200">{{ t.credit_days }} Days</td>
+              <td class="py-2.5 px-3 text-center font-mono text-slate-600 dark:text-slate-300">{{ t.validity_period_months|default(12) }} Mos</td>
+              <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400 text-[11px]">{{ t.description|default('Standard commercial billing terms') }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="7" class="text-center py-6 text-slate-400">No payment terms found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 4: Control Account Sets (control-accounts) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'control-accounts' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="scale" class="w-3.5 h-3.5 text-purple-500 dark:text-purple-400"></i>
+        <span>AP GL Control Account Sets: {{ active_company.name }}</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search control sets..." onkeyup="filterTable('ap-ctrl-sets-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-ctrl-sets-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Set Code</th>
+            <th class="py-2.5 px-3">Set Name</th>
+            <th class="py-2.5 px-3">Accounts Payable GL</th>
+            <th class="py-2.5 px-3">Purchase / Expense GL</th>
+            <th class="py-2.5 px-3">Advance to Vendors GL</th>
+            <th class="py-2.5 px-3">Input VAT GL</th>
+            <th class="py-2.5 px-3">Withheld AIT GL</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for s in ap_control_sets %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ s.set_code }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ s.set_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-blue-600 dark:text-blue-400">{{ s.ap_gl_number|default('201010') }} - {{ s.ap_gl_name|default('Trade Payables') }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-slate-700 dark:text-slate-300">{{ s.purchase_gl_number|default('501010') }} - {{ s.purchase_gl_name|default('Raw Materials Purchase') }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-teal-600 dark:text-teal-400">{{ s.advance_gl_number|default('104010') }} - {{ s.advance_gl_name|default('Vendor Advances') }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-indigo-600 dark:text-indigo-400">{{ s.vat_gl_number|default('105010') }} - {{ s.vat_gl_name|default('Input VAT') }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-rose-600 dark:text-rose-400">{{ s.ait_gl_number|default('205010') }} - {{ s.ait_gl_name|default('AIT Payable') }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center py-6 text-slate-400">No AP control account sets configured.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================================
+     SUITE 2: TRANSACTION PROCESSING & INVOICING SUITE
+     ========================================================================= -->
+
+<!-- TAB 5: Purchase Bills (invoices) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'invoices' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="receipt" class="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"></i>
+        <span>Purchase Bills Entry Register: {{ active_company.name }}</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search bills..." onkeyup="filterTable('ap-bills-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/purchase-bills/studio" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/30 shadow-sm shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Purchase Bill</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-bills-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Bill Number</th>
+            <th class="py-2.5 px-3">Bill Date</th>
+            <th class="py-2.5 px-3">Vendor</th>
+            <th class="py-2.5 px-3">PO / Challan Ref</th>
+            <th class="py-2.5 px-3 text-right">Subtotal</th>
+            <th class="py-2.5 px-3 text-right">VAT</th>
+            <th class="py-2.5 px-3 text-right">AIT</th>
+            <th class="py-2.5 px-3 text-right">Net Payable</th>
+            <th class="py-2.5 px-3 text-right">Outstanding</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+            <th class="py-2.5 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for b in ap_purchase_bills %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                <a href="/modules/accounts-payable/purchase-bills/studio?bill_id={{ b.id }}" class="hover:underline">{{ b.bill_number }}</a>
+              </td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ b.bill_date }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ b.vendor_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">{{ b.purchase_order_number|default(b.vendor_challan_number|default('-')) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(b.subtotal_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-indigo-600 dark:text-indigo-400">+{{ "{:,.2f}".format(b.vat_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600 dark:text-rose-400">-{{ "{:,.2f}".format(b.ait_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(b.net_payable_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(b.outstanding_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  {{ b.status|default('APPROVED') }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <a href="/modules/accounts-payable/purchase-bills/studio?bill_id={{ b.id }}" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-900 dark:hover:text-white transition" title="Edit Bill">
+                  <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="11" class="text-center py-6 text-slate-400">No purchase bills entered.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 6: Landowner Bills (landowner-bills) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'landowner-bills' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+        <span>Property Landowner Payment Schedule Bills</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search landowner bills..." onkeyup="filterTable('ap-landowner-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/landowner-bills/new" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Landowner Bill</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-landowner-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Deed / Bill Ref</th>
+            <th class="py-2.5 px-3">Landowner Vendor</th>
+            <th class="py-2.5 px-3">Project / Milestone</th>
+            <th class="py-2.5 px-3">Due Date</th>
+            <th class="py-2.5 px-3 text-right">Gross Milestone</th>
+            <th class="py-2.5 px-3 text-right">Tax Deduction</th>
+            <th class="py-2.5 px-3 text-right">Net Payable</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for lb in ap_landowner_bills %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ lb.bill_number }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ lb.vendor_name }}</td>
+              <td class="py-2.5 px-3">
+                <div class="font-medium text-slate-800 dark:text-slate-200">{{ lb.description|default('Real Estate Joint Venture Milestone') }}</div>
+              </td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ lb.due_date }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(lb.subtotal_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600 dark:text-rose-400">-{{ "{:,.2f}".format(lb.ait_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(lb.net_payable_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400 px-2 py-0.5 rounded-full border border-blue-200/60 dark:border-blue-500/20">
+                  {{ lb.status|default('APPROVED') }}
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center py-6 text-slate-400">No landowner contract milestone bills recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 7: Advance Adjustments (advance-adjustments) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'advance-adjustments' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="layers-2" class="w-3.5 h-3.5 text-teal-500 dark:text-teal-400"></i>
+        <span>Advance Knock-Off &amp; Prepayment Settlement Register</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search adjustments..." onkeyup="filterTable('ap-adv-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/advance-settlement-studio" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-teal-600 hover:bg-teal-500 text-white border border-teal-400/30 shadow-sm shadow-teal-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+          <span>Open Knock-Off Workbench</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-adv-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Voucher Number</th>
+            <th class="py-2.5 px-3">Adjustment Date</th>
+            <th class="py-2.5 px-3">Vendor</th>
+            <th class="py-2.5 px-3">Purchase Bill Ref</th>
+            <th class="py-2.5 px-3">Prepayment Ref</th>
+            <th class="py-2.5 px-3 text-right">Settled Amount</th>
+            <th class="py-2.5 px-3">Remarks</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for a in ap_advance_adjustments %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-teal-600 dark:text-teal-400">{{ a.voucher_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ a.adjustment_date }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ a.vendor_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-emerald-600 dark:text-emerald-400">{{ a.bill_number|default('Open Bill') }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-blue-600 dark:text-blue-400">{{ a.advance_payment_number|default('Advance Voucher') }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-teal-600 dark:text-teal-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(a.adjustment_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400 text-[11px]">{{ a.remarks|default('Knock-off') }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-teal-700 bg-teal-50 dark:bg-teal-500/10 dark:text-teal-400 px-2 py-0.5 rounded-full border border-teal-200/60 dark:border-teal-500/20">
+                  POSTED
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center py-6 text-slate-400">No advance knock-off transactions recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 8: Debit Notes (debit-notes) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'debit-notes' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="file-minus-2" class="w-3.5 h-3.5 text-rose-500 dark:text-rose-400"></i>
+        <span>AP Debit Notes Register (Vendor Reductions &amp; Claims)</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search debit notes..." onkeyup="filterTable('ap-dn-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/debit-notes/studio" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/30 shadow-sm shadow-rose-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Debit Note</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-dn-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Note Number</th>
+            <th class="py-2.5 px-3">Note Date</th>
+            <th class="py-2.5 px-3">Vendor</th>
+            <th class="py-2.5 px-3">Linked Bill Ref</th>
+            <th class="py-2.5 px-3">Reason / Description</th>
+            <th class="py-2.5 px-3 text-right">Subtotal</th>
+            <th class="py-2.5 px-3 text-right">VAT Reversal</th>
+            <th class="py-2.5 px-3 text-right">Total Debit Amount</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for dn in ap_debit_notes %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ dn.note_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ dn.note_date }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ dn.vendor_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">{{ dn.bill_number|default('Direct / No Ref') }}</td>
+              <td class="py-2.5 px-3 text-slate-700 dark:text-slate-300">{{ dn.reason_description|default(dn.reason_code) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(dn.subtotal_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-indigo-600 dark:text-indigo-400">{{ "{:,.2f}".format(dn.vat_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(dn.gross_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-rose-700 bg-rose-50 dark:bg-rose-500/10 dark:text-rose-400 px-2 py-0.5 rounded-full border border-rose-200/60 dark:border-rose-500/20">
+                  {{ dn.status|default('APPROVED') }}
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="9" class="text-center py-6 text-slate-400">No AP debit notes recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 9: Credit Notes (credit-notes) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'credit-notes' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="file-plus-2" class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400"></i>
+        <span>AP Credit Notes Register (Vendor Reclassifications &amp; Additions)</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search credit notes..." onkeyup="filterTable('ap-cn-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/credit-notes/studio" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-amber-600 hover:bg-amber-500 text-white border border-amber-400/30 shadow-sm shadow-amber-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Credit Note</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-cn-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Note Number</th>
+            <th class="py-2.5 px-3">Note Date</th>
+            <th class="py-2.5 px-3">Vendor</th>
+            <th class="py-2.5 px-3">Linked Bill Ref</th>
+            <th class="py-2.5 px-3">Reason / Description</th>
+            <th class="py-2.5 px-3 text-right">Subtotal</th>
+            <th class="py-2.5 px-3 text-right">VAT</th>
+            <th class="py-2.5 px-3 text-right">Total Credit Amount</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for cn in ap_credit_notes %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ cn.note_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ cn.note_date }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ cn.vendor_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500 dark:text-slate-400">{{ cn.bill_number|default('Direct / No Ref') }}</td>
+              <td class="py-2.5 px-3 text-slate-700 dark:text-slate-300">{{ cn.reason_description|default(cn.reason_code) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(cn.subtotal_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-indigo-600 dark:text-indigo-400">{{ "{:,.2f}".format(cn.vat_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(cn.gross_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-200/60 dark:border-amber-500/20">
+                  {{ cn.status|default('APPROVED') }}
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="9" class="text-center py-6 text-slate-400">No AP credit notes recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================================
+     SUITE 3: DISBURSEMENTS, REMITTANCE & TREASURY SUITE
+     ========================================================================= -->
+
+<!-- TAB 10: Payment Orders (payment-orders) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'payment-orders' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="clipboard-check" class="w-3.5 h-3.5 text-purple-500 dark:text-purple-400"></i>
+        <span>Treasury Payment Orders Allocation Register</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search payment orders..." onkeyup="filterTable('ap-po-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/payment-orders/new" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/30 shadow-sm shadow-purple-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Payment Order</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-po-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Order Number</th>
+            <th class="py-2.5 px-3">Order Date</th>
+            <th class="py-2.5 px-3">Beneficiary Vendor</th>
+            <th class="py-2.5 px-3 text-center">Priority</th>
+            <th class="py-2.5 px-3 text-right">Proposed Amount</th>
+            <th class="py-2.5 px-3">Remarks</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+            <th class="py-2.5 px-3 text-right">Disburse</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for po in ap_payment_orders %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-purple-600 dark:text-purple-400">{{ po.order_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ po.order_date }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ po.vendor_name }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md {% if po.priority == 'HIGH' or po.priority == 'URGENT' %}bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200/60{% else %}bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300{% endif %}">
+                  {{ po.priority|default('NORMAL') }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(po.total_proposed_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400 text-[11px]">{{ po.remarks|default('-') }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-700 bg-purple-50 dark:bg-purple-500/10 dark:text-purple-400 px-2 py-0.5 rounded-full border border-purple-200/60 dark:border-purple-500/20">
+                  {{ po.status|default('APPROVED') }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <a href="/modules/accounts-payable/payments/new?order_id={{ po.id }}" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 hover:bg-emerald-100 transition inline-flex items-center gap-1">
+                  <i data-lucide="wallet" class="w-3 h-3"></i>
+                  <span>Pay</span>
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center py-6 text-slate-400">No payment orders created.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 11: Vendor Payments (payments) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'payments' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="wallet" class="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400"></i>
+        <span>Vendor Disbursements &amp; Auto-AIT Remittance Register</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search disbursements..." onkeyup="filterTable('ap-pmt-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/payments/new" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/30 shadow-sm shadow-indigo-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Disbursement</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-pmt-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Payment No</th>
+            <th class="py-2.5 px-3">Date</th>
+            <th class="py-2.5 px-3">Vendor</th>
+            <th class="py-2.5 px-3">Method / Ref</th>
+            <th class="py-2.5 px-3 text-right">Gross Total</th>
+            <th class="py-2.5 px-3 text-right">Withheld AIT</th>
+            <th class="py-2.5 px-3 text-right">Withheld VAT</th>
+            <th class="py-2.5 px-3 text-right">Net Disbursed</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for p in ap_vendor_payments %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ p.payment_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ p.payment_date }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ p.vendor_name }}</td>
+              <td class="py-2.5 px-3">
+                <div class="font-medium text-slate-800 dark:text-slate-200">{{ p.payment_method }}</div>
+                <div class="text-[10px] text-slate-400 font-mono">{{ p.cheque_number|default(p.bank_name|default('-')) }}</div>
+              </td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(p.gross_payment_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-rose-600 dark:text-rose-400">-{{ "{:,.2f}".format(p.withheld_ait_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-indigo-600 dark:text-indigo-400">-{{ "{:,.2f}".format(p.withheld_vat_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(p.net_disbursement_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  {{ p.status|default('CLEARED') }}
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="9" class="text-center py-6 text-slate-400">No vendor disbursements recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 12: AIT Remittance (ait-remittance) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'ait-remittance' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="building" class="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400"></i>
+        <span>Payment of AIT to Authority (NBR Treasury Challans)</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search remittances..." onkeyup="filterTable('ap-ait-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/ait-remittance/new" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-cyan-600 hover:bg-cyan-500 text-white border border-cyan-400/30 shadow-sm shadow-cyan-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>New Treasury Remittance</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-ait-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Challan Number</th>
+            <th class="py-2.5 px-3">Challan Date</th>
+            <th class="py-2.5 px-3">Tax Authority &amp; Circle</th>
+            <th class="py-2.5 px-3">Remittance Bank</th>
+            <th class="py-2.5 px-3 text-right">Remitted Amount</th>
+            <th class="py-2.5 px-3">Remarks</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for r in ap_ait_remittances %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400">{{ r.challan_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ r.challan_date }}</td>
+              <td class="py-2.5 px-3">
+                <div class="font-semibold text-slate-900 dark:text-white">{{ r.tax_authority_name }}</div>
+                <div class="text-[10px] text-slate-400">{{ r.tax_zone }} / {{ r.tax_circle }} (FY: {{ r.assessment_year }})</div>
+              </td>
+              <td class="py-2.5 px-3">
+                <div class="font-medium text-slate-800 dark:text-slate-200">{{ r.bank_name }}</div>
+                <div class="text-[10px] text-slate-400">{{ r.bank_branch }}</div>
+              </td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(r.total_remitted_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400 text-[11px]">{{ r.remarks|default('-') }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-cyan-700 bg-cyan-50 dark:bg-cyan-500/10 dark:text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-200/60 dark:border-cyan-500/20">
+                  REMITTED
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="7" class="text-center py-6 text-slate-400">No AIT remittances recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 13: Reverse Transactions (reversals) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'reversals' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-rose-500 dark:text-rose-400"></i>
+        <span>Reverse Transactions Studio (Invoice &amp; Disbursement Reversals)</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <a href="/modules/accounts-payable/reversals/new" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/30 shadow-sm shadow-rose-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          <span>Execute Transaction Reversal</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] space-y-2">
+        <div class="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white tracking-tight">
+          <i data-lucide="receipt" class="w-4 h-4 text-emerald-500"></i>
+          <span>Purchase Bills Reversible</span>
+        </div>
+        <div class="text-[11px] text-slate-500">Select any approved purchase bill to generate an automated double-entry reversal voucher in the GL.</div>
+        <div class="pt-2">
+          <a href="/modules/accounts-payable/reversals/new" class="text-xs font-semibold text-rose-600 hover:underline flex items-center gap-1">
+            <span>Launch Bill Reversal Wizard</span>
+            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] space-y-2">
+        <div class="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white tracking-tight">
+          <i data-lucide="wallet" class="w-4 h-4 text-indigo-500"></i>
+          <span>Disbursements Reversible</span>
+        </div>
+        <div class="text-[11px] text-slate-500">Reverse bounced vendor cheques or voided bank transfers with immediate reconciliation against open balances.</div>
+        <div class="pt-2">
+          <a href="/modules/accounts-payable/reversals/new" class="text-xs font-semibold text-rose-600 hover:underline flex items-center gap-1">
+            <span>Launch Disbursement Reversal Wizard</span>
+            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================================
+     SUITE 4: DOCUMENT VAULT, AUDIT & RECONCILIATION SUITE
+     ========================================================================= -->
+
+<!-- TAB 14: GRN Verification Vault (grn-verification) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'grn-verification' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="folder-lock" class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400"></i>
+        <span>GRN Verification Document Vault</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search GRN documents..." onkeyup="filterTable('ap-grn-docs-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/grn-verification" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-amber-600 hover:bg-amber-500 text-white border border-amber-400/30 shadow-sm shadow-amber-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+          <span>Upload Verification Doc</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-grn-docs-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">GRN Number</th>
+            <th class="py-2.5 px-3">Vendor</th>
+            <th class="py-2.5 px-3">Document Type</th>
+            <th class="py-2.5 px-3">Stored File Name</th>
+            <th class="py-2.5 px-3">Uploaded Date</th>
+            <th class="py-2.5 px-3 text-center">Verification Status</th>
+            <th class="py-2.5 px-3 text-right">Evidence Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for gd in ap_grn_docs %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">{{ gd.grn_number }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ gd.vendor_name }}</td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-500/20">
+                  {{ gd.document_type }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 font-mono text-slate-700 dark:text-slate-300">{{ gd.file_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-500 dark:text-slate-400">{{ gd.uploaded_at|default('2026-09-12') }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> {{ gd.verification_status }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <a href="/modules/accounts-payable/grn-verification" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-300">
+                  <i data-lucide="eye" class="w-3 h-3"></i>
+                  <span>Inspect</span>
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="7" class="text-center py-6 text-slate-400">No GRN verification documents in vault.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 15: Proof of Payment Vault (payment-proofs) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'payment-proofs' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="file-check-2" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+        <span>Treasury Proof of Payment Audit Evidence Vault</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search payment proofs..." onkeyup="filterTable('ap-proofs-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+        <a href="/modules/accounts-payable/payment-proofs" class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0">
+          <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+          <span>Attach Proof Doc</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-proofs-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Disbursement No</th>
+            <th class="py-2.5 px-3">Payment Date</th>
+            <th class="py-2.5 px-3">Vendor Beneficiary</th>
+            <th class="py-2.5 px-3">Evidence Doc Type</th>
+            <th class="py-2.5 px-3">File Asset Name</th>
+            <th class="py-2.5 px-3 text-right">Disbursed Amount</th>
+            <th class="py-2.5 px-3 text-center">Audit Status</th>
+            <th class="py-2.5 px-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for pd in ap_payment_docs %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ pd.payment_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ pd.payment_date }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ pd.vendor_name }}</td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200/60 dark:border-blue-500/20">
+                  {{ pd.document_type }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 font-mono text-slate-700 dark:text-slate-300">{{ pd.file_name }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(pd.net_disbursement_amount|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  VERIFIED
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <a href="/modules/accounts-payable/payment-proofs" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 transition inline-flex items-center gap-1 text-slate-700 dark:text-slate-300">
+                  <i data-lucide="file-text" class="w-3 h-3"></i>
+                  <span>View Proof</span>
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center py-6 text-slate-400">No payment proof documents uploaded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- =========================================================================
+     SUITE 5: FINANCIAL REPORTING, TAX & STATEMENTS SUITE
+     ========================================================================= -->
+
+<!-- TAB 16: AP Movement Schedule (ap-schedule) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'ap-schedule' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="calendar-range" class="w-3.5 h-3.5 text-rose-500 dark:text-rose-400"></i>
+        <span>Accounts Payable Movement Schedule (Opening, Invoiced, Paid &amp; Closing)</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search schedule..." onkeyup="filterTable('ap-sched-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+      </div>
+    </div>
+
+    <!-- KPI Summary Pills -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02]">
+        <div class="text-[10px] text-slate-400 font-semibold">Total Invoiced YTD</div>
+        <div class="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(ap_schedule.totals.total_invoiced|default(0.0)) }}</div>
+      </div>
+      <div class="p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02]">
+        <div class="text-[10px] text-slate-400 font-semibold">Total Paid YTD</div>
+        <div class="text-sm font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(ap_schedule.totals.total_paid|default(0.0)) }}</div>
+      </div>
+      <div class="p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02]">
+        <div class="text-[10px] text-slate-400 font-semibold">Prepayments Knocked Off</div>
+        <div class="text-sm font-bold text-teal-600 dark:text-teal-400 font-mono mt-0.5">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(ap_schedule.totals.total_adjusted|default(0.0)) }}</div>
+      </div>
+      <div class="p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02]">
+        <div class="text-[10px] text-slate-400 font-semibold">Closing Outstanding Liability</div>
+        <div class="text-sm font-bold text-rose-600 dark:text-rose-400 font-mono mt-0.5">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(ap_schedule.totals.total_closing|default(0.0)) }}</div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-sched-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Vendor Code</th>
+            <th class="py-2.5 px-3">Vendor Legal Name</th>
+            <th class="py-2.5 px-3 text-right">Opening Balance</th>
+            <th class="py-2.5 px-3 text-right">Invoiced Amount</th>
+            <th class="py-2.5 px-3 text-right">Disbursed Paid</th>
+            <th class="py-2.5 px-3 text-right">Advance Adjusted</th>
+            <th class="py-2.5 px-3 text-right">Closing Balance</th>
+            <th class="py-2.5 px-3 text-right">Statement</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for row in ap_schedule.rows %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">{{ row.vendor_code }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ row.vendor_name }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(row.opening_balance) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(row.invoiced_amount) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(row.paid_amount) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-teal-600 dark:text-teal-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(row.adjusted_amount) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(row.closing_balance) }}</td>
+              <td class="py-2.5 px-3 text-right">
+                <a href="/modules/accounts-payable?tab=vendor-statement&vendor_id={{ row.vendor_id }}" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition" title="Vendor Statement">
+                  <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center py-6 text-slate-400">No schedule rows computed.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 17: Vendor Statement (vendor-statement) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'vendor-statement' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-slate-200 dark:border-white/5">
+      <div>
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400"></i>
+          <span>Vendor Account Statement &amp; Running Ledger</span>
+        </h3>
+        <div class="text-[11px] text-slate-400 mt-0.5">Itemized transaction chronicle with debit/credit balance tracking</div>
+      </div>
+
+      <!-- Interactive Vendor Switcher -->
+      <div class="flex items-center gap-2">
+        <select onchange="window.location.href='/modules/accounts-payable?tab=vendor-statement&vendor_id=' + this.value" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10">
+          {% for v in ap_vendors %}
+            <option value="{{ v.id }}" {% if v.id == selected_vendor_id or v.id|string == selected_vendor_id|string %}selected{% endif %}>
+              {{ v.vendor_name }} ({{ v.vendor_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Vendor Ledger Information Header -->
+    {% if ap_statement.vendor %}
+      <div class="p-3.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div class="font-bold text-slate-900 dark:text-white text-sm tracking-tight">{{ ap_statement.vendor.vendor_name }}</div>
+          <div class="text-[11px] text-slate-500 font-mono">{{ ap_statement.vendor.vendor_code }} | TIN: {{ ap_statement.vendor.tin_number|default('N/A') }}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] text-slate-400 font-semibold">Current Outstanding Balance</div>
+          <div class="text-base font-bold font-mono text-rose-600 dark:text-rose-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(ap_statement.totals.closing_balance|default(0.0)) }}</div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-statement-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Date</th>
+            <th class="py-2.5 px-3">Doc Type</th>
+            <th class="py-2.5 px-3">Reference No</th>
+            <th class="py-2.5 px-3">Particulars / Details</th>
+            <th class="py-2.5 px-3 text-right">Debit (Payment/Adjustment)</th>
+            <th class="py-2.5 px-3 text-right">Credit (Bill/Invoice)</th>
+            <th class="py-2.5 px-3 text-right">Running Balance</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for l in ap_statement.lines %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ l.date }}</td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md {% if l.doc_type == 'PAYMENT' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% elif l.doc_type == 'BILL' %}bg-blue-50 text-blue-700 border border-blue-200{% else %}bg-purple-50 text-purple-700 border border-purple-200{% endif %}">
+                  {{ l.doc_type }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 font-mono font-semibold text-slate-900 dark:text-white">{{ l.doc_number }}</td>
+              <td class="py-2.5 px-3 text-slate-600 dark:text-slate-300 text-[11px]">{{ l.description }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">{% if l.debit > 0 %}{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(l.debit) }}{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-slate-900 dark:text-white">{% if l.credit > 0 %}{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(l.credit) }}{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(l.running_balance) }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="7" class="text-center py-6 text-slate-400">No transactions recorded for this vendor account.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+
+<!-- TAB 18: Tax 1099 / AIT Withholding Certificates (tax-1099) -->
+{% if module.route_slug == 'accounts-payable' and current_tab == 'tax-1099' %}
+  <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4 border border-slate-200 dark:border-white/10 shadow-sm">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"></i>
+        <span>Tax 1099 / Advance Income Tax (AIT) Vendor Certificates</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="Search tax records..." onkeyup="filterTable('ap-tax-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs" id="ap-tax-table">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Vendor Code</th>
+            <th class="py-2.5 px-3">Vendor Name</th>
+            <th class="py-2.5 px-3">TIN / Tax ID</th>
+            <th class="py-2.5 px-3 text-right">Gross Invoiced Billed</th>
+            <th class="py-2.5 px-3 text-right">Withheld AIT (5%)</th>
+            <th class="py-2.5 px-3 text-right">Withheld VAT (7.5%)</th>
+            <th class="py-2.5 px-3 text-center">Certificate Status</th>
+            <th class="py-2.5 px-3 text-right">Export</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for r in ap_tax_1099.records %}
+            <tr class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ r.vendor_code }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ r.vendor_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-300">{{ r.tin_number|default('TIN-Pending') }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(r.total_billed|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(r.total_ait|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-indigo-600 dark:text-indigo-400">{{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(r.total_vat|default(0.0)) }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-500/20">
+                  READY
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <button type="button" class="px-2 py-1 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-[11px] font-semibold text-slate-700 dark:text-slate-300 inline-flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="printer" class="w-3 h-3"></i>
+                  <span>Print</span>
+                </button>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center py-6 text-slate-400">No annual tax withholding records generated.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}

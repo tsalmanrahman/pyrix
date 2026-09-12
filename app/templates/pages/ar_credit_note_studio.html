@@ -1,0 +1,640 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-AR - Commercial Credit Note Studio{% endblock %}
+
+{% block content %}
+<style>
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    #printable-a4-document, #printable-a4-document * {
+      visibility: visible;
+    }
+    #printable-a4-document {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      margin: 0;
+      padding: 20mm;
+      box-shadow: none !important;
+      border: none !important;
+      background: white !important;
+      color: black !important;
+    }
+    .no-print {
+      display: none !important;
+    }
+  }
+
+  .a4-preview-sheet {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    min-height: 297mm;
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 16mm 18mm;
+    border-radius: 4px;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+</style>
+
+<div class="space-y-6 max-w-7xl mx-auto">
+
+  <!-- Minimalist Header Banner with Back Button & Direct Print Action -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap shadow-sm no-print">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Far-Left Back Button -->
+      <a 
+        href="/modules/accounts-receivable?tab=credit-notes-ref" 
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
+        title="Back to Credit Notes"
+      >
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
+      </a>
+
+      <!-- Subtle Vertical Divider -->
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <!-- Module Icon -->
+      <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+        <i data-lucide="file-minus" class="w-4 h-4"></i>
+      </div>
+
+      <!-- Title & Scope -->
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          Commercial Customer Credit Note Studio
+        </h2>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Integrated Transaction Processing &amp; Maintainable A4 Document Sheet</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2 shrink-0">
+      <button 
+        type="button" 
+        onclick="window.print()" 
+        class="h-9 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10 text-xs font-semibold hover:scale-[1.02] active:scale-95 shadow-sm"
+      >
+        <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-500"></i>
+        <span>Print Official Copy</span>
+      </button>
+      <button 
+        type="submit" 
+        form="credit-note-form"
+        class="h-9 px-4 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/30 shadow-sm shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0"
+      >
+        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <span>Issue Final Credit Note</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Studio Split Grid: Controls on Left, Document Sheet on Right -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Controls & Input Studio (5 Cols) -->
+    <div class="lg:col-span-5 space-y-6 no-print">
+      <form id="credit-note-form" method="POST" action="/modules/accounts-receivable/credit-note-studio/save" class="space-y-5">
+        
+        <!-- Document Mode & Reference Card -->
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="sliders" class="w-4 h-4 text-emerald-500"></i>
+              <h3 class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">1. Document Type &amp; Classification</h3>
+            </div>
+            <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">NBR Rule 64 Compliant</span>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Credit Flow Type *</label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-500/10 cursor-pointer">
+                  <input type="radio" name="credit_note_type" id="flow-ref" value="REF" checked onchange="onFlowChange('REF')" class="text-emerald-600 focus:ring-emerald-500">
+                  <span class="font-semibold text-slate-900 dark:text-white text-[11px]">With Invoice Ref</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] cursor-pointer">
+                  <input type="radio" name="credit_note_type" id="flow-direct" value="DIRECT" onchange="onFlowChange('DIRECT')" class="text-emerald-600 focus:ring-emerald-500">
+                  <span class="font-semibold text-slate-900 dark:text-white text-[11px]">Direct Credit Note</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Credit Note #</label>
+                <input 
+                  type="text" 
+                  name="note_number" 
+                  id="ctrl-note-num" 
+                  value="{{ auto_note_number }}" 
+                  readonly 
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold"
+                >
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Issue Date *</label>
+                <input 
+                  type="date" 
+                  name="note_date" 
+                  id="ctrl-note-date" 
+                  value="2026-09-12" 
+                  required 
+                  oninput="updatePreviewDoc()"
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer & Representative Card -->
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="user-check" class="w-4 h-4 text-blue-500"></i>
+              <h3 class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">2. Credited Customer Account</h3>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Customer Legal Entity *</label>
+              <select 
+                name="customer_id" 
+                id="ctrl-customer-select" 
+                required 
+                onchange="onCustomerSelectChange(this)"
+                class="mac-input w-full px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white"
+              >
+                {% for c in ar_customers %}
+                  <option 
+                    value="{{ c.id }}" 
+                    data-code="{{ c.customer_code }}" 
+                    data-name="{{ c.customer_name }}"
+                    data-address="{{ c.billing_address|default('Commercial District, Bangladesh') }}"
+                    data-contact="{{ c.contact_person|default('Accounts Manager') }}"
+                    data-phone="{{ c.phone|default(c.mobile|default('+880 1819-000000')) }}"
+                  >
+                    {{ c.customer_code }} - {{ c.customer_name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Salesperson / Rep</label>
+                <input 
+                  type="text" 
+                  name="salesperson_name" 
+                  id="ctrl-salesrep" 
+                  value="Sunil Kumar Das" 
+                  oninput="updatePreviewDoc()" 
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium"
+                >
+              </div>
+              <div id="field-inv-ref-wrap">
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Ref Invoice #</label>
+                <input 
+                  type="text" 
+                  name="invoice_ref_number" 
+                  id="ctrl-inv-ref" 
+                  value="INV-2026-00412" 
+                  oninput="updatePreviewDoc()" 
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-blue-600 dark:text-blue-400 font-mono font-bold"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Valuation & Reason Card -->
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="calculator" class="w-4 h-4 text-purple-500"></i>
+              <h3 class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">3. Credit Computation &amp; Accounting</h3>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Reason Code *</label>
+                <select 
+                  name="reason_code" 
+                  id="ctrl-reason-code" 
+                  onchange="updatePreviewDoc()" 
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium"
+                >
+                  <option selected value="Price Adjustment / Volume Rebate">Price Adjustment / Volume Rebate</option>
+                  <option value="Damaged Goods Return Allowance">Damaged Goods Return Allowance</option>
+                  <option value="Special Commercial Concession">Special Commercial Concession</option>
+                  <option value="Billing Tariff Overcharge Correction">Billing Tariff Overcharge Correction</option>
+                  <option value="Early Settlement Incentive Discount">Early Settlement Incentive Discount</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Offset GL Account</label>
+                <select 
+                  name="gl_account_id" 
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium font-mono text-[11px]"
+                >
+                  {% for gl in gl_accounts %}
+                    <option value="{{ gl.id }}">{{ gl.account_number }} - {{ gl.account_name }}</option>
+                  {% else %}
+                    <option value="">4010900 - Sales Returns &amp; Allowances</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Taxable Subtotal ({{ active_company.currency_symbol }}) *</label>
+                <input 
+                  type="number" 
+                  name="subtotal_amount" 
+                  id="ctrl-subtotal" 
+                  value="50000" 
+                  step="0.01" 
+                  min="0" 
+                  required 
+                  oninput="recalcAmounts()" 
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-mono font-bold text-right"
+                >
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">VAT Rate %</label>
+                <select 
+                  name="vat_percentage" 
+                  id="ctrl-vat-pct" 
+                  onchange="recalcAmounts()" 
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium font-mono"
+                >
+                  <option value="0">0% (Zero-rated)</option>
+                  <option value="5">5% (Concessional)</option>
+                  <option value="7.5">7.5%</option>
+                  <option value="10">10%</option>
+                  <option value="15" selected>15% (Standard)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Gross Total ({{ active_company.currency_symbol }})</label>
+                <input 
+                  type="hidden" 
+                  name="vat_amount" 
+                  id="ctrl-vat-amt-hidden" 
+                  value="7500"
+                >
+                <input 
+                  type="number" 
+                  name="gross_credit_amount" 
+                  id="ctrl-gross-amt" 
+                  value="57500" 
+                  step="0.01" 
+                  readonly 
+                  class="mac-input w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold text-right"
+                >
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Particulars / Reason Description</label>
+              <textarea 
+                name="reason_description" 
+                id="ctrl-desc" 
+                rows="2" 
+                oninput="updatePreviewDoc()" 
+                class="mac-input w-full px-3 py-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-medium"
+              >Authorised post-delivery price concession and volume rebate under Q3 commercial campaign.</textarea>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-3">
+            <button 
+              type="submit" 
+              name="is_draft" 
+              value="1" 
+              class="h-9 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 text-xs font-semibold hover:scale-[1.02] active:scale-95"
+            >
+              <i data-lucide="file-clock" class="w-3.5 h-3.5"></i>
+              <span>Save as Draft</span>
+            </button>
+            <button 
+              type="submit" 
+              name="is_draft" 
+              value="0" 
+              class="h-9 px-4 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/30 shadow-sm shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold"
+            >
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Save &amp; Post Final</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Column: Live Printable & Maintainable A4 Sheet (7 Cols) -->
+    <div class="lg:col-span-7">
+      <div class="p-4 sm:p-6 rounded-2xl bg-slate-200/70 dark:bg-slate-950/80 border border-slate-300 dark:border-white/10 shadow-inner overflow-x-auto">
+        <div id="printable-a4-document" class="a4-preview-sheet text-slate-900 space-y-6 text-xs">
+
+          <!-- Corporate Letterhead -->
+          <div class="flex items-start justify-between border-b-2 border-slate-900 pb-4">
+            <div>
+              <div class="text-xl font-black tracking-tight text-slate-950">{{ active_company.name }}</div>
+              <div class="text-[11px] text-slate-600 font-medium">Head Office: Tejgaon Industrial Area, Dhaka-1208, Bangladesh</div>
+              <div class="text-[10px] text-slate-500 font-mono">VAT Reg BIN: 002194881-0101 | Corporate TIN: 4892-1082-9011</div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-black text-emerald-700 tracking-wider">CREDIT NOTE</div>
+              <div class="text-xs font-mono font-bold text-slate-800" id="doc-note-number"># {{ auto_note_number }}</div>
+              <div class="text-[10px] text-slate-500" id="doc-note-date">Date: 12 September 2026</div>
+            </div>
+          </div>
+
+          <!-- Customer Identification & Document Reference Grid -->
+          <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <div class="space-y-1">
+              <div class="text-[10px] font-bold text-slate-500 tracking-wide">Credited Customer:</div>
+              <div class="font-bold text-slate-950 text-sm" id="doc-customer-name">
+                {% if ar_customers %}{{ ar_customers[0].customer_name }}{% else %}01 No.Gazir Hat Up (Khulna)-HP{% endif %}
+              </div>
+              <div class="text-slate-600">Customer Code: <span class="font-mono font-bold text-slate-900" id="doc-customer-code">{% if ar_customers %}{{ ar_customers[0].customer_code }}{% else %}9759{% endif %}</span></div>
+              <div class="text-slate-600 truncate" id="doc-customer-address">Commercial District, Dhaka Division</div>
+              <div class="text-[11px] text-slate-500" id="doc-customer-contact">Attn: Accounts Manager | +880 1819-000000</div>
+            </div>
+
+            <div class="space-y-1.5 text-right border-l border-slate-200 pl-4">
+              <div class="text-[10px] font-bold text-slate-500 tracking-wide">Reference &amp; Audit:</div>
+              <div id="doc-ref-inv-block">
+                <span class="text-slate-500">Invoice Ref:</span> 
+                <strong class="font-mono text-blue-700" id="doc-ref-inv">INV-2026-00412</strong>
+              </div>
+              <div>
+                <span class="text-slate-500">Salesperson:</span> 
+                <strong id="doc-salesrep">Sunil Kumar Das</strong>
+              </div>
+              <div>
+                <span class="text-slate-500">Reason:</span> 
+                <strong class="text-emerald-700" id="doc-reason-code">Price Adjustment / Volume Rebate</strong>
+              </div>
+              <div>
+                <span class="text-slate-500">Currency:</span> 
+                <strong class="font-mono">{{ active_company.currency_symbol }} (BDT)</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charge Items Table -->
+          <div>
+            <table class="w-full text-left text-xs border border-slate-200 rounded-lg overflow-hidden">
+              <thead class="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="py-2.5 px-3 w-10 text-center">SL</th>
+                  <th class="py-2.5 px-3">Description of Credit Adjustment</th>
+                  <th class="py-2.5 px-3 text-right">Taxable Subtotal</th>
+                  <th class="py-2.5 px-3 text-center">VAT Rate</th>
+                  <th class="py-2.5 px-3 text-right">VAT Reversal</th>
+                  <th class="py-2.5 px-3 text-right font-bold">Total Credit</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 text-slate-800">
+                <tr>
+                  <td class="py-3 px-3 text-center font-mono">01</td>
+                  <td class="py-3 px-3">
+                    <div class="font-semibold text-slate-900" id="doc-table-reason">Price Adjustment / Volume Rebate</div>
+                    <div class="text-[11px] text-slate-600 mt-0.5" id="doc-table-desc">Authorised post-delivery price concession and volume rebate under Q3 commercial campaign.</div>
+                  </td>
+                  <td class="py-3 px-3 text-right font-mono font-medium" id="doc-table-subtotal">৳50,000.00</td>
+                  <td class="py-3 px-3 text-center font-mono text-slate-600" id="doc-table-vat-pct">15%</td>
+                  <td class="py-3 px-3 text-right font-mono" id="doc-table-vat-amt">৳7,500.00</td>
+                  <td class="py-3 px-3 text-right font-mono font-bold text-slate-950" id="doc-table-gross">৳57,500.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Totals Calculation & Amount in Words -->
+          <div class="grid grid-cols-2 gap-6 items-end pt-2">
+            <div class="space-y-1">
+              <div class="text-[10px] font-bold text-slate-500 tracking-wide">Amount in Words:</div>
+              <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-800 italic" id="doc-words">
+                Fifty-Seven Thousand Five Hundred Taka Only.
+              </div>
+              <div class="text-[9px] text-slate-400 mt-1">This is a system authenticated electronic commercial credit note under Rule 64 of NBR VAT Act.</div>
+            </div>
+
+            <div class="space-y-1.5 font-mono text-xs text-right">
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500 font-sans">Net Subtotal:</span>
+                <span class="font-bold" id="doc-total-subtotal">৳50,000.00</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-100">
+                <span class="text-slate-500 font-sans">Output VAT Reversal:</span>
+                <span class="font-bold text-slate-700" id="doc-total-vat">৳7,500.00</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b-2 border-t-2 border-slate-900 text-sm font-black text-emerald-700">
+                <span class="font-sans">Total Credited Amount:</span>
+                <span id="doc-total-gross">৳57,500.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4-Tier Signatory Block -->
+          <div class="pt-10 grid grid-cols-4 gap-4 text-center text-[10px] text-slate-600">
+            <div>
+              <div class="border-t border-slate-400 pt-2 font-semibold">Prepared By</div>
+              <div class="text-[9px] text-slate-400">Accounts Officer</div>
+            </div>
+            <div>
+              <div class="border-t border-slate-400 pt-2 font-semibold">Verified By</div>
+              <div class="text-[9px] text-slate-400">Internal Audit</div>
+            </div>
+            <div>
+              <div class="border-t border-slate-400 pt-2 font-semibold text-slate-900">Commercial Authority</div>
+              <div class="text-[9px] text-slate-400">Director of Sales</div>
+            </div>
+            <div>
+              <div class="border-t border-slate-400 pt-2 font-semibold">Customer Receiver</div>
+              <div class="text-[9px] text-slate-400">Seal &amp; Signature</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recent Credit Notes Archive Ledger Table -->
+  <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4 no-print">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-100 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="archive" class="w-3.5 h-3.5 text-emerald-500"></i>
+        <span>Recent Credit Notes Archive: {{ active_company.name }}</span>
+      </h3>
+      <span class="text-[11px] font-mono text-slate-400">{{ credit_notes|length }} Document Records</span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs">
+        <thead>
+          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3">Credit Note #</th>
+            <th class="py-2.5 px-3">Date</th>
+            <th class="py-2.5 px-3">Type</th>
+            <th class="py-2.5 px-3">Customer Account</th>
+            <th class="py-2.5 px-3">Invoice Ref #</th>
+            <th class="py-2.5 px-3 text-right">Subtotal</th>
+            <th class="py-2.5 px-3 text-right">VAT</th>
+            <th class="py-2.5 px-3 text-right font-bold">Gross Total</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+          {% for cn in credit_notes %}
+            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ cn.note_number }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-500">{{ cn.note_date }}</td>
+              <td class="py-2.5 px-3 font-semibold">{{ cn.credit_note_type|default(cn.note_type) }}</td>
+              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ cn.customer_code }} - {{ cn.customer_name }}</td>
+              <td class="py-2.5 px-3 font-mono text-blue-600 dark:text-blue-400">{{ cn.invoice_ref_number|default('DIRECT') }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">{{ cn.subtotal_amount|default(cn.note_amount)|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono text-slate-400">{{ cn.vat_amount|default(cn.tax_amount)|money }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ cn.gross_credit_amount|default(cn.total_amount)|money }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60">
+                  {{ cn.status }}
+                </span>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="9" class="py-6 text-center text-slate-400">No credit notes found in record.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function formatMoney(amount) {
+    return '৳' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function onFlowChange(type) {
+    const invWrap = document.getElementById('field-inv-ref-wrap');
+    const docRefBlock = document.getElementById('doc-ref-inv-block');
+    if (type === 'DIRECT') {
+      if (invWrap) invWrap.style.display = 'none';
+      if (docRefBlock) docRefBlock.innerHTML = '<span class="text-slate-500">Flow:</span> <strong class="text-emerald-700">Direct Adjustment (No Ref)</strong>';
+    } else {
+      if (invWrap) invWrap.style.display = '';
+      const invNo = document.getElementById('ctrl-inv-ref')?.value || 'INV-2026-00412';
+      if (docRefBlock) docRefBlock.innerHTML = '<span class="text-slate-500">Invoice Ref:</span> <strong class="font-mono text-blue-700" id="doc-ref-inv">' + invNo + '</strong>';
+    }
+  }
+
+  function onCustomerSelectChange(selectEl) {
+    const selectedOpt = selectEl.options[selectEl.selectedIndex];
+    if (!selectedOpt) return;
+
+    const name = selectedOpt.getAttribute('data-name') || selectedOpt.textContent.trim();
+    const code = selectedOpt.getAttribute('data-code') || '';
+    const address = selectedOpt.getAttribute('data-address') || '';
+    const contact = selectedOpt.getAttribute('data-contact') || '';
+    const phone = selectedOpt.getAttribute('data-phone') || '';
+
+    const nameEl = document.getElementById('doc-customer-name');
+    const codeEl = document.getElementById('doc-customer-code');
+    const addrEl = document.getElementById('doc-customer-address');
+    const contactEl = document.getElementById('doc-customer-contact');
+
+    if (nameEl) nameEl.textContent = name;
+    if (codeEl) codeEl.textContent = code;
+    if (addrEl) addrEl.textContent = address;
+    if (contactEl) contactEl.textContent = `Attn: ${contact} | ${phone}`;
+  }
+
+  function recalcAmounts() {
+    const subtotal = parseFloat(document.getElementById('ctrl-subtotal')?.value) || 0;
+    const vatPct = parseFloat(document.getElementById('ctrl-vat-pct')?.value) || 0;
+    const vatAmt = subtotal * (vatPct / 100);
+    const gross = subtotal + vatAmt;
+
+    const vatHidden = document.getElementById('ctrl-vat-amt-hidden');
+    const grossInp = document.getElementById('ctrl-gross-amt');
+    if (vatHidden) vatHidden.value = vatAmt.toFixed(2);
+    if (grossInp) grossInp.value = gross.toFixed(2);
+
+    // Update A4 Sheet
+    const subtotalEl = document.getElementById('doc-table-subtotal');
+    const vatPctEl = document.getElementById('doc-table-vat-pct');
+    const vatAmtEl = document.getElementById('doc-table-vat-amt');
+    const grossEl = document.getElementById('doc-table-gross');
+    const totalSubtotalEl = document.getElementById('doc-total-subtotal');
+    const totalVatEl = document.getElementById('doc-total-vat');
+    const totalGrossEl = document.getElementById('doc-total-gross');
+
+    if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
+    if (vatPctEl) vatPctEl.textContent = vatPct + '%';
+    if (vatAmtEl) vatAmtEl.textContent = formatMoney(vatAmt);
+    if (grossEl) grossEl.textContent = formatMoney(gross);
+    if (totalSubtotalEl) totalSubtotalEl.textContent = formatMoney(subtotal);
+    if (totalVatEl) totalVatEl.textContent = formatMoney(vatAmt);
+    if (totalGrossEl) totalGrossEl.textContent = formatMoney(gross);
+
+    updateAmountInWords(gross);
+  }
+
+  function updateAmountInWords(amount) {
+    const wordsEl = document.getElementById('doc-words');
+    if (!wordsEl) return;
+    wordsEl.textContent = formatMoney(amount) + ' Taka Only (Authorized by Commercial Division).';
+  }
+
+  function updatePreviewDoc() {
+    const noteNum = document.getElementById('ctrl-note-num')?.value || '';
+    const noteDate = document.getElementById('ctrl-note-date')?.value || '';
+    const salesrep = document.getElementById('ctrl-salesrep')?.value || '';
+    const invRef = document.getElementById('ctrl-inv-ref')?.value || '';
+    const reasonCode = document.getElementById('ctrl-reason-code')?.value || '';
+    const desc = document.getElementById('ctrl-desc')?.value || '';
+
+    const docNoteNum = document.getElementById('doc-note-number');
+    const docNoteDate = document.getElementById('doc-note-date');
+    const docSalesrep = document.getElementById('doc-salesrep');
+    const docReasonCode = document.getElementById('doc-reason-code');
+    const docTableReason = document.getElementById('doc-table-reason');
+    const docTableDesc = document.getElementById('doc-table-desc');
+    const docRefInv = document.getElementById('doc-ref-inv');
+
+    if (docNoteNum) docNoteNum.textContent = '# ' + noteNum;
+    if (docNoteDate) docNoteDate.textContent = 'Date: ' + noteDate;
+    if (docSalesrep) docSalesrep.textContent = salesrep;
+    if (docReasonCode) docReasonCode.textContent = reasonCode;
+    if (docTableReason) docTableReason.textContent = reasonCode;
+    if (docTableDesc) docTableDesc.textContent = desc;
+    if (docRefInv) docRefInv.textContent = invRef;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    recalcAmounts();
+    const custSelect = document.getElementById('ctrl-customer-select');
+    if (custSelect) onCustomerSelectChange(custSelect);
+  });
+</script>
+{% endblock %}

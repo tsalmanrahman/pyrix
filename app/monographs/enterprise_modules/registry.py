@@ -89,12 +89,13 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
                 "subtitle": "Balance Sheet, Income Statement, Trial Balance & Cost Centre P&L",
                 "icon": "file-pie-chart",
                 "theme_color": "rose",
-                "count_label": "5 Sub-Areas",
+                "count_label": "6 Sub-Areas",
                 "cards": [
                     {"title": "Financial Statements", "subtitle": "Balance Sheet & Income Statement (P&L)", "badge": "P&L / BS", "url": "/modules/general-ledger?tab=financial-statements", "icon": "file-text", "color": "rose"},
-                    {"title": "Trial Balance", "subtitle": "Opening, Period Movement & Closing TB", "badge": "100% Balanced", "url": "/modules/general-ledger?tab=trial-balance", "icon": "scale", "color": "indigo"},
+                    {"title": "Trial Balance", "subtitle": "Opening, Period Movement & Closing TB", "badge": "Balanced", "url": "/modules/general-ledger?tab=trial-balance", "icon": "scale", "color": "indigo"},
                     {"title": "Transaction Details", "subtitle": "Itemized audit register by cost centre", "badge": "Register", "url": "/modules/general-ledger?tab=gl-transaction-details", "icon": "list-filter", "color": "purple"},
-                    {"title": "Cost-Centre P&L", "subtitle": "Segmented revenue & direct margins", "badge": "Margins", "url": "/modules/general-ledger?tab=cost-centre-pnl", "icon": "layers", "color": "emerald"},
+                    {"title": "Sub-Account Balances", "subtitle": "Controlling accounts & sub-ledger profiles", "badge": "Profiles", "url": "/modules/general-ledger?tab=sub-account-balances", "icon": "layers", "color": "blue"},
+                    {"title": "Cost-Centre P&L", "subtitle": "Segmented revenue & direct margins", "badge": "Margins", "url": "/modules/general-ledger?tab=cost-centre-pnl", "icon": "pie-chart", "color": "emerald"},
                     {"title": "Notes to Accounts", "subtitle": "Statutory disclosures & policy notes", "badge": "IFRS", "url": "/modules/general-ledger?tab=notes-to-accounts", "icon": "file-code-2", "color": "amber"},
                 ]
             }
@@ -179,6 +180,79 @@ def get_module_suites_registry(slug: str, context_counts: Optional[Dict[str, Any
                     {"title": "Notes Summary & Reprints", "subtitle": "Debit & Credit notes summary & document reprint", "badge": "Reprint", "url": "/modules/accounts-receivable?tab=notes-summary", "icon": "file-spread", "color": "teal"},
                 ]
             }
+        ]
+
+    # ACCOUNTS PAYABLE & SOURCING
+    if slug == "accounts-payable":
+        return [
+            {
+                "suite_id": 1,
+                "title": "Master Setup Suite",
+                "subtitle": "Vendor Directory, Multi-Company Mapping, Payment Terms & GL Control Sets",
+                "icon": "settings-2",
+                "theme_color": "blue",
+                "count_label": "4 Sub-Areas",
+                "cards": [
+                    {"title": "Vendor Directory", "subtitle": "Sourcing vendors & profile details", "badge": str(counts.get("ap_vendor_count", 0)), "url": "/modules/accounts-payable?tab=vendors", "icon": "users", "color": "blue"},
+                    {"title": "Vendor-Company Mapping", "subtitle": "Multi-entity ledger allocation rules", "badge": str(counts.get("ap_mapping_count", 0)), "url": "/modules/accounts-payable?tab=vendor-mapping", "icon": "network", "color": "indigo"},
+                    {"title": "Payment Terms", "subtitle": "Credit days, discount terms & aging brackets", "badge": str(counts.get("ap_payment_terms_count", 0)), "url": "/modules/accounts-payable?tab=payment-terms", "icon": "clock-3", "color": "emerald"},
+                    {"title": "AP GL Control Sets", "subtitle": "Payables, advance & VAT control accounts", "badge": str(counts.get("ap_control_sets_count", 0)), "url": "/modules/accounts-payable?tab=control-accounts", "icon": "scale", "color": "purple"},
+                ]
+            },
+            {
+                "suite_id": 2,
+                "title": "Transaction Processing & Invoicing Suite",
+                "subtitle": "Purchase Bills, Landowner Contracts, Prepayment Settlements & Notes",
+                "icon": "arrow-left-right",
+                "theme_color": "emerald",
+                "count_label": "5 Operations",
+                "cards": [
+                    {"title": "Purchase Bills Entry", "subtitle": "GRN-matched & direct service vendor invoices", "badge": str(counts.get("ap_purchase_bills_count", 0)), "url": "/modules/accounts-payable?tab=invoices", "icon": "receipt", "color": "emerald"},
+                    {"title": "Landowner Payment Bills", "subtitle": "Property milestone schedule generation", "badge": str(counts.get("ap_landowner_bills_count", 0)), "url": "/modules/accounts-payable?tab=landowner-bills", "icon": "landmark", "color": "blue"},
+                    {"title": "Advance Adjustments", "subtitle": "Knock off prepayments against open bills", "badge": str(counts.get("ap_advances_count", 0)), "url": "/modules/accounts-payable?tab=advance-adjustments", "icon": "layers-2", "color": "teal"},
+                    {"title": "AP Debit Notes", "subtitle": "Debit notes with/without invoice reference", "badge": str(counts.get("ap_debit_notes_count", 0)), "url": "/modules/accounts-payable?tab=debit-notes", "icon": "file-minus-2", "color": "rose"},
+                    {"title": "AP Credit Notes", "subtitle": "Post-bill adjustments & vendor credit notes", "badge": str(counts.get("ap_credit_notes_count", 0)), "url": "/modules/accounts-payable?tab=credit-notes", "icon": "file-plus-2", "color": "amber"},
+                ]
+            },
+            {
+                "suite_id": 3,
+                "title": "Disbursements, Remittance & Treasury Suite",
+                "subtitle": "Payment Orders, Bank/Cash Disbursements, Auto-AIT Remittance & Reversals",
+                "icon": "check-check",
+                "theme_color": "purple",
+                "count_label": "4 Operations",
+                "cards": [
+                    {"title": "Payment Orders", "subtitle": "Treasury batch allocation & payment approvals", "badge": str(counts.get("ap_payment_orders_count", 0)), "url": "/modules/accounts-payable?tab=payment-orders", "icon": "clipboard-check", "color": "purple"},
+                    {"title": "Vendor Disbursements", "subtitle": "Multi-mode disbursements with auto-calculated AIT", "badge": str(counts.get("ap_vendor_payments_count", 0)), "url": "/modules/accounts-payable?tab=payments", "icon": "wallet", "color": "indigo"},
+                    {"title": "AIT Remittance to Authority", "subtitle": "Withheld tax remittance challans to NBR", "badge": str(counts.get("ap_ait_remittances_count", 0)), "url": "/modules/accounts-payable?tab=ait-remittance", "icon": "building", "color": "cyan"},
+                    {"title": "Reverse Transactions", "subtitle": "Complete reversal of bills & disbursements", "badge": "Audit", "url": "/modules/accounts-payable?tab=reversals", "icon": "rotate-ccw", "color": "rose"},
+                ]
+            },
+            {
+                "suite_id": 4,
+                "title": "Document Vault, Audit & Reconciliation Suite",
+                "subtitle": "GRN Verification Documents & Treasury Proof of Payment Audit Evidence",
+                "icon": "bar-chart-2",
+                "theme_color": "amber",
+                "count_label": "2 Vaults",
+                "cards": [
+                    {"title": "GRN Verification Vault", "subtitle": "Warehouse inspection docs & bill matching", "badge": str(counts.get("ap_grn_docs_count", 0)), "url": "/modules/accounts-payable?tab=grn-verification", "icon": "folder-lock", "color": "amber"},
+                    {"title": "Proof of Payment Vault", "subtitle": "Bank remittance advices, cheques & e-filing proofs", "badge": str(counts.get("ap_payment_docs_count", 0)), "url": "/modules/accounts-payable?tab=payment-proofs", "icon": "file-check-2", "color": "blue"},
+                ]
+            },
+            {
+                "suite_id": 5,
+                "title": "Financial Reporting, Tax & Statements Suite",
+                "subtitle": "AP Movement Schedules, Vendor Account Statements & Tax 1099 Forms",
+                "icon": "file-pie-chart",
+                "theme_color": "rose",
+                "count_label": "3 Reports",
+                "cards": [
+                    {"title": "AP Movement Schedule", "subtitle": "Opening, billed, paid & outstanding liabilities", "badge": "Schedule", "url": "/modules/accounts-payable?tab=ap-schedule", "icon": "calendar-range", "color": "rose"},
+                    {"title": "Vendor Ledger Statement", "subtitle": "Itemized transactional history & running balance", "badge": "Statement", "url": "/modules/accounts-payable?tab=vendor-statement", "icon": "file-text", "color": "indigo"},
+                    {"title": "Tax 1099 / AIT Certificates", "subtitle": "Annual vendor tax deduction certificates", "badge": "Statutory", "url": "/modules/accounts-payable?tab=tax-1099", "icon": "file-spreadsheet", "color": "emerald"},
+                ]
+            },
         ]
 
     # 3. CASH BOOK

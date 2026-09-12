@@ -917,271 +917,1565 @@
 {% endif %}
 
 <!-- =========================================================================
-     5. FINANCIAL STATEMENTS & REPORTING VIEWS
+     6. FINANCIAL REPORTING & STATEMENTS SUITE (6 MODERN PARAMETER-DRIVEN STUDIOS)
+     Formal Maintainable A4 PDF & Printable Document Copies with Letterhead
      ========================================================================= -->
 
-<!-- TAB: Financial Statements (financial-statements) -->
+<style>
+  .doc-viewport {
+    background: #334155;
+    padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: auto;
+    min-height: 750px;
+  }
+  .dark .doc-viewport {
+    background: #090d16;
+  }
+  .a4-document-sheet {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+    box-sizing: border-box;
+    position: relative;
+    transition: transform 0.2s ease, width 0.3s ease;
+    transform-origin: top center;
+  }
+  .a4-portrait-sheet {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 16mm 18mm;
+    margin: 0 auto;
+  }
+  .a4-landscape-sheet {
+    width: 297mm;
+    min-height: 210mm;
+    padding: 14mm 18mm;
+    margin: 0 auto;
+  }
+  .accounting-double-total {
+    border-top: 1px solid #0f172a;
+    border-bottom: 3px double #0f172a;
+  }
+  .accounting-single-total {
+    border-top: 1px solid #0f172a;
+    border-bottom: 1px solid #0f172a;
+  }
+  .sheet-watermark-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .sheet-watermark-overlay span {
+    font-size: 5rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: rgba(148, 163, 184, 0.07);
+    transform: rotate(-32deg);
+    user-select: none;
+    white-space: nowrap;
+  }
+  @media print {
+    body { background: transparent !important; padding: 0 !important; margin: 0 !important; }
+    .no-print, header, aside, .sidebar-container { display: none !important; }
+    .doc-viewport { background: transparent !important; padding: 0 !important; min-height: auto !important; }
+    .a4-document-sheet { box-shadow: none !important; border: none !important; width: 100% !important; min-height: auto !important; padding: 0 !important; margin: 0 !important; transform: none !important; }
+  }
+</style>
+
+<!-- TAB 1: Financial Statements (Balance Sheet & Income Statement) -->
 {% if module.route_slug == 'general-ledger' and current_tab == 'financial-statements' %}
-  <div class="space-y-6">
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center"><i data-lucide="file-text" class="w-5 h-5"></i></div>
+<div class="space-y-6">
+
+  <!-- Main Solid Page: Financial Statements Searching Parameters Studio -->
+  <form method="GET" action="/modules/general-ledger/reports/view-document" target="_blank" class="glass-card rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-white/10 shadow-sm space-y-6 no-print">
+    <input type="hidden" name="report_name" value="fin_stmt">
+
+    <!-- Studio Header -->
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 flex-wrap gap-3">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Financial Statements Searching Parameters</h2>
+          <span class="text-xs px-2.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-semibold border border-blue-500/20">
+            Balance Sheet &amp; Income Statement (P&amp;L)
+          </span>
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 pl-11">
+          Configure reporting period, valuation basis, comparative format, and segment criteria. The resulting official A4 document pops up on another page in PDF.
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 font-mono">
+          Output: Standalone A4 PDF Document Studio
+        </span>
+      </div>
+    </div>
+
+    <!-- Group 1: Report Period (FY, Period 1-12, Month Name Sync) -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-500"></i>
+          <span>Report Period</span>
+        </span>
+        <span class="text-[11px] text-slate-500 font-mono">Fiscal Calendar</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
         <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Financial Statements (Balance Sheet & Income Statement)</h2>
-          
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Financial Year</label>
+          <select name="fy" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="2026-2027" selected>2026-2027 (Current Fiscal Year)</option>
+            <option value="2025-2026">2025-2026 (Audited Prior Year)</option>
+            <option value="2024-2025">2024-2025 (Historical)</option>
+          </select>
         </div>
-      </div>
-      <button onclick="window.print()" class="mac-btn-primary px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
-        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-        <span>Print Statements</span>
-      </button>
-    </div>
-
-    <!-- 2-Column Statements Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Income Statement -->
-      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
-        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight pb-2 border-b border-slate-100 dark:border-white/5">Statement of Profit & Loss</h3>
-        <div class="space-y-2 text-xs">
-          <div class="font-bold text-slate-700 dark:text-slate-300">Operating Revenues</div>
-          {% for r in gl_financial_statements.income_statement.revenues %}
-            <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
-              <span>{{ r.account_name }}</span>
-              <span class="font-mono">{{ r.balance|money }}</span>
-            </div>
-          {% endfor %}
-          <div class="flex items-center justify-between py-1.5 font-bold border-t border-slate-100 dark:border-white/5 text-slate-900 dark:text-white">
-            <span>Total Revenue</span>
-            <span class="font-mono text-emerald-600">{{ gl_financial_statements.income_statement.total_revenue|default(0.0)|money }}</span>
-          </div>
-
-          <div class="font-bold text-slate-700 dark:text-slate-300 pt-3">Operating Expenses</div>
-          {% for e in gl_financial_statements.income_statement.expenses %}
-            <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
-              <span>{{ e.account_name }}</span>
-              <span class="font-mono">{{ e.balance|money }}</span>
-            </div>
-          {% endfor %}
-          <div class="flex items-center justify-between py-1.5 font-bold border-t border-slate-100 dark:border-white/5 text-slate-900 dark:text-white">
-            <span>Total Expenses</span>
-            <span class="font-mono text-rose-600">{{ gl_financial_statements.income_statement.total_expense|default(0.0)|money }}</span>
-          </div>
-
-          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 font-bold text-emerald-700 dark:text-emerald-300 text-sm mt-3">
-            <span>Net Operating Profit</span>
-            <span class="font-mono">{{ gl_financial_statements.income_statement.net_profit|default(0.0)|money }}</span>
-          </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Period Number</label>
+          <select name="period" id="fs-solid-period-select" onchange="syncFsSolidMonth(this.value)" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="1" selected>Period 1</option>
+            <option value="2">Period 2</option>
+            <option value="3">Period 3</option>
+            <option value="4">Period 4</option>
+            <option value="5">Period 5</option>
+            <option value="6">Period 6</option>
+            <option value="7">Period 7</option>
+            <option value="8">Period 8</option>
+            <option value="9">Period 9</option>
+            <option value="10">Period 10</option>
+            <option value="11">Period 11</option>
+            <option value="12">Period 12</option>
+          </select>
         </div>
-      </div>
-
-      <!-- Balance Sheet -->
-      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
-        <h3 class="text-sm font-bold text-slate-900 dark:text-white tracking-tight pb-2 border-b border-slate-100 dark:border-white/5">Balance Sheet (Statement of Financial Position)</h3>
-        <div class="space-y-2 text-xs">
-          <div class="font-bold text-slate-700 dark:text-slate-300">Total Assets</div>
-          <div class="flex items-center justify-between py-1.5 font-bold text-slate-900 dark:text-white">
-            <span>Current & Fixed Assets</span>
-            <span class="font-mono text-blue-600">{{ gl_financial_statements.balance_sheet.total_assets|default(0.0)|money }}</span>
-          </div>
-
-          <div class="font-bold text-slate-700 dark:text-slate-300 pt-3">Liabilities & Equity</div>
-          <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
-            <span>Total Liabilities</span>
-            <span class="font-mono">{{ gl_financial_statements.balance_sheet.total_liabilities|default(0.0)|money }}</span>
-          </div>
-          <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
-            <span>Share Capital & Reserves</span>
-            <span class="font-mono">{{ gl_financial_statements.balance_sheet.total_equity|default(0.0)|money }}</span>
-          </div>
-          <div class="flex items-center justify-between py-1 text-slate-600 dark:text-slate-400">
-            <span>Net Profit for Period</span>
-            <span class="font-mono">{{ gl_financial_statements.balance_sheet.net_profit_transferred|default(0.0)|money }}</span>
-          </div>
-          <div class="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 font-bold text-blue-700 dark:text-blue-300 text-sm mt-3">
-            <span>Total Liabilities & Equity</span>
-            <span class="font-mono">{{ gl_financial_statements.balance_sheet.total_liabilities_and_equity|default(0.0)|money }}</span>
-          </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Month Name (Auto-Synced)</label>
+          <input type="text" id="fs-solid-month-input" name="month_name" value="July" readonly class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold text-blue-600 dark:text-blue-400 bg-slate-100 dark:bg-slate-900/60 text-center">
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Group 2: Valuation Mode & Report Variant -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <span class="text-xs font-bold text-slate-900 dark:text-white block">Valuation Mode &amp; Variant</span>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Valuation Basis</label>
+            <select name="valuation_mode" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+              <option value="actual" selected>Actual Ledger Balances</option>
+              <option value="budget">Budgeted Targets</option>
+              <option value="variance">Actual vs. Budget Variance</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Report Variant</label>
+            <select name="report_variant" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+              <option value="bs_cytd_lytd" selected>Balance Sheet CYTD Vs LYTD</option>
+              <option value="pnl_standard">Statement of Profit and Loss (P&amp;L)</option>
+              <option value="cash_flow">Statement of Cash Flows (IAS 7)</option>
+              <option value="comprehensive_suite">Comprehensive Financial Suite (BS + P&amp;L + Notes)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">Budget Set</label>
+            <select name="budget_set" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+              <option value="budget_set_1" selected>Budget Set 1 (Approved Corporate Plan)</option>
+              <option value="budget_set_2">Budget Set 2 (Mid-Year Revised Forecast)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 3: Segment Criteria & Display Options -->
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <span class="text-xs font-bold text-slate-900 dark:text-white block">Segment Selection &amp; Criteria</span>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Segment Selection Criteria</label>
+            <div class="flex items-center gap-6">
+              <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
+                <input type="radio" name="segment_mode" value="all" checked class="accent-blue-600">
+                <span>All Segment Codes</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
+                <input type="radio" name="segment_mode" value="selected" class="accent-blue-600">
+                <span>Selected Segment Codes only</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-200/60 dark:border-white/5 space-y-2.5">
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
+              <input type="checkbox" name="standard_format" value="true" checked class="accent-blue-600 rounded">
+              <span>Standard Format (Comparative Prior Period Columns)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
+              <input type="checkbox" name="include_notes" value="true" checked class="accent-blue-600 rounded">
+              <span>Include Notes to the Financial Statements (Note 4, 7, 15)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
+              <input type="checkbox" name="exclude_zero" value="true" checked class="accent-blue-600 rounded">
+              <span>Exclude Zero Balances</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
+              <input type="checkbox" name="main_level_only" value="true" class="accent-blue-600 rounded">
+              <span>Main Level Accounts Only</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group 4: Destination & Action Bar -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center justify-between flex-wrap gap-4 text-xs">
+      <div class="space-y-1">
+        <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">Output Destination</label>
+        <div class="flex items-center gap-6 flex-wrap">
+          <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
+            <input type="radio" name="destination" value="file" checked class="accent-blue-600">
+            <span>View on another page in PDF &amp; Document Studio (PDF, XLS, Print)</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
+            <input type="radio" name="destination" value="printer" class="accent-blue-600">
+            <span>Direct Office Printer</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="reset" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition cursor-pointer">
+          Reset Parameters
+        </button>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-blue-500/20 transition flex items-center gap-2 hover:scale-[1.02] active:scale-95 cursor-pointer">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          <span>Process &amp; View on Another Page in PDF</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Modern Printable Document & PDF Studio View -->
+  <div class="space-y-3">
+    <!-- Toolbar -->
+    <div class="glass-card rounded-2xl px-5 py-3 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3 no-print">
+      <div class="flex items-center gap-3">
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Printable Document View (A4 Portrait Sheet)</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 font-mono">Page 1 of 2</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/modules/general-ledger/reports/view-document?report_name=fin_stmt" target="_blank" class="px-3 py-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer" title="Open in standalone PDF Document Studio page">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Popup PDF Studio</span>
+        </a>
+        <button type="button" onclick="exportTableToCSV('fs-printable-table', 'Financial_Statements.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+        <button type="button" onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Official Copy</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- The A4 Sheet -->
+    <div class="doc-viewport rounded-2xl border border-slate-200 dark:border-white/10">
+      <div class="a4-document-sheet a4-portrait-sheet relative">
+        <div class="sheet-watermark-overlay"><span>Official Document</span></div>
+        <div class="relative z-10 space-y-6">
+
+          <!-- Corporate Letterhead -->
+          <div class="border-b-2 border-slate-900 pb-4 flex items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs font-mono">PX</div>
+                <span class="text-base font-extrabold tracking-tight text-slate-900">{{ active_company.name }}</span>
+              </div>
+              <div class="text-[11px] text-slate-600 mt-1 space-y-0.5">
+                <div>Corporate Headquarters: Gulshan-2 Commercial Area, Dhaka-1212, Bangladesh</div>
+                <div class="font-mono">TIN: 4892-1082-9011 &bull; VAT Registration: BIN-002194881-0101</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2.5 py-1 rounded bg-slate-100 border border-slate-300 text-[10px] font-bold font-mono text-slate-800">
+                Form FS-01 &bull; Statutory
+              </span>
+              <div class="text-[10px] text-slate-500 font-mono mt-1">Currency: {{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</div>
+            </div>
+          </div>
+
+          <!-- Title Section -->
+          <div class="text-center space-y-1">
+            <h2 class="text-base font-bold tracking-wide text-slate-900 font-serif">Statement of Financial Position and Comprehensive Income</h2>
+            <div class="text-xs font-medium text-slate-700">For the Nine-Month Fiscal Period Ended 31 March 2027</div>
+            <div class="text-[10px] text-slate-500 font-mono">Reporting Standard: IFRS / IAS &bull; Audited Record to Maintain</div>
+          </div>
+
+          <!-- Statements Tables -->
+          <div class="space-y-4 text-xs" id="fs-printable-table">
+            <!-- Part 1: Balance Sheet -->
+            <div>
+              <div class="bg-slate-100 font-bold text-slate-900 px-2 py-1 text-xs border-y border-slate-300">
+                Part 1: Statement of Financial Position (Balance Sheet)
+              </div>
+              <table class="w-full text-left mt-1 border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-300 text-[11px] text-slate-600 font-bold">
+                    <th class="py-1.5 px-2">Account Description</th>
+                    <th class="py-1.5 px-2 w-16 text-center">Note</th>
+                    <th class="py-1.5 px-2 w-32 text-right">31-Mar-2027 ({{ active_company.currency_symbol|default('৳') }})</th>
+                    <th class="py-1.5 px-2 w-32 text-right">30-Jun-2026 ({{ active_company.currency_symbol|default('৳') }})</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="4" class="py-1 px-2 text-[11px]">Non-Current Assets</td></tr>
+                  {% for item in gl_financial_statements.balance_sheet.non_current_assets %}
+                  <tr>
+                    <td class="py-1 px-4">{{ item.account_name }}</td>
+                    <td class="py-1 px-2 text-center font-mono text-[11px] text-blue-600">{{ item.note }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{{ item.current_bal|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono text-slate-600">{{ item.prior_bal|money }}</td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="font-bold">
+                    <td class="py-1 px-2">Total Non-Current Assets</td>
+                    <td></td>
+                    <td class="py-1 px-2 text-right font-mono accounting-single-total">{{ gl_financial_statements.balance_sheet.total_non_current_assets|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono accounting-single-total text-slate-600">20,000,000.00</td>
+                  </tr>
+
+                  <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="4" class="py-1 px-2 text-[11px]">Current Assets</td></tr>
+                  {% for item in gl_financial_statements.balance_sheet.current_assets %}
+                  <tr>
+                    <td class="py-1 px-4">{{ item.account_name }}</td>
+                    <td class="py-1 px-2 text-center font-mono text-[11px] text-blue-600">{{ item.note }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{{ item.current_bal|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono text-slate-600">{{ item.prior_bal|money }}</td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="font-bold">
+                    <td class="py-1 px-2">Total Current Assets</td>
+                    <td></td>
+                    <td class="py-1 px-2 text-right font-mono accounting-single-total">{{ gl_financial_statements.balance_sheet.total_current_assets|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono accounting-single-total text-slate-600">22,480,000.00</td>
+                  </tr>
+
+                  <tr class="font-extrabold text-slate-900 bg-slate-50">
+                    <td class="py-1.5 px-2">Total Assets</td>
+                    <td></td>
+                    <td class="py-1.5 px-2 text-right font-mono accounting-double-total">{{ gl_financial_statements.balance_sheet.total_assets|money }}</td>
+                    <td class="py-1.5 px-2 text-right font-mono accounting-double-total">{{ gl_financial_statements.balance_sheet.total_assets_prior|money }}</td>
+                  </tr>
+
+                  <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="4" class="py-1 px-2 text-[11px]">Equity and Liabilities</td></tr>
+                  {% for item in gl_financial_statements.balance_sheet.equity %}
+                  <tr>
+                    <td class="py-1 px-4">{{ item.account_name }}</td>
+                    <td class="py-1 px-2 text-center font-mono text-[11px] text-blue-600">{{ item.note }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{{ item.current_bal|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono text-slate-600">{{ item.prior_bal|money }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% for item in gl_financial_statements.balance_sheet.current_liabilities %}
+                  <tr>
+                    <td class="py-1 px-4">{{ item.account_name }}</td>
+                    <td class="py-1 px-2 text-center font-mono text-[11px] text-blue-600">{{ item.note }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{{ item.current_bal|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono text-slate-600">{{ item.prior_bal|money }}</td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="font-extrabold text-slate-900 bg-slate-50">
+                    <td class="py-1.5 px-2">Total Equity and Liabilities</td>
+                    <td></td>
+                    <td class="py-1.5 px-2 text-right font-mono accounting-double-total">{{ gl_financial_statements.balance_sheet.total_liabilities_and_equity|money }}</td>
+                    <td class="py-1.5 px-2 text-right font-mono accounting-double-total">{{ gl_financial_statements.balance_sheet.total_liabilities_and_equity_prior|money }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Part 2: Profit & Loss -->
+            <div class="pt-2">
+              <div class="bg-slate-100 font-bold text-slate-900 px-2 py-1 text-xs border-y border-slate-300">
+                Part 2: Statement of Profit or Loss (Operating Performance)
+              </div>
+              <table class="w-full text-left mt-1 border-collapse">
+                <tbody class="divide-y divide-slate-200">
+                  {% for rev in gl_financial_statements.income_statement.revenues %}
+                  <tr>
+                    <td class="py-1 px-4">{{ rev.account_name }}</td>
+                    <td class="py-1 px-2 w-16 text-center font-mono text-[11px] text-blue-600">{{ rev.note }}</td>
+                    <td class="py-1 px-2 w-32 text-right font-mono">{{ rev.current_bal|money }}</td>
+                    <td class="py-1 px-2 w-32 text-right font-mono text-slate-600">{{ rev.prior_bal|money }}</td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="font-bold">
+                    <td class="py-1 px-2">Total Operating Revenue</td>
+                    <td></td>
+                    <td class="py-1 px-2 text-right font-mono accounting-single-total text-emerald-600">{{ gl_financial_statements.income_statement.total_revenue|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono accounting-single-total text-slate-600">{{ gl_financial_statements.income_statement.total_revenue_prior|money }}</td>
+                  </tr>
+                  {% for exp in gl_financial_statements.income_statement.expenses %}
+                  <tr>
+                    <td class="py-1 px-4">{{ exp.account_name }}</td>
+                    <td class="py-1 px-2 text-center font-mono text-[11px] text-blue-600">{{ exp.note }}</td>
+                    <td class="py-1 px-2 text-right font-mono">({{ exp.current_bal|money }})</td>
+                    <td class="py-1 px-2 text-right font-mono text-slate-600">({{ exp.prior_bal|money }})</td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="font-extrabold text-slate-900 bg-slate-50">
+                    <td class="py-1.5 px-2">Net Operating Profit Before Tax</td>
+                    <td></td>
+                    <td class="py-1.5 px-2 text-right font-mono accounting-double-total text-blue-600">{{ gl_financial_statements.income_statement.net_profit|money }}</td>
+                    <td class="py-1.5 px-2 text-right font-mono accounting-double-total text-slate-600">{{ gl_financial_statements.income_statement.net_profit_prior|money }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Formal 4-Tier Sign-Off Block -->
+          <div class="pt-8 border-t border-slate-300 grid grid-cols-4 gap-4 text-center text-[10px] text-slate-600">
+            <div>
+              <div class="h-10 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1.5">Md. Tariqul Islam</div>
+              <div>Prepared by (Senior Accountant)</div>
+            </div>
+            <div>
+              <div class="h-10 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1.5">Farhana Ahmed, ACA</div>
+              <div>Checked by (Internal Audit)</div>
+            </div>
+            <div>
+              <div class="h-10 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1.5">Kamrul Hasan, FCA</div>
+              <div>Head of Finance &amp; Accounts</div>
+            </div>
+            <div>
+              <div class="h-10 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1.5">Salman Rahman</div>
+              <div>Managing Director / CEO</div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-mono">
+            <span>Pyrix Document Ref: DOC-FS-2027-03-Q3</span>
+            <span>Confidential Statutory Record &bull; Page 1 of 2</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  <!-- Universal Dynamic Report Searching Parameters Studio Modal is mounted universally at root level -->
+
+</div>
 {% endif %}
 
-<!-- TAB: Trial Balance (trial-balance) -->
+<!-- TAB 2: Trial Balance Audit Schedule -->
 {% if module.route_slug == 'general-ledger' and current_tab == 'trial-balance' %}
-  <div class="space-y-4">
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center"><i data-lucide="scale" class="w-5 h-5"></i></div>
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Trial Balance Suite</h2>
-          
-        </div>
-      </div>
-      <input type="text" placeholder="Filter trial balance..." onkeyup="filterTable('gl-tb-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
-    </div>
+<div class="space-y-6">
 
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
-      <table class="w-full text-left text-xs" id="gl-tb-table">
-        <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
-            <th class="py-2.5 px-3">Account Number</th>
-            <th class="py-2.5 px-3">Account Title</th>
-            <th class="py-2.5 px-3 text-right">Debit ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right">Credit ({{ active_company.currency_symbol }})</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
-          {% for r in gl_trial_balance.records %}
-            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
-              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ r.account_number }}</td>
-              <td class="py-2.5 px-3 font-medium">{{ r.account_name }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 font-medium">{% if r.closing_debit > 0 %}{{ r.closing_debit|money }}{% else %}-{% endif %}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-rose-600 font-medium">{% if r.closing_credit > 0 %}{{ r.closing_credit|money }}{% else %}-{% endif %}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-        <tfoot>
-          <tr class="border-t-2 border-slate-200 dark:border-white/10 font-bold font-mono text-slate-900 dark:text-white bg-slate-50 dark:bg-white/[0.02]">
-            <td colspan="2" class="py-3 px-3 font-bold">Total Trial Balance</td>
-            <td class="py-3 px-3 text-right text-emerald-600">{{ gl_trial_balance.totals.closing_debit|default(0.0)|money }}</td>
-            <td class="py-3 px-3 text-right text-rose-600">{{ gl_trial_balance.totals.closing_credit|default(0.0)|money }}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  </div>
-{% endif %}
+  <!-- Main Solid Page: Trial Balance Searching Parameters Studio -->
+  <form method="GET" action="/modules/general-ledger/reports/view-document" target="_blank" class="glass-card rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-white/10 shadow-sm space-y-6 no-print">
+    <input type="hidden" name="report_name" id="tb-solid-report-name" value="tb_std">
 
-<!-- TAB: Transaction Details (gl-transaction-details) -->
-{% if module.route_slug == 'general-ledger' and current_tab == 'gl-transaction-details' %}
-  <div class="space-y-4">
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center"><i data-lucide="list-filter" class="w-5 h-5"></i></div>
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">General Ledger Transaction Audit Register</h2>
-          
-        </div>
-      </div>
-      <input type="text" placeholder="Filter lines..." onkeyup="filterTable('gl-txn-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
-    </div>
-
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
-      <table class="w-full text-left text-xs" id="gl-txn-table">
-        <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
-            <th class="py-2.5 px-3">Voucher #</th>
-            <th class="py-2.5 px-3">Date</th>
-            <th class="py-2.5 px-3">Account</th>
-            <th class="py-2.5 px-3">Cost Centre / Dept</th>
-            <th class="py-2.5 px-3">Line Memo</th>
-            <th class="py-2.5 px-3 text-right">Debit ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right">Credit ({{ active_company.currency_symbol }})</th>
-              <th class="py-2.5 px-3 text-right">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
-          {% for t in gl_transaction_details %}
-            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
-              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ t.voucher_number }}</td>
-              <td class="py-2.5 px-3 font-mono text-slate-500">{{ t.voucher_date }}</td>
-              <td class="py-2.5 px-3">
-                <span class="font-mono font-semibold">{{ t.account_number }}</span>
-                <span class="text-[11px] text-slate-400 block">{{ t.account_name }}</span>
-              </td>
-              <td class="py-2.5 px-3 font-mono text-slate-500">{{ t.cost_centre_code|default(t.dept_code|default('CORP')) }}</td>
-              <td class="py-2.5 px-3 max-w-xs truncate">{{ t.line_narration|default('-') }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{% if t.debit_amount > 0 %}{{ t.debit_amount|money }}{% else %}-{% endif %}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-rose-600">{% if t.credit_amount > 0 %}{{ t.credit_amount|money }}{% else %}-{% endif %}</td>
-            
-                <td class="py-3 px-3 text-right">
-                  <button type="button" onclick="openRowActionMenu(this, event, 'gl_vouchers', '{{ t.id }}', '{{ t.name or t.title or t.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
-                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                  </button>
-                </td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-{% endif %}
-
-<!-- TAB: Cost-Centre wise Profit and Loss (cost-centre-pnl) -->
-{% if module.route_slug == 'general-ledger' and current_tab == 'cost-centre-pnl' %}
-  <div class="space-y-4">
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center"><i data-lucide="layers" class="w-5 h-5"></i></div>
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Cost-Centre wise Profit and Loss Report</h2>
-          
-        </div>
-      </div>
-    </div>
-
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
-      <table class="w-full text-left text-xs">
-        <thead>
-          <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
-            <th class="py-2.5 px-3">Cost Centre</th>
-            <th class="py-2.5 px-3 text-right">Revenues ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right">Direct Costs ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right">Overheads ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right">Net Margin ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-center">Margin %</th>
-              <th class="py-2.5 px-3 text-right">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
-          {% for p in gl_cost_centre_pnl %}
-            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
-              <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ p.cost_centre_code }} - {{ p.cost_centre_name }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-emerald-600 font-bold">{{ p.revenue|money }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-rose-500">{{ p.direct_costs|money }}</td>
-              <td class="py-2.5 px-3 text-right font-mono text-amber-500">{{ p.overheads|money }}</td>
-              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ p.net_contribution|money }}</td>
-              <td class="py-2.5 px-3 text-center font-mono font-bold text-purple-600">{{ p.margin_pct }}%</td>
-            
-                <td class="py-3 px-3 text-right">
-                  <button type="button" onclick="openRowActionMenu(this, event, 'admin_cost_centers', '{{ p.id }}', '{{ p.name or p.title or p.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
-                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                  </button>
-                </td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-{% endif %}
-
-<!-- TAB: Notes to the Accounts (notes-to-accounts) -->
-{% if module.route_slug == 'general-ledger' and current_tab == 'notes-to-accounts' %}
-  <div class="space-y-4">
-    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center"><i data-lucide="file-code-2" class="w-5 h-5"></i></div>
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Notes to the Accounts & Statutory Disclosures</h2>
-          
-        </div>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {% for n in gl_notes_to_accounts %}
-        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">{{ n.note_number }}</span>
-            <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300">{{ n.category }}</span>
+    <!-- Studio Header -->
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 flex-wrap gap-3">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
+            <i data-lucide="scale" class="w-4 h-4"></i>
           </div>
-          <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ n.title }}</h3>
-          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{{ n.summary }}</p>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Trial Balance Searching Parameters</h2>
+          <span class="text-xs px-2.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-semibold border border-blue-500/20">
+            6-Column Audit Schedule
+          </span>
         </div>
-      {% endfor %}
+        <div class="text-xs text-slate-500 dark:text-slate-400 pl-11">
+          Configure financial year, reporting period range, account rollup levels, and zero balance suppression. The Trial Balance pops up on another page in PDF.
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 font-mono">
+          Output: Standalone A4 PDF Document Studio
+        </span>
+      </div>
+    </div>
+
+    <!-- Group 1: Format & Scope -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-4 text-xs">
+      <span class="text-xs font-bold text-slate-900 dark:text-white block">Report Presentation Format &amp; Scope</span>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Presentation Format</label>
+          <select name="tb_format" onchange="document.getElementById('tb-solid-report-name').value = (this.value === 'summary' ? 'tb_summary' : 'tb_std')" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="closing" selected>Standard 6-Column Transaction Summary (Full Audit)</option>
+            <option value="summary">Summary Trial Balance by Account Group</option>
+            <option value="netchange">Account Net Change Movement Schedule</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Financial Year</label>
+          <select name="fy" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="2026-2027" selected>2026-2027 (Current)</option>
+            <option value="2025-2026">2025-2026 (Audited)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">GL Account Group</label>
+          <select name="group_code" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="all" selected>All Account Groups (Complete TB)</option>
+            <option value="1">1 - Share Capital</option>
+            <option value="2">2 - Non-Current Assets</option>
+            <option value="3">3 - Current Assets</option>
+            <option value="4">4 - Current Liabilities</option>
+            <option value="5">5 - Operating Revenues</option>
+            <option value="6">6 - Operating Expenses</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200/60 dark:border-white/5">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Period From</label>
+          <select name="period_from" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="1" selected>Period 1 - July</option>
+            <option value="2">Period 2 - August</option>
+            <option value="3">Period 3 - September</option>
+            <option value="4">Period 4 - October</option>
+            <option value="5">Period 5 - November</option>
+            <option value="6">Period 6 - December</option>
+            <option value="7">Period 7 - January</option>
+            <option value="8">Period 8 - February</option>
+            <option value="9">Period 9 - March</option>
+            <option value="10">Period 10 - April</option>
+            <option value="11">Period 11 - May</option>
+            <option value="12">Period 12 - June</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Period To (Movement Scope)</label>
+          <select name="period_to" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="1">Period 1 - July</option>
+            <option value="2">Period 2 - August</option>
+            <option value="3" selected>Period 3 - September</option>
+            <option value="6">Period 6 - December</option>
+            <option value="9">Period 9 - March</option>
+            <option value="12">Period 12 - June</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group 2: Account Rollup & Filters -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center justify-between flex-wrap gap-4 text-xs">
+      <div class="flex items-center gap-6 flex-wrap">
+        <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
+          <input type="checkbox" name="exclude_zero" value="true" checked class="accent-blue-600 rounded">
+          <span>Exclude Accounts with 0 (Zero) Balance</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
+          <input type="checkbox" name="main_level_only" value="true" class="accent-blue-600 rounded">
+          <span>Main Account Level Only (Summary Rollup)</span>
+        </label>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="reset" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition cursor-pointer">
+          Reset
+        </button>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-blue-500/20 transition flex items-center gap-2 hover:scale-[1.02] active:scale-95 cursor-pointer">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          <span>Process &amp; View on Another Page in PDF</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Modern Printable Document & PDF Studio View -->
+  <div class="space-y-3">
+    <div class="glass-card rounded-2xl px-5 py-3 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3 no-print">
+      <div class="flex items-center gap-3">
+        <div class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Printable Trial Balance Schedule (A4 Landscape Sheet)</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold">Variance: {{ active_company.currency_symbol|default('৳') }}{{ gl_trial_balance.totals.variance }} Reconciled</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/modules/general-ledger/reports/view-document?report_name=tb_std" target="_blank" class="px-3 py-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer" title="Open in standalone PDF Document Studio page">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Popup PDF Studio</span>
+        </a>
+        <button type="button" onclick="exportTableToCSV('tb-printable-table', 'Trial_Balance.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+        <button type="button" onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Official Copy</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- The A4 Landscape Sheet -->
+    <div class="doc-viewport rounded-2xl border border-slate-200 dark:border-white/10">
+      <div class="a4-document-sheet a4-landscape-sheet relative">
+        <div class="sheet-watermark-overlay"><span>Audited Schedule</span></div>
+        <div class="relative z-10 space-y-5">
+
+          <!-- Letterhead -->
+          <div class="border-b-2 border-slate-900 pb-3 flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs font-mono">PX</div>
+                <span class="text-sm font-bold text-slate-900">{{ active_company.name }}</span>
+              </div>
+              <div class="text-[10px] text-slate-600 font-mono mt-0.5">Gulshan-2 Commercial Area, Dhaka-1212 &bull; TIN: 4892-1082-9011</div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-bold font-serif text-slate-900">Trial Balance Audit Schedule</div>
+              <div class="text-[10px] text-slate-600 font-mono">As of {{ gl_trial_balance.parameters.as_of_date }} &bull; Period: July 2026 - March 2027</div>
+            </div>
+          </div>
+
+          <!-- Schedule Table -->
+          <table class="w-full text-left text-xs border-collapse" id="tb-printable-table">
+            <thead>
+              <tr class="border-y-2 border-slate-900 bg-slate-100 text-[10px] font-bold text-slate-800">
+                <th class="py-1.5 px-2 w-20">Code</th>
+                <th class="py-1.5 px-2">Account Title</th>
+                <th class="py-1.5 px-2 w-24 text-right">Opening Bal ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-24 text-right">Debit Flow ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-24 text-right">Credit Flow ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-28 text-right">Closing Debit ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-28 text-right">Closing Credit ({{ active_company.currency_symbol|default('৳') }})</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-[11px]">
+              {% for row in gl_trial_balance.records %}
+              <tr>
+                <td class="py-1 px-2 font-mono font-semibold text-slate-900">{{ row.account_number }}</td>
+                <td class="py-1 px-2 font-medium">{{ row.account_name }}</td>
+                <td class="py-1 px-2 text-right font-mono text-slate-600">{% if row.open_debit > 0 %}{{ row.open_debit|money }}{% elif row.open_credit > 0 %}({{ row.open_credit|money }}){% else %}-{% endif %}</td>
+                <td class="py-1 px-2 text-right font-mono text-slate-600">{% if row.movement_debit > 0 %}{{ row.movement_debit|money }}{% else %}-{% endif %}</td>
+                <td class="py-1 px-2 text-right font-mono text-slate-600">{% if row.movement_credit > 0 %}{{ row.movement_credit|money }}{% else %}-{% endif %}</td>
+                <td class="py-1 px-2 text-right font-mono font-bold">{% if row.closing_debit > 0 %}{{ row.closing_debit|money }}{% else %}-{% endif %}</td>
+                <td class="py-1 px-2 text-right font-mono font-bold">{% if row.closing_credit > 0 %}{{ row.closing_credit|money }}{% else %}-{% endif %}</td>
+              </tr>
+              {% endfor %}
+              <!-- Grand Totals with Double Underline -->
+              <tr class="font-extrabold text-slate-900 bg-slate-50 text-xs">
+                <td colspan="2" class="py-2 px-2 text-right">Grand Total Balanced Trial Balance</td>
+                <td class="py-2 px-2 text-right font-mono text-slate-600">-</td>
+                <td class="py-2 px-2 text-right font-mono text-slate-600">{{ gl_trial_balance.totals.movement_debit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono text-slate-600">{{ gl_trial_balance.totals.movement_credit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ gl_trial_balance.totals.closing_debit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ gl_trial_balance.totals.closing_credit|money }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Audit Signatures -->
+          <div class="pt-6 border-t border-slate-300 grid grid-cols-3 gap-6 text-center text-[10px] text-slate-600">
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">General Ledger Accountant</div>
+              <div>Trial Balance Compiled</div>
+            </div>
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Audit In-Charge</div>
+              <div>Debit / Credit Variance Reconciled</div>
+            </div>
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Chief Financial Officer</div>
+              <div>Approved for Official Filing</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   </div>
+
+</div>
 {% endif %}
+
+<!-- TAB 3: GL Transaction Audit Register -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'gl-transaction-details' %}
+<div class="space-y-6">
+
+  <!-- Main Solid Page: GL Transaction Register Searching Parameters Studio -->
+  <form method="GET" action="/modules/general-ledger/reports/view-document" target="_blank" class="glass-card rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-white/10 shadow-sm space-y-6 no-print">
+    <input type="hidden" name="report_name" id="gltx-solid-report-name" value="gl_tx_detail_0">
+
+    <!-- Studio Header -->
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 flex-wrap gap-3">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-500/20">
+            <i data-lucide="list-filter" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Transaction Register Searching Parameters</h2>
+          <span class="text-xs px-2.5 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono font-semibold border border-purple-500/20">
+            Audit Register (Variants 0-, 2-, 3-)
+          </span>
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 pl-11">
+          Filter itemized transaction postings by date range, source module, cost centre, and ordering criteria. Result pops up on another page in PDF.
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 font-mono">
+          Output: Standalone A4 PDF Document Studio
+        </span>
+      </div>
+    </div>
+
+    <!-- Group 1: Variant & Date Range -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-4 text-xs">
+      <span class="text-xs font-bold text-slate-900 dark:text-white block">Register Format &amp; Date Filter</span>
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Register Variant</label>
+          <select name="variant" onchange="document.getElementById('gltx-solid-report-name').value = this.value" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="gl_tx_detail_0" selected>0 - Standard Detailed Audit Trail Register</option>
+            <option value="gl_tx_detail_2">2 - Transaction Details by Cost Centre Drilldown</option>
+            <option value="gl_tx_detail_3">3 - Subsidiary &amp; Control Journal Breakdown</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date Range From</label>
+          <input type="date" name="from_date" value="2027-03-01" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Date Range To</label>
+          <input type="date" name="to_date" value="2027-03-31" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+        </div>
+      </div>
+    </div>
+
+    <!-- Group 2: Subsystem, Cost Centre & Ordering -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Source Module</label>
+        <select name="module_filter" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+          <option value="all" selected>All Source Modules (GL, CB, AR, AP, INV)</option>
+          <option value="GL">General Ledger Manual Journals (GL)</option>
+          <option value="CB">Cash &amp; Bank Subsystem (CB)</option>
+          <option value="AR">Accounts Receivable (AR)</option>
+          <option value="AP">Accounts Payable (AP)</option>
+          <option value="INV">Inventory Costing (INV)</option>
+        </select>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Cost Centre</label>
+        <select name="cost_centre" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+          <option value="all" selected>All Operating Cost Centres</option>
+          <option value="20">20 - HIL Cost Center</option>
+          <option value="CC-100">CC-100 Head Office Corporate</option>
+          <option value="CC-200">CC-200 Gazipur Manufacturing Plant</option>
+          <option value="CC-300">CC-300 Chittagong Distribution Depot</option>
+        </select>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Order By</label>
+        <select name="order_by" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+          <option value="date" selected>Posting Date (Chronological)</option>
+          <option value="voucher">Voucher Number</option>
+          <option value="account">Account Code</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center justify-between flex-wrap gap-4 text-xs">
+      <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>
+        <span>Itemized transaction logs are audited and verified against posted sub-ledgers.</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="reset" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition cursor-pointer">
+          Reset
+        </button>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-blue-500/20 transition flex items-center gap-2 hover:scale-[1.02] active:scale-95 cursor-pointer">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          <span>Process &amp; View on Another Page in PDF</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Modern Printable Document & PDF Studio View -->
+  <div class="space-y-3">
+    <div class="glass-card rounded-2xl px-5 py-3 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3 no-print">
+      <div class="flex items-center gap-3">
+        <div class="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse"></div>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Transaction Register Printable Document (A4 Landscape Sheet)</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono">{{ gl_transaction_details|length }} Entries Found</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/modules/general-ledger/reports/view-document?report_name=gl_tx_detail_0" target="_blank" class="px-3 py-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer" title="Open in standalone PDF Document Studio page">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Popup PDF Studio</span>
+        </a>
+        <button type="button" onclick="exportTableToCSV('tx-printable-table', 'GL_Transaction_Register.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+        <button type="button" onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Official Copy</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="doc-viewport rounded-2xl border border-slate-200 dark:border-white/10">
+      <div class="a4-document-sheet a4-landscape-sheet relative">
+        <div class="sheet-watermark-overlay"><span>Audit Register</span></div>
+        <div class="relative z-10 space-y-4">
+
+          <div class="border-b-2 border-slate-900 pb-3 flex items-start justify-between">
+            <div>
+              <div class="text-sm font-bold text-slate-900">{{ active_company.name }}</div>
+              <div class="text-sm font-bold font-serif text-slate-900 mt-0.5">Detailed General Ledger Transaction &amp; Audit Trail Register</div>
+              <div class="text-[10px] text-slate-600 font-mono">Date Range: 01-Mar-2027 to 31-Mar-2027 &bull; Module: All Subsystems</div>
+            </div>
+            <div class="text-right text-[10px] font-mono text-slate-600">
+              <div>Register Code: REG-GL-2027-03</div>
+              <div>Status: Posted &amp; Immutable</div>
+            </div>
+          </div>
+
+          <table class="w-full text-left text-xs border-collapse" id="tx-printable-table">
+            <thead>
+              <tr class="border-y-2 border-slate-900 bg-slate-100 text-[10px] font-bold text-slate-800">
+                <th class="py-1.5 px-2 w-20">Date</th>
+                <th class="py-1.5 px-2 w-24">Voucher #</th>
+                <th class="py-1.5 px-2 w-16">Module</th>
+                <th class="py-1.5 px-2 w-20">Cost Centre</th>
+                <th class="py-1.5 px-2">Account &amp; Narration</th>
+                <th class="py-1.5 px-2 w-24 text-right">Debit ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-24 text-right">Credit ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-28 text-right">Balance</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-[11px]">
+              {% for entry in gl_transaction_details %}
+              <tr>
+                <td class="py-1 px-2 font-mono text-slate-600">{{ entry.voucher_date }}</td>
+                <td class="py-1 px-2 font-mono font-semibold text-blue-600">{{ entry.voucher_number }}</td>
+                <td class="py-1 px-2"><span class="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-[9px] font-bold">{{ entry.source_module|default('GL') }}</span></td>
+                <td class="py-1 px-2 font-mono text-slate-600">{{ entry.cost_centre_code }}</td>
+                <td class="py-1 px-2">
+                  <div class="font-medium text-slate-900">{{ entry.account_number }} - {{ entry.account_name }}</div>
+                  <div class="text-[10px] text-slate-500">{{ entry.line_narration }}</div>
+                </td>
+                <td class="py-1 px-2 text-right font-mono font-medium">{% if entry.debit_amount > 0 %}{{ entry.debit_amount|money }}{% else %}-{% endif %}</td>
+                <td class="py-1 px-2 text-right font-mono font-medium">{% if entry.credit_amount > 0 %}{{ entry.credit_amount|money }}{% else %}-{% endif %}</td>
+                <td class="py-1 px-2 text-right font-mono">{{ entry.running_balance|money }} {{ entry.balance_type }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <div class="pt-6 border-t border-slate-300 grid grid-cols-2 gap-8 text-center text-[10px] text-slate-600">
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Transaction Auditor</div>
+              <div>Audit Stamp Verified &bull; SHA-256 Ledger Hash Intact</div>
+            </div>
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Senior Accounts Controller</div>
+              <div>Certified for General Ledger Period Closure</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endif %}
+
+<!-- TAB 4: Sub-Account Balance Breakdown -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'sub-account-balances' %}
+<div class="space-y-6">
+
+  <!-- Main Solid Page: Sub-Account Breakdown Searching Parameters Studio -->
+  <form method="GET" action="/modules/general-ledger/reports/view-document" target="_blank" class="glass-card rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-white/10 shadow-sm space-y-6 no-print">
+    <input type="hidden" name="report_name" value="gl_tx_detail_2">
+
+    <!-- Studio Header -->
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 flex-wrap gap-3">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Sub-Account Searching &amp; Breakdown Parameters</h2>
+          <span class="text-xs px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono font-semibold border border-amber-500/20">
+            Controlling Profiles &amp; Ledger Rollup
+          </span>
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 pl-11">
+          Select controlling parent GL accounts, branch dimensions, and status. Result pops up on another page in PDF.
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 font-mono">
+          Output: Standalone A4 PDF Document Studio
+        </span>
+      </div>
+    </div>
+
+    <!-- Parameter Controls -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Controlling Parent GL Account</label>
+        <select name="parent" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+          <option value="1020" selected>1020 - Cash and Bank Control</option>
+          <option value="1200">1200 - Accounts Receivable Control</option>
+          <option value="2010">2010 - Accounts Payable Control</option>
+          <option value="4010">4010 - Operating Sales Revenue</option>
+        </select>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Dimension Filter</label>
+        <select name="dimension" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+          <option value="all" selected>All Dimensions (Branch, Currency, Region)</option>
+          <option value="branch">Branch / Banking Channel</option>
+          <option value="currency">Currency Sub-Ledgers</option>
+        </select>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Status &amp; Verification</label>
+        <div class="pt-2 flex items-center gap-4">
+          <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-800 dark:text-slate-200">
+            <input type="checkbox" name="active_only" value="true" checked class="accent-blue-600 rounded">
+            <span>Active Profiles Only</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center justify-between flex-wrap gap-4 text-xs">
+      <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <i data-lucide="info" class="w-4 h-4 text-amber-500"></i>
+        <span>Sub-account balances reconcile 100% to the parent controlling ledger balance.</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="reset" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition cursor-pointer">
+          Reset
+        </button>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-blue-500/20 transition flex items-center gap-2 hover:scale-[1.02] active:scale-95 cursor-pointer">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          <span>Process &amp; View on Another Page in PDF</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Modern Printable Document & PDF Studio View -->
+  <div class="space-y-3">
+    <div class="glass-card rounded-2xl px-5 py-3 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3 no-print">
+      <div class="flex items-center gap-3">
+        <div class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></div>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Sub-Account Analytical Schedule (A4 Portrait Sheet)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/modules/general-ledger/reports/view-document?report_name=gl_tx_detail_2" target="_blank" class="px-3 py-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer" title="Open in standalone PDF Document Studio page">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Popup PDF Studio</span>
+        </a>
+        <button type="button" onclick="exportTableToCSV('sub-printable-table', 'SubAccount_Balances.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+        <button type="button" onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Official Copy</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="doc-viewport rounded-2xl border border-slate-200 dark:border-white/10">
+      <div class="a4-document-sheet a4-portrait-sheet relative">
+        <div class="sheet-watermark-overlay"><span>Profile Schedule</span></div>
+        <div class="relative z-10 space-y-5">
+
+          <div class="border-b-2 border-slate-900 pb-3 flex items-start justify-between">
+            <div>
+              <div class="text-sm font-bold text-slate-900">{{ active_company.name }}</div>
+              <div class="text-sm font-bold font-serif text-slate-900 mt-0.5">Sub-Account Analytical Profiles and Balance Distribution Schedule</div>
+              <div class="text-[10px] text-slate-600 font-mono">Parent Account: {{ gl_sub_account_balances.parent_account.code }} - {{ gl_sub_account_balances.parent_account.name }}</div>
+            </div>
+            <div class="text-right text-[10px] font-mono text-slate-600">
+              <div>Document: SCH-SUB-{{ gl_sub_account_balances.parent_account.code }}</div>
+              <div>As of: 31-Mar-2027</div>
+            </div>
+          </div>
+
+          <!-- Parent Card -->
+          <div class="bg-slate-100 p-3 rounded border border-slate-300 grid grid-cols-3 gap-3 text-xs">
+            <div>
+              <span class="text-slate-500 text-[10px] block">Controlling GL Master Account</span>
+              <span class="font-bold font-mono text-slate-900">{{ gl_sub_account_balances.parent_account.code }} - {{ gl_sub_account_balances.parent_account.name }}</span>
+            </div>
+            <div>
+              <span class="text-slate-500 text-[10px] block">Normal Balance Type</span>
+              <span class="font-bold text-slate-900">{{ gl_sub_account_balances.parent_account.normal_balance }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-slate-500 text-[10px] block">Consolidated Ledger Balance</span>
+              <span class="font-bold font-mono text-blue-600">{{ active_company.currency_symbol|default('৳') }}{{ gl_sub_account_balances.parent_account.total_balance|money }}</span>
+            </div>
+          </div>
+
+          <!-- Sub-Accounts Table -->
+          <table class="w-full text-left text-xs border-collapse" id="sub-printable-table">
+            <thead>
+              <tr class="border-y-2 border-slate-900 bg-slate-100 text-[10px] font-bold text-slate-800">
+                <th class="py-1.5 px-2 w-24">Sub-Code</th>
+                <th class="py-1.5 px-2">Sub-Account Title</th>
+                <th class="py-1.5 px-2 w-32">Dimension</th>
+                <th class="py-1.5 px-2 w-32 text-right">Closing Balance ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-20 text-right">% Share</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-[11px]">
+              {% for sub in gl_sub_account_balances.records %}
+              <tr>
+                <td class="py-1.5 px-2 font-mono font-semibold text-slate-900">{{ sub.sub_code }}</td>
+                <td class="py-1.5 px-2 font-medium">{{ sub.sub_name }}</td>
+                <td class="py-1.5 px-2 text-slate-600">{{ sub.dimension|safe }}</td>
+                <td class="py-1.5 px-2 text-right font-mono font-bold">{{ sub.closing_balance|money }}</td>
+                <td class="py-1.5 px-2 text-right font-mono text-slate-600">{{ sub.pct_share }}%</td>
+              </tr>
+              {% endfor %}
+              <tr class="font-extrabold text-slate-900 bg-slate-50 text-xs">
+                <td colspan="3" class="py-2 px-2 text-right">Sum of Sub-Accounts (Reconciled to Parent)</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ gl_sub_account_balances.total_sub_balance|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ gl_sub_account_balances.total_pct }}%</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="pt-8 border-t border-slate-300 grid grid-cols-2 gap-8 text-center text-[10px] text-slate-600">
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Treasury &amp; Bank Custodian</div>
+              <div>Account Confirmation Verified</div>
+            </div>
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Financial Controller</div>
+              <div>Reconciliation Statement Maintained</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endif %}
+
+<!-- TAB 5: Cost-Centre Profit & Loss and Expense -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'cost-centre-pnl' %}
+<div class="space-y-6">
+
+  <!-- Main Solid Page: Cost Centre 20 HIL Statement Searching Parameters Studio -->
+  <form method="GET" action="/modules/general-ledger/reports/view-document" target="_blank" class="glass-card rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-white/10 shadow-sm space-y-6 no-print">
+    <input type="hidden" name="report_name" value="cost_centre_reports">
+
+    <!-- Studio Header -->
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 flex-wrap gap-3">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+            <i data-lucide="pie-chart" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Cost Centre Statement Searching Parameters</h2>
+          <span class="text-xs px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-semibold border border-emerald-500/20">
+            20 HIL Cost Center Performance
+          </span>
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 pl-11">
+          Configure Cost Centre 20 HIL, reporting period scope, and account classification filters. Result pops up on another page in PDF.
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 font-mono">
+          Output: Standalone A4 PDF Document Studio
+        </span>
+      </div>
+    </div>
+
+    <!-- Group 1: Cost Centre Scope & Selection -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-4 text-xs">
+      <span class="text-xs font-bold text-slate-900 dark:text-white block">Cost Centre Scope &amp; Target</span>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Cost Centre Scope</label>
+          <div class="flex items-center gap-4 text-xs pt-1.5">
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
+              <input type="radio" name="cost_centre_mode" value="selected" checked class="accent-blue-600">
+              <span>Selected Cost Centre</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer font-medium text-slate-700 dark:text-slate-300">
+              <input type="radio" name="cost_centre_mode" value="all" class="accent-blue-600">
+              <span>All Cost Centres</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Operating Cost Centre</label>
+          <select name="cost_centre" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="20" selected>20 - HIL Cost Center</option>
+            <option value="CC-100">CC-100 - Head Office Corporate</option>
+            <option value="CC-200">CC-200 - Gazipur Manufacturing Plant</option>
+            <option value="CC-300">CC-300 - Chittagong Distribution Depot</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Account Filter</label>
+          <select name="cc_acct_filter" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+            <option value="all" selected>All Accounts (Revenue &amp; Expenses)</option>
+            <option value="revenue">Only Revenue Accounts</option>
+            <option value="asset_liability">Only Asset / Liability Accounts</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group 2: Period & Benchmarks -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Reporting Period Scope</label>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] text-slate-500 mb-1">Financial Year</label>
+            <select name="fy" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+              <option value="2026-2027" selected>2026-2027</option>
+              <option value="2025-2026">2025-2026</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 mb-1">Period From</label>
+            <select name="period_from" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+              <option value="1" selected>1 July</option>
+              <option value="2">2 August</option>
+              <option value="3">3 September</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Overhead Allocation &amp; Benchmark</label>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] text-slate-500 mb-1">Allocation Mode</label>
+            <select name="allocation_type" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+              <option value="direct_indirect" selected>Direct + Allocated Overheads</option>
+              <option value="direct_only">Direct Only</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 mb-1">Comparison</label>
+            <select name="comparison" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+              <option value="budget" selected>Annual Budget</option>
+              <option value="prior_year">Prior Year Actuals</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center justify-between flex-wrap gap-4 text-xs">
+      <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <i data-lucide="trending-up" class="w-4 h-4 text-emerald-500"></i>
+        <span>Calculates departmental gross margin percentage and cost-centre operating profit.</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="reset" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition cursor-pointer">
+          Reset
+        </button>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-blue-500/20 transition flex items-center gap-2 hover:scale-[1.02] active:scale-95 cursor-pointer">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          <span>Process &amp; View on Another Page in PDF</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Modern Printable Document & PDF Studio View -->
+  <div class="space-y-3">
+    <div class="glass-card rounded-2xl px-5 py-3 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3 no-print">
+      <div class="flex items-center gap-3">
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Departmental P&amp;L Printable Document (A4 Portrait Sheet)</span>
+        <span class="text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold">Contribution: {{ gl_cost_centre_pnl.performance.gross_margin_pct }}%</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/modules/general-ledger/reports/view-document?report_name=cost_centre_reports" target="_blank" class="px-3 py-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer" title="Open in standalone PDF Document Studio page">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Popup PDF Studio</span>
+        </a>
+        <button type="button" onclick="exportTableToCSV('cc-printable-table', 'CostCentre_PnL.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+        <button type="button" onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Official Copy</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="doc-viewport rounded-2xl border border-slate-200 dark:border-white/10">
+      <div class="a4-document-sheet a4-portrait-sheet relative">
+        <div class="sheet-watermark-overlay"><span>Cost Schedule</span></div>
+        <div class="relative z-10 space-y-5">
+
+          <div class="border-b-2 border-slate-900 pb-3 flex items-start justify-between">
+            <div>
+              <div class="text-sm font-bold text-slate-900">{{ active_company.name }}</div>
+              <div class="text-sm font-bold font-serif text-slate-900 mt-0.5">Cost-Centre Profit &amp; Loss and Operating Expense Statement</div>
+              <div class="text-[10px] text-slate-600 font-mono">Unit: {{ gl_cost_centre_pnl.cost_centre.code }} {{ gl_cost_centre_pnl.cost_centre.name }}</div>
+            </div>
+            <div class="text-right text-[10px] font-mono text-slate-600">
+              <div>Report: CC-PNL-{{ gl_cost_centre_pnl.cost_centre.code }}</div>
+              <div>Head: {{ gl_cost_centre_pnl.cost_centre.head }}</div>
+              <div>Currency: {{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</div>
+            </div>
+          </div>
+
+          <table class="w-full text-left text-xs border-collapse" id="cc-printable-table">
+            <thead>
+              <tr class="border-y-2 border-slate-900 bg-slate-100 text-[10px] font-bold text-slate-800">
+                <th class="py-1.5 px-2">Performance Line Item</th>
+                <th class="py-1.5 px-2 w-28 text-right">Actual ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-28 text-right">Budget ({{ active_company.currency_symbol|default('৳') }})</th>
+                <th class="py-1.5 px-2 w-24 text-right">Variance</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-[11px]">
+              <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="4" class="py-1 px-2 text-[10px]">1. Operating Revenue Contribution</td></tr>
+              <tr>
+                <td class="py-1 px-4">Department Output &amp; Assembly Revenue</td>
+                <td class="py-1 px-2 text-right font-mono">{{ gl_cost_centre_pnl.performance.revenue|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-slate-600">{{ gl_cost_centre_pnl.performance.revenue_budget|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-emerald-600">+{{ gl_cost_centre_pnl.performance.revenue_variance|money }}</td>
+              </tr>
+              <tr class="font-bold">
+                <td class="py-1 px-2">Total Operating Revenue</td>
+                <td class="py-1 px-2 text-right font-mono accounting-single-total">{{ gl_cost_centre_pnl.performance.revenue|money }}</td>
+                <td class="py-1 px-2 text-right font-mono accounting-single-total text-slate-600">{{ gl_cost_centre_pnl.performance.revenue_budget|money }}</td>
+                <td class="py-1 px-2 text-right font-mono accounting-single-total text-emerald-600">+{{ gl_cost_centre_pnl.performance.revenue_variance|money }}</td>
+              </tr>
+
+              <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="4" class="py-1 px-2 text-[10px]">2. Direct Departmental Costs</td></tr>
+              <tr>
+                <td class="py-1 px-4">Direct Materials &amp; Consumables</td>
+                <td class="py-1 px-2 text-right font-mono">{{ gl_cost_centre_pnl.cost_centre.raw_materials|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-slate-600">{{ gl_cost_centre_pnl.cost_centre.raw_materials_budget|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-rose-600">(450,000.00)</td>
+              </tr>
+              <tr>
+                <td class="py-1 px-4">Direct Plant Labor &amp; Overtime</td>
+                <td class="py-1 px-2 text-right font-mono">{{ gl_cost_centre_pnl.cost_centre.labor|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-slate-600">{{ gl_cost_centre_pnl.cost_centre.labor_budget|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-emerald-600">+130,000.00</td>
+              </tr>
+              <tr class="font-bold">
+                <td class="py-1 px-2">Gross Departmental Margin</td>
+                <td class="py-1 px-2 text-right font-mono accounting-single-total">{{ gl_cost_centre_pnl.performance.gross_margin|money }}</td>
+                <td class="py-1 px-2 text-right font-mono accounting-single-total text-slate-600">8,600,000.00</td>
+                <td class="py-1 px-2 text-right font-mono accounting-single-total text-emerald-600">+980,000.00</td>
+              </tr>
+
+              <tr class="font-bold text-slate-800 bg-slate-50/50"><td colspan="4" class="py-1 px-2 text-[10px]">3. Departmental Overheads</td></tr>
+              <tr>
+                <td class="py-1 px-4">Electricity, Gas &amp; Plant Utilities</td>
+                <td class="py-1 px-2 text-right font-mono">{{ gl_cost_centre_pnl.cost_centre.utilities|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-slate-600">{{ gl_cost_centre_pnl.cost_centre.utilities_budget|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-rose-600">(70,000.00)</td>
+              </tr>
+              <tr>
+                <td class="py-1 px-4">Machinery Maintenance &amp; Servicing</td>
+                <td class="py-1 px-2 text-right font-mono">{{ gl_cost_centre_pnl.cost_centre.maintenance|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-slate-600">{{ gl_cost_centre_pnl.cost_centre.maintenance_budget|money }}</td>
+                <td class="py-1 px-2 text-right font-mono text-emerald-600">+70,000.00</td>
+              </tr>
+              <tr class="font-extrabold text-slate-900 bg-slate-50 text-xs">
+                <td class="py-2 px-2">Net Cost-Centre Operating Profit</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total">{{ gl_cost_centre_pnl.performance.net_profit|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total text-slate-600">{{ gl_cost_centre_pnl.performance.net_profit_budget|money }}</td>
+                <td class="py-2 px-2 text-right font-mono accounting-double-total text-emerald-600">+{{ gl_cost_centre_pnl.performance.net_variance|money }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="pt-8 border-t border-slate-300 grid grid-cols-2 gap-8 text-center text-[10px] text-slate-600">
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">{{ gl_cost_centre_pnl.cost_centre.head }}</div>
+              <div>Operating Unit Director</div>
+            </div>
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Management Accountant</div>
+              <div>Cost Center Variance Approved</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endif %}
+
+<!-- TAB 6: Notes to the Accounts & Segment Disclosures (IFRS 8) -->
+{% if module.route_slug == 'general-ledger' and current_tab == 'notes-to-accounts' %}
+<div class="space-y-6">
+
+  <!-- Main Solid Page: Notes to Accounts Searching Parameters Studio -->
+  <form method="GET" action="/modules/general-ledger/reports/view-document" target="_blank" class="glass-card rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-white/10 shadow-sm space-y-6 no-print">
+    <input type="hidden" name="report_name" value="fin_stmt">
+    <input type="hidden" name="include_notes" value="true">
+
+    <!-- Studio Header -->
+    <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 flex-wrap gap-3">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+            <i data-lucide="file-code-2" class="w-4 h-4"></i>
+          </div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Notes &amp; Segment Searching Parameters</h2>
+          <span class="text-xs px-2.5 py-0.5 rounded-md bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-mono font-semibold border border-cyan-500/20">
+            IFRS 8 &amp; Statutory Notes
+          </span>
+        </div>
+        <div class="text-xs text-slate-500 dark:text-slate-400 pl-11">
+          Select financial year, statutory note range, and accounting standard. Result pops up on another page in PDF.
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 font-mono">
+          Output: Standalone A4 PDF Document Studio
+        </span>
+      </div>
+    </div>
+
+    <!-- Group 1: Parameters -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Financial Year</label>
+        <select name="fy" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+          <option value="2026-2027" selected>FY 2026-2027 (Current)</option>
+          <option value="2025-2026">FY 2025-2026 (Audited)</option>
+        </select>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Statutory Note Range</label>
+        <select name="note_range" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+          <option value="all" selected>All Notes (Notes 1 to 15)</option>
+          <option value="assets">Notes 4-8: Assets Disclosures</option>
+          <option value="segments">Note 15: IFRS 8 Operating Segments</option>
+        </select>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
+        <label class="block font-semibold text-slate-700 dark:text-slate-300">Reporting Standard</label>
+        <select name="framework" class="mac-input w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 font-medium outline-none">
+          <option value="ifrs8" selected>IFRS 8 Operating Segments</option>
+          <option value="bfrs">BFRS Statutory Disclosures</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center justify-between flex-wrap gap-4 text-xs">
+      <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <i data-lucide="award" class="w-4 h-4 text-cyan-500"></i>
+        <span>Compliant with statutory external audit submission guidelines and cross-referenced to Balance Sheet.</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button type="reset" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-slate-700 dark:text-slate-300 transition cursor-pointer">
+          Reset
+        </button>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-blue-500/20 transition flex items-center gap-2 hover:scale-[1.02] active:scale-95 cursor-pointer">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          <span>Process &amp; View on Another Page in PDF</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Modern Printable Document & PDF Studio View -->
+  <div class="space-y-3">
+    <div class="glass-card rounded-2xl px-5 py-3 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3 no-print">
+      <div class="flex items-center gap-3">
+        <div class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></div>
+        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Notes &amp; Segment Printable Document (A4 Portrait Sheet)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/modules/general-ledger/reports/view-document?report_name=fin_stmt&include_notes=true" target="_blank" class="px-3 py-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer" title="Open in standalone PDF Document Studio page">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Popup PDF Studio</span>
+        </a>
+        <button type="button" onclick="exportTableToCSV('notes-printable-table', 'Notes_To_Accounts.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+        <button type="button" onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 text-white text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print Official Copy</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="doc-viewport rounded-2xl border border-slate-200 dark:border-white/10">
+      <div class="a4-document-sheet a4-portrait-sheet relative">
+        <div class="sheet-watermark-overlay"><span>Statutory Notes</span></div>
+        <div class="relative z-10 space-y-5">
+
+          <div class="border-b-2 border-slate-900 pb-3 flex items-start justify-between">
+            <div>
+              <div class="text-sm font-bold text-slate-900">{{ active_company.name }}</div>
+              <div class="text-sm font-bold font-serif text-slate-900 mt-0.5">Notes to the Financial Statements and Segment Disclosures</div>
+              <div class="text-[10px] text-slate-600 font-mono">For the Fiscal Period Ended 31 March 2027 &bull; Form NS-01</div>
+            </div>
+            <div class="text-right text-[10px] font-mono text-slate-600">
+              <div>Annexure 1</div>
+              <div>Standard: IFRS 8</div>
+            </div>
+          </div>
+
+          <div class="space-y-4" id="notes-printable-table">
+            <!-- Note 4 PPE -->
+            <div class="space-y-2 text-xs">
+              <div class="font-bold text-slate-900 border-b border-slate-300 pb-1">
+                Note 4: Property, Plant and Equipment (IAS 16)
+              </div>
+              <table class="w-full text-left border-collapse text-[11px]">
+                <thead>
+                  <tr class="bg-slate-100 border-y border-slate-300 text-[10px] font-bold text-slate-700">
+                    <th class="py-1 px-2">Asset Class</th>
+                    <th class="py-1 px-2 text-right">Cost ({{ active_company.currency_symbol|default('৳') }})</th>
+                    <th class="py-1 px-2 text-right">Additions ({{ active_company.currency_symbol|default('৳') }})</th>
+                    <th class="py-1 px-2 text-right">Depreciation ({{ active_company.currency_symbol|default('৳') }})</th>
+                    <th class="py-1 px-2 text-right">Carrying Amount ({{ active_company.currency_symbol|default('৳') }})</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  {% for ppe in gl_notes_to_accounts.ppe_schedule %}
+                  <tr>
+                    <td class="py-1 px-2">{{ ppe.asset_class }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{{ ppe.cost|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{% if ppe.additions > 0 %}{{ ppe.additions|money }}{% else %}-{% endif %}</td>
+                    <td class="py-1 px-2 text-right font-mono">({{ ppe.depreciation|money }})</td>
+                    <td class="py-1 px-2 text-right font-mono font-bold">{{ ppe.carrying_amount|money }}</td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="font-bold bg-slate-50">
+                    <td class="py-1 px-2">Total Note 4 Carrying Amount</td>
+                    <td class="py-1 px-2 text-right font-mono">18,500,000.00</td>
+                    <td class="py-1 px-2 text-right font-mono">2,300,000.00</td>
+                    <td class="py-1 px-2 text-right font-mono">(2,300,000.00)</td>
+                    <td class="py-1 px-2 text-right font-mono accounting-double-total">{{ gl_notes_to_accounts.total_ppe_carrying|money }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Note 15 Segments -->
+            <div class="space-y-2 text-xs pt-2">
+              <div class="font-bold text-slate-900 border-b border-slate-300 pb-1">
+                Note 15: Operating Segments (IFRS 8)
+              </div>
+              <table class="w-full text-left border-collapse text-[11px]">
+                <thead>
+                  <tr class="bg-slate-100 border-y border-slate-300 text-[10px] font-bold text-slate-700">
+                    <th class="py-1 px-2">Reportable Segment</th>
+                    <th class="py-1 px-2 text-right">External Revenue ({{ active_company.currency_symbol|default('৳') }})</th>
+                    <th class="py-1 px-2 text-right">Direct Costs ({{ active_company.currency_symbol|default('৳') }})</th>
+                    <th class="py-1 px-2 text-right">Segment Profit ({{ active_company.currency_symbol|default('৳') }})</th>
+                    <th class="py-1 px-2 text-right">Segment Assets ({{ active_company.currency_symbol|default('৳') }})</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  {% for seg in gl_notes_to_accounts.segments %}
+                  <tr>
+                    <td class="py-1 px-2 font-medium">{{ seg.segment_name }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{{ seg.revenue|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{{ seg.direct_costs|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono text-emerald-600 font-bold">{{ seg.segment_profit|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono">{{ seg.segment_assets|money }}</td>
+                  </tr>
+                  {% endfor %}
+                  <tr class="font-bold bg-slate-50">
+                    <td class="py-1 px-2">Consolidated Total (Reconciled)</td>
+                    <td class="py-1 px-2 text-right font-mono accounting-double-total">{{ gl_notes_to_accounts.total_segment_revenue|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono accounting-double-total">{{ gl_notes_to_accounts.total_segment_costs|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono accounting-double-total text-blue-600">{{ gl_notes_to_accounts.total_segment_profit|money }}</td>
+                    <td class="py-1 px-2 text-right font-mono accounting-double-total">{{ gl_notes_to_accounts.total_segment_assets|money }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="pt-8 border-t border-slate-300 grid grid-cols-2 gap-8 text-center text-[10px] text-slate-600">
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Audit Committee Chairman</div>
+              <div>Statutory Disclosures Certified</div>
+            </div>
+            <div>
+              <div class="h-8 border-b border-dashed border-slate-400"></div>
+              <div class="font-bold text-slate-900 mt-1">Partner, External Statutory Auditors</div>
+              <div>Independent Auditor Signature &amp; Seal</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endif %}
+
 
 <!-- =========================================================================
      6. UNIVERSAL PRINTABLE LETTERHEAD VOUCHER MODAL
@@ -1682,6 +2976,149 @@ async function printGLVoucher(voucherId) {
     alert('Failed to load printable voucher document.');
   }
 }
+
+// --- Universal Dynamic Report Searching Parameters Studio Controller ---
+const dynMonthNames = {
+  "1": "July", "2": "August", "3": "September", "4": "October",
+  "5": "November", "6": "December", "7": "January", "8": "February",
+  "9": "March", "10": "April", "11": "May", "12": "June"
+};
+
+function syncFsSolidMonth(val) {
+  const m = document.getElementById('fs-solid-month-input');
+  if (m) m.value = dynMonthNames[val] || 'July';
+}
+
+const dynReportMeta = {
+  "fin_stmt": { title: "Report - Financial Statements", badge: "Standard Statutory Suite" },
+  "tb_std": { title: "Report - Trial Balance", badge: "Standard Closing Schedule" },
+  "tb_summary": { title: "Report - Trial Balance (Transaction Summary)", badge: "Multi-Period Movement" },
+  "gl_tx_detail_0": { title: "Report - GL Transactions Detail (0-)", badge: "Chronological Audit Trail" },
+  "gl_tx_detail_2": { title: "Report - GL Transactions Detail (2-)", badge: "Cost Centre Drilldown" },
+  "gl_tx_detail_3": { title: "Report - GL Transactions Detail (3-)", badge: "Control & Subsidiary Journals" },
+  "cost_centre_reports": { title: "Report - Cost Centre Statement", badge: "20 HIL Cost Center Analysis" },
+  "coa_report": { title: "Report - Chart of Account", badge: "Master Ledger Index" },
+  "gl_master_data": { title: "Report - GL Master Data Reports", badge: "Classification & Groups" },
+  "batch_status": { title: "Report - 01 Batch Status", badge: "Operational Audit Register" }
+};
+
+let currentDynReportType = 'fin_stmt';
+
+function openDynamicReportModal(reportType) {
+  const m = document.getElementById('modal-dynamic-gl-report-dialog');
+  if (m) {
+    m.classList.remove('hidden');
+    if (reportType) {
+      switchDynamicReportType(reportType);
+    }
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+}
+
+function openFsReportModal() {
+  openDynamicReportModal('fin_stmt');
+}
+
+function closeDynamicReportModal() {
+  const m = document.getElementById('modal-dynamic-gl-report-dialog');
+  if (m) m.classList.add('hidden');
+}
+
+function closeFsReportModal() {
+  closeDynamicReportModal();
+}
+
+function switchDynamicReportType(type) {
+  currentDynReportType = type;
+  const inpReportName = document.getElementById('dyn-inp-report-name');
+  if (inpReportName) inpReportName.value = type;
+
+  // Update pills styling
+  document.querySelectorAll('.dyn-report-nav-pill').forEach(btn => {
+    btn.className = 'dyn-report-nav-pill px-2.5 py-1 rounded-xl hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 font-medium shrink-0 transition flex items-center gap-1.5 cursor-pointer';
+  });
+  const activeBtn = document.getElementById('dyn-tab-' + type);
+  if (activeBtn) {
+    activeBtn.className = 'dyn-report-nav-pill px-2.5 py-1 rounded-xl bg-blue-600 text-white font-bold shrink-0 transition flex items-center gap-1.5 shadow-sm cursor-pointer';
+  }
+
+  // Update Header Title and Badge
+  const meta = dynReportMeta[type] || { title: "Dynamic Report Searching Parameters Studio", badge: "Interactive Studio" };
+  const hTitle = document.getElementById('dyn-dialog-header-title');
+  const bBadge = document.getElementById('dyn-dialog-badge-label');
+  if (hTitle) hTitle.innerHTML = `<span>${meta.title}</span>`;
+  if (bBadge) bBadge.textContent = meta.badge;
+
+  // Toggle dynamic sections
+  const secReportVariant = document.getElementById('dyn-sec-report-variant');
+  const secCoaOrder = document.getElementById('dyn-sec-coa-order');
+  const secGlMaster = document.getElementById('dyn-sec-gl-master-data');
+  const secBatch = document.getElementById('dyn-sec-batch-status');
+  const secCostCentre = document.getElementById('dyn-sec-cost-centre-reports');
+  const secReportPeriod = document.getElementById('dyn-sec-report-period');
+  const secFsOptions = document.getElementById('dyn-sec-fs-options');
+  const colPeriodTo = document.getElementById('dyn-col-period-to');
+
+  if (secReportVariant) secReportVariant.classList.toggle('hidden', !type.startsWith('gl_tx_detail'));
+  if (secCoaOrder) secCoaOrder.classList.toggle('hidden', type !== 'coa_report');
+  if (secGlMaster) secGlMaster.classList.toggle('hidden', type !== 'gl_master_data');
+  if (secBatch) secBatch.classList.toggle('hidden', type !== 'batch_status');
+  if (secCostCentre) secCostCentre.classList.toggle('hidden', type !== 'cost_centre_reports');
+  if (secFsOptions) secFsOptions.classList.toggle('hidden', type !== 'fin_stmt');
+
+  const needsPeriod = ['fin_stmt', 'tb_std', 'tb_summary', 'gl_tx_detail_0', 'gl_tx_detail_2', 'gl_tx_detail_3'].includes(type);
+  if (secReportPeriod) secReportPeriod.classList.toggle('hidden', !needsPeriod);
+
+  const isRange = ['tb_summary', 'gl_tx_detail_0', 'gl_tx_detail_2', 'gl_tx_detail_3'].includes(type);
+  if (colPeriodTo) colPeriodTo.classList.toggle('hidden', !isRange);
+
+  if (type.startsWith('gl_tx_detail')) {
+    const codeInp = document.getElementById('dyn-inp-report-code');
+    const varSel = document.getElementById('dyn-sel-report-variant');
+    const code = type.replace('gl_tx_detail_', '');
+    if (codeInp) codeInp.value = code + '-';
+    if (varSel) varSel.value = code;
+  }
+
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+}
+
+function onDynReportVariantChange(val) {
+  const codeInp = document.getElementById('dyn-inp-report-code');
+  if (codeInp) codeInp.value = val + '-';
+  const inpReportName = document.getElementById('dyn-inp-report-name');
+  if (inpReportName) inpReportName.value = 'gl_tx_detail_' + val;
+}
+
+function onDynPeriodFromChange(val) {
+  const m = document.getElementById('dyn-p-from-month');
+  if (m) m.value = dynMonthNames[val] || 'July';
+}
+
+function onDynPeriodToChange(val) {
+  const m = document.getElementById('dyn-p-to-month');
+  if (m) m.value = dynMonthNames[val] || 'September';
+}
+
+function toggleDynCcPicker(selectedOnly) {
+  const box = document.getElementById('dyn-box-cc-inputs');
+  if (box) box.classList.toggle('hidden', !selectedOnly);
+}
+
+function toggleDynSegmentBox(show) {
+  const chips = document.getElementById('dyn-segment-chips');
+  if (chips) chips.classList.toggle('hidden', !show);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeDynamicReportModal();
+  }
+});
 
 // Run initial filter if batches table is present
 document.addEventListener('DOMContentLoaded', () => {

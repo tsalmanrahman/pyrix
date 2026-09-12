@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-AP - Vendor Disbursement Studio{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl mx-auto">
+
+  <!-- Header Banner -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <a 
+        href="/modules/accounts-payable?tab=payments" 
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
+        title="Back to Vendor Payments"
+      >
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
+      </a>
+
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+        <i data-lucide="wallet" class="w-4 h-4"></i>
+      </div>
+
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          Vendor Disbursement &amp; Auto-AIT Studio
+        </h2>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Multi-Mode Treasury Settlements with Automated Tax Deduction at Source</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
+        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+        <span>Auto-AIT Tax Engine Active</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Disbursement Form -->
+  <form method="POST" action="/modules/accounts-payable/payments/new" class="space-y-6" id="disbursement-form">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left 2 Columns: Settlement Information -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Card 1: Beneficiary & Payment Channel -->
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="user-check" class="w-4 h-4 text-indigo-500"></i>
+              <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Beneficiary &amp; Disbursement Channel</span>
+            </div>
+            <span class="text-[11px] font-mono text-slate-400">{{ auto_payment_no }}</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Voucher Number *</label>
+              <input 
+                type="text" 
+                name="payment_number" 
+                value="{{ auto_payment_no }}" 
+                required 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold"
+              >
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Disbursement Date *</label>
+              <input 
+                type="date" 
+                name="payment_date" 
+                id="pmt-date-input" 
+                required 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+              >
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Beneficiary Vendor *</label>
+              <select name="vendor_id" required class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-semibold">
+                {% for v in vendors %}
+                  <option value="{{ v.id }}" {% if selected_order and selected_order.vendor_id == v.id %}selected{% endif %}>
+                    {{ v.vendor_name }} ({{ v.vendor_code }}) - TIN: {{ v.tin_number|default('N/A') }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            {% if payment_orders %}
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Linked Payment Order (Optional)</label>
+                <select name="payment_order_id" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
+                  <option value="">-- Direct Disbursement (No Order Ref) --</option>
+                  {% for po in payment_orders %}
+                    <option value="{{ po.id }}" {% if selected_order and selected_order.id == po.id %}selected{% endif %}>
+                      {{ po.order_number }} - {{ po.vendor_name }} ({{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(po.total_proposed_amount) }})
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Method</label>
+              <select name="payment_method" id="pmt-method-select" onchange="toggleChequeFields(this.value)" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-medium">
+                <option value="BANK_TRANSFER">Bank Online Transfer (BEFTN / RTGS)</option>
+                <option value="CHEQUE">Bank Account Payee Cheque</option>
+                <option value="CASH">Cash Office Float</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Corporate Bank Account *</label>
+              <select name="bank_account_id" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
+                {% for acc in bank_accounts %}
+                  <option value="{{ acc.id }}">{{ acc.bank_name }} - {{ acc.account_number }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div id="cheque-fields" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 hidden">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Cheque Leaf Number</label>
+                <input 
+                  type="text" 
+                  name="cheque_number" 
+                  placeholder="e.g. CHQ-9812401" 
+                  class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+                >
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Cheque Date</label>
+                <input 
+                  type="date" 
+                  name="cheque_date" 
+                  class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+                >
+              </div>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Disbursement Remarks / Voucher Narrative</label>
+              <textarea 
+                name="description" 
+                rows="2" 
+                placeholder="Enter remittance instructions or invoice settlement notes..." 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right 1 Column: Auto-Calculated AIT & Net Disbursement Card -->
+      <div class="space-y-6">
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4 sticky top-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="calculator" class="w-4 h-4 text-indigo-500"></i>
+              <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Disbursement &amp; AIT Matrix</span>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-white/10">BDT</span>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Gross Payment Billed Amount *</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                name="gross_payment_amount" 
+                id="gross-pmt-input" 
+                value="{{ selected_order.total_proposed_amount if selected_order else 250000.0 }}" 
+                oninput="calcDisbursementTaxes()" 
+                required 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold text-right text-slate-900 dark:text-white"
+              >
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Withheld AIT Rate (%)</label>
+              <input 
+                type="number" 
+                step="0.1" 
+                name="ait_rate_pct" 
+                id="ait-rate-input" 
+                value="5.0" 
+                oninput="calcDisbursementTaxes()" 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono text-right"
+              >
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5 space-y-2 text-xs">
+              <div class="flex justify-between text-slate-500">
+                <span>Withheld AIT (-):</span>
+                <span class="font-mono text-rose-600 dark:text-rose-400 font-semibold" id="withheld-ait-display">-৳12,500.00</span>
+              </div>
+              <input type="hidden" name="withheld_ait_amount" id="withheld-ait-input" value="12500.00">
+
+              <div class="flex justify-between text-slate-500">
+                <span>Withheld VAT (-):</span>
+                <span class="font-mono text-indigo-600 dark:text-indigo-400 font-semibold">৳0.00</span>
+              </div>
+              <input type="hidden" name="withheld_vat_amount" value="0.0">
+            </div>
+
+            <div class="pt-3 border-t border-slate-200 dark:border-white/10">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-900 dark:text-white">Net Cheque / Bank Transfer</span>
+                <span class="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400" id="net-disbursement-display">৳237,500.00</span>
+              </div>
+              <input type="hidden" name="net_disbursement_amount" id="net-disbursement-input" value="237500.00">
+            </div>
+          </div>
+
+          <div class="pt-4 space-y-2">
+            <button 
+              type="submit" 
+              class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-500/20 hover:scale-[1.01] active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>Confirm &amp; Disburse Payment</span>
+            </button>
+            <a 
+              href="/modules/accounts-payable?tab=payments" 
+              class="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 font-semibold text-xs transition flex items-center justify-center"
+            >
+              Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+
+<script>
+function toggleChequeFields(val) {
+  const fields = document.getElementById('cheque-fields');
+  if (val === 'CHEQUE') {
+    fields.classList.remove('hidden');
+  } else {
+    fields.classList.add('hidden');
+  }
+}
+
+function calcDisbursementTaxes() {
+  const gross = parseFloat(document.getElementById('gross-pmt-input').value) || 0;
+  const rate = parseFloat(document.getElementById('ait-rate-input').value) || 0;
+
+  const ait = gross * (rate / 100);
+  const net = gross - ait;
+
+  document.getElementById('withheld-ait-display').innerText = '-৳' + ait.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('withheld-ait-input').value = ait.toFixed(2);
+
+  document.getElementById('net-disbursement-display').innerText = '৳' + net.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('net-disbursement-input').value = net.toFixed(2);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const d = document.getElementById('pmt-date-input');
+  if (d && !d.value) {
+    d.value = new Date().toISOString().split('T')[0];
+  }
+  calcDisbursementTaxes();
+});
+</script>
+{% endblock %}

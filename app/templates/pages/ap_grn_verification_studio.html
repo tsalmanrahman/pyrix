@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-AP - GRN Verification Vault{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-5xl mx-auto">
+
+  <!-- Header Banner -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <a 
+        href="/modules/accounts-payable?tab=grn-verification" 
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
+        title="Back to GRN Verification"
+      >
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
+      </a>
+
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <i data-lucide="folder-lock" class="w-4 h-4"></i>
+      </div>
+
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          GRN Verification Document Vault
+        </h2>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Warehouse Goods Receiving Inspection &amp; 3-Way QC Certificate Archival</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        <span>Secure Vault Active</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Document Upload & Record Card -->
+  <form method="POST" action="/modules/accounts-payable/grn-verification" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <div class="md:col-span-2 space-y-6">
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="file-check" class="w-4 h-4 text-amber-500"></i>
+              <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">GRN Audit Documentation Details</span>
+            </div>
+            <span class="text-[11px] text-slate-400">Warehouse Receiving Gate</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">GRN Number *</label>
+              <input 
+                type="text" 
+                name="grn_number" 
+                required 
+                placeholder="e.g. GRN-2026-0082" 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold"
+              >
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Document Evidence Type *</label>
+              <select name="document_type" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-medium">
+                <option value="INSPECTION_CERTIFICATE">Technical QC Inspection Certificate</option>
+                <option value="WEIGHT_SLIP">Weighbridge Scale Weight Slip</option>
+                <option value="BILL_OF_LADING">Port Bill of Lading (B/L) / Waybill</option>
+                <option value="SUPPLIER_CHALLAN">Supplier Counter-Signed Delivery Challan</option>
+                <option value="REJECTION_MEMO">Defective Goods Rejection Memo</option>
+              </select>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Sourcing Vendor</label>
+              <select name="vendor_id" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-semibold">
+                {% for v in vendors %}
+                  <option value="{{ v.id }}">{{ v.vendor_name }} ({{ v.vendor_code }})</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">File Asset Name</label>
+              <input 
+                type="text" 
+                name="file_name" 
+                value="GRN_QC_Inspection_Certificate_Signed.pdf" 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+              >
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Verification Status</label>
+              <select name="verification_status" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-semibold">
+                <option value="VERIFIED">Verified &amp; QC Cleared (Matches PO Spec)</option>
+                <option value="PENDING_QC">Pending Laboratory Chemical Assay</option>
+                <option value="FLAGGED">Discrepancy Flagged (Short/Damaged)</option>
+              </select>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Warehouse Notes / Inspector Remarks</label>
+              <textarea 
+                name="remarks" 
+                rows="2" 
+                placeholder="Certified 100% physically inspected by Plant Receiving In-Charge..." 
+                class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right 1 Col: Upload Widget & Save -->
+      <div class="space-y-6">
+        <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-amber-500"></i>
+              <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Secure File Vault</span>
+            </div>
+            <span class="text-[10px] text-slate-400">PDF, JPG, PNG</span>
+          </div>
+
+          <div class="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl p-6 text-center space-y-2 hover:border-amber-400 transition bg-slate-50/50 dark:bg-white/[0.02]">
+            <i data-lucide="file-up" class="w-8 h-8 text-amber-500 mx-auto"></i>
+            <div class="text-xs font-bold text-slate-800 dark:text-slate-200">Drag &amp; drop document or browse</div>
+            <div class="text-[10px] text-slate-400">Maximum file size: 25 MB</div>
+            <input type="file" class="hidden" id="file-upload-input">
+            <button type="button" onclick="document.getElementById('file-upload-input').click()" class="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 hover:bg-amber-100 transition cursor-pointer">
+              Select Document File
+            </button>
+          </div>
+
+          <div class="pt-2 space-y-2">
+            <button 
+              type="submit" 
+              class="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md shadow-amber-500/20 hover:scale-[1.01] active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>Save to GRN Vault</span>
+            </button>
+            <a 
+              href="/modules/accounts-payable?tab=grn-verification" 
+              class="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 font-semibold text-xs transition flex items-center justify-center"
+            >
+              Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}

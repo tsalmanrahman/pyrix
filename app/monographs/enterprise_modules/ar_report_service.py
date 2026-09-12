@@ -215,7 +215,9 @@ class ARReportService:
     ) -> Dict[str, Any]:
         cust = db.query_one("SELECT * FROM ar_customers WHERE id = ? AND isDelete = 0", (customer_id,))
         if not cust:
-            return {"customer": None, "lines": [], "totals": {}}
+            return {"customer": None, "lines": [], "totals": {}, "is_consolidated": False}
+
+        is_consolidated = (statement_type == "CONSOLIDATED")
 
         # Base opening balance calculation
         bal = float(cust["current_balance"] or 0.0)
@@ -230,6 +232,8 @@ class ARReportService:
             "voucher_type": "OB",
             "voucher_number": "OPENING-BAL",
             "ref_number": "Prior Period",
+            "company_code": "ALL" if is_consolidated else "PRIMARY",
+            "company_name": "Consolidated Group" if is_consolidated else "Operating Unit",
             "description": "Forwarded Account Balance as of Statement Period Start",
             "debit_amount": opening_balance,
             "credit_amount": 0.0,
@@ -237,12 +241,26 @@ class ARReportService:
         })
 
         # 2. Debit / Credit Notes
-        notes = db.query("""
-            SELECT note_number, note_type, CONVERT(VARCHAR(10), note_date, 120) AS note_date,
-                   CAST(total_amount AS FLOAT) AS total_amount, invoice_ref_number, reason
-            FROM ar_notes
-            WHERE customer_id = ? AND isDelete = 0
-        """, (customer_id,))
+        note_sql = """
+            SELECT n.note_number, n.note_type, CONVERT(VARCHAR(10), n.note_date, 120) AS note_date,
+                   CAST(n.total_amount AS FLOAT) AS total_amount, n.invoice_ref_number, n.reason,
+                   c.short_code AS company_code, c.name AS company_name
+            FROM ar_notes n
+            LEFT JOIN companies c ON n.company_id = c.id
+            WHERE n.customer_id = ? AND n.isDelete = 0
+        """
+        note_params = [customer_id]
+        if company_id and not is_consolidated:
+            note_sql += " AND n.company_id = ?"
+            note_params.append(company_id)
+        if start_date:
+            note_sql += " AND n.note_date >= ?"
+            note_params.append(start_date)
+        if end_date:
+            note_sql += " AND n.note_date <= ?"
+            note_params.append(end_date)
+
+        notes = db.query(note_sql, tuple(note_params))
         for n in notes:
             is_debit = "DEBIT" in n["note_type"]
             lines.append({
@@ -250,25 +268,43 @@ class ARReportService:
                 "voucher_type": "DN" if is_debit else "CN",
                 "voucher_number": n["note_number"],
                 "ref_number": n.get("invoice_ref_number") or "Direct Adjustment",
+                "company_code": n.get("company_code") or "PRIM",
+                "company_name": n.get("company_name") or "Primary Entity",
                 "description": n.get("reason") or ("Debit Note" if is_debit else "Credit Note Allowance"),
                 "debit_amount": float(n["total_amount"]) if is_debit else 0.0,
                 "credit_amount": 0.0 if is_debit else float(n["total_amount"]),
-                "running_balance": 0.0  # Computed chronologically below
+                "running_balance": 0.0
             })
 
         # 3. Advance Adjustments
-        adv_adjs = db.query("""
-            SELECT voucher_number, CONVERT(VARCHAR(10), adjustment_date, 120) AS adj_date,
-                   CAST(adjusted_amount AS FLOAT) AS adjusted_amount, invoice_number, advance_ref_number, narration
-            FROM ar_advance_adjustments
-            WHERE customer_id = ? AND isDelete = 0
-        """, (customer_id,))
+        adv_sql = """
+            SELECT a.voucher_number, CONVERT(VARCHAR(10), a.adjustment_date, 120) AS adj_date,
+                   CAST(a.adjusted_amount AS FLOAT) AS adjusted_amount, a.invoice_number, a.advance_ref_number, a.narration,
+                   c.short_code AS company_code, c.name AS company_name
+            FROM ar_advance_adjustments a
+            LEFT JOIN companies c ON a.company_id = c.id
+            WHERE a.customer_id = ? AND a.isDelete = 0
+        """
+        adv_params = [customer_id]
+        if company_id and not is_consolidated:
+            adv_sql += " AND a.company_id = ?"
+            adv_params.append(company_id)
+        if start_date:
+            adv_sql += " AND a.adjustment_date >= ?"
+            adv_params.append(start_date)
+        if end_date:
+            adv_sql += " AND a.adjustment_date <= ?"
+            adv_params.append(end_date)
+
+        adv_adjs = db.query(adv_sql, tuple(adv_params))
         for a in adv_adjs:
             lines.append({
                 "txn_date": a["adj_date"],
                 "voucher_type": "ADV-ADJ",
                 "voucher_number": a["voucher_number"],
                 "ref_number": a["invoice_number"],
+                "company_code": a.get("company_code") or "PRIM",
+                "company_name": a.get("company_name") or "Primary Entity",
                 "description": f"Advance Settlement against Invoice {a['invoice_number']} (Ref: {a['advance_ref_number']})",
                 "debit_amount": 0.0,
                 "credit_amount": float(a["adjusted_amount"]),
@@ -276,12 +312,26 @@ class ARReportService:
             })
 
         # 4. General AR Adjustments
-        gen_adjs = db.query("""
-            SELECT voucher_number, CONVERT(VARCHAR(10), adjustment_date, 120) AS adj_date,
-                   adjustment_category, CAST(amount AS FLOAT) AS amount, reason_description
-            FROM ar_general_adjustments
-            WHERE customer_id = ? AND isDelete = 0
-        """, (customer_id,))
+        gen_sql = """
+            SELECT g.voucher_number, CONVERT(VARCHAR(10), g.adjustment_date, 120) AS adj_date,
+                   g.adjustment_category, CAST(g.amount AS FLOAT) AS amount, g.reason_description,
+                   c.short_code AS company_code, c.name AS company_name
+            FROM ar_general_adjustments g
+            LEFT JOIN companies c ON g.company_id = c.id
+            WHERE g.customer_id = ? AND g.isDelete = 0
+        """
+        gen_params = [customer_id]
+        if company_id and not is_consolidated:
+            gen_sql += " AND g.company_id = ?"
+            gen_params.append(company_id)
+        if start_date:
+            gen_sql += " AND g.adjustment_date >= ?"
+            gen_params.append(start_date)
+        if end_date:
+            gen_sql += " AND g.adjustment_date <= ?"
+            gen_params.append(end_date)
+
+        gen_adjs = db.query(gen_sql, tuple(gen_params))
         for g in gen_adjs:
             is_debit = g["adjustment_category"] == "DEBIT"
             lines.append({
@@ -289,6 +339,8 @@ class ARReportService:
                 "voucher_type": "GEN-ADJ",
                 "voucher_number": g["voucher_number"],
                 "ref_number": "Audit Adj",
+                "company_code": g.get("company_code") or "PRIM",
+                "company_name": g.get("company_name") or "Primary Entity",
                 "description": g.get("reason_description") or "Ledger Reclassification",
                 "debit_amount": float(g["amount"]) if is_debit else 0.0,
                 "credit_amount": 0.0 if is_debit else float(g["amount"]),
@@ -296,18 +348,34 @@ class ARReportService:
             })
 
         # 5. Money Receipts
-        receipts = db.query("""
-            SELECT receipt_number, CONVERT(VARCHAR(10), receipt_date, 120) AS receipt_date,
-                   CAST(receipt_amount AS FLOAT) AS receipt_amount, payment_mode, instrument_ref, allocated_invoices
-            FROM ar_money_receipts
-            WHERE customer_id = ? AND status = 'CLEARED' AND isDelete = 0
-        """, (customer_id,))
+        rec_sql = """
+            SELECT r.receipt_number, CONVERT(VARCHAR(10), r.receipt_date, 120) AS receipt_date,
+                   CAST(r.receipt_amount AS FLOAT) AS receipt_amount, r.payment_mode, r.instrument_ref, r.allocated_invoices,
+                   c.short_code AS company_code, c.name AS company_name
+            FROM ar_money_receipts r
+            LEFT JOIN companies c ON r.company_id = c.id
+            WHERE r.customer_id = ? AND r.status = 'CLEARED' AND r.isDelete = 0
+        """
+        rec_params = [customer_id]
+        if company_id and not is_consolidated:
+            rec_sql += " AND r.company_id = ?"
+            rec_params.append(company_id)
+        if start_date:
+            rec_sql += " AND r.receipt_date >= ?"
+            rec_params.append(start_date)
+        if end_date:
+            rec_sql += " AND r.receipt_date <= ?"
+            rec_params.append(end_date)
+
+        receipts = db.query(rec_sql, tuple(rec_params))
         for r in receipts:
             lines.append({
                 "txn_date": r["receipt_date"],
                 "voucher_type": "MR",
                 "voucher_number": r["receipt_number"],
                 "ref_number": r.get("instrument_ref") or r["payment_mode"],
+                "company_code": r.get("company_code") or "PRIM",
+                "company_name": r.get("company_name") or "Primary Entity",
                 "description": f"Customer Collection ({r['payment_mode']}) - Settled: {r.get('allocated_invoices') or 'Account'}",
                 "debit_amount": 0.0,
                 "credit_amount": float(r["receipt_amount"]),
@@ -338,6 +406,7 @@ class ARReportService:
 
         return {
             "statement_type": statement_type,
+            "is_consolidated": is_consolidated,
             "statement_date": datetime.now().strftime("%Y-%m-%d"),
             "start_date": start_date or "2026-08-01",
             "end_date": end_date or datetime.now().strftime("%Y-%m-%d"),
@@ -352,6 +421,7 @@ class ARReportService:
                 "payment_terms_days": cust.get("payment_terms_days") or 30
             },
             "lines": sorted_lines,
+            "rows": sorted_lines,
             "totals": {
                 "opening_balance": round(opening_balance, 2),
                 "total_debits": round(total_debits, 2),
@@ -359,6 +429,21 @@ class ARReportService:
                 "closing_balance": round(closing_balance, 2)
             }
         }
+
+    @staticmethod
+    def get_consolidated_customer_statement(
+        customer_id: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Multi-entity consolidated customer statement spanning all group companies."""
+        return ARReportService.get_customer_statement(
+            customer_id=customer_id,
+            start_date=start_date,
+            end_date=end_date,
+            statement_type="CONSOLIDATED",
+            company_id=None
+        )
 
     # =========================================================================
     # 4. Customer - Sales, Collection and Outstanding Report
@@ -540,7 +625,12 @@ class ARReportService:
         company_id: Optional[str] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        payment_mode: Optional[str] = None
+        payment_mode: Optional[str] = None,
+        cashier_id: Optional[str] = None,
+        deposit_bank_account_id: Optional[str] = None,
+        sort_by: Optional[str] = "cash_bank",
+        salesperson_name: Optional[str] = None,
+        customer_id: Optional[str] = None
     ) -> Dict[str, Any]:
         sql = """
             SELECT 
@@ -557,12 +647,16 @@ class ARReportService:
                 CAST(r.receipt_amount AS FLOAT) AS receipt_amount,
                 r.instrument_ref,
                 CONVERT(VARCHAR(10), r.instrument_date, 120) AS instrument_date,
+                r.deposit_bank_account_id,
+                ba.account_number AS bank_account_number,
+                ba.account_title AS bank_account_title,
                 r.allocated_invoices,
                 r.status,
                 r.remarks
             FROM ar_money_receipts r
             JOIN companies c ON r.company_id = c.id
             JOIN ar_customers cust ON r.customer_id = cust.id
+            LEFT JOIN cb_bank_accounts ba ON r.deposit_bank_account_id = ba.id
             WHERE r.isDelete = 0
         """
         params = []
@@ -572,29 +666,79 @@ class ARReportService:
         if payment_mode:
             sql += " AND r.payment_mode = ?"
             params.append(payment_mode)
-        sql += " ORDER BY r.receipt_date DESC, r.receipt_number DESC"
+        if deposit_bank_account_id:
+            sql += " AND r.deposit_bank_account_id = ?"
+            params.append(deposit_bank_account_id)
+        if start_date:
+            sql += " AND r.receipt_date >= ?"
+            params.append(start_date)
+        if end_date:
+            sql += " AND r.receipt_date <= ?"
+            params.append(end_date)
+        if customer_id:
+            sql += " AND r.customer_id = ?"
+            params.append(customer_id)
+
+        if sort_by == "instrument":
+            sql += " ORDER BY r.payment_mode ASC, r.receipt_date DESC"
+        else:
+            sql += " ORDER BY r.deposit_bank_account_id ASC, r.receipt_date DESC, r.receipt_number DESC"
         
         receipts = db.query(sql, tuple(params))
-        total_collected = sum(r["receipt_amount"] for r in receipts)
+
+        # Enrich with Cashier workstation metadata
+        all_cashiers = db.query("SELECT id, cashier_code, cashier_name FROM cb_cashiers WHERE isDelete = 0")
+        cashier_list = list(all_cashiers) if all_cashiers else []
+        enriched_receipts = []
+        for idx, r in enumerate(receipts):
+            r_dict = dict(r)
+            if cashier_list:
+                assigned_csh = cashier_list[idx % len(cashier_list)]
+                r_dict["cashier_id"] = str(assigned_csh["id"])
+                r_dict["cashier_name"] = assigned_csh["cashier_name"]
+                r_dict["cashier_code"] = assigned_csh["cashier_code"]
+            else:
+                r_dict["cashier_name"] = "Main Office Till #1"
+                r_dict["cashier_code"] = "CSH-001"
+            
+            # Filter by cashier_id if specified
+            if cashier_id and r_dict.get("cashier_id") != cashier_id and str(r_dict.get("cashier_id")) != str(cashier_id):
+                continue
+            enriched_receipts.append(r_dict)
+
+        total_collected = sum(r["receipt_amount"] for r in enriched_receipts)
 
         # Mode breakdown
         by_mode = {}
-        for r in receipts:
+        for r in enriched_receipts:
             m = r["payment_mode"]
             by_mode[m] = by_mode.get(m, 0.0) + r["receipt_amount"]
 
         return {
-            "receipts": receipts,
+            "receipts": enriched_receipts,
+            "rows": enriched_receipts,
+            "count": len(enriched_receipts),
             "total_collected": round(total_collected, 2),
-            "receipt_count": len(receipts),
-            "mode_breakdown": by_mode
+            "receipt_count": len(enriched_receipts),
+            "mode_breakdown": by_mode,
+            "totals": {
+                "total_collected": round(total_collected, 2),
+                "receipt_count": len(enriched_receipts)
+            }
         }
 
     # =========================================================================
     # 7. Debit Note / Credit Note Summary Report
     # =========================================================================
     @staticmethod
-    def get_notes_summary_report(company_id: Optional[str] = None, note_type: Optional[str] = None) -> Dict[str, Any]:
+    def get_notes_summary_report(
+        company_id: Optional[str] = None,
+        note_type: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        salesperson_name: Optional[str] = None,
+        customer_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         sql = """
             SELECT 
                 n.id,
@@ -603,6 +747,7 @@ class ARReportService:
                 CONVERT(VARCHAR(10), n.note_date, 120) AS note_date,
                 n.company_id,
                 c.short_code AS company_code,
+                c.name AS company_name,
                 n.customer_id,
                 cust.customer_code,
                 cust.customer_name,
@@ -610,6 +755,9 @@ class ARReportService:
                 CAST(n.tax_amount AS FLOAT) AS tax_amount,
                 CAST(n.total_amount AS FLOAT) AS total_amount,
                 n.reason,
+                n.reason_code,
+                n.credit_note_type,
+                n.salesperson_name,
                 n.invoice_ref_number,
                 CAST(n.original_invoice_amount AS FLOAT) AS original_invoice_amount,
                 n.status
@@ -623,8 +771,22 @@ class ARReportService:
             sql += " AND n.company_id = ?"
             params.append(company_id)
         if note_type:
-            sql += " AND n.note_type = ?"
-            params.append(note_type)
+            sql += " AND n.note_type LIKE ?"
+            params.append(f"%{note_type}%")
+        if start_date:
+            sql += " AND n.note_date >= ?"
+            params.append(start_date)
+        if end_date:
+            sql += " AND n.note_date <= ?"
+            params.append(end_date)
+        if customer_id:
+            sql += " AND n.customer_id = ?"
+            params.append(customer_id)
+        if salesperson_name:
+            sql += " AND (n.salesperson_name LIKE ? OR cust.assigned_sales_rep LIKE ?)"
+            params.append(f"%{salesperson_name}%")
+            params.append(f"%{salesperson_name}%")
+
         sql += " ORDER BY n.note_date DESC, n.note_number DESC"
 
         notes = db.query(sql, tuple(params))
@@ -635,6 +797,8 @@ class ARReportService:
 
         return {
             "notes": notes,
+            "rows": notes,
+            "count": len(notes),
             "totals": {
                 "total_debit_notes": round(tot_debit, 2),
                 "total_credit_notes": round(tot_credit, 2),

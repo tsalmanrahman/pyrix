@@ -32,9 +32,9 @@ class DatabaseManager:
             conn.close()
 
     @staticmethod
-    def query(sql: str, params: Tuple = (), use_master: bool = False) -> List[Dict[str, Any]]:
+    def query(sql: str, params: Tuple = (), use_master: bool = False, commit: bool = False) -> List[Dict[str, Any]]:
         """Executes a SELECT query and returns rows as dictionaries."""
-        with DatabaseManager.get_cursor(use_master=use_master, commit=False) as cursor:
+        with DatabaseManager.get_cursor(use_master=use_master, commit=commit) as cursor:
             cursor.execute(sql, params)
             if cursor.description is None:
                 return []
@@ -45,9 +45,9 @@ class DatabaseManager:
             return results
 
     @staticmethod
-    def query_one(sql: str, params: Tuple = (), use_master: bool = False) -> Optional[Dict[str, Any]]:
+    def query_one(sql: str, params: Tuple = (), use_master: bool = False, commit: bool = False) -> Optional[Dict[str, Any]]:
         """Executes a SELECT query and returns a single row dictionary."""
-        rows = DatabaseManager.query(sql, params, use_master=use_master)
+        rows = DatabaseManager.query(sql, params, use_master=use_master, commit=commit)
         return rows[0] if rows else None
 
     @staticmethod

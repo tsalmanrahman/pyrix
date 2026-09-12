@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-AP - Payment Order Studio{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl mx-auto">
+
+  <!-- Header Banner -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <a 
+        href="/modules/accounts-payable?tab=payment-orders" 
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
+        title="Back to Payment Orders"
+      >
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
+      </a>
+
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <div class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+        <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+      </div>
+
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          Treasury Payment Order Studio
+        </h2>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Pre-Disbursement Batch Allocation &amp; Treasury Cash Flow Approval</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20">
+        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+        <span>Treasury Authorization Staging</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Form Card -->
+  <form method="POST" action="/modules/accounts-payable/payment-orders/new" class="space-y-6">
+    <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-check" class="w-4 h-4 text-purple-500"></i>
+          <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Payment Order Information</span>
+        </div>
+        <span class="text-[11px] font-mono text-slate-400">{{ auto_order_no }}</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Order Number *</label>
+          <input 
+            type="text" 
+            name="order_number" 
+            value="{{ auto_order_no }}" 
+            required 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Order Date *</label>
+          <input 
+            type="date" 
+            name="order_date" 
+            id="order-date-input" 
+            required 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+          >
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Beneficiary Vendor *</label>
+          <select name="vendor_id" required class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-semibold">
+            {% for v in vendors %}
+              <option value="{{ v.id }}">{{ v.vendor_name }} ({{ v.vendor_code }}) - Credit Terms: {{ v.credit_terms_days|default(30) }} Days</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Payment Priority</label>
+          <select name="priority" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-medium">
+            <option value="NORMAL">Normal Processing</option>
+            <option value="HIGH">High Priority (Within 48 Hours)</option>
+            <option value="URGENT">Urgent (Immediate Treasury Settlement)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Proposed Disbursement Amount *</label>
+          <input 
+            type="number" 
+            step="0.01" 
+            name="total_proposed_amount" 
+            value="350000.00" 
+            required 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold text-right text-purple-700 dark:text-purple-400"
+          >
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Treasury Justification &amp; Purpose</label>
+          <textarea 
+            name="remarks" 
+            rows="2" 
+            placeholder="e.g. Allocation for LC retirement / urgent vendor release..." 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-white/5">
+        <a 
+          href="/modules/accounts-payable?tab=payment-orders" 
+          class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition"
+        >
+          Cancel
+        </a>
+        <button 
+          type="submit" 
+          class="px-5 py-2 text-xs font-bold rounded-xl bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+        >
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Authorize Payment Order</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const d = document.getElementById('order-date-input');
+  if (d && !d.value) {
+    d.value = new Date().toISOString().split('T')[0];
+  }
+});
+</script>
+{% endblock %}

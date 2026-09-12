@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}{{ active_company.short_code }}-AP - Advance Settlement Workbench{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl mx-auto">
+
+  <!-- Header Banner -->
+  <div class="glass-card rounded-2xl px-5 py-3.5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <a 
+        href="/modules/accounts-payable?tab=advance-adjustments" 
+        class="btn-action-back h-9 px-3 rounded-xl transition-all duration-150 flex items-center gap-1.5 cursor-pointer shrink-0 border border-slate-200 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:scale-[1.02] active:scale-95 text-xs font-semibold shadow-sm"
+        title="Back to Advance Adjustments"
+      >
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <span class="hidden sm:inline">Back</span>
+      </a>
+
+      <div class="h-6 w-px bg-slate-200 dark:bg-white/10 shrink-0"></div>
+
+      <div class="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+        <i data-lucide="layers-2" class="w-4 h-4"></i>
+      </div>
+
+      <div class="min-w-0">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight truncate">
+          Advance Knock-Off Settlement Workbench
+        </h2>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Prepayment Matching &amp; Open Liability Allocation Engine</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-200 dark:border-teal-500/20">
+        <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+        <span>FIFO Knock-Off Active</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Vendor Selector Card -->
+  <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+      <div class="flex items-center gap-2">
+        <i data-lucide="user-check" class="w-4 h-4 text-teal-500"></i>
+        <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Active Sourcing Vendor Account</span>
+      </div>
+      <div class="text-xs text-slate-400">Selecting a vendor updates open prepayments and outstanding bills dynamically</div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+      <div class="md:col-span-2">
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Select Vendor *</label>
+        <select 
+          id="vendor-selector" 
+          onchange="window.location.href='/modules/accounts-payable/advance-settlement-studio?vendor_id=' + this.value"
+          class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-semibold"
+        >
+          {% for v in ap_vendors %}
+            <option value="{{ v.id }}" {% if v.id == selected_vendor_id or v.id|string == selected_vendor_id|string %}selected{% endif %}>
+              {{ v.vendor_name }} ({{ v.vendor_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="p-3 rounded-xl bg-teal-50/50 dark:bg-teal-500/10 border border-teal-200/60 dark:border-teal-500/20 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] text-teal-700 dark:text-teal-400 font-semibold">Available Unsettled Advances</div>
+          <div class="text-sm font-bold font-mono text-teal-900 dark:text-teal-200 mt-0.5">
+            {{ active_company.currency_symbol|default('৳') }}{{ "{:,.2f}".format(unsettled_advances|sum(attribute='unadjusted_amount') if unsettled_advances else 0.0) }}
+          </div>
+        </div>
+        <i data-lucide="wallet" class="w-6 h-6 text-teal-500/50"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form for Committing Adjustment -->
+  <form method="POST" action="/modules/accounts-payable/advance-settlement-studio/post" class="space-y-6">
+    <input type="hidden" name="vendor_id" value="{{ selected_vendor_id }}">
+
+    <!-- Dual Ledger Tables (Side by Side) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Left Table: Unsettled Advances -->
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-white/5">
+          <div class="flex items-center gap-2">
+            <i data-lucide="arrow-down-left" class="w-4 h-4 text-teal-500"></i>
+            <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">1. Unsettled Prepayment Advances</span>
+          </div>
+          <span class="text-[11px] font-mono text-teal-600 dark:text-teal-400 font-bold">{{ unsettled_advances|length }} Available</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-[11px]">
+                <th class="py-2 px-2.5 text-center">Select</th>
+                <th class="py-2 px-2.5">Voucher No</th>
+                <th class="py-2 px-2.5">Date</th>
+                <th class="py-2 px-2.5 text-right">Prepaid</th>
+                <th class="py-2 px-2.5 text-right">Available</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+              {% for adv in unsettled_advances %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02]">
+                  <td class="py-2 px-2.5 text-center">
+                    <input 
+                      type="radio" 
+                      name="advance_voucher_id" 
+                      value="{{ adv.id }}" 
+                      data-amount="{{ adv.unadjusted_amount }}" 
+                      onchange="updateAdvanceSelection(this)" 
+                      {% if loop.first %}checked{% endif %}
+                      class="text-teal-600 focus:ring-teal-500"
+                    >
+                  </td>
+                  <td class="py-2 px-2.5 font-mono font-bold text-teal-600 dark:text-teal-400">{{ adv.payment_number }}</td>
+                  <td class="py-2 px-2.5 font-mono text-slate-500">{{ adv.payment_date }}</td>
+                  <td class="py-2 px-2.5 text-right font-mono">{{ "{:,.2f}".format(adv.gross_payment_amount) }}</td>
+                  <td class="py-2 px-2.5 text-right font-mono font-bold text-teal-600 dark:text-teal-400">{{ "{:,.2f}".format(adv.unadjusted_amount) }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="text-center py-6 text-slate-400">No open advances found for this vendor.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Table: Open Purchase Bills -->
+      <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-white/5">
+          <div class="flex items-center gap-2">
+            <i data-lucide="receipt" class="w-4 h-4 text-emerald-500"></i>
+            <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">2. Open Purchase Bills</span>
+          </div>
+          <span class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">{{ open_bills|length }} Open</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-[11px]">
+                <th class="py-2 px-2.5 text-center">Select</th>
+                <th class="py-2 px-2.5">Bill No</th>
+                <th class="py-2 px-2.5">Due Date</th>
+                <th class="py-2 px-2.5 text-right">Net Bill</th>
+                <th class="py-2 px-2.5 text-right">Outstanding</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+              {% for b in open_bills %}
+                <tr class="hover:bg-slate-50 dark:hover:bg-white/[0.02]">
+                  <td class="py-2 px-2.5 text-center">
+                    <input 
+                      type="radio" 
+                      name="purchase_bill_id" 
+                      value="{{ b.id }}" 
+                      data-amount="{{ b.outstanding_amount }}" 
+                      onchange="updateBillSelection(this)" 
+                      {% if loop.first %}checked{% endif %}
+                      class="text-emerald-600 focus:ring-emerald-500"
+                    >
+                  </td>
+                  <td class="py-2 px-2.5 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ b.bill_number }}</td>
+                  <td class="py-2 px-2.5 font-mono text-slate-500">{{ b.due_date }}</td>
+                  <td class="py-2 px-2.5 text-right font-mono">{{ "{:,.2f}".format(b.net_payable_amount) }}</td>
+                  <td class="py-2 px-2.5 text-right font-mono font-bold text-amber-600 dark:text-amber-400">{{ "{:,.2f}".format(b.outstanding_amount) }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="text-center py-6 text-slate-400">No open purchase bills for this vendor.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Settlement Commitment Card -->
+    <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="check-circle" class="w-4 h-4 text-teal-500"></i>
+          <span class="text-xs font-bold text-slate-900 dark:text-white tracking-tight">3. Settlement Allocation &amp; Commitment</span>
+        </div>
+        <div class="text-[11px] text-slate-400">Generates real-time double-entry clearing voucher</div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Settlement Date *</label>
+          <input 
+            type="date" 
+            name="adjustment_date" 
+            id="adj-date" 
+            required 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Knock-Off Amount to Apply *</label>
+          <input 
+            type="number" 
+            step="0.01" 
+            name="adjustment_amount" 
+            id="adj-amount-input" 
+            required 
+            value="150000.00" 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 font-mono font-bold text-right text-teal-600 dark:text-teal-400"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Audit Remarks</label>
+          <input 
+            type="text" 
+            name="remarks" 
+            placeholder="e.g. Cleared against PO-2026-0042 shipment" 
+            class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10"
+          >
+        </div>
+      </div>
+
+      <div class="pt-3 flex justify-end gap-3">
+        <a 
+          href="/modules/accounts-payable?tab=advance-adjustments" 
+          class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition"
+        >
+          Cancel
+        </a>
+        <button 
+          type="submit" 
+          class="px-5 py-2 text-xs font-bold rounded-xl bg-teal-600 hover:bg-teal-500 text-white shadow-md shadow-teal-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+        >
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Commit Advance Knock-Off</span>
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+</div>
+
+<script>
+function updateAdvanceSelection(radio) {
+  autoPopulateAmount();
+}
+
+function updateBillSelection(radio) {
+  autoPopulateAmount();
+}
+
+function autoPopulateAmount() {
+  const selectedAdv = document.querySelector('input[name="advance_voucher_id"]:checked');
+  const selectedBill = document.querySelector('input[name="purchase_bill_id"]:checked');
+
+  if (selectedAdv && selectedBill) {
+    const advAmt = parseFloat(selectedAdv.getAttribute('data-amount')) || 0;
+    const billAmt = parseFloat(selectedBill.getAttribute('data-amount')) || 0;
+    const minSettlement = Math.min(advAmt, billAmt);
+    document.getElementById('adj-amount-input').value = minSettlement.toFixed(2);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const d = document.getElementById('adj-date');
+  if (d && !d.value) {
+    d.value = new Date().toISOString().split('T')[0];
+  }
+  autoPopulateAmount();
+});
+</script>
+{% endblock %}
