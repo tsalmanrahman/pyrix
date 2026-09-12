@@ -68,29 +68,29 @@
             class="mac-input py-1 px-2.5 text-xs font-bold bg-slate-900 cursor-pointer {% if m.status == 'RUNNING' %}text-emerald-400 border-emerald-500/30{% elif m.status == 'ALERT' %}text-rose-400 border-rose-500/30{% else %}text-amber-400 border-amber-500/30{% endif %}"
             onchange="updateMachineStatus('{{ m.machine_id }}', this.value)"
           >
-            <option value="RUNNING" {% if m.status == 'RUNNING' %}selected{% endif %}>RUNNING</option>
-            <option value="IDLE" {% if m.status == 'IDLE' %}selected{% endif %}>IDLE</option>
-            <option value="MAINTENANCE" {% if m.status == 'MAINTENANCE' %}selected{% endif %}>MAINTENANCE</option>
-            <option value="ALERT" {% if m.status == 'ALERT' %}selected{% endif %}>ALERT</option>
+            <option value="RUNNING" {% if m.status == 'RUNNING' %}selected{% endif %}>Running</option>
+            <option value="IDLE" {% if m.status == 'IDLE' %}selected{% endif %}>Idle</option>
+            <option value="MAINTENANCE" {% if m.status == 'MAINTENANCE' %}selected{% endif %}>Maintenance</option>
+            <option value="ALERT" {% if m.status == 'ALERT' %}selected{% endif %}>Alert</option>
           </select>
         </div>
 
         <!-- Telemetry Gauges -->
         <div class="grid grid-cols-4 gap-2 pt-2 border-t border-white/5 text-center">
           <div class="p-2 rounded-xl bg-white/[0.02]">
-            <p class="text-[10px] text-slate-400 uppercase">Efficiency</p>
+            <p class="text-[10px] text-slate-400 ">Efficiency</p>
             <p class="text-xs font-bold text-emerald-400 mt-0.5 font-mono">{{ m.efficiency_pct }}%</p>
           </div>
           <div class="p-2 rounded-xl bg-white/[0.02]">
-            <p class="text-[10px] text-slate-400 uppercase">Temp</p>
+            <p class="text-[10px] text-slate-400 ">Temp</p>
             <p class="text-xs font-bold {% if m.temperature_c > 70 %}text-rose-400{% else %}text-slate-200{% endif %} mt-0.5 font-mono">{{ m.temperature_c }}°C</p>
           </div>
           <div class="p-2 rounded-xl bg-white/[0.02]">
-            <p class="text-[10px] text-slate-400 uppercase">Vibration</p>
+            <p class="text-[10px] text-slate-400 ">Vibration</p>
             <p class="text-xs font-bold {% if m.vibration_mm_s > 2.0 %}text-rose-400{% else %}text-slate-200{% endif %} mt-0.5 font-mono">{{ m.vibration_mm_s }} mm/s</p>
           </div>
           <div class="p-2 rounded-xl bg-white/[0.02]">
-            <p class="text-[10px] text-slate-400 uppercase">Defects</p>
+            <p class="text-[10px] text-slate-400 ">Defects</p>
             <p class="text-xs font-bold {% if m.defect_count > 10 %}text-rose-400{% else %}text-slate-200{% endif %} mt-0.5 font-mono">{{ m.defect_count }}</p>
           </div>
         </div>

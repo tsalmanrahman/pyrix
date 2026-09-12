@@ -738,7 +738,7 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-4">
-          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Simulate Commercial Quote</h4>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white tracking-wider">Simulate Commercial Quote</h4>
           <div>
             <label class="block text-[11px] font-medium text-slate-500 mb-1">Select Catalog Product</label>
             <select id="dss-item-select" class="mac-input w-full text-xs rounded-xl p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
@@ -758,22 +758,22 @@
         </div>
 
         <div class="lg:col-span-2 p-5 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-4 flex flex-col justify-center">
-          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Instant DSS Viability Analysis</h4>
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white tracking-wider">Instant DSS Viability Analysis</h4>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
-              <span class="text-[10px] text-slate-500 uppercase font-semibold">Projected Revenue</span>
+              <span class="text-[10px] text-slate-500 font-semibold">Projected Revenue</span>
               <p id="dss-rev" class="text-base font-bold text-slate-900 dark:text-white font-mono mt-1">{{ 68875.00|money }}</p>
             </div>
             <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
-              <span class="text-[10px] text-slate-500 uppercase font-semibold">Estimated Cost</span>
+              <span class="text-[10px] text-slate-500 font-semibold">Estimated Cost</span>
               <p id="dss-cost" class="text-base font-bold text-slate-500 font-mono mt-1">{{ 44768.75|money }}</p>
             </div>
             <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
-              <span class="text-[10px] text-slate-500 uppercase font-semibold">Gross Profit</span>
+              <span class="text-[10px] text-slate-500 font-semibold">Gross Profit</span>
               <p id="dss-profit" class="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">{{ 24106.25|money }}</p>
             </div>
             <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10">
-              <span class="text-[10px] text-slate-500 uppercase font-semibold">Gross Margin %</span>
+              <span class="text-[10px] text-slate-500 font-semibold">Gross Margin %</span>
               <p id="dss-margin" class="text-base font-bold text-blue-600 dark:text-blue-400 font-mono mt-1">35.0%</p>
             </div>
           </div>
@@ -782,7 +782,7 @@
               <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
               <span id="dss-status-msg" class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Healthy Margin: Standard Sales Rep Authority sufficient</span>
             </div>
-            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">PASSED</span>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">Passed</span>
           </div>
         </div>
       </div>
@@ -873,19 +873,19 @@
       <!-- KPI Summary Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
-          <span class="text-[10px] text-slate-500 uppercase font-semibold">Total Invoiced Sales</span>
+          <span class="text-[10px] text-slate-500 font-semibold">Total Invoiced Sales</span>
           <p class="text-lg font-bold text-slate-900 dark:text-white font-mono mt-1">{{ sls_pivot_data.total_billed|default(0)|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
-          <span class="text-[10px] text-slate-500 uppercase font-semibold">Total Realized Collection</span>
+          <span class="text-[10px] text-slate-500 font-semibold">Total Realized Collection</span>
           <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">{{ sls_pivot_data.total_collected|default(0)|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
-          <span class="text-[10px] text-slate-500 uppercase font-semibold">Net AR Outstanding</span>
+          <span class="text-[10px] text-slate-500 font-semibold">Net AR Outstanding</span>
           <p class="text-lg font-bold text-rose-600 dark:text-rose-400 font-mono mt-1">{{ sls_pivot_data.total_ar|default(0)|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5">
-          <span class="text-[10px] text-slate-500 uppercase font-semibold">Collection Efficiency</span>
+          <span class="text-[10px] text-slate-500 font-semibold">Collection Efficiency</span>
           <p class="text-lg font-bold text-blue-600 dark:text-blue-400 font-mono mt-1">{{ sls_pivot_data.collection_efficiency_pct|default(100) }}%</p>
         </div>
       </div>

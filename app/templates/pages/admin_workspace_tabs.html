@@ -32,7 +32,7 @@
                 >
                   <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                 </button>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">ACTIVE</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
               </div>
             </div>
             <div>
@@ -103,7 +103,7 @@
                   <div class="font-mono text-[10px] text-slate-400">key: {{ s.entity_key }}</div>
                 </td>
                 <td class="py-3 px-3">
-                  <span class="px-2 py-0.5 text-[9px] font-mono font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5 uppercase">
+                  <span class="px-2 py-0.5 text-[9px] font-mono font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5 ">
                     {{ s.module_slug }}
                   </span>
                 </td>
@@ -308,7 +308,7 @@
                 <td class="py-3 px-3 text-slate-500 dark:text-slate-400">{{ bu.location }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-blue-600 dark:text-blue-400">{{ bu.cc_count }} CCs</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">ACTIVE</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -322,7 +322,7 @@
       </div>
 
       <div class="pt-4 border-t border-slate-200 dark:border-white/5">
-        <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <h4 class="text-xs font-bold text-slate-900 dark:text-white tracking-wider mb-3 flex items-center gap-1.5">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-blue-500"></i>
           <span>Assigned Cost &amp; Profit Centers</span>
         </h4>
@@ -353,14 +353,14 @@
                   <td class="py-2.5 px-3">{{ cc.manager_name }}</td>
                   <td class="py-2.5 px-3 text-center">
                     {% if cc.is_profit_center %}
-                      <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">PROFIT CENTER</span>
+                      <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">Profit center</span>
                     {% else %}
-                      <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">COST CENTER</span>
+                      <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">Cost center</span>
                     {% endif %}
                   </td>
                   <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ cc.budget_allocation|float|money }}</td>
                   <td class="py-2.5 px-3 text-center">
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Active</span>
                   </td>
                 
                 <td class="py-3 px-3 text-right">
@@ -387,7 +387,7 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white tracking-wider mb-3 flex items-center gap-1.5">
             <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-500"></i>
             <span>ISO Country Directory</span>
           </h4>
@@ -424,7 +424,7 @@
         </div>
 
         <div>
-          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white tracking-wider mb-3 flex items-center gap-1.5">
             <i data-lucide="map" class="w-3.5 h-3.5 text-cyan-500"></i>
             <span>States, Provinces &amp; Tax Zones</span>
           </h4>
@@ -472,7 +472,7 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-1 space-y-3">
-          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white tracking-wider flex items-center gap-1.5">
             <i data-lucide="credit-card" class="w-3.5 h-3.5 text-amber-500"></i>
             <span>Currency Profiles</span>
           </h4>
@@ -489,9 +489,9 @@
                   </div>
                 </div>
                 {% if cur.is_base_currency %}
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">BASE CURRENCY</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Base currency</span>
                 {% else %}
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">FOREIGN</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">Foreign</span>
                 {% endif %}
               </div>
             {% endfor %}
@@ -499,7 +499,7 @@
         </div>
 
         <div class="lg:col-span-2 space-y-3">
-          <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+          <h4 class="text-xs font-bold text-slate-900 dark:text-white tracking-wider flex items-center gap-1.5">
             <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-500"></i>
             <span>Daily Treasury Exchange Rate Board (USD Base)</span>
           </h4>
@@ -556,10 +556,10 @@
           </div>
           <div>
             <h4 class="text-sm font-bold text-slate-900 dark:text-white">Active Fiscal Year: FY 2026-2027</h4>
-            <p class="text-xs text-slate-600 dark:text-slate-300">Period span: April 1, 2026 - March 31, 2027 &bull; Opening Balances: <strong class="text-emerald-600 dark:text-emerald-400">LOCKED &amp; VERIFIED</strong></p>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Period span: April 1, 2026 - March 31, 2027 &bull; Opening Balances: <strong class="text-emerald-600 dark:text-emerald-400">Locked &amp; verified</strong></p>
           </div>
         </div>
-        <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm">CALENDAR ACTIVE</span>
+        <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm">Calendar active</span>
       </div>
 
       <div class="overflow-x-auto">
@@ -590,7 +590,7 @@
                     </span>
                   {% elif fp.status == 'SOFT_LOCKED' %}
                     <span class="px-2.5 py-1 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center gap-1">
-                      <i data-lucide="alert-circle" class="w-3 h-3"></i> SOFT LOCKED
+                      <i data-lucide="alert-circle" class="w-3 h-3"></i> Soft locked
                     </span>
                   {% else %}
                     <span class="px-2.5 py-1 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center gap-1">
@@ -630,9 +630,9 @@
                 <i data-lucide="printer" class="w-4 h-4"></i>
               </div>
               {% if p.is_default %}
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">DEFAULT SPOOLER</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Default spooler</span>
               {% else %}
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">SECONDARY</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400">Secondary</span>
               {% endif %}
             </div>
             <div>
@@ -692,14 +692,14 @@
                 <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400">{{ u.cost_center_code or 'All CCs' }}</td>
                 <td class="py-3 px-3 text-center">
                   {% if u.mfa_enabled %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">MFA ENFORCED</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">MFA enforced</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">PASSWORD ONLY</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">Password only</span>
                   {% endif %}
                 </td>
                 <td class="py-3 px-3 font-mono text-slate-500">{{ u.last_login_at or 'Never' }}</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Active</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -748,7 +748,7 @@
       </div>
 
       <div class="pt-4 border-t border-slate-200 dark:border-white/5 space-y-3">
-        <h4 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+        <h4 class="text-xs font-bold text-slate-900 dark:text-white tracking-wider flex items-center gap-1.5">
           <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-500"></i>
           <span>Granular Module Permissions Matrix</span>
         </h4>
@@ -986,8 +986,7 @@
               <tr class="hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition perm-row" data-module="{{ p.module_code }}" data-fcode="{{ p.function_code }}" data-search="{{ p.function_name }} {{ p.function_code }} {{ p.menu_path }} {{ p.module_name }}">
                 <td class="py-3 px-4">
                   <div class="flex items-start gap-2.5">
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider
-                      {% if p.module_code == 'AP' %}bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-md tracking-wider {% if p.module_code == 'AP' %}bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20
                       {% elif p.module_code == 'GL' %}bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20
                       {% elif p.module_code == 'AR' %}bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20
                       {% elif p.module_code == 'SLS' %}bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20
@@ -1411,7 +1410,7 @@
                   <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{{ sc.access_mode }}</span>
                 </td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Active</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -1545,7 +1544,7 @@
           <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
             <div class="flex items-center justify-between">
               <span class="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">{{ ta.authority_code }}</span>
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Active</span>
             </div>
             <div>
               <h4 class="font-bold text-sm text-slate-900 dark:text-white">{{ ta.authority_name }}</h4>
@@ -1594,7 +1593,7 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-purple-600 dark:text-purple-400 text-sm">{{ "{:,.2f}".format(tc.default_rate|float) }}%</td>
                 <td class="py-3 px-3 text-slate-500 dark:text-slate-400 max-w-sm truncate">{{ tc.description }}</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Active</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -1650,7 +1649,7 @@
                   {% endif %}
                 </td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">ACTIVE</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Active</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -1795,7 +1794,7 @@
                 <td class="py-3 px-3 font-mono text-slate-500">{{ pc.closing_date }}</td>
                 <td class="py-3 px-3 text-slate-700 dark:text-slate-300">{{ pc.closed_by }}</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">CLOSED &amp; VERIFIED</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Closed &amp; verified</span>
                 </td>
                 <td class="py-3 px-3 text-slate-500 dark:text-slate-400 max-w-xs truncate">{{ pc.reconciliation_notes }}</td>
               
@@ -1848,7 +1847,7 @@
           </div>
           <h4 class="font-bold text-sm text-slate-900 dark:text-white">Opening Balances Locked</h4>
           <p class="text-xs text-slate-600 dark:text-slate-300">Opening trial balance sealed. Prior period tampering blocked across all financial modules.</p>
-          <span class="px-2.5 py-1 text-[10px] font-bold rounded bg-emerald-600 text-white">LOCKED &amp; VERIFIED</span>
+          <span class="px-2.5 py-1 text-[10px] font-bold rounded bg-emerald-600 text-white">Locked &amp; verified</span>
         </div>
       </div>
     </div>
@@ -1988,25 +1987,25 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div class="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20 space-y-1">
-          <div class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Active Entities</div>
+          <div class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider">Active Entities</div>
           <div class="text-2xl font-black text-slate-900 dark:text-white font-mono">{{ admin_kpis.total_companies or 5 }} Companies</div>
           <div class="text-[11px] text-slate-500">{{ admin_kpis.total_business_units or 15 }} Business Units &bull; {{ admin_kpis.total_cost_centers or 20 }} CCs</div>
         </div>
 
         <div class="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
-          <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Security Grade</div>
+          <div class="text-xs font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">Security Grade</div>
           <div class="text-2xl font-black text-slate-900 dark:text-white font-mono">A+ SOC2 Type II</div>
           <div class="text-[11px] text-slate-500">{{ admin_kpis.total_users or 15 }} Registered &bull; {{ admin_kpis.active_sessions_count or 15 }} Live Sessions</div>
         </div>
 
         <div class="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
-          <div class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Database Integrity</div>
+          <div class="text-xs font-bold text-amber-600 dark:text-amber-400 tracking-wider">Database Integrity</div>
           <div class="text-2xl font-black text-slate-900 dark:text-white font-mono">100% HEALTHY</div>
           <div class="text-[11px] text-slate-500">Engine: Microsoft SQL Server 2025 Standard</div>
         </div>
 
         <div class="p-5 rounded-2xl bg-purple-500/10 border border-purple-500/20 space-y-1">
-          <div class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Accounting Periods</div>
+          <div class="text-xs font-bold text-purple-600 dark:text-purple-400 tracking-wider">Accounting Periods</div>
           <div class="text-2xl font-black text-slate-900 dark:text-white font-mono">{{ admin_kpis.closed_periods_count or 20 }} Closed</div>
           <div class="text-[11px] text-slate-500">{{ admin_kpis.open_periods_count or 40 }} Open Active Periods</div>
         </div>
@@ -2028,7 +2027,7 @@
 
       <div class="p-6 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-4 max-w-2xl">
         <div class="flex items-center justify-between">
-          <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm">LICENSE VERIFIED &amp; ACTIVE</span>
+          <span class="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm">License verified & active</span>
           <span class="font-mono text-xs text-slate-500">Valid Through: {{ admin_license.valid_until or '2030-12-31' }}</span>
         </div>
         <div>

@@ -559,7 +559,7 @@
                 {{ record.sub_account_code }}
               </span>
               <div>
-                <div class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Sub-Account Profile</div>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 tracking-wider font-semibold">Sub-Account Profile</div>
                 <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ record.sub_account_name }}</h3>
               </div>
             </div>
@@ -578,19 +578,19 @@
                 {% else %}
                   <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
                 {% endif %}
-                <span>{{ record.sub_account_type|replace('_', ' ') }}</span>
+                <span>{{ record.sub_account_type|replace('_', ' ')|title }}</span>
               </span>
 
               <!-- Status Tag -->
               {% if record.is_active and not record.is_inactive %}
                 <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span>ACTIVE FOR POSTINGS</span>
+                  <span>Active for postings</span>
                 </span>
               {% else %}
                 <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20 flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-                  <span>INACTIVE / BLOCKED</span>
+                  <span>Inactive / blocked</span>
                 </span>
               {% endif %}
             </div>
@@ -601,13 +601,13 @@
             
             <!-- Parent Master GL Account Card -->
             <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
-              <span class="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 uppercase tracking-wider">
+              <span class="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 tracking-wider">
                 <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-                <span>Controlling Parent GL Account</span>
+                <span>Controlling parent GL account</span>
               </span>
               <div class="space-y-2">
                 <div>
-                  <span class="text-slate-400 text-[10px] uppercase font-semibold">Account Code &amp; Title</span>
+                  <span class="text-slate-400 text-[10px] font-semibold">Account code &amp; title</span>
                   <div class="text-sm font-bold text-slate-900 dark:text-white font-mono flex items-center gap-2 mt-0.5">
                     <a href="/modules/general-ledger/master/gl-accounts/{{ record.gl_account_id }}/view" class="text-blue-600 dark:text-blue-400 hover:underline" title="View Master GL Account">
                       {{ record.parent_account_number }}
@@ -619,10 +619,10 @@
 
                 <div class="flex items-center gap-2 pt-1 flex-wrap">
                   <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
-                    {{ record.parent_account_type|default('REVENUE') }}
+                    {{ (record.parent_account_type|default('Revenue'))|title }}
                   </span>
                   <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30">
-                    NORMAL BALANCE: {{ record.parent_normal_balance|default('CREDIT') }}
+                    Normal balance: {{ (record.parent_normal_balance|default('Credit'))|title }}
                   </span>
                 </div>
               </div>
@@ -630,12 +630,12 @@
 
             <!-- Analytical Purpose & Description -->
             <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 space-y-3">
-              <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 uppercase tracking-wider">
+              <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 tracking-wider">
                 <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
-                <span>Analytical Notes &amp; Scope</span>
+                <span>Analytical notes &amp; scope</span>
               </span>
               <div class="space-y-1">
-                <span class="text-slate-400 text-[10px] uppercase font-semibold">Analytical Purpose</span>
+                <span class="text-slate-400 text-[10px] font-semibold">Analytical purpose</span>
                 <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                   {{ record.description if record.description else 'No specific analytical restrictions or notes assigned to this sub-account. Available for all general ledger vouchers tagging this account.' }}
                 </p>

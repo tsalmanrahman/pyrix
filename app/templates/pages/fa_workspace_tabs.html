@@ -38,7 +38,7 @@
                   {% if g.is_depreciating %}
                     <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">YES (DEPRECIATING)</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">NON-DEPRECIATING</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Non-depreciating</span>
                   {% endif %}
                 </td>
                 <td class="py-3 px-3 text-center font-mono font-bold">{{ g.default_useful_life_years }} Years</td>
@@ -642,15 +642,15 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Simulated Monthly Depreciation</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Simulated Monthly Depreciation</span>
           <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">{{ fa_depr_sim.total_monthly_depr|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Annualized Depreciation Run</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Annualized Depreciation Run</span>
           <p class="text-2xl font-bold font-mono text-slate-900 dark:text-white">{{ fa_depr_sim.total_annual_depr|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Eligible Capital Machinery</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Eligible Capital Machinery</span>
           <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ fa_depr_sim.eligible_assets_count }} Active Units</p>
         </div>
       </div>
@@ -855,19 +855,19 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Gross Block (Total Capital Cost)</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Gross Block (Total Capital Cost)</span>
           <p class="text-2xl font-bold font-mono text-slate-900 dark:text-white">{{ fa_summary.total_gross_block|default(0.0, true)|money }}</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Accumulated Depreciation</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Total Accumulated Depreciation</span>
           <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">{{ fa_summary.total_accumulated_depr|default(0.0, true)|money }}</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Net Book Value (Carrying Asset Base)</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Net Book Value (Carrying Asset Base)</span>
           <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ fa_summary.total_net_book_value|default(0.0, true)|money }}</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Operating Units</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Total Operating Units</span>
           <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ fa_summary.total_assets|default(0, true) }} Assets</p>
         </div>
       </div>

@@ -172,9 +172,9 @@
                 <td class="py-3 px-3 text-center font-mono">{{ s.grace_period_mins }} Mins</td>
                 <td class="py-3 px-3 text-center">
                   {% if s.is_night_shift %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">NIGHT SHIFT</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">Night shift</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">STANDARD</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">Standard</span>
                   {% endif %}
                 </td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ s.night_allowance|money }}</td>
@@ -219,7 +219,7 @@
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ h.holiday_name }}</td>
                 <td class="py-3 px-3"><span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 dark:bg-white/10">{{ h.holiday_type }}</span></td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">CONFIRMED</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Confirmed</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -263,7 +263,7 @@
                 <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ lt.leave_name }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-indigo-600 dark:text-indigo-400">{{ lt.yearly_quota }} Days</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">PAID LEAVE</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Paid leave</span>
                 </td>
                 <td class="py-3 px-3 text-center">
                   {% if lt.is_encashable %}
@@ -317,7 +317,7 @@
                 <td class="py-3 px-3 font-mono text-slate-500">{{ b.routing_number }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold">{{ b.currency }}</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">PRIMARY DISBURSEMENT</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Primary disbursement</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -1019,7 +1019,7 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ ts.slab_limit|money }}</td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">{{ "{:,.1f}".format(ts.tax_rate_pct) }}%</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">ACTIVE SLAB</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active slab</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -1102,19 +1102,19 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Active Headcount</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Total Active Headcount</span>
           <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ hr_summary.total_headcount|default(0, true) }} Employees</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Monthly Payroll Budget</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Monthly Payroll Budget</span>
           <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ hr_summary.monthly_payroll_budget|default(0.0, true)|money }}</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Staff Loans Outstanding</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Staff Loans Outstanding</span>
           <p class="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">{{ hr_summary.loan_outstanding|default(0.0, true)|money }}</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Accumulated PF Fund</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Accumulated PF Fund</span>
           <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">{{ hr_summary.total_pf_fund|default(0.0, true)|money }}</p>
         </div>
       </div>

@@ -541,3 +541,95 @@ class GLMasterService:
             return True
         except (ValueError, Exception):
             return False
+
+    # =========================================================================
+    # 7. Budget Monthly Period Lines
+    # =========================================================================
+    @staticmethod
+    def get_budget_monthly_lines(budget_set_id: str, gl_account_id: Optional[str] = None, fiscal_year: Optional[str] = None) -> List[Dict[str, Any]]:
+        MONTHS = [
+            (1, "July", "07-01"),
+            (2, "August", "08-01"),
+            (3, "September", "09-01"),
+            (4, "October", "10-01"),
+            (5, "November", "11-01"),
+            (6, "December", "12-01"),
+            (7, "January", "01-01"),
+            (8, "February", "02-01"),
+            (9, "March", "03-01"),
+            (10, "April", "04-01"),
+            (11, "May", "05-01"),
+            (12, "June", "06-01")
+        ]
+        fy = fiscal_year or "2026-2027"
+        y_start = fy.split("-")[0] if "-" in fy else "2026"
+        y_end = fy.split("-")[1] if "-" in fy else "2027"
+
+        sql = "SELECT * FROM gl_budget_monthly_lines WHERE budget_set_id = ?"
+        params = [budget_set_id]
+        if gl_account_id and gl_account_id.strip():
+            sql += " AND gl_account_id = ?"
+            params.append(gl_account_id.strip())
+        if fiscal_year and fiscal_year.strip():
+            sql += " AND fiscal_year = ?"
+            params.append(fiscal_year.strip())
+        sql += " ORDER BY period_number ASC"
+
+        saved_lines = {row["period_number"]: row for row in db.query(sql, tuple(params))}
+
+        results = []
+        cum_bal = 0.0
+        for p_num, m_name, d_suffix in MONTHS:
+            yr = y_start if p_num <= 6 else y_end
+            m_yr = f"{m_name} {yr}"
+            p_date = f"{yr}-{d_suffix}"
+            if p_num in saved_lines:
+                line = saved_lines[p_num]
+                change = float(line.get("periodic_change") or 0.0)
+                cum_bal += change
+                results.append({
+                    "period_number": p_num,
+                    "month_name": m_yr,
+                    "period_date": p_date,
+                    "periodic_change": change,
+                    "balance_amount": cum_bal
+                })
+            else:
+                results.append({
+                    "period_number": p_num,
+                    "month_name": m_yr,
+                    "period_date": p_date,
+                    "periodic_change": 0.0,
+                    "balance_amount": cum_bal
+                })
+
+        return results
+
+    @staticmethod
+    def save_budget_monthly_lines(budget_set_id: str, gl_account_id: str, fiscal_year: str, lines: List[Dict[str, Any]]) -> bool:
+        with db.get_cursor(commit=True) as cursor:
+            cursor.execute(
+                "DELETE FROM gl_budget_monthly_lines WHERE budget_set_id = ? AND gl_account_id = ? AND fiscal_year = ?",
+                (budget_set_id, gl_account_id, fiscal_year)
+            )
+            cum_bal = 0.0
+            total_alloc = 0.0
+            for item in lines:
+                p_num = int(item.get("period_number", 1))
+                m_name = item.get("month_name") or item.get("period_name") or ""
+                p_date = item.get("period_date") or ""
+                p_change = float(item.get("periodic_change") or item.get("budget_amount") or 0.0)
+                cum_bal += p_change
+                total_alloc += p_change
+                cursor.execute("""
+                    INSERT INTO gl_budget_monthly_lines (
+                        budget_set_id, gl_account_id, fiscal_year, period_number,
+                        month_name, period_date, periodic_change, balance_amount, created_at, updated_at
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())
+                """, (budget_set_id, gl_account_id, fiscal_year, p_num, m_name, p_date, p_change, cum_bal))
+
+            # Update gl_budget_sets allocated_amount
+            cursor.execute("UPDATE gl_budget_sets SET allocated_amount = ? WHERE id = ?", (total_alloc, budget_set_id))
+
+        return True

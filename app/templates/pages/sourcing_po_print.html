@@ -19,7 +19,7 @@
     <article id="printable-document" class="a4-document-sheet a4-portrait flex flex-col justify-between">
       
       <div class="watermark-overlay">
-        <span id="report-watermark-text">OFFICIAL DOCUMENT</span>
+        <span id="report-watermark-text">Official document</span>
       </div>
 
       <div class="space-y-5 relative z-20">
@@ -41,13 +41,13 @@
           </div>
 
           <div class="text-right flex flex-col items-end shrink-0">
-            <span class="px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded bg-slate-100 text-blue-700 border border-slate-300">
+            <span class="px-2.5 py-1 text-[11px] font-mono font-bold rounded bg-slate-100 text-blue-700 border border-slate-300">
               PURCHASE ORDER
             </span>
             <p class="text-base font-black font-mono text-slate-950 mt-1.5 tracking-tight">{{ po.po_number }}</p>
             <p class="text-[11px] text-slate-500 font-medium">Date: <span class="font-mono font-bold text-slate-800">{{ po.created_at }}</span></p>
             <div class="mt-2 flex items-center gap-1.5 px-2 py-1 rounded bg-slate-50 border border-slate-200">
-              <span class="font-mono text-[9px] font-bold text-emerald-600 uppercase">{{ po.status|default('APPROVED & ISSUED') }}</span>
+              <span class="font-mono text-[9px] font-bold text-emerald-600 ">{{ po.status|default('APPROVED & ISSUED') }}</span>
             </div>
           </div>
         </header>
@@ -55,7 +55,7 @@
         <!-- Vendor & Delivery Grid -->
         <section class="grid grid-cols-2 gap-4 text-xs">
           <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-            <div class="font-bold text-slate-900 uppercase text-[9.5px] tracking-wider text-blue-600">Vendor / Supplier Details</div>
+            <div class="font-bold text-slate-900 text-[9.5px] tracking-wider text-blue-600">Vendor / Supplier Details</div>
             <div class="font-bold text-sm text-slate-950">{{ po.vendor_name }}</div>
             <div class="text-slate-600 text-[11px]">{{ po.vendor_address }}</div>
             <div class="text-slate-600 text-[11px]">Contact: {{ po.contact_person }} ({{ po.vendor_email }})</div>
@@ -63,7 +63,7 @@
           </div>
 
           <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-            <div class="font-bold text-slate-900 uppercase text-[9.5px] tracking-wider text-emerald-600">Terms & Delivery Conditions</div>
+            <div class="font-bold text-slate-900 text-[9.5px] tracking-wider text-emerald-600">Terms & Delivery Conditions</div>
             <div class="text-slate-700"><strong>Category:</strong> {{ po.po_category }}</div>
             <div class="text-slate-700"><strong>Payment Terms:</strong> {{ po.payment_terms }}</div>
             <div class="text-slate-700"><strong>Delivery Terms:</strong> {{ po.delivery_terms }}</div>
@@ -105,7 +105,7 @@
             </tbody>
             <tfoot class="bg-slate-50 font-bold border-t-2 border-slate-900">
               <tr>
-                <td colspan="6" class="py-2.5 px-3 text-right uppercase tracking-wider text-slate-600">Total Purchase Commitment:</td>
+                <td colspan="6" class="py-2.5 px-3 text-right tracking-wider text-slate-600">Total Purchase Commitment:</td>
                 <td class="py-2.5 px-3 text-right font-mono text-sm text-slate-900 font-black">{{ po.total_amount|money }}</td>
               </tr>
             </tfoot>
@@ -115,7 +115,7 @@
         <!-- Total In Words -->
         <section class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-center justify-between gap-4">
           <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Commitment Value in Words:</span>
+            <span class="text-[10px] font-bold tracking-wider text-slate-400 block">Commitment Value in Words:</span>
             <p class="font-bold text-slate-900 italic" data-in-words="{{ po.total_amount }}" data-currency="{{ active_company.currency|default('BDT') }}">Calculating...</p>
           </div>
           <div class="text-right font-mono text-xs text-slate-500">
@@ -125,7 +125,7 @@
 
         {% if po.notes %}
           <div class="p-3 rounded-xl border border-slate-200 text-xs text-slate-600">
-            <span class="font-bold uppercase text-[9.5px] text-slate-400 block mb-0.5">Special Instructions:</span>
+            <span class="font-bold text-[9.5px] text-slate-400 block mb-0.5">Special Instructions:</span>
             <p>{{ po.notes }}</p>
           </div>
         {% endif %}
@@ -143,7 +143,7 @@
             <p class="font-bold text-slate-950">Head of Supply Chain</p>
           </div>
           <div class="space-y-4">
-            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">AUTHORIZED SEAL</span></div>
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">Authorized seal</span></div>
             <p class="font-bold text-slate-950">Managing Director / CFO</p>
           </div>
         </div>

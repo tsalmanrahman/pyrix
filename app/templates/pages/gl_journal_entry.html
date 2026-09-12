@@ -479,17 +479,17 @@
       <!-- 3. REAL-TIME BALANCED VALIDATOR DECK -->
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5 p-4 rounded-xl bg-slate-100/80 dark:bg-black/30 border border-slate-200 dark:border-white/10 text-xs shadow-inner">
         <div class="journal-kpi-card p-2 rounded-lg">
-          <span class="block text-slate-500 dark:text-slate-400 tracking-tight font-semibold text-[10px] uppercase">Total Debits</span>
+          <span class="block text-slate-500 dark:text-slate-400 tracking-tight font-semibold text-[10px] ">Total Debits</span>
           <span id="total-debit-val" class="font-mono font-black text-cyan-600 dark:text-cyan-400 text-base sm:text-lg">{{ active_company.currency_symbol|default('৳') }}0.00</span>
         </div>
 
         <div class="journal-kpi-card p-2 rounded-lg">
-          <span class="block text-slate-500 dark:text-slate-400 tracking-tight font-semibold text-[10px] uppercase">Total Credits</span>
+          <span class="block text-slate-500 dark:text-slate-400 tracking-tight font-semibold text-[10px] ">Total Credits</span>
           <span id="total-credit-val" class="font-mono font-black text-amber-600 dark:text-amber-400 text-base sm:text-lg">{{ active_company.currency_symbol|default('৳') }}0.00</span>
         </div>
 
         <div class="journal-kpi-card p-2 rounded-lg">
-          <span class="block text-slate-500 dark:text-slate-400 tracking-tight font-semibold text-[10px] uppercase">Net Out-Of-Balance</span>
+          <span class="block text-slate-500 dark:text-slate-400 tracking-tight font-semibold text-[10px] ">Net Out-Of-Balance</span>
           <span id="diff-val" class="font-mono font-black text-slate-700 dark:text-slate-200 text-base sm:text-lg">{{ active_company.currency_symbol|default('৳') }}0.00</span>
         </div>
 

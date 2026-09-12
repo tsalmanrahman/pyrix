@@ -73,7 +73,7 @@
             data-unique-entity="gl-segments"
             data-unique-field="segment_code"
             {% if is_edit %}readonly value="{{ segment.segment_code }}" class="mac-input w-full font-mono font-bold text-cyan-400 bg-slate-100 dark:bg-white/[0.03] cursor-not-allowed select-none"
-            {% else %}value="{{ segment_code|default('') }}" placeholder="e.g. SEG-NAM-01" class="mac-input w-full font-mono font-bold uppercase" autofocus{% endif %}
+            {% else %}value="{{ segment_code|default('') }}" placeholder="e.g. SEG-NAM-01" class="mac-input w-full font-mono font-bold " autofocus{% endif %}
           >
           <span class="text-[10px] text-slate-400 mt-1 block">Operating unit or reporting segment code</span>
         </div>

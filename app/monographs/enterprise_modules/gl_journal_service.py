@@ -317,7 +317,16 @@ class GLJournalService:
         )
 
     @staticmethod
-    def generate_batch_from_template(company_id: str, template_id: str, batch_title: str, amount: float = 50000.0, created_by: str = "Operator Admin") -> str:
+    def generate_batch_from_template(
+        company_id: str,
+        template_id: str,
+        batch_title: str,
+        amount: float = 50000.0,
+        is_reversal: bool = False,
+        fiscal_year: Optional[str] = None,
+        fiscal_period: Optional[int] = None,
+        created_by: str = "Operator Admin"
+    ) -> str:
         template = GLJournalService.get_template_by_id(template_id)
         if not template:
             raise ValueError("Template not found")
@@ -327,6 +336,8 @@ class GLJournalService:
             raise ValueError("Template has no configured lines")
 
         batch_number = f"BAT-TMPL-{uuid.uuid4().hex[:6].upper()}"
+        reversal_prefix = "[Reversal] " if is_reversal else ""
+        final_title = f"{reversal_prefix}{batch_title or f'Generated Batch: {template['template_name']}'}"
 
         with db.get_cursor(commit=True) as cursor:
             cursor.execute(
@@ -335,7 +346,7 @@ class GLJournalService:
                 OUTPUT INSERTED.id
                 VALUES (?, ?, ?, 'TEMPLATE', ?, ?, 'UNPOSTED', ?, 0)
                 """,
-                (batch_number, batch_title or f"Generated Batch: {template['template_name']}", company_id, amount, amount, created_by)
+                (batch_number, final_title, company_id, amount, amount, created_by)
             )
             batch_id = str(cursor.fetchone()[0])
 
@@ -343,26 +354,127 @@ class GLJournalService:
             voucher_number = f"JV-{uuid.uuid4().hex[:6].upper()}"
             cursor.execute(
                 """
-                INSERT INTO gl_journal_vouchers (voucher_number, batch_id, company_id, voucher_date, reference_number, narration, total_amount, status, created_by, isDelete)
+                INSERT INTO gl_journal_vouchers (
+                    voucher_number, batch_id, company_id, voucher_date, reference_number,
+                    narration, total_amount, status, created_by, isDelete, fiscal_year, fiscal_period
+                )
                 OUTPUT INSERTED.id
-                VALUES (?, ?, ?, GETDATE(), ?, ?, ?, 'UNPOSTED', ?, 0)
+                VALUES (?, ?, ?, GETDATE(), ?, ?, ?, 'UNPOSTED', ?, 0, ?, ?)
                 """,
-                (voucher_number, batch_id, company_id, template["template_code"], f"Auto-generated voucher from template {template['template_name']}", amount, created_by)
+                (
+                    voucher_number,
+                    batch_id,
+                    company_id,
+                    template["template_code"],
+                    f"{reversal_prefix}Auto-generated voucher from template {template['template_name']}",
+                    amount,
+                    created_by,
+                    fiscal_year or "2026-2027",
+                    fiscal_period or 1
+                )
             )
             voucher_id = str(cursor.fetchone()[0])
 
             for idx, tl in enumerate(lines, start=1):
-                debit = amount if tl["default_entry_type"] == "DEBIT" else 0.0
-                credit = amount if tl["default_entry_type"] == "CREDIT" else 0.0
+                orig_is_debit = tl["default_entry_type"] == "DEBIT"
+                # If reversal, swap debit and credit
+                if is_reversal:
+                    debit = 0.0 if orig_is_debit else amount
+                    credit = amount if orig_is_debit else 0.0
+                else:
+                    debit = amount if orig_is_debit else 0.0
+                    credit = 0.0 if orig_is_debit else amount
+
                 cursor.execute(
                     """
                     INSERT INTO gl_journal_voucher_lines (voucher_id, gl_account_id, cost_centre_id, line_narration, debit_amount, credit_amount, sort_order)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (voucher_id, tl["gl_account_id"], tl["cost_centre_id"], tl["default_narration"], debit, credit, idx)
+                    (voucher_id, tl["gl_account_id"], tl["cost_centre_id"], f"{reversal_prefix}{tl['default_narration']}", debit, credit, idx)
                 )
 
         return batch_id
+
+    @staticmethod
+    def create_template_from_batch(company_id: str, template_name: str, description: str, source_batch_id: str) -> str:
+        batch = GLJournalService.get_batch_by_id(source_batch_id)
+        if not batch:
+            raise ValueError("Source batch not found")
+
+        template_code = f"TMPL-{uuid.uuid4().hex[:5].upper()}"
+
+        lines = db.query("""
+            SELECT l.gl_account_id, l.cost_centre_id, l.line_narration,
+                   SUM(l.debit_amount) as total_debit,
+                   SUM(l.credit_amount) as total_credit
+            FROM gl_journal_voucher_lines l
+            JOIN gl_journal_vouchers v ON l.voucher_id = v.id
+            WHERE v.batch_id = ? AND COALESCE(v.isDelete, 0) = 0
+            GROUP BY l.gl_account_id, l.cost_centre_id, l.line_narration
+        """, (source_batch_id,))
+
+        with db.get_cursor(commit=True) as cursor:
+            cursor.execute("""
+                INSERT INTO gl_batch_templates (template_code, template_name, company_id, description, is_active, isDelete, created_at)
+                OUTPUT INSERTED.id
+                VALUES (?, ?, ?, ?, 1, 0, GETDATE())
+            """, (template_code, template_name.strip(), company_id, description.strip() if description else f"Template created from batch {batch['batch_number']}"))
+            template_id = str(cursor.fetchone()[0])
+
+            for idx, line in enumerate(lines, start=1):
+                entry_type = "DEBIT" if (line["total_debit"] or 0) >= (line["total_credit"] or 0) else "CREDIT"
+                cursor.execute("""
+                    INSERT INTO gl_batch_template_lines (template_id, gl_account_id, cost_centre_id, default_entry_type, default_percentage, default_narration)
+                    VALUES (?, ?, ?, ?, 100.0, ?)
+                """, (template_id, line["gl_account_id"], line["cost_centre_id"], entry_type, line.get("line_narration") or f"Line {idx}"))
+
+        return template_id
+
+    @staticmethod
+    def get_auto_profile_preview_lines(profile_id: str) -> List[Dict[str, Any]]:
+        profile = db.query_one("SELECT * FROM gl_auto_batch_profiles WHERE id = ? AND COALESCE(isDelete, 0) = 0", (profile_id,))
+        if not profile:
+            return []
+        
+        amount = float(profile.get("default_amount") or 12400.0)
+        
+        if profile.get("template_id"):
+            tmpl_lines = GLJournalService.get_template_lines(str(profile["template_id"]))
+            if tmpl_lines:
+                preview = []
+                for tl in tmpl_lines:
+                    is_deb = (tl.get("default_entry_type") or "DEBIT") == "DEBIT"
+                    preview.append({
+                        "account_code": tl.get("account_number", "6010000"),
+                        "account_title": tl.get("account_name", "General Operating Account"),
+                        "debit_amount": amount if is_deb else 0.0,
+                        "credit_amount": 0.0 if is_deb else amount
+                    })
+                return preview
+
+        # Default fallback lines based on profile code/name
+        p_code = (profile.get("profile_code") or "").upper()
+        if "DEP" in p_code:
+            return [
+                {"account_code": "6010001", "account_title": "Depreciation Expense - Machinery & Plant", "debit_amount": round(amount * 0.68, 3), "credit_amount": 0.0},
+                {"account_code": "6010002", "account_title": "Depreciation Expense - Motor Vehicles", "debit_amount": round(amount * 0.32, 3), "credit_amount": 0.0},
+                {"account_code": "1080001", "account_title": "Accumulated Depreciation - Machinery", "debit_amount": 0.0, "credit_amount": round(amount * 0.68, 3)},
+                {"account_code": "1080002", "account_title": "Accumulated Depreciation - Motor Vehicles", "debit_amount": 0.0, "credit_amount": round(amount * 0.32, 3)},
+            ]
+        else:
+            return [
+                {"account_code": "6020001", "account_title": "Office Rent & Premises Maintenance", "debit_amount": amount, "credit_amount": 0.0},
+                {"account_code": "2010002", "account_title": "Accrued Expenses & Provisions", "debit_amount": 0.0, "credit_amount": amount}
+            ]
+
+    @staticmethod
+    def bulk_post_batches(batch_ids: List[str]) -> int:
+        count = 0
+        for bid in batch_ids:
+            if bid and str(bid).strip():
+                GLJournalService.post_batch(str(bid).strip())
+                count += 1
+        return count
 
     # =========================================================================
     # 4. Automatic Batch Profiles & Recurring Auto-Journals Engine

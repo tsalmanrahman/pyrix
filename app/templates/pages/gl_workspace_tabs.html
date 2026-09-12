@@ -80,28 +80,165 @@
 
 <!-- TAB: Generate Batch from Auto Journals (auto-batch-gen) -->
 {% if module.route_slug == 'general-ledger' and current_tab == 'auto-batch-gen' %}
-  <div class="space-y-5">
-    <div class="glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-600 flex items-center justify-center"><i data-lucide="sparkles" class="w-6 h-6"></i></div>
-        <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Generate Batch from Auto Journals</h2>
+  <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="wand-sparkles" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+        <span>Generate automatic transactions</span>
+      </h3>
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
+          <span>Financial year:</span>
+          <select id="auto-fy-select" class="mac-input text-xs rounded-lg px-2.5 py-1 border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+            <option value="2026-2027">2026-2027</option>
+            <option value="2025-2026">2025-2026</option>
+          </select>
         </div>
-      </div>
-
-      <div class="p-4 rounded-xl bg-cyan-500/5 border border-cyan-500/20 space-y-2 text-xs">
-        <div class="font-bold text-cyan-700 dark:text-cyan-400 flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4"></i> Automated Accrual Rules Active</div>
-        <p class="text-slate-600 dark:text-slate-300">Scanning all active fixed asset depreciation registers and utility accrual parameters. Clicking the button below will instantly compile a balanced recurring batch in <code>UNPOSTED</code> state for controller review.</p>
-      </div>
-
-      <div class="flex items-center gap-3 pt-2">
-        <button onclick="generateAutoBatch()" class="mac-btn-primary px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md">
-          <i data-lucide="play" class="w-4 h-4"></i>
-          <span>Execute Auto-Journals Batch Run</span>
+        <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
+          <span>Period:</span>
+          <select id="auto-period-select" class="mac-input text-xs rounded-lg px-2.5 py-1 border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+            <option value="1">1 - July</option>
+            <option value="2">2 - August</option>
+            <option value="3">3 - September</option>
+            <option value="4">4 - October</option>
+            <option value="5">5 - November</option>
+            <option value="6">6 - December</option>
+            <option value="7">7 - January</option>
+            <option value="8">8 - February</option>
+            <option value="9">9 - March</option>
+            <option value="10">10 - April</option>
+            <option value="11">11 - May</option>
+            <option value="12">12 - June</option>
+          </select>
+        </div>
+        <button 
+          type="button" 
+          onclick="executeSelectedAutoJournals()" 
+          class="h-8 px-3.5 rounded-xl flex items-center gap-1.5 cursor-pointer bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm text-xs font-bold transition"
+        >
+          <i data-lucide="play" class="w-3.5 h-3.5"></i>
+          <span>Generate selected</span>
         </button>
-        <a href="/modules/general-ledger?tab=batches" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/5 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition">
-          View Batch Status
-        </a>
+      </div>
+    </div>
+
+    <!-- Master Table: Recurring Rules -->
+    <div class="space-y-1.5">
+      <div class="text-[11px] font-semibold text-slate-400">Recurring transaction rules</div>
+      <div class="overflow-x-auto border border-slate-200 dark:border-white/5 rounded-xl">
+        <table class="table-content-aware w-full text-left text-xs density-compact" id="gl-auto-rules-table">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-400 text-[11px] bg-slate-100/50 dark:bg-slate-900/30">
+              <th class="py-2 px-3 w-8 text-center"><input type="checkbox" id="master-auto-chk" onchange="toggleAllAutoRules(this)" checked class="rounded"></th>
+              <th class="py-2 px-3">Auto voucher</th>
+              <th class="py-2 px-3">Description</th>
+              <th class="py-2 px-3 text-center">Frequency</th>
+              <th class="py-2 px-3 text-center">From</th>
+              <th class="py-2 px-3 text-center">To</th>
+              <th class="py-2 px-3 text-right">Total debit ({{ active_company.currency_symbol }})</th>
+              <th class="py-2 px-3 text-center">Apply to</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
+            {% for p in gl_auto_profiles %}
+              <tr onclick="loadAutoProfilePreview('{{ p.id }}', this)" class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] cursor-pointer {% if loop.first %}bg-blue-500/5{% endif %}">
+                <td class="py-2 px-3 text-center" onclick="event.stopPropagation()">
+                  <input type="checkbox" name="auto_rule_id" value="{{ p.id }}" checked class="auto-rule-chk rounded">
+                </td>
+                <td class="py-2 px-3 font-mono font-bold text-blue-500 dark:text-blue-400">{{ p.profile_code }}</td>
+                <td class="py-2 px-3 font-medium">{{ p.profile_name }}</td>
+                <td class="py-2 px-3 text-center font-mono text-purple-600 dark:text-purple-400">{{ p.frequency|title }}</td>
+                <td class="py-2 px-3 text-center font-mono text-slate-400">2026 / P1</td>
+                <td class="py-2 px-3 text-center font-mono text-slate-400">2027 / P12</td>
+                <td class="py-2 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ p.default_amount|default(12400.0)|money }}</td>
+                <td class="py-2 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded text-[9px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5">
+                    {{ p.description|default('All departments')|truncate(22) }}
+                  </span>
+                </td>
+              </tr>
+            {% else %}
+              <tr onclick="loadAutoProfilePreview('default-dep', this)" class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] cursor-pointer bg-blue-500/5">
+                <td class="py-2 px-3 text-center" onclick="event.stopPropagation()">
+                  <input type="checkbox" name="auto_rule_id" value="default-dep" checked class="auto-rule-chk rounded">
+                </td>
+                <td class="py-2 px-3 font-mono font-bold text-blue-500 dark:text-blue-400">AUTO-JV-001</td>
+                <td class="py-2 px-3 font-medium">Fixed assets monthly depreciation provision</td>
+                <td class="py-2 px-3 text-center font-mono text-purple-600 dark:text-purple-400">Monthly</td>
+                <td class="py-2 px-3 text-center font-mono text-slate-400">2026 / P1</td>
+                <td class="py-2 px-3 text-center font-mono text-slate-400">2027 / P12</td>
+                <td class="py-2 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ (12400.0)|money }}</td>
+                <td class="py-2 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded text-[9px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5">
+                    All departments
+                  </span>
+                </td>
+              </tr>
+              <tr onclick="loadAutoProfilePreview('default-util', this)" class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] cursor-pointer">
+                <td class="py-2 px-3 text-center" onclick="event.stopPropagation()">
+                  <input type="checkbox" name="auto_rule_id" value="default-util" checked class="auto-rule-chk rounded">
+                </td>
+                <td class="py-2 px-3 font-mono font-bold text-blue-500 dark:text-blue-400">AUTO-JV-002</td>
+                <td class="py-2 px-3 font-medium">Head office monthly utilities and telecom accrual</td>
+                <td class="py-2 px-3 text-center font-mono text-purple-600 dark:text-purple-400">Monthly</td>
+                <td class="py-2 px-3 text-center font-mono text-slate-400">2026 / P1</td>
+                <td class="py-2 px-3 text-center font-mono text-slate-400">2027 / P12</td>
+                <td class="py-2 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ (4250.0)|money }}</td>
+                <td class="py-2 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded text-[9px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5">
+                    Administration
+                  </span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Detail Table: Selected Rule GL Lines Breakdown -->
+    <div class="space-y-1.5 pt-2">
+      <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400">
+        <span id="auto-breakdown-label">Transaction breakdown: Active rule</span>
+        <span class="text-emerald-500 dark:text-emerald-400 font-mono text-[10px]" id="auto-breakdown-balance">Balanced entries</span>
+      </div>
+      <div class="overflow-x-auto border border-slate-200 dark:border-white/5 rounded-xl">
+        <table class="table-content-aware w-full text-left text-xs density-compact" id="gl-auto-breakdown-table">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-white/5 text-slate-400 text-[11px] bg-slate-100/50 dark:bg-slate-900/30">
+              <th class="py-2 px-3">Account code</th>
+              <th class="py-2 px-3">Account title</th>
+              <th class="py-2 px-3 text-right">Debit ({{ active_company.currency_symbol }})</th>
+              <th class="py-2 px-3 text-right">Credit ({{ active_company.currency_symbol }})</th>
+            </tr>
+          </thead>
+          <tbody id="auto-breakdown-tbody" class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200 font-mono text-xs">
+            <tr>
+              <td class="py-1.5 px-3 font-bold text-blue-500 dark:text-blue-400">6010001</td>
+              <td class="py-1.5 px-3 font-sans text-slate-800 dark:text-slate-200">Depreciation expense - machinery & plant</td>
+              <td class="py-1.5 px-3 text-right font-bold text-slate-900 dark:text-white">{{ (8432.0)|money }}</td>
+              <td class="py-1.5 px-3 text-right text-slate-400">{{ (0.0)|money }}</td>
+            </tr>
+            <tr>
+              <td class="py-1.5 px-3 font-bold text-blue-500 dark:text-blue-400">6010002</td>
+              <td class="py-1.5 px-3 font-sans text-slate-800 dark:text-slate-200">Depreciation expense - motor vehicles</td>
+              <td class="py-1.5 px-3 text-right font-bold text-slate-900 dark:text-white">{{ (3968.0)|money }}</td>
+              <td class="py-1.5 px-3 text-right text-slate-400">{{ (0.0)|money }}</td>
+            </tr>
+            <tr>
+              <td class="py-1.5 px-3 font-bold text-blue-500 dark:text-blue-400">1080001</td>
+              <td class="py-1.5 px-3 font-sans text-slate-800 dark:text-slate-200">Accumulated depreciation - machinery</td>
+              <td class="py-1.5 px-3 text-right text-slate-400">{{ (0.0)|money }}</td>
+              <td class="py-1.5 px-3 text-right font-bold text-slate-900 dark:text-white">{{ (8432.0)|money }}</td>
+            </tr>
+            <tr>
+              <td class="py-1.5 px-3 font-bold text-blue-500 dark:text-blue-400">1080002</td>
+              <td class="py-1.5 px-3 font-sans text-slate-800 dark:text-slate-200">Accumulated depreciation - motor vehicles</td>
+              <td class="py-1.5 px-3 text-right text-slate-400">{{ (0.0)|money }}</td>
+              <td class="py-1.5 px-3 text-right font-bold text-slate-900 dark:text-white">{{ (3968.0)|money }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -109,43 +246,77 @@
 
 <!-- TAB: Generate Batch from Template (template-batch-gen) -->
 {% if module.route_slug == 'general-ledger' and current_tab == 'template-batch-gen' %}
-  <div class="space-y-5">
-    <div class="glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-sm space-y-5">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="copy-check" class="w-6 h-6"></i></div>
-        <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Generate Batch from Template Wizard</h2>
+  <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4 max-w-2xl mx-auto">
+    <div class="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-white/5">
+      <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+        <i data-lucide="copy" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
+        <span>Create batch from template</span>
+      </h3>
+    </div>
+
+    <form onsubmit="handleTemplateBatchSubmit(event)" class="space-y-3">
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Template</label>
+        <select id="tmpl-select" onchange="onTemplateSelectionChange(this)" required class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+          {% for t in gl_templates %}
+            <option value="{{ t.id }}" data-desc="{{ t.description }}" data-title="{{ t.template_name }}">{{ t.template_code }} - {{ t.template_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Template description</label>
+        <input type="text" id="tmpl-desc-display" readonly value="{{ gl_templates[0].description if gl_templates else 'Pre-configured accounting template' }}" class="w-full bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-xs rounded-xl px-3 py-2 text-slate-500">
+      </div>
+
+      <div class="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 flex items-center justify-between">
+        <label for="tmpl-is-reversal" class="text-xs text-slate-800 dark:text-slate-200 font-medium cursor-pointer flex items-center gap-2">
+          <input type="checkbox" id="tmpl-is-reversal" class="rounded text-blue-600 focus:ring-0">
+          <span>Create as reversal batch</span>
+        </label>
+        <span class="text-[10px] text-slate-400">Inverts debit and credit entries automatically</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Financial year</label>
+          <select id="tmpl-fiscal-year" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+            <option value="2026-2027">2026-2027</option>
+            <option value="2025-2026">2025-2026</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Period</label>
+          <select id="tmpl-fiscal-period" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+            <option value="1">1 - July</option>
+            <option value="2">2 - August</option>
+            <option value="3">3 - September</option>
+            <option value="4">4 - October</option>
+            <option value="5">5 - November</option>
+            <option value="6">6 - December</option>
+            <option value="7">7 - January</option>
+            <option value="8">8 - February</option>
+            <option value="9">9 - March</option>
+            <option value="10">10 - April</option>
+            <option value="11">11 - May</option>
+            <option value="12">12 - June</option>
+          </select>
         </div>
       </div>
 
-      <form onsubmit="handleTemplateBatchSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Select Template *</label>
-          <select id="tmpl-select" required class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
-            {% for t in gl_templates %}
-              <option value="{{ t.id }}">{{ t.template_code }} - {{ t.template_name }}</option>
-            {% endfor %}
-          </select>
-        </div>
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Total distribution amount ({{ active_company.currency_symbol }})</label>
+        <input type="number" id="tmpl-amount" step="0.01" required value="50000.00" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+      </div>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Batch Title / Narration *</label>
-          <input type="text" id="tmpl-title" required value="Bi-Weekly Payroll Allocation Batch" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
-        </div>
-
-        <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-700 dark:text-slate-300">Total Distribution Amount ({{ active_company.currency_symbol }}) *</label>
-          <input type="number" id="tmpl-amount" step="0.01" required value="75000.00" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10">
-        </div>
-
-        <div class="flex items-end">
-          <button type="submit" class="mac-btn-primary w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md">
-            <i data-lucide="check" class="w-4 h-4"></i>
-            <span>Compile & Stage Batch</span>
-          </button>
-        </div>
-      </form>
-    </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-white/5">
+        <a href="/modules/general-ledger?tab=templates" class="h-8 px-4 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition inline-flex items-center">Cancel</a>
+        <button type="submit" class="h-8 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow-sm inline-flex items-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Create batch</span>
+        </button>
+      </div>
+    </form>
   </div>
 {% endif %}
 
@@ -214,10 +385,50 @@
     <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
       <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
         <i data-lucide="package-check" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
-        <span>Batch Processing & Status Control: {{ active_company.name }}</span>
+        <span>Batch status and transaction posting</span>
       </h3>
-      <div class="flex items-center gap-2">
-        <input type="text" placeholder="Filter batches..." onkeyup="filterTable('gl-batches-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-44">
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <span>Posting type:</span>
+          <select id="gl-posting-type" class="mac-input px-2 py-0.5 text-[11px] rounded border border-slate-200 dark:border-white/10">
+            <option value="FINAL">Final posting</option>
+            <option value="PROVISIONAL">Provisional review</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <span>Source:</span>
+          <select id="gl-source-filter" onchange="filterBatchesBySource(this.value)" class="mac-input px-2 py-0.5 text-[11px] rounded border border-slate-200 dark:border-white/10">
+            <option value="ALL">All modules</option>
+            <option value="GL">General ledger</option>
+            <option value="AP">Accounts payable</option>
+            <option value="AR">Sales &amp; AR</option>
+            <option value="INV">Inventory</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-100 dark:bg-slate-900/80 p-0.5 rounded-lg border border-slate-200 dark:border-white/10 flex items-center text-[11px]">
+          <button type="button" onclick="filterBatchesByStatus('ALL', this)" class="batch-status-pill px-2.5 py-1 rounded font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">All</button>
+          <button type="button" onclick="filterBatchesByStatus('UNPOSTED', this)" class="batch-status-pill px-2.5 py-1 rounded font-bold bg-blue-600 text-white shadow">Unposted only</button>
+          <button type="button" onclick="filterBatchesByStatus('POSTED', this)" class="batch-status-pill px-2.5 py-1 rounded font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Posted only</button>
+        </div>
+
+        <label class="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer bg-slate-100 dark:bg-slate-900/60 px-2 py-1 rounded-lg border border-slate-200 dark:border-white/10">
+          <input type="checkbox" id="chk-current-year-batches" onchange="filterBatchesCurrentYear(this.checked)" checked class="rounded text-blue-600 focus:ring-0">
+          <span>Current year only</span>
+        </label>
+
+        <button 
+          type="button" 
+          onclick="postSelectedBatchesBulk()" 
+          class="h-7 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1 transition shadow-sm cursor-pointer"
+        >
+          <i data-lucide="check" class="w-3 h-3"></i>
+          <span>Post selected</span>
+          <span id="selected-batch-count" class="ml-1 px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">0</span>
+        </button>
+
+        <input type="text" placeholder="Filter batches..." onkeyup="filterTable('gl-batches-table', this.value)" class="mac-input px-2.5 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-white/10 w-36">
       </div>
     </div>
 
@@ -225,41 +436,69 @@
       <table class="table-content-aware w-full text-left text-xs density-compact" id="gl-batches-table">
         <thead>
           <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
-            <th class="py-2.5 px-3">Batch Number</th>
-            <th class="py-2.5 px-3">Batch Title</th>
+            <th class="py-2.5 px-3 w-8 text-center"><input type="checkbox" id="master-batch-chk" onchange="toggleAllBatchesSelect(this)" class="rounded"></th>
+            <th class="py-2.5 px-3">Batch number</th>
+            <th class="py-2.5 px-3">Batch description</th>
+            <th class="py-2.5 px-3 text-center">Source</th>
+            <th class="py-2.5 px-3 text-center">Financial year</th>
             <th class="py-2.5 px-3">Type</th>
             <th class="py-2.5 px-3 text-right">Debit ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-right">Credit ({{ active_company.currency_symbol }})</th>
             <th class="py-2.5 px-3 text-center">Vouchers</th>
             <th class="py-2.5 px-3 text-center">Status</th>
-            <th class="py-2.5 px-3 text-right">Posting Actions</th>
+            <th class="py-2.5 px-3 text-center">Ready for posting</th>
+            <th class="py-2.5 px-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for b in gl_batches %}
-            <tr id="row-bat-tab-{{ b.id }}" data-entity="gl_batch" data-id="{{ b.id }}" data-title="Batch {{ b.batch_number }}" tabindex="0" class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+            <tr id="row-bat-tab-{{ b.id }}" data-entity="gl_batch" data-id="{{ b.id }}" data-status="{{ b.status|default('UNPOSTED') }}" data-source="{{ b.source_module|default('GL') }}" data-year="2026-2027" data-title="Batch {{ b.batch_number }}" tabindex="0" class="interactive-table-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+              <td class="py-2.5 px-3 text-center" onclick="event.stopPropagation()">
+                {% if b.status != 'POSTED' %}
+                  <input type="checkbox" name="batch_select_id" value="{{ b.id }}" onchange="updateSelectedBatchCount()" class="batch-row-chk rounded">
+                {% else %}
+                  <span class="text-slate-300 dark:text-slate-600 text-[10px]">&bull;</span>
+                {% endif %}
+              </td>
               <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">
                 <a href="javascript:void(0)" onclick="openDynamicViewModal('gl_batch', '{{ b.id }}', 'Batch {{ b.batch_number }}')" class="table-id-link" title="Click to view batch details">{{ b.batch_number }}</a>
               </td>
               <td class="py-2.5 px-3 font-medium">{{ b.batch_title }}</td>
-              <td class="py-2.5 px-3 font-mono text-purple-600 font-semibold">{{ b.batch_type|default('MANUAL') }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300">
+                  {{ b.source_module|default('General ledger')|title }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-center font-mono text-slate-400">2026-2027</td>
+              <td class="py-2.5 px-3 font-mono text-purple-600 dark:text-purple-400 font-semibold">{{ b.batch_type|default('MANUAL')|title }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-medium">{{ b.total_debit|default(0.0)|money }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ b.total_credit|default(0.0)|money }}</td>
               <td class="py-2.5 px-3 text-center font-mono">{{ b.voucher_count|default(1) }}</td>
               <td class="py-2.5 px-3 text-center">
                 <span class="px-2 py-0.5 text-[9px] font-bold rounded {% if b.status == 'POSTED' %}bg-emerald-500/15 text-emerald-600 border border-emerald-500/30{% else %}bg-amber-500/15 text-amber-600 border border-amber-500/30{% endif %}">
-                  {{ b.status|default('UNPOSTED') }}
+                  {% if b.status == 'POSTED' %}Posted{% else %}Unposted{% endif %}
                 </span>
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                {% if b.status == 'POSTED' %}
+                  <span class="inline-flex items-center gap-1 text-[10px] text-slate-400">
+                    <i data-lucide="check-circle" class="w-3 h-3 text-emerald-500"></i> Posted
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <i data-lucide="circle-dot" class="w-3 h-3 text-emerald-500"></i> Ready
+                  </span>
+                {% endif %}
               </td>
               <td class="py-2.5 px-3 text-right">
                 <div class="flex items-center justify-end gap-1.5">
                   {% if b.status == 'UNPOSTED' %}
-                    <button onclick="postGLBatch('{{ b.id }}')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 font-bold text-[10px] inline-flex items-center gap-1 transition">
+                    <button type="button" onclick="postGLBatch('{{ b.id }}')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] inline-flex items-center gap-1 transition cursor-pointer">
                       <i data-lucide="check" class="w-3 h-3"></i>
-                      <span>Post Batch</span>
+                      <span>Post</span>
                     </button>
                   {% else %}
-                    <button onclick="unpostGLBatch('{{ b.id }}')" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 font-bold text-[10px] inline-flex items-center gap-1 transition">
+                    <button type="button" onclick="unpostGLBatch('{{ b.id }}')" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 font-bold text-[10px] inline-flex items-center gap-1 transition cursor-pointer">
                       <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
                       <span>Unpost</span>
                     </button>
@@ -282,45 +521,103 @@
   <div class="space-y-4">
     <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center"><i data-lucide="printer" class="w-5 h-5"></i></div>
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Print Journal Vouchers Document Studio</h2>
+        <div class="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
+          <i data-lucide="printer" class="w-5 h-5"></i>
         </div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">General ledger document and report studio</h2>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" onclick="exportTableToCSV('gl-vouchers-table', 'general_ledger_vouchers.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+        <button type="button" onclick="printSelectedGLVouchers()" class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+          <span>Print selected</span>
+        </button>
       </div>
     </div>
 
+    <div class="glass-card rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span class="font-medium">Report:</span>
+          <select id="gl-rpt-type" class="mac-input px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10">
+            <option value="journal-vouchers">Journal vouchers register</option>
+            <option value="batch-audit">Batch transaction audit</option>
+            <option value="trial-balance">Trial balance schedule</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span class="font-medium">Financial year:</span>
+          <select id="gl-rpt-fy" class="mac-input px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10">
+            <option value="2026-2027">2026-2027</option>
+            <option value="2025-2026">2025-2026</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span class="font-medium">Batch:</span>
+          <select id="gl-rpt-batch" onchange="filterVouchersByBatch(this.value)" class="mac-input px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10">
+            <option value="ALL">All batches</option>
+            {% for b in gl_batches %}
+              <option value="{{ b.batch_number }}">{{ b.batch_number }} - {{ b.batch_title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-900/80 p-0.5 rounded-lg border border-slate-200 dark:border-white/10 flex items-center text-xs">
+          <button type="button" onclick="setVoucherScope('ALL', this)" class="voucher-scope-pill px-2.5 py-1 rounded font-bold bg-blue-600 text-white shadow">All vouchers</button>
+          <button type="button" onclick="setVoucherScope('SELECTED', this)" class="voucher-scope-pill px-2.5 py-1 rounded font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Selected only</button>
+        </div>
+      </div>
+      <input type="text" placeholder="Filter voucher..." onkeyup="filterTable('gl-vouchers-table', this.value)" class="mac-input px-3 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10 w-44">
+    </div>
+
     <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
-      <table class="w-full text-left text-xs">
+      <table class="w-full text-left text-xs" id="gl-vouchers-table">
         <thead>
           <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
+            <th class="py-2.5 px-3 w-8 text-center"><input type="checkbox" id="master-voucher-chk" onchange="toggleAllVouchersSelect(this)" class="rounded"></th>
             <th class="py-2.5 px-3">Voucher #</th>
             <th class="py-2.5 px-3">Date</th>
             <th class="py-2.5 px-3">Reference</th>
             <th class="py-2.5 px-3">Narration</th>
-            <th class="py-2.5 px-3 text-right">Amount ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right">Action</th>
-              <th class="py-2.5 px-3 text-right">Actions</th>
-            </tr>
+            <th class="py-2.5 px-3 text-right">Amount ({{ active_company.currency_symbol|default('৳') }})</th>
+            <th class="py-2.5 px-3 text-center">Status</th>
+            <th class="py-2.5 px-3 text-right">Actions</th>
+          </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for v in gl_vouchers %}
-            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
-              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ v.voucher_number }}</td>
+            <tr class="voucher-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition" data-id="{{ v.id }}" data-batch="{{ v.batch_number|default('') }}">
+              <td class="py-2.5 px-3 text-center">
+                <input type="checkbox" name="voucher_select_id" value="{{ v.id }}" class="voucher-row-chk rounded">
+              </td>
+              <td class="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-white">
+                <a href="javascript:void(0)" onclick="printGLVoucher('{{ v.id }}')" class="hover:underline text-blue-600 dark:text-blue-400">{{ v.voucher_number }}</a>
+              </td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.voucher_date }}</td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ v.reference_number|default('-') }}</td>
-              <td class="py-2.5 px-3 font-medium">{{ v.narration|default('General Accounting Journal Voucher') }}</td><td class="py-3 px-3 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
-                    {{ v.total_amount|default(0.0)|money }}</td>
+              <td class="py-2.5 px-3 font-medium">{{ v.narration|default('General Accounting Journal Voucher') }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ v.total_amount|default(0.0)|money }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <span class="px-2 py-0.5 text-[9px] font-bold rounded {% if v.status == 'POSTED' %}bg-emerald-500/15 text-emerald-600 border border-emerald-500/30{% else %}bg-amber-500/15 text-amber-600 border border-amber-500/30{% endif %}">
+                  {% if v.status == 'POSTED' %}Posted{% else %}Unposted{% endif %}
+                </span>
+              </td>
               <td class="py-2.5 px-3 text-right">
-                <button onclick="printGLVoucher('{{ v.id }}')" class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 text-[11px] font-bold inline-flex items-center gap-1.5 transition">
-                  <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                  <span>Print Voucher</span>
-                </button>
-                    <button type="button" onclick="openRowActionMenu(this, event, 'gl_vouchers', '{{ v.id }}', '{{ v.name or v.title or v.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button type="button" onclick="printGLVoucher('{{ v.id }}')" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 text-[11px] font-bold inline-flex items-center gap-1 transition cursor-pointer">
+                    <i data-lucide="printer" class="w-3 h-3"></i>
+                    <span>Print</span>
+                  </button>
+                  <button type="button" onclick="openRowActionMenu(this, event, 'gl_vouchers', '{{ v.id }}', '{{ v.voucher_number }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                   </button>
-                  </div>
-                </td></tr>
+                </div>
+              </td>
+            </tr>
           {% endfor %}
         </tbody>
       </table>
@@ -334,57 +631,95 @@
 {% if module.route_slug == 'general-ledger' and current_tab == 'data-integrity' %}
   <div class="space-y-5">
     <!-- Diagnostics Banner -->
-    <div class="glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-4">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-4">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-2xl {% if gl_integrity.is_healthy %}bg-emerald-500/10 text-emerald-600{% else %}bg-rose-500/10 text-rose-600{% endif %} flex items-center justify-center">
+        <div class="w-11 h-11 rounded-2xl {% if gl_integrity.is_healthy %}bg-emerald-500/10 text-emerald-600{% else %}bg-rose-500/10 text-rose-600{% endif %} flex items-center justify-center">
           <i data-lucide="shield-check" class="w-6 h-6"></i>
         </div>
         <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Check Data Integrity of GL Transactions</h2>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">General ledger data integrity diagnostics</h2>
         </div>
       </div>
-      <button onclick="runGLDataIntegrity()" class="mac-btn-primary px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm">
-        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-        <span>Run Deep Integrity Scan</span>
-      </button>
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="bg-slate-100 dark:bg-slate-900/80 p-0.5 rounded-xl border border-slate-200 dark:border-white/10 flex items-center text-xs">
+          <button type="button" onclick="setIntegrityScope('CURRENT', this)" class="integ-scope-pill px-3 py-1.5 rounded-lg font-bold bg-blue-600 text-white shadow">Current financial year</button>
+          <button type="button" onclick="setIntegrityScope('ALL', this)" class="integ-scope-pill px-3 py-1.5 rounded-lg font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">All financial years</button>
+        </div>
+        <button id="btn-run-integrity" onclick="runGLDataIntegrity()" class="mac-btn-primary px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm cursor-pointer">
+          <i data-lucide="refresh-cw" id="icon-spin-integrity" class="w-3.5 h-3.5"></i>
+          <span>Run deep integrity scan</span>
+        </button>
+      </div>
     </div>
 
     <!-- Diagnostic Metrics -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
-        <span class="text-xs text-slate-400 font-medium">Total Vouchers Scanned</span>
+        <span class="text-xs text-slate-400 font-medium">Total vouchers scanned</span>
         <div class="text-xl font-bold font-mono text-slate-900 dark:text-white">{{ gl_integrity.total_vouchers_checked }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
-        <span class="text-xs text-slate-400 font-medium">Total Lines Verified</span>
+        <span class="text-xs text-slate-400 font-medium">Total lines verified</span>
         <div class="text-xl font-bold font-mono text-blue-600">{{ gl_integrity.total_lines_checked|default(0) }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
-        <span class="text-xs text-slate-400 font-medium">Out-of-Balance Entries</span>
+        <span class="text-xs text-slate-400 font-medium">Out-of-balance entries</span>
         <div class="text-xl font-bold font-mono {% if (gl_integrity.unbalanced_count|default(0)) == 0 %}text-emerald-600{% else %}text-rose-600{% endif %}">{{ gl_integrity.unbalanced_count|default(0) }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
-        <span class="text-xs text-slate-400 font-medium">Orphans / Invalid Accts</span>
+        <span class="text-xs text-slate-400 font-medium">Orphans or unmapped accounts</span>
         <div class="text-xl font-bold font-mono text-emerald-600">{{ (gl_integrity.orphan_count|default(0)) + (gl_integrity.unmapped_count|default(0)) }}</div>
       </div>
     </div>
 
-    <!-- Issues Table -->
-    <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-3">
-      <h3 class="text-xs font-bold tracking-tight text-slate-900 dark:text-white">Diagnostic Scan Report</h3>
+    <!-- Issues & Audit Findings Report -->
+    <div class="glass-card rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/5">
+        <h3 class="text-xs font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+          <i data-lucide="file-check-2" class="w-4 h-4 text-blue-500"></i>
+          <span>Diagnostic scan and ledger audit report</span>
+        </h3>
+        <span class="text-[11px] font-mono text-slate-400">Audited tables: gl_vouchers, gl_voucher_lines, gl_accounts, gl_batches</span>
+      </div>
+
       {% if gl_integrity.issues|length > 0 %}
         <div class="space-y-2">
           {% for iss in gl_integrity.issues %}
-            <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs flex items-center justify-between">
-              <span class="font-medium text-rose-700 dark:text-rose-300">{{ iss.description }}</span>
-              <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-rose-200 text-rose-800">{{ iss.severity }}</span>
+            <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 shrink-0"></i>
+                <span class="font-medium text-rose-700 dark:text-rose-300">{{ iss.description }}</span>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-200 text-rose-800">{{ iss.severity|title }}</span>
             </div>
           {% endfor %}
         </div>
       {% else %}
-        <div class="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2 font-medium">
-          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-          <span>100% Data Integrity Verified! All double-entry vouchers are balanced and foreign key relationships are strictly intact.</span>
+        <div class="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-3 font-medium">
+          <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i>
+          <div>
+            <div class="font-bold">100% Data integrity verified</div>
+            <div class="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-0.5">All double-entry vouchers are mathematically balanced, sequence numbers are intact, and foreign key relationships are strictly verified.</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center gap-2.5 text-xs">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>
+            <span class="text-slate-700 dark:text-slate-300">Debit and Credit symmetry</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center gap-2.5 text-xs">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>
+            <span class="text-slate-700 dark:text-slate-300">Chart of accounts mapping</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center gap-2.5 text-xs">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>
+            <span class="text-slate-700 dark:text-slate-300">Period posting continuity</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 flex items-center gap-2.5 text-xs">
+            <i data-lucide="check" class="w-4 h-4 text-emerald-500"></i>
+            <span class="text-slate-700 dark:text-slate-300">Foreign key constraints</span>
+          </div>
         </div>
       {% endif %}
     </div>
@@ -398,34 +733,71 @@
 <!-- TAB: Cost Analysis (cost-analysis) -->
 {% if module.route_slug == 'general-ledger' and current_tab == 'cost-analysis' %}
   <div class="space-y-5">
+    <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
+          <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Cost center and departmental cost analysis</h2>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span class="font-medium">Period:</span>
+          <select class="mac-input px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10">
+            <option value="FY-TD">Full year to date</option>
+            <option value="Q1">Quarter 1</option>
+            <option value="Q2">Quarter 2</option>
+            <option value="Q3">Quarter 3</option>
+            <option value="Q4">Quarter 4</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span class="font-medium">Dimension:</span>
+          <select class="mac-input px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10">
+            <option value="cost_centre">Cost center</option>
+            <option value="department">Department</option>
+          </select>
+        </div>
+        <button type="button" onclick="exportTableToCSV('gl-cost-analysis-table', 'gl_cost_analysis.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
-        <span class="text-xs text-slate-400 font-medium">Total Allocated Budget</span>
+        <span class="text-xs text-slate-400 font-medium">Total allocated budget</span>
         <div class="text-xl font-bold font-mono text-slate-900 dark:text-white">{{ gl_cost_analysis.kpis.total_budget|default(0.0)|money }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
-        <span class="text-xs text-slate-400 font-medium">Total Actual Expenses</span>
+        <span class="text-xs text-slate-400 font-medium">Total actual expenses</span>
         <div class="text-xl font-bold font-mono text-amber-600">{{ gl_cost_analysis.kpis.total_actual_spent|default(0.0)|money }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
-        <span class="text-xs text-slate-400 font-medium">Net Budget Variance</span>
+        <span class="text-xs text-slate-400 font-medium">Net budget variance</span>
         <div class="text-xl font-bold font-mono text-emerald-600">{{ gl_cost_analysis.kpis.net_variance|default(0.0)|money }}</div>
       </div>
       <div class="glass-card rounded-2xl p-4 border border-slate-200 dark:border-white/10 shadow-sm space-y-1">
-        <span class="text-xs text-slate-400 font-medium">Avg Budget Utilization</span>
+        <span class="text-xs text-slate-400 font-medium">Avg budget utilization</span>
         <div class="text-xl font-bold font-mono text-purple-600">{{ gl_cost_analysis.kpis.avg_utilization|default(0.0) }}%</div>
       </div>
     </div>
 
     <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto space-y-3">
-      <h3 class="text-xs font-bold tracking-tight text-slate-900 dark:text-white">Cost Centre Spending & Variance Matrix</h3>
-      <table class="w-full text-left text-xs">
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2">
+        <h3 class="text-xs font-bold tracking-tight text-slate-900 dark:text-white">Cost center spending and variance matrix</h3>
+        <input type="text" placeholder="Filter cost center..." onkeyup="filterTable('gl-cost-analysis-table', this.value)" class="mac-input px-3 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10 w-48">
+      </div>
+      <table class="w-full text-left text-xs" id="gl-cost-analysis-table">
         <thead>
           <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
-            <th class="py-2.5 px-3">Cost Centre</th>
-            <th class="py-2.5 px-3 text-right">Allocated Budget ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right">Actual Spent ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right">Variance ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3">Cost center</th>
+            <th class="py-2.5 px-3 text-right">Allocated budget ({{ active_company.currency_symbol|default('৳') }})</th>
+            <th class="py-2.5 px-3 text-right">Actual spent ({{ active_company.currency_symbol|default('৳') }})</th>
+            <th class="py-2.5 px-3 text-right">Variance ({{ active_company.currency_symbol|default('৳') }})</th>
             <th class="py-2.5 px-3 text-center">Utilization</th>
             <th class="py-2.5 px-3 text-center">Status</th>
           </tr>
@@ -434,21 +806,21 @@
           {% for c in gl_cost_analysis.records %}
             <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
               <td class="py-2.5 px-3">
-                <div class="font-bold text-slate-900 dark:text-white">{{ c.cost_centre_code }}</div>
+                <div class="font-bold text-slate-900 dark:text-white font-mono">{{ c.cost_centre_code }}</div>
                 <div class="text-[11px] text-slate-400">{{ c.cost_centre_name }}</div>
               </td>
               <td class="py-2.5 px-3 text-right font-mono font-medium">{{ c.allocated_budget|money }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-amber-600">{{ c.total_spent|money }}</td>
               <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{{ c.variance|money }}</td>
               <td class="py-2.5 px-3 text-center">
-                <div class="text-[10px] font-mono font-bold text-purple-600">{{ c.utilization_pct }}%</div>
+                <div class="text-[10px] font-mono font-bold {% if c.utilization_pct > 90 %}text-rose-600{% elif c.utilization_pct > 75 %}text-amber-600{% else %}text-purple-600{% endif %}">{{ c.utilization_pct }}%</div>
                 <div class="w-20 mx-auto bg-slate-100 dark:bg-white/10 h-1.5 rounded-full overflow-hidden mt-1">
-                  <div class="bg-purple-600 h-full rounded-full" style="width: {{ c.utilization_pct }}%"></div>
+                  <div class="{% if c.utilization_pct > 90 %}bg-rose-500{% elif c.utilization_pct > 75 %}bg-amber-500{% else %}bg-purple-600{% endif %} h-full rounded-full" style="width: {{ c.utilization_pct }}%"></div>
                 </div>
               </td>
               <td class="py-2.5 px-3 text-center">
-                <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-100 text-emerald-800">
-                  {{ c.status }}
+                <span class="px-2 py-0.5 text-[9px] font-bold rounded-full {% if c.utilization_pct > 90 %}bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300{% elif c.utilization_pct > 75 %}bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300{% else %}bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300{% endif %}">
+                  {{ c.status|default('Within budget')|title }}
                 </span>
               </td>
             </tr>
@@ -464,13 +836,50 @@
   <div class="space-y-4">
     <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center"><i data-lucide="activity" class="w-5 h-5"></i></div>
+        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+          <i data-lucide="activity" class="w-5 h-5"></i>
+        </div>
         <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-white">Real-Time Account Balance Inquiry</h2>
-          
+          <h2 class="text-base font-bold text-slate-900 dark:text-white">Real-time account balance inquiry</h2>
         </div>
       </div>
-      <input type="text" placeholder="Filter account..." onkeyup="filterTable('gl-bal-table', this.value)" class="mac-input px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 w-48 sm:w-64">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button type="button" onclick="exportTableToCSV('gl-bal-table', 'gl_account_balances.csv')" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-semibold flex items-center gap-1.5 text-slate-700 dark:text-slate-200 transition cursor-pointer">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Export to Excel</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-3 sm:p-4 border border-slate-200 dark:border-white/10 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span class="font-medium">Financial year:</span>
+          <select class="mac-input px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10">
+            <option value="2026-2027">2026-2027</option>
+            <option value="2025-2026">2025-2026</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span class="font-medium">Period:</span>
+          <select class="mac-input px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10">
+            <option value="YTD">Full year to date</option>
+            <option value="P1">Period 1 - July</option>
+            <option value="P2">Period 2 - August</option>
+            <option value="P3">Period 3 - September</option>
+            <option value="P4">Period 4 - October</option>
+          </select>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-900/80 p-0.5 rounded-lg border border-slate-200 dark:border-white/10 flex items-center text-xs">
+          <button type="button" onclick="filterAccountBalancesByCategory('ALL', this)" class="bal-cat-pill px-2.5 py-1 rounded font-bold bg-blue-600 text-white shadow">All</button>
+          <button type="button" onclick="filterAccountBalancesByCategory('ASSET', this)" class="bal-cat-pill px-2.5 py-1 rounded font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Assets</button>
+          <button type="button" onclick="filterAccountBalancesByCategory('LIABILITY', this)" class="bal-cat-pill px-2.5 py-1 rounded font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Liabilities</button>
+          <button type="button" onclick="filterAccountBalancesByCategory('EQUITY', this)" class="bal-cat-pill px-2.5 py-1 rounded font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Equity</button>
+          <button type="button" onclick="filterAccountBalancesByCategory('REVENUE', this)" class="bal-cat-pill px-2.5 py-1 rounded font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Revenue</button>
+          <button type="button" onclick="filterAccountBalancesByCategory('EXPENSE', this)" class="bal-cat-pill px-2.5 py-1 rounded font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Expense</button>
+        </div>
+      </div>
+      <input type="text" placeholder="Filter account..." onkeyup="filterTable('gl-bal-table', this.value)" class="mac-input px-3 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10 w-48 sm:w-64">
     </div>
 
     <div class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-white/10 shadow-sm overflow-x-auto">
@@ -479,21 +888,21 @@
           <tr class="border-b border-slate-100 dark:border-white/5 text-slate-400 font-semibold text-xs">
             <th class="py-2.5 px-3">Account</th>
             <th class="py-2.5 px-3">Type</th>
-            <th class="py-2.5 px-3 text-right">Opening Bal ({{ active_company.currency_symbol }})</th>
-            <th class="py-2.5 px-3 text-right text-emerald-600">Period Debit</th>
-            <th class="py-2.5 px-3 text-right text-rose-600">Period Credit</th>
-            <th class="py-2.5 px-3 text-right">Net Change</th>
-            <th class="py-2.5 px-3 text-right">Closing Bal ({{ active_company.currency_symbol }})</th>
+            <th class="py-2.5 px-3 text-right">Opening balance ({{ active_company.currency_symbol|default('৳') }})</th>
+            <th class="py-2.5 px-3 text-right text-emerald-600">Period debit</th>
+            <th class="py-2.5 px-3 text-right text-rose-600">Period credit</th>
+            <th class="py-2.5 px-3 text-right">Net change</th>
+            <th class="py-2.5 px-3 text-right">Closing balance ({{ active_company.currency_symbol|default('৳') }})</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200">
           {% for a in gl_account_balances.records %}
-            <tr class="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition">
+            <tr class="bal-row hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition" data-category="{{ a.account_type|default('') }}">
               <td class="py-2.5 px-3">
                 <div class="font-bold font-mono text-slate-900 dark:text-white">{{ a.account_number }}</div>
                 <div class="text-[11px] text-slate-400">{{ a.account_name }}</div>
               </td>
-              <td class="py-2.5 px-3 font-mono text-slate-500 font-semibold">{{ a.account_type }}</td>
+              <td class="py-2.5 px-3 font-mono text-slate-500 font-semibold">{{ a.account_type|title }}</td>
               <td class="py-2.5 px-3 text-right font-mono">{{ a.opening_balance|money }}</td>
               <td class="py-2.5 px-3 text-right font-mono text-emerald-600">{{ a.period_debit|money }}</td>
               <td class="py-2.5 px-3 text-right font-mono text-rose-600">{{ a.period_credit|money }}</td>
@@ -634,7 +1043,7 @@
         </tbody>
         <tfoot>
           <tr class="border-t-2 border-slate-200 dark:border-white/10 font-bold font-mono text-slate-900 dark:text-white bg-slate-50 dark:bg-white/[0.02]">
-            <td colspan="2" class="py-3 px-3 uppercase">Total Trial Balance</td>
+            <td colspan="2" class="py-3 px-3 font-bold">Total Trial Balance</td>
             <td class="py-3 px-3 text-right text-emerald-600">{{ gl_trial_balance.totals.closing_debit|default(0.0)|money }}</td>
             <td class="py-3 px-3 text-right text-rose-600">{{ gl_trial_balance.totals.closing_credit|default(0.0)|money }}</td>
           </tr>
@@ -782,7 +1191,7 @@
     <!-- Header Letterhead -->
     <div class="flex items-start justify-between border-b border-slate-200 dark:border-white/10 pb-4">
       <div>
-        <div class="text-xs uppercase font-mono tracking-widest text-slate-400">Pyrix Enterprise Financial Systems</div>
+        <div class="text-xs font-mono tracking-widest text-slate-400">Pyrix Enterprise Financial Systems</div>
         <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight" id="pv-title">Journal Voucher</h2>
         <div class="text-xs font-mono text-slate-500 mt-0.5" id="pv-number">JV-XXXX</div>
       </div>
@@ -793,15 +1202,15 @@
 
     <!-- Metadata Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-slate-100 dark:border-white/5">
-      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Date:</span> <span id="pv-date" class="font-bold font-mono">2026-08-27</span></div>
-      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Reference:</span> <span id="pv-ref" class="font-bold font-mono">-</span></div>
-      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Status:</span> <span id="pv-status" class="font-bold text-emerald-600">POSTED</span></div>
-      <div><span class="text-slate-400 block text-[10px] uppercase font-mono">Currency:</span> <span id="pv-curr" class="font-bold font-mono">{{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</span></div>
+      <div><span class="text-slate-400 block text-[10px] font-mono">Date:</span> <span id="pv-date" class="font-bold font-mono">2026-08-27</span></div>
+      <div><span class="text-slate-400 block text-[10px] font-mono">Reference:</span> <span id="pv-ref" class="font-bold font-mono">-</span></div>
+      <div><span class="text-slate-400 block text-[10px] font-mono">Status:</span> <span id="pv-status" class="font-bold text-emerald-600">Posted</span></div>
+      <div><span class="text-slate-400 block text-[10px] font-mono">Currency:</span> <span id="pv-curr" class="font-bold font-mono">{{ active_company.currency|default('BDT') }} ({{ active_company.currency_symbol|default('৳') }})</span></div>
     </div>
 
     <!-- Narration -->
     <div class="text-xs">
-      <span class="text-slate-400 block text-[10px] uppercase font-mono">General Narration:</span>
+      <span class="text-slate-400 block text-[10px] font-mono">General narration:</span>
       <p id="pv-narration" class="font-medium text-slate-800 dark:text-slate-200 mt-0.5">-</p>
     </div>
 
@@ -830,10 +1239,10 @@
 
     <!-- 4-Tier Sign-Off Footer -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-slate-200 dark:border-white/10 text-center text-[10px]">
-      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold uppercase text-slate-500">Prepared By</span></div>
-      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold uppercase text-slate-500">Verified By</span></div>
-      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold uppercase text-slate-500">Approved By</span></div>
-      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold uppercase text-slate-500">Auditor Sign-Off</span></div>
+      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold text-slate-500">Prepared by</span></div>
+      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold text-slate-500">Verified by</span></div>
+      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold text-slate-500">Approved by</span></div>
+      <div class="space-y-8"><div class="border-b border-dashed border-slate-300 dark:border-white/20"></div><span class="font-bold text-slate-500">Auditor sign-off</span></div>
     </div>
 
     <div class="flex items-center justify-end gap-3 pt-3">
@@ -849,42 +1258,261 @@
      7. JAVASCRIPT LOGIC & ASYNC OPERATIONS
      ========================================================================= -->
 <script>
-async function generateAutoBatch() {
+// --- Page 1: Automatic Transaction Functions ---
+function toggleAllAutoRules(chk) {
+  const checkboxes = document.querySelectorAll('.auto-rule-chk');
+  checkboxes.forEach(c => c.checked = chk.checked);
+}
+
+async function loadAutoProfilePreview(profileId, rowEl) {
+  if (rowEl) {
+    document.querySelectorAll('#gl-auto-rules-table tbody tr').forEach(r => {
+      r.classList.remove('bg-blue-500/10', 'bg-blue-500/5');
+    });
+    rowEl.classList.add('bg-blue-500/10');
+  }
+  const tbody = document.getElementById('auto-breakdown-tbody');
+  const label = document.getElementById('auto-breakdown-label');
+  if (!tbody) return;
+
+  if (profileId === 'default-dep' || profileId === 'default-util') {
+    return;
+  }
+
   try {
-    const res = await fetch('/api/modules/general-ledger/transactions/auto-batch/generate', { method: 'POST' });
+    const res = await fetch(`/api/modules/general-ledger/auto-profiles/${profileId}/preview`);
+    const data = await res.json();
+    if (data.success && data.lines && data.lines.length > 0) {
+      if (label) label.innerText = `Transaction breakdown: ${data.profile_name || 'Active rule'}`;
+      let html = '';
+      const curSym = '{{ active_company.currency_symbol|default("৳") }}';
+      data.lines.forEach(line => {
+        const debitDisplay = line.debit > 0 ? curSym + line.debit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
+        const creditDisplay = line.credit > 0 ? curSym + line.credit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
+        html += `
+          <tr>
+            <td class="py-1.5 px-3 font-bold text-blue-500 dark:text-blue-400 font-mono">${line.account_number || ''}</td>
+            <td class="py-1.5 px-3 font-sans text-slate-800 dark:text-slate-200">${line.account_name || ''}</td>
+            <td class="py-1.5 px-3 text-right font-bold text-slate-900 dark:text-white font-mono">${debitDisplay}</td>
+            <td class="py-1.5 px-3 text-right font-bold text-slate-900 dark:text-white font-mono">${creditDisplay}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+  } catch (err) {
+    console.error('Failed to load auto profile preview:', err);
+  }
+}
+
+async function executeSelectedAutoJournals() {
+  const fy = document.getElementById('auto-fy-select') ? document.getElementById('auto-fy-select').value : '2026-2027';
+  const period = document.getElementById('auto-period-select') ? parseInt(document.getElementById('auto-period-select').value) : 1;
+  const checkedBoxes = document.querySelectorAll('.auto-rule-chk:checked');
+  const selectedIds = Array.from(checkedBoxes).map(cb => cb.value).filter(v => v && !v.startsWith('default-'));
+
+  try {
+    const res = await fetch('/api/modules/general-ledger/transactions/auto-batch/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fiscal_year: fy,
+        fiscal_period: period,
+        profile_ids: selectedIds
+      })
+    });
     const data = await res.json();
     if (data.success) {
-      alert('Automated recurring month-end batch successfully compiled and staged!');
+      alert(`Automated recurring batch ${data.batch_number || ''} generated successfully!`);
       window.location.href = '/modules/general-ledger?tab=batches';
     } else {
       alert('Error generating auto batch: ' + (data.message || 'Unknown error'));
     }
   } catch (err) {
-    alert('Failed to connect to batch engine.');
+    alert('Failed to connect to batch generation engine.');
+  }
+}
+
+// --- Page 2: Template Batch Generation ---
+function onTemplateSelectionChange(selectEl) {
+  const opt = selectEl.options[selectEl.selectedIndex];
+  if (opt) {
+    const desc = opt.getAttribute('data-desc') || '';
+    const descInput = document.getElementById('tmpl-desc-display');
+    if (descInput) descInput.value = desc;
   }
 }
 
 async function handleTemplateBatchSubmit(e) {
   e.preventDefault();
-  const template_id = document.getElementById('tmpl-select').value;
-  const batch_title = document.getElementById('tmpl-title').value;
-  const amount = parseFloat(document.getElementById('tmpl-amount').value);
+  const selectEl = document.getElementById('tmpl-select');
+  if (!selectEl) return;
+  const template_id = selectEl.value;
+  const opt = selectEl.selectedOptions[0];
+  const template_title = opt ? (opt.getAttribute('data-title') || 'Template Batch') : 'Template Batch';
+  const is_reversal = document.getElementById('tmpl-is-reversal') ? document.getElementById('tmpl-is-reversal').checked : false;
+  const fiscal_year = document.getElementById('tmpl-fiscal-year') ? document.getElementById('tmpl-fiscal-year').value : '2026-2027';
+  const fiscal_period = document.getElementById('tmpl-fiscal-period') ? parseInt(document.getElementById('tmpl-fiscal-period').value) : 1;
+  const amount = parseFloat(document.getElementById('tmpl-amount').value) || 0;
 
   try {
     const res = await fetch('/api/modules/general-ledger/transactions/template-batch/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ template_id, batch_title, amount })
+      body: JSON.stringify({
+        template_id,
+        batch_title: (is_reversal ? 'Reversal: ' : '') + template_title,
+        amount,
+        is_reversal,
+        fiscal_year,
+        fiscal_period
+      })
     });
     const data = await res.json();
     if (data.success) {
-      alert('Template batch successfully created!');
+      alert(`Template batch ${data.batch_number || ''} successfully created!`);
       window.location.href = '/modules/general-ledger?tab=batches';
     } else {
       alert('Error: ' + (data.message || 'Failed'));
     }
   } catch (err) {
     alert('Server error creating template batch.');
+  }
+}
+
+// Universal CSV Export for Excel
+function exportTableToCSV(tableId, filename) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  let csv = [];
+  const rows = table.querySelectorAll('tr');
+  rows.forEach(row => {
+    if (row.style.display === 'none') return;
+    let cols = [];
+    const cells = row.querySelectorAll('th, td');
+    cells.forEach((cell, idx) => {
+      if (cell.querySelector('input[type="checkbox"]') || cell.querySelector('button')) return;
+      let text = cell.innerText.replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ').trim();
+      text = text.replace(/"/g, '""');
+      cols.push(`"${text}"`);
+    });
+    if (cols.length > 0) {
+      csv.push(cols.join(','));
+    }
+  });
+  const csvBlob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(csvBlob);
+  link.setAttribute('download', filename || 'export.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// --- Page 4: Batch Status & Posting Functions ---
+let currentBatchStatusFilter = 'UNPOSTED';
+let currentBatchYearOnly = true;
+let currentBatchSourceFilter = 'ALL';
+
+function applyBatchFilters() {
+  const rows = document.querySelectorAll('#gl-batches-table tbody tr');
+  rows.forEach(tr => {
+    const status = tr.getAttribute('data-status') || '';
+    const year = tr.getAttribute('data-year') || '';
+    const source = tr.getAttribute('data-source') || '';
+
+    let statusMatch = true;
+    if (currentBatchStatusFilter === 'POSTED') {
+      statusMatch = (status === 'POSTED');
+    } else if (currentBatchStatusFilter === 'UNPOSTED') {
+      statusMatch = (status !== 'POSTED');
+    }
+
+    let yearMatch = true;
+    if (currentBatchYearOnly) {
+      yearMatch = (year === '2026-2027' || year === '');
+    }
+
+    let sourceMatch = true;
+    if (currentBatchSourceFilter !== 'ALL') {
+      sourceMatch = (source.toUpperCase() === currentBatchSourceFilter.toUpperCase());
+    }
+
+    if (statusMatch && yearMatch && sourceMatch) {
+      tr.style.display = '';
+    } else {
+      tr.style.display = 'none';
+    }
+  });
+  updateSelectedBatchCount();
+}
+
+function updateSelectedBatchCount() {
+  const checked = document.querySelectorAll('.batch-row-chk:checked');
+  const countEl = document.getElementById('selected-batch-count');
+  if (countEl) countEl.innerText = checked.length;
+}
+
+function filterBatchesBySource(source) {
+  currentBatchSourceFilter = source;
+  applyBatchFilters();
+}
+
+function filterBatchesByStatus(status, btnEl) {
+  currentBatchStatusFilter = status;
+  const pills = document.querySelectorAll('.batch-status-pill');
+  pills.forEach(p => {
+    p.classList.remove('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+    p.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+  });
+  if (btnEl) {
+    btnEl.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+    btnEl.classList.add('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+  }
+  applyBatchFilters();
+}
+
+function filterBatchesCurrentYear(checked) {
+  currentBatchYearOnly = checked;
+  applyBatchFilters();
+}
+
+function toggleAllBatchesSelect(masterChk) {
+  const checkboxes = document.querySelectorAll('.batch-row-chk');
+  checkboxes.forEach(c => {
+    const tr = c.closest('tr');
+    if (!tr || tr.style.display !== 'none') {
+      c.checked = masterChk.checked;
+    }
+  });
+  updateSelectedBatchCount();
+}
+
+async function postSelectedBatchesBulk() {
+  const checked = document.querySelectorAll('.batch-row-chk:checked');
+  const ids = Array.from(checked).map(c => c.value).filter(Boolean);
+  if (ids.length === 0) {
+    alert('Please select at least one batch to post.');
+    return;
+  }
+  if (!confirm(`Are you sure you want to post ${ids.length} selected batch(es) to general ledger?`)) {
+    return;
+  }
+  try {
+    const res = await fetch('/api/modules/general-ledger/transactions/batches/bulk-post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ batch_ids: ids })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`Successfully posted ${data.posted_count} batch(es)!`);
+      window.location.reload();
+    } else {
+      alert('Error posting batches: ' + (data.message || 'Failed'));
+    }
+  } catch (err) {
+    alert('Failed to connect to batch posting service.');
   }
 }
 
@@ -906,7 +1534,7 @@ async function unpostGLBatch(batchId) {
     const res = await fetch(`/api/modules/general-ledger/transactions/batches/${batchId}/unpost`, { method: 'POST' });
     const data = await res.json();
     if (data.success) {
-      alert('Batch status set to UNPOSTED.');
+      alert('Batch status set to Unposted.');
       window.location.reload();
     }
   } catch (err) {
@@ -914,15 +1542,107 @@ async function unpostGLBatch(batchId) {
   }
 }
 
+// --- Page 1 (Screen 1): Voucher Printing Helpers ---
+function toggleAllVouchersSelect(masterChk) {
+  const checkboxes = document.querySelectorAll('.voucher-row-chk');
+  checkboxes.forEach(c => {
+    const tr = c.closest('tr');
+    if (!tr || tr.style.display !== 'none') {
+      c.checked = masterChk.checked;
+    }
+  });
+}
+
+function filterVouchersByBatch(batch) {
+  const rows = document.querySelectorAll('#gl-vouchers-table tbody tr');
+  rows.forEach(tr => {
+    const rowBatch = tr.getAttribute('data-batch') || '';
+    if (batch === 'ALL' || rowBatch === batch) {
+      tr.style.display = '';
+    } else {
+      tr.style.display = 'none';
+    }
+  });
+}
+
+function setVoucherScope(scope, btnEl) {
+  const pills = document.querySelectorAll('.voucher-scope-pill');
+  pills.forEach(p => {
+    p.classList.remove('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+    p.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+  });
+  if (btnEl) {
+    btnEl.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+    btnEl.classList.add('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+  }
+  const rows = document.querySelectorAll('#gl-vouchers-table tbody tr');
+  rows.forEach(tr => {
+    const chk = tr.querySelector('.voucher-row-chk');
+    if (scope === 'SELECTED') {
+      tr.style.display = (chk && chk.checked) ? '' : 'none';
+    } else {
+      tr.style.display = '';
+    }
+  });
+}
+
+function printSelectedGLVouchers() {
+  const checked = document.querySelectorAll('.voucher-row-chk:checked');
+  if (checked.length === 0) {
+    alert('Please select at least one voucher to print.');
+    return;
+  }
+  printGLVoucher(checked[0].value);
+}
+
+// --- Page 3 (Screen 3): Integrity Scope & Diagnostics ---
+function setIntegrityScope(scope, btnEl) {
+  const pills = document.querySelectorAll('.integ-scope-pill');
+  pills.forEach(p => {
+    p.classList.remove('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+    p.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+  });
+  if (btnEl) {
+    btnEl.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+    btnEl.classList.add('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+  }
+}
+
 async function runGLDataIntegrity() {
+  const spinIcon = document.getElementById('icon-spin-integrity');
+  if (spinIcon) spinIcon.classList.add('animate-spin');
   try {
     const res = await fetch('/api/modules/general-ledger/process/data-integrity/run', { method: 'POST' });
     const data = await res.json();
-    alert(`Integrity Scan Complete: ${data.status_label}\nTotal Vouchers Checked: ${data.total_vouchers_checked}\nTotal Lines Checked: ${data.total_lines_checked}`);
+    alert(`Integrity scan complete: ${data.status_label}\nTotal vouchers checked: ${data.total_vouchers_checked}\nTotal lines checked: ${data.total_lines_checked}`);
     window.location.reload();
   } catch (err) {
     alert('Failed to run integrity scanner.');
+  } finally {
+    if (spinIcon) spinIcon.classList.remove('animate-spin');
   }
+}
+
+// --- Page 5 (Screen 5): Account Balance Category Filter ---
+function filterAccountBalancesByCategory(cat, btnEl) {
+  const pills = document.querySelectorAll('.bal-cat-pill');
+  pills.forEach(p => {
+    p.classList.remove('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+    p.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+  });
+  if (btnEl) {
+    btnEl.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+    btnEl.classList.add('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+  }
+  const rows = document.querySelectorAll('#gl-bal-table tbody tr');
+  rows.forEach(tr => {
+    const rowCat = (tr.getAttribute('data-category') || '').toUpperCase();
+    if (cat === 'ALL' || rowCat === cat.toUpperCase() || rowCat.includes(cat.toUpperCase())) {
+      tr.style.display = '';
+    } else {
+      tr.style.display = 'none';
+    }
+  });
 }
 
 async function printGLVoucher(voucherId) {
@@ -934,7 +1654,7 @@ async function printGLVoucher(voucherId) {
       document.getElementById('pv-number').innerText = d.voucher.voucher_number;
       document.getElementById('pv-date').innerText = d.voucher.voucher_date;
       document.getElementById('pv-ref').innerText = d.voucher.reference_number || '-';
-      document.getElementById('pv-status').innerText = d.voucher.status;
+      document.getElementById('pv-status').innerText = d.voucher.status === 'POSTED' ? 'Posted' : 'Unposted';
       document.getElementById('pv-narration').innerText = d.voucher.narration || '-';
       const curSym = '{{ active_company.currency_symbol|default("৳") }}';
       if (document.getElementById('pv-curr')) {
@@ -962,4 +1682,11 @@ async function printGLVoucher(voucherId) {
     alert('Failed to load printable voucher document.');
   }
 }
+
+// Run initial filter if batches table is present
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('gl-batches-table')) {
+    applyBatchFilters();
+  }
+});
 </script>

@@ -251,7 +251,7 @@
                 <a href="/modules/accounts-receivable/master/company-mappings/{{ m.id }}/view" class="table-id-link" title="Click to view details">{{ m.customer_code }}</a>
               </td>
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ m.customer_name }}</td>
-              <td class="py-2.5 px-3"><span class="px-2 py-0.5 text-[10px] font-mono font-bold uppercase rounded bg-slate-100 text-slate-700">{{ m.company_code }}</span></td>
+              <td class="py-2.5 px-3"><span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-slate-100 text-slate-700">{{ m.company_code }}</span></td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ m.subsidiary_account_code|default('AUTO-GEN') }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-medium">{{ m.allocated_credit_limit|money }}</td>
               <td class="py-2.5 px-3 font-medium text-slate-600 dark:text-slate-300">{{ m.assigned_sales_rep|default('Unassigned') }}</td>
@@ -301,7 +301,7 @@
               <td class="py-2.5 px-3 text-slate-600 dark:text-slate-300">{{ s.ship_address }}</td>
               <td class="py-2.5 px-3">{{ s.city|default('-') }}, {{ s.division_state|default('') }}</td>
               <td class="py-2.5 px-3">{{ s.contact_person|default('-') }} ({{ s.contact_phone|default('') }})</td>
-              <td class="py-2.5 px-3 text-center">{% if s.is_default %}<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-50 text-emerald-600">DEFAULT</span>{% else %}-{% endif %}</td>
+              <td class="py-2.5 px-3 text-center">{% if s.is_default %}<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-50 text-emerald-600">Default</span>{% else %}-{% endif %}</td>
               <td class="py-2.5 px-3 text-right">
   <button type="button" onclick="openRowActionMenu(this, event, 'ar_customers', '{{ s.id }}', '{{ s.name or s.title or s.category_name or s.customer_name or s.location_name or s.set_name or s.criteria_name or s.profile_name or s.adjustment_name or 'Record' }}', '/modules/accounts-receivable/master/ship-to-addresses/{{ s.id }}/edit')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
                     <i data-lucide="more-horizontal" class="w-4 h-4"></i>
@@ -489,7 +489,7 @@
               </td>
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ t.adjustment_name }}</td>
               <td class="py-2.5 px-3 text-center">
-                {% if t.adjustment_category == 'CREDIT' %}<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-50 text-emerald-700">CREDIT</span>{% else %}<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-50 text-rose-700">DEBIT</span>{% endif %}
+                {% if t.adjustment_category == 'CREDIT' %}<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-50 text-emerald-700">Credit</span>{% else %}<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-50 text-rose-700">Debit</span>{% endif %}
               </td>
               <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500">{{ t.offset_gl_num|default('6500-01') }}</td>
               <td class="py-2.5 px-3 text-center">{% if t.is_tax_applicable %}YES{% else %}NO{% endif %}</td>
@@ -596,7 +596,7 @@
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ g.customer_code }} - {{ g.customer_name }}</td>
               <td class="py-2.5 px-3 font-medium">{{ g.adjustment_name }}</td>
               <td class="py-2.5 px-3 text-center">
-                {% if g.adjustment_category == 'CREDIT' %}<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-50 text-emerald-700">CREDIT</span>{% else %}<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-50 text-rose-700">DEBIT</span>{% endif %}
+                {% if g.adjustment_category == 'CREDIT' %}<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-50 text-emerald-700">Credit</span>{% else %}<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-50 text-rose-700">Debit</span>{% endif %}
               </td>
               <td class="py-2.5 px-3 text-right font-mono font-bold">{{ g.amount|money }}</td>
               <td class="py-2.5 px-3 text-slate-500">{{ g.approved_by }}</td>
@@ -699,11 +699,11 @@
               <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ r.receipt_number }}</td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ r.receipt_date }}</td>
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ r.customer_code }} - {{ r.customer_name }}</td>
-              <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-mono font-bold uppercase rounded bg-slate-100 text-slate-700">{{ r.payment_mode }}</span></td>
+              <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-slate-100 text-slate-700">{{ r.payment_mode }}</span></td>
               <td class="py-2.5 px-3 font-mono text-slate-600">{{ r.instrument_ref|default('Direct Deposit') }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600">{{ r.receipt_amount|money }}</td>
               <td class="py-2.5 px-3 font-mono text-[11px] text-blue-600">{{ r.allocated_invoices|default('Unallocated') }}</td>
-              <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700">CLEARED</span></td>
+              <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-700">Cleared</span></td>
             
                 <td class="py-3 px-3 text-right">
                   <button type="button" onclick="openRowActionMenu(this, event, 'ar_customers', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
@@ -749,7 +749,7 @@
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ r.customer_code }} - {{ r.customer_name }}</td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-rose-600">{{ r.receipt_amount|money }}</td>
               <td class="py-2.5 px-3 text-slate-600 dark:text-slate-300 font-medium">{{ r.cancelled_reason|default('Voided') }}</td>
-              <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700">CANCELLED</span></td>
+              <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 text-rose-700">Cancelled</span></td>
             
                 <td class="py-3 px-3 text-right">
                   <button type="button" onclick="openRowActionMenu(this, event, 'ar_customers', '{{ r.id }}', '{{ r.name or r.title or r.code or 'Record' }}')" class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" title="More actions">
@@ -913,7 +913,7 @@
                 <td class="py-2.5 px-3 text-right font-mono font-bold text-rose-600">{% if s.overdue_90_plus > 0 %}{{ s.overdue_90_plus|money }}{% else %}-{% endif %}</td>
                 <td class="py-2.5 px-3 text-center">
                   {% if s.risk_level == 'CRITICAL' %}
-                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-200">CRITICAL</span>
+                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-200">Critical</span>
                   {% elif s.risk_level == 'HIGH' %}
                     <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-200">HIGH</span>
                   {% elif s.risk_level == 'MEDIUM' %}
@@ -1172,7 +1172,7 @@
               <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ r.receipt_number }}</td>
               <td class="py-2.5 px-3 font-mono text-slate-500">{{ r.receipt_date }}</td>
               <td class="py-2.5 px-3 font-semibold text-slate-900 dark:text-white">{{ r.customer_code }} - {{ r.customer_name }}</td>
-              <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-mono font-bold uppercase rounded bg-slate-100 text-slate-700">{{ r.payment_mode }}</span></td>
+              <td class="py-2.5 px-3 text-center"><span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-slate-100 text-slate-700">{{ r.payment_mode }}</span></td>
               <td class="py-2.5 px-3 text-right font-mono font-bold text-emerald-600">{{ r.receipt_amount|money }}</td>
               <td class="py-2.5 px-3 font-mono text-[11px] text-blue-600">{{ r.allocated_invoices|default('Account Credit') }}</td>
             </tr>

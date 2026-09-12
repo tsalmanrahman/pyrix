@@ -3689,12 +3689,43 @@ async def get_customer_statement_api(
 # =========================================================================
 # General Ledger Transaction & Batch Automation Operations
 # =========================================================================
+@router.get("/api/modules/general-ledger/auto-profiles/{profile_id}/preview")
+async def get_auto_profile_preview_api(profile_id: str):
+    lines = GLJournalService.get_auto_profile_preview_lines(profile_id)
+    return {"success": True, "lines": lines}
+
 @router.post("/api/modules/general-ledger/transactions/auto-batch/generate")
 async def generate_auto_batch_api(request: Request):
+    payload = await request.json() if request.headers.get("content-type") == "application/json" else {}
+    fiscal_year = payload.get("fiscal_year", "2026-2027")
+    fiscal_period = int(payload.get("fiscal_period", 1))
+    profile_ids = payload.get("profile_ids", [])
+    
     active_company = CompanyService.resolve_active_company(request)
     company_id = str(active_company["id"]) if active_company else None
-    batch_id = GLJournalService.generate_auto_journals_batch(company_id)
-    return {"success": True, "batch_id": batch_id, "message": "Automated recurring accruals batch generated successfully."}
+    
+    batch_title = f"Automatic Transactions FY {fiscal_year} Period {fiscal_period}"
+    batch_id = GLJournalService.generate_auto_journals_batch(company_id, batch_title=batch_title)
+    return {"success": True, "batch_id": batch_id, "message": f"Automated recurring transactions generated for Period {fiscal_period} ({fiscal_year})."}
+
+@router.post("/api/modules/general-ledger/templates/create-from-batch")
+async def create_template_from_batch_api(request: Request):
+    payload = await request.json() if request.headers.get("content-type") == "application/json" else {}
+    template_name = payload.get("template_name", "").strip()
+    description = payload.get("description", "").strip()
+    source_batch_id = payload.get("source_batch_id", "").strip()
+
+    if not template_name or not source_batch_id:
+        return JSONResponse({"success": False, "message": "Template name and source batch are required."}, status_code=400)
+
+    active_company = CompanyService.resolve_active_company(request)
+    company_id = str(active_company["id"]) if active_company else None
+    
+    try:
+        template_id = GLJournalService.create_template_from_batch(company_id, template_name, description, source_batch_id)
+        return {"success": True, "template_id": template_id, "message": f"Template '{template_name}' successfully created from batch."}
+    except Exception as e:
+        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
 
 @router.post("/api/modules/general-ledger/transactions/template-batch/generate")
 async def generate_template_batch_api(request: Request):
@@ -3702,9 +3733,16 @@ async def generate_template_batch_api(request: Request):
     template_id = payload.get("template_id", "")
     batch_title = payload.get("batch_title", "Template Generated Batch")
     amount = float(payload.get("amount", 50000.0))
+    is_reversal = bool(payload.get("is_reversal", False))
+    fiscal_year = payload.get("fiscal_year", "2026-2027")
+    fiscal_period = int(payload.get("fiscal_period", 1))
+
     active_company = CompanyService.resolve_active_company(request)
     company_id = str(active_company["id"]) if active_company else None
-    batch_id = GLJournalService.generate_batch_from_template(company_id, template_id, batch_title, amount)
+    batch_id = GLJournalService.generate_batch_from_template(
+        company_id, template_id, batch_title, amount,
+        is_reversal=is_reversal, fiscal_year=fiscal_year, fiscal_period=fiscal_period
+    )
     return {"success": True, "batch_id": batch_id, "message": "Template batch compiled and staged successfully."}
 
 @router.post("/api/modules/general-ledger/transactions/auto-profiles/create")
@@ -3736,10 +3774,37 @@ async def post_gl_batch_api(batch_id: str, request: Request):
     res = GLProcessService.post_batch_engine(batch_id, str(active_company["id"]) if active_company else None)
     return res
 
+@router.post("/api/modules/general-ledger/transactions/batches/bulk-post")
+async def bulk_post_batches_api(request: Request):
+    payload = await request.json() if request.headers.get("content-type") == "application/json" else {}
+    batch_ids = payload.get("batch_ids", [])
+    count = GLJournalService.bulk_post_batches(batch_ids)
+    return {"success": True, "count": count, "message": f"Successfully posted {count} batches to ledger."}
+
 @router.post("/api/modules/general-ledger/transactions/batches/{batch_id}/unpost")
 async def unpost_gl_batch_api(batch_id: str):
     GLJournalService.unpost_batch(batch_id)
     return {"success": True, "batch_id": batch_id, "status": "UNPOSTED"}
+
+@router.get("/api/modules/general-ledger/budgets/{budget_set_id}/monthly-data")
+async def get_budget_monthly_data_api(budget_set_id: str, account_id: Optional[str] = None, fiscal_year: Optional[str] = None):
+    lines = GLMasterService.get_budget_monthly_lines(budget_set_id, gl_account_id=account_id, fiscal_year=fiscal_year)
+    return {"success": True, "lines": lines}
+
+@router.post("/api/modules/general-ledger/budgets/save-monthly-data")
+async def save_budget_monthly_data_api(request: Request):
+    payload = await request.json() if request.headers.get("content-type") == "application/json" else {}
+    budget_set_id = payload.get("budget_set_id", "").strip()
+    gl_account_id = payload.get("gl_account_id", "").strip()
+    fiscal_year = payload.get("fiscal_year", "2026-2027").strip()
+    lines = payload.get("lines", [])
+
+    if not budget_set_id:
+        return JSONResponse({"success": False, "message": "Budget set is required."}, status_code=400)
+
+    total_amount = sum(float(item.get("periodic_change") or item.get("budget_amount") or 0.0) for item in lines)
+    success = GLMasterService.save_budget_monthly_lines(budget_set_id, gl_account_id, fiscal_year, lines)
+    return {"success": success, "message": "Budget monthly allocation saved successfully.", "total_amount": total_amount}
 
 @router.post("/api/modules/general-ledger/process/data-integrity/run")
 async def run_data_integrity_check_api(request: Request):

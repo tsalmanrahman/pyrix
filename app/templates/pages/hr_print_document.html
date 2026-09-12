@@ -19,7 +19,7 @@
 
       <!-- Dynamic Security Watermark Overlay -->
       <div class="watermark-overlay">
-        <span id="report-watermark-text">OFFICIAL DOCUMENT</span>
+        <span id="report-watermark-text">Official document</span>
       </div>
 
       <!-- Main Document Core Content -->
@@ -53,7 +53,7 @@
 
           <!-- Right: Document Meta & Verification Seal -->
           <div class="text-right flex flex-col items-end shrink-0">
-            <span class="px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded bg-slate-100 text-blue-700 border border-slate-300">
+            <span class="px-2.5 py-1 text-[11px] font-mono font-bold rounded bg-slate-100 text-blue-700 border border-slate-300">
               {{ doc_type_title }}
             </span>
             <p class="text-base font-black font-mono text-slate-950 mt-1.5 tracking-tight">{{ doc_number }}</p>
@@ -67,7 +67,7 @@
                 <rect x="14" y="14" width="7" height="7"></rect>
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
-              <span class="font-mono text-[9px] font-bold text-slate-600 uppercase">PYRIX-VERIFIED</span>
+              <span class="font-mono text-[9px] font-bold text-slate-600 ">Pyrix-verified</span>
             </div>
           </div>
         </header>
@@ -85,13 +85,13 @@
           <section class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-y-3 gap-x-4">
               <div>
-                <span class="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block">Employee Code & Name</span>
+                <span class="text-[9.5px] font-bold tracking-wider text-slate-400 block">Employee Code & Name</span>
                 <p class="font-bold text-slate-950 text-sm mt-0.5">{{ employee.employee_name }}</p>
                 <p class="font-mono font-bold text-blue-600 text-[11px]">{{ employee.employee_code }}</p>
               </div>
 
               <div>
-                <span class="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block">Designation & Grade</span>
+                <span class="text-[9.5px] font-bold tracking-wider text-slate-400 block">Designation & Grade</span>
                 <p class="font-bold text-slate-900 mt-0.5">{{ employee.designation_title }}</p>
                 <span class="inline-block px-1.5 py-0.2 text-[9px] font-mono font-bold rounded bg-slate-200 text-slate-700">
                   {{ employee.grade_name|default('Grade E-4') }}
@@ -99,30 +99,30 @@
               </div>
 
               <div>
-                <span class="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block">Department & Division</span>
+                <span class="text-[9.5px] font-bold tracking-wider text-slate-400 block">Department & Division</span>
                 <p class="font-bold text-slate-900 mt-0.5">{{ employee.dept_name }}</p>
                 <p class="text-[10px] text-slate-500">Corporate Operations</p>
               </div>
 
               <div>
-                <span class="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block">Pay Period & Fiscal Cycle</span>
+                <span class="text-[9.5px] font-bold tracking-wider text-slate-400 block">Pay Period & Fiscal Cycle</span>
                 <p class="font-mono font-bold text-slate-950 mt-0.5">{{ employee.period_month }} {{ employee.fiscal_year }}</p>
                 <p class="text-[10px] text-slate-500 font-mono">Run: {{ employee.run_date }}</p>
               </div>
 
               <div>
-                <span class="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block">Tax TIN / National ID</span>
+                <span class="text-[9.5px] font-bold tracking-wider text-slate-400 block">Tax TIN / National ID</span>
                 <p class="font-mono font-bold text-purple-700 mt-0.5">{{ employee.tin_number|default('TIN-2026-REG-01') }}</p>
                 <p class="text-[10px] text-slate-500">Standard Withholding</p>
               </div>
 
               <div>
-                <span class="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block">Date of Joining</span>
+                <span class="text-[9.5px] font-bold tracking-wider text-slate-400 block">Date of Joining</span>
                 <p class="font-mono font-semibold text-slate-800 mt-0.5">{{ employee.joining_date }}</p>
               </div>
 
               <div class="sm:col-span-2">
-                <span class="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block">Disbursement Banking & Routing</span>
+                <span class="text-[9.5px] font-bold tracking-wider text-slate-400 block">Disbursement Banking & Routing</span>
                 <p class="font-bold text-slate-900 mt-0.5">{{ employee.bank_name|default('Standard Chartered Bank Corporate') }}</p>
                 <p class="font-mono text-[10.5px] text-slate-600">
                   A/C: <span class="font-bold text-slate-800">{{ employee.bank_account_number }}</span> &bull; Routing: <span class="font-bold">{{ employee.bank_routing_number|default('021000021') }}</span>
@@ -137,7 +137,7 @@
             <!-- Earnings Ledger -->
             <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
               <div class="bg-emerald-50/80 px-3.5 py-2 border-b border-emerald-100 flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wide text-emerald-800 flex items-center gap-1.5">
+                <span class="text-xs font-bold tracking-wide text-emerald-800 flex items-center gap-1.5">
                   <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
                   <span>Gross Earnings & Allowances</span>
                 </span>
@@ -181,7 +181,7 @@
                 </tbody>
                 <tfoot>
                   <tr class="bg-slate-50 font-bold border-t-2 border-slate-900 text-slate-900">
-                    <td class="py-2 px-3 text-xs uppercase tracking-wide">Total Gross Earnings</td>
+                    <td class="py-2 px-3 text-xs tracking-wide">Total Gross Earnings</td>
                     <td class="py-2 px-3 text-right font-mono text-emerald-700 text-sm font-black">{{ employee.gross_earnings|money }}</td>
                   </tr>
                 </tfoot>
@@ -191,7 +191,7 @@
             <!-- Deductions Ledger -->
             <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
               <div class="bg-rose-50/80 px-3.5 py-2 border-b border-rose-100 flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wide text-rose-800 flex items-center gap-1.5">
+                <span class="text-xs font-bold tracking-wide text-rose-800 flex items-center gap-1.5">
                   <i data-lucide="minus-circle" class="w-3.5 h-3.5 text-rose-600"></i>
                   <span>Statutory & Voluntary Deductions</span>
                 </span>
@@ -227,7 +227,7 @@
                 </tbody>
                 <tfoot>
                   <tr class="bg-slate-50 font-bold border-t-2 border-slate-900 text-slate-900">
-                    <td class="py-2 px-3 text-xs uppercase tracking-wide">Total Deductions</td>
+                    <td class="py-2 px-3 text-xs tracking-wide">Total Deductions</td>
                     <td class="py-2 px-3 text-right font-mono text-rose-600 text-sm font-black">{{ employee.total_deductions|money }}</td>
                   </tr>
                 </tfoot>
@@ -239,7 +239,7 @@
           <!-- Net Salary Highlight Banner -->
           <section class="p-4 rounded-xl bg-gradient-to-r from-slate-900 to-slate-950 text-white shadow-md flex items-center justify-between gap-4 flex-wrap">
             <div class="space-y-1 min-w-0">
-              <span class="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold flex items-center gap-1.5">
+              <span class="text-[10px] font-mono tracking-widest text-emerald-400 font-bold flex items-center gap-1.5">
                 <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
                 <span>Net Salary Payable (Disbursed to Bank)</span>
               </span>
@@ -247,12 +247,12 @@
                 Amount in Words: <span class="font-bold text-amber-300 italic" data-in-words="{{ employee.net_salary_payable }}" data-currency="{{ active_company.currency|default('BDT') }}">Calculating...</span>
               </p>
               <p class="text-[10px] text-slate-400 font-mono">
-                Settlement Channel: Direct EFT &bull; Status: <span class="text-emerald-400 font-bold uppercase">{{ employee.status|default('PROCESSED') }}</span>
+                Settlement Channel: Direct EFT &bull; Status: <span class="text-emerald-400 font-bold ">{{ employee.status|default('PROCESSED') }}</span>
               </p>
             </div>
 
             <div class="text-right shrink-0">
-              <span class="text-xs font-mono text-slate-400">NET PAYOUT:</span>
+              <span class="text-xs font-mono text-slate-400">Net payout:</span>
               <p class="text-2xl font-black font-mono text-emerald-400 tracking-tight">
                 {{ employee.net_salary_payable|money }}
               </p>
@@ -319,8 +319,8 @@
                ========================================== -->
           <section class="space-y-5 text-xs leading-relaxed text-slate-800 py-4">
             <div class="text-center space-y-1">
-              <h2 class="text-base font-black uppercase tracking-widest text-slate-950">To Whom It May Concern</h2>
-              <p class="text-[10px] text-slate-400 uppercase font-mono">Certificate of Service & Diligence</p>
+              <h2 class="text-base font-black tracking-widest text-slate-950">To Whom It May Concern</h2>
+              <p class="text-[10px] text-slate-400 font-mono">Certificate of Service & Diligence</p>
             </div>
 
             <p class="text-justify indent-6">
@@ -395,7 +395,7 @@
           <!-- CFO Approved -->
           <div class="space-y-5">
             <div class="h-10 border-b border-slate-300 flex items-end justify-center pb-1">
-              <span class="font-mono text-[11px] text-blue-600 font-bold">AUTHENTICATED CFO SEAL</span>
+              <span class="font-mono text-[11px] text-blue-600 font-bold">Authenticated CFO seal</span>
             </div>
             <div>
               <p class="font-bold text-slate-950">Authorized Signatory</p>

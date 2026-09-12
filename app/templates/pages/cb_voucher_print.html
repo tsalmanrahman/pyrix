@@ -19,7 +19,7 @@
     <article id="printable-document" class="a4-document-sheet a4-portrait flex flex-col justify-between">
       
       <div class="watermark-overlay">
-        <span id="report-watermark-text">OFFICIAL DOCUMENT</span>
+        <span id="report-watermark-text">Official document</span>
       </div>
 
       <div class="space-y-5 relative z-20">
@@ -38,7 +38,7 @@
           </div>
 
           <div class="text-right flex flex-col items-end shrink-0">
-            <span class="px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded bg-slate-100 text-blue-700 border border-slate-300">
+            <span class="px-2.5 py-1 text-[11px] font-mono font-bold rounded bg-slate-100 text-blue-700 border border-slate-300">
               CONTRA VOUCHER
             </span>
             <p class="text-base font-black font-mono text-slate-950 mt-1.5 tracking-tight">{{ transfer.transfer_number }}</p>
@@ -49,26 +49,26 @@
         <!-- Meta Grid -->
         <section class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
           <div>
-            <span class="text-[9.5px] text-slate-400 block font-bold uppercase">Contra Flow Type:</span>
-            <span class="font-bold text-slate-950 text-sm block mt-0.5 font-mono uppercase">{{ transfer.transfer_type }}</span>
+            <span class="text-[9.5px] text-slate-400 block font-bold ">Contra Flow Type:</span>
+            <span class="font-bold text-slate-950 text-sm block mt-0.5 font-mono ">{{ transfer.transfer_type }}</span>
             <span class="text-slate-500 text-[11px] block mt-0.5">Reference: {{ transfer.reference_number }}</span>
           </div>
           <div class="text-right">
-            <span class="text-[9.5px] text-slate-400 block font-bold uppercase">Source & Target Flow:</span>
+            <span class="text-[9.5px] text-slate-400 block font-bold ">Source & Target Flow:</span>
             <span class="font-mono text-slate-800 font-semibold block">{{ transfer.from_name }} &rarr; {{ transfer.to_name }}</span>
           </div>
         </section>
 
         <!-- Memo -->
         <section class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-          <span class="text-[9.5px] text-slate-400 block font-bold uppercase mb-0.5">Transfer Narration / Memo:</span>
+          <span class="text-[9.5px] text-slate-400 block font-bold mb-0.5">Transfer Narration / Memo:</span>
           <p class="text-slate-800 italic">{{ transfer.narration }}</p>
         </section>
 
         <!-- Large Payout Banner -->
         <section class="p-4 rounded-xl bg-gradient-to-r from-slate-900 to-slate-950 text-white shadow-md flex items-center justify-between gap-4">
           <div class="space-y-1">
-            <span class="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold">TOTAL CONTRA VALUE TRANSFERRED</span>
+            <span class="text-[10px] font-mono tracking-widest text-emerald-400 font-bold">Total contra value transferred</span>
             <p class="text-xs text-slate-300">
               In Words: <span class="font-bold text-amber-300 italic" data-in-words="{{ transfer.amount }}" data-currency="{{ active_company.currency|default('BDT') }}">Calculating...</span>
             </p>
@@ -87,7 +87,7 @@
             <p class="font-bold text-slate-950">Source Custodian / Cashier</p>
           </div>
           <div class="space-y-4">
-            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">CONFIRMED</span></div>
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">Confirmed</span></div>
             <p class="font-bold text-slate-950">Destination Officer / Treasurer</p>
           </div>
         </div>

@@ -19,7 +19,7 @@
     <article id="printable-document" class="a4-document-sheet a4-portrait flex flex-col justify-between">
       
       <div class="watermark-overlay">
-        <span id="report-watermark-text">OFFICIAL DOCUMENT</span>
+        <span id="report-watermark-text">Official document</span>
       </div>
 
       <div class="space-y-5 relative z-20">
@@ -41,7 +41,7 @@
           </div>
 
           <div class="text-right flex flex-col items-end shrink-0">
-            <span class="px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded bg-slate-100 text-blue-700 border border-slate-300">
+            <span class="px-2.5 py-1 text-[11px] font-mono font-bold rounded bg-slate-100 text-blue-700 border border-slate-300">
               MONEY RECEIPT
             </span>
             <p class="text-base font-black font-mono text-slate-950 mt-1.5 tracking-tight">{{ receipt.receipt_number }}</p>
@@ -52,12 +52,12 @@
         <!-- Receipt Parties Grid -->
         <section class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
           <div>
-            <span class="text-[9.5px] text-slate-400 block font-bold uppercase">Received With Thanks From:</span>
+            <span class="text-[9.5px] text-slate-400 block font-bold ">Received With Thanks From:</span>
             <span class="font-bold text-slate-950 text-sm block mt-0.5">{{ receipt.party_name }}</span>
             <span class="text-slate-500 text-[11px] block mt-0.5">Category: {{ receipt.receipt_type }}</span>
           </div>
           <div class="text-right space-y-0.5">
-            <span class="text-[9.5px] text-slate-400 block font-bold uppercase">Payment Instrument:</span>
+            <span class="text-[9.5px] text-slate-400 block font-bold ">Payment Instrument:</span>
             <span class="font-mono font-bold text-slate-900 block">{{ receipt.payment_method }}</span>
             {% if receipt.cheque_no %}<span class="text-slate-500 text-[11px] font-mono block">Cheque #: {{ receipt.cheque_no }} ({{ receipt.drawn_on_bank }})</span>{% endif %}
           </div>
@@ -65,7 +65,7 @@
 
         <!-- Settlement Target -->
         <section class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1">
-          <span class="text-[9.5px] text-slate-400 block font-bold uppercase">Target Settlement Account / Cashier Station:</span>
+          <span class="text-[9.5px] text-slate-400 block font-bold ">Target Settlement Account / Cashier Station:</span>
           <p class="font-bold text-slate-900">
             {% if receipt.bank_account_number %}Bank A/C: {{ receipt.bank_account_number }} ({{ receipt.bank_name }}){% else %}Cashier Counter Station: {{ receipt.cashier_station or 'Main Treasury Booth' }}{% endif %}
           </p>
@@ -75,7 +75,7 @@
         <!-- Large Payout Banner -->
         <section class="p-4 rounded-xl bg-gradient-to-r from-slate-900 to-slate-950 text-white shadow-md flex items-center justify-between gap-4">
           <div class="space-y-1">
-            <span class="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold">TOTAL AMOUNT RECEIVED</span>
+            <span class="text-[10px] font-mono tracking-widest text-emerald-400 font-bold">Total amount received</span>
             <p class="text-xs text-slate-300">
               In Words: <span class="font-bold text-amber-300 italic" data-in-words="{{ receipt.amount }}" data-currency="{{ active_company.currency|default('BDT') }}">Calculating...</span>
             </p>
@@ -94,7 +94,7 @@
             <p class="font-bold text-slate-950">Cashier / Receiving Officer</p>
           </div>
           <div class="space-y-4">
-            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">ACKNOWLEDGED</span></div>
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">Acknowledged</span></div>
             <p class="font-bold text-slate-950">Chief Cashier / Treasurer</p>
           </div>
         </div>

@@ -15,7 +15,7 @@
     <article id="printable-document" class="a4-document-sheet a4-portrait flex flex-col justify-between">
       
       <div class="watermark-overlay">
-        <span id="report-watermark-text">OFFICIAL DOCUMENT</span>
+        <span id="report-watermark-text">Official document</span>
       </div>
 
       <div class="space-y-5 relative z-20">
@@ -37,7 +37,7 @@
           </div>
 
           <div class="text-right flex flex-col items-end shrink-0">
-            <span class="px-2.5 py-1 text-[11px] font-mono font-bold uppercase rounded bg-slate-100 text-blue-700 border border-slate-300">
+            <span class="px-2.5 py-1 text-[11px] font-mono font-bold rounded bg-slate-100 text-blue-700 border border-slate-300">
               {{ doc_type_title }}
             </span>
             <p class="text-base font-black font-mono text-slate-950 mt-1.5 tracking-tight">{{ doc_number }}</p>
@@ -59,7 +59,7 @@
       </div>
 
       <div class="text-right space-y-1">
-        <span class="px-3 py-1 text-xs font-mono font-bold uppercase rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+        <span class="px-3 py-1 text-xs font-mono font-bold rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
           {{ doc_type_title }}
         </span>
         <p class="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">{{ doc_number }}</p>
@@ -70,19 +70,19 @@
     <!-- Metadata Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 text-xs">
       <div>
-        <span class="text-[10px] font-bold text-slate-400 uppercase">Entity / Counterparty</span>
+        <span class="text-[10px] font-bold text-slate-400 ">Entity / Counterparty</span>
         <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ entity_name }}</p>
       </div>
       <div>
-        <span class="text-[10px] font-bold text-slate-400 uppercase">Operating Facility</span>
+        <span class="text-[10px] font-bold text-slate-400 ">Operating Facility</span>
         <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ facility_name }}</p>
       </div>
       <div>
-        <span class="text-[10px] font-bold text-slate-400 uppercase">Reference / Reason</span>
+        <span class="text-[10px] font-bold text-slate-400 ">Reference / Reason</span>
         <p class="font-mono font-bold text-blue-600 dark:text-blue-400 mt-0.5">{{ po_ref }}</p>
       </div>
       <div>
-        <span class="text-[10px] font-bold text-slate-400 uppercase">Custodian / Holder</span>
+        <span class="text-[10px] font-bold text-slate-400 ">Custodian / Holder</span>
         <p class="font-bold text-slate-900 dark:text-white mt-0.5">{{ custodian_name }}</p>
       </div>
     </div>
@@ -91,7 +91,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-left text-xs">
         <thead>
-          <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 font-bold uppercase text-[10px]">
+          <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 font-bold text-[10px]">
             <th class="py-2.5 px-3">#</th>
             <th class="py-2.5 px-3">Asset Tag Barcode</th>
             <th class="py-2.5 px-3">Capital Asset Description &amp; Technical Specs</th>
@@ -112,7 +112,7 @@
         </tbody>
         <tfoot>
           <tr class="border-t-2 border-slate-900 dark:border-white text-slate-900 dark:text-white font-bold text-sm">
-            <td colspan="4" class="py-3 px-3 text-right uppercase tracking-wider text-xs">Total Capital Amount:</td>
+            <td colspan="4" class="py-3 px-3 text-right tracking-wider text-xs">Total Capital Amount:</td>
             <td class="py-3 px-3 text-right font-mono text-emerald-600 dark:text-emerald-400">{{ total_amount|money }}</td>
           </tr>
         </tfoot>
@@ -170,7 +170,7 @@
             <p class="font-bold text-slate-950">Maintenance Lead</p>
           </div>
           <div class="space-y-4">
-            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">REGISTERED</span></div>
+            <div class="h-8 border-b border-slate-300 flex items-end justify-center pb-1"><span class="font-mono text-[10px] text-blue-600 font-bold">Registered</span></div>
             <p class="font-bold text-slate-950">Financial Controller</p>
           </div>
         </div>

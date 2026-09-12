@@ -232,7 +232,7 @@
                 <td class="py-3 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(it.total_on_hand) }}</td>
                 <td class="py-3 px-3 text-center">
                   {% if it.is_serialized %}
-                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">SERIALIZED</span>
+                    <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">Serialized</span>
                   {% else %}
                     <span class="text-slate-400 text-[10px]">Standard</span>
                   {% endif %}
@@ -585,15 +585,15 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Items Reconciled</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Total Items Reconciled</span>
           <p class="text-2xl font-bold font-mono text-slate-900 dark:text-white">{{ inv_eod_data.items_balanced|default(4) }} Active Items</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Physical Stock Units</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Physical Stock Units</span>
           <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(inv_eod_data.total_physical_units|default(3030)) }} Units</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">GL Ledger Parity</span>
+          <span class="text-[10px] font-bold text-slate-500 ">GL Ledger Parity</span>
           <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">100% Balanced</p>
         </div>
       </div>
@@ -606,7 +606,7 @@
             <p class="text-[11px] text-emerald-600/80">All material transactions, goods receipts, and dispatches are fully posted to General Ledger</p>
           </div>
         </div>
-        <span class="px-3 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white">EOD SUCCESS</span>
+        <span class="px-3 py-1 text-xs font-bold rounded-lg bg-emerald-600 text-white">EOD success</span>
       </div>
     </div>
 
@@ -701,7 +701,7 @@
         <div id="scanner-result" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-left space-y-2">
           <div class="flex items-center justify-between">
             <span class="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">SN-AERO-2026-8801</span>
-            <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">WARRANTY ACTIVE</span>
+            <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">Warranty active</span>
           </div>
           <p class="text-xs font-bold text-slate-900 dark:text-white">Aerospace Titanium Bearing Bushings (Set 4)</p>
           <p class="text-[11px] text-slate-600 dark:text-slate-400">Customer: Boeing Subcontractor Aviation Corp | Invoice: INV-APX-2026-8802</p>
@@ -718,7 +718,7 @@
           res.innerHTML = `
             <div class="flex items-center justify-between">
               <span class="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">${val}</span>
-              <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">WARRANTY ACTIVE</span>
+              <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">Warranty active</span>
             </div>
             <p class="text-xs font-bold text-slate-900 dark:text-white">5-Axis Surface Mount PCB Assembly</p>
             <p class="text-[11px] text-slate-600 dark:text-slate-400">Customer: Siemens Smart Energy Infrastructure | Invoice: INV-APX-2026-8801</p>
@@ -728,7 +728,7 @@
           res.innerHTML = `
             <div class="flex items-center justify-between">
               <span class="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">${val || 'SN-AERO-2026-8801'}</span>
-              <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">WARRANTY ACTIVE</span>
+              <span class="px-2 py-0.5 text-[9px] font-bold rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">Warranty active</span>
             </div>
             <p class="text-xs font-bold text-slate-900 dark:text-white">Aerospace Titanium Bearing Bushings (Set 4)</p>
             <p class="text-[11px] text-slate-600 dark:text-slate-400">Customer: Boeing Subcontractor Aviation Corp | Invoice: INV-APX-2026-8802</p>
@@ -1039,15 +1039,15 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Inventory Asset Valuation</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Total Inventory Asset Valuation</span>
           <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ inv_valuation_report.grand_total_valuation|money }}</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Stock Quantity On-Hand</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Total Stock Quantity On-Hand</span>
           <p class="text-2xl font-bold font-mono text-slate-900 dark:text-white">{{ "{:,.0f}".format(inv_valuation_report.grand_total_units) }} Units</p>
         </div>
         <div class="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-1">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Active Catalog SKUs</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Active Catalog SKUs</span>
           <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ inv_valuation_report.total_skus }} SKUs</p>
         </div>
       </div>
@@ -1119,9 +1119,9 @@
                 </td>
                 <td class="py-3 px-3 text-center">
                   {% if row.pending_dispatch_qty == 0 %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">FULLY DISPATCHED</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Fully dispatched</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">PENDING DISPATCH</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Pending dispatch</span>
                   {% endif %}
                 </td>
               

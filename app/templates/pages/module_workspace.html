@@ -220,9 +220,9 @@
                 <td class="table-cell-dynamic py-1.5 px-2.5 text-center font-mono text-slate-200">{{ m.posting_currency }}</td>
                 <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
                   {% if m.allow_direct_posting %}
-                    <span class="px-2 py-0.5 text-[9px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ALLOWED</span>
+                    <span class="px-2 py-0.5 text-[9px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Allowed</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[9px] font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">LOCKED</span>
+                    <span class="px-2 py-0.5 text-[9px] font-semibold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Locked</span>
                   {% endif %}
                 </td>
                 <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
@@ -447,7 +447,7 @@
             <i data-lucide="tags" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Total Categories</p>
+            <p class="text-[10px] text-slate-400 font-medium tracking-wider truncate">Total Categories</p>
             <p class="text-base font-bold text-slate-900 dark:text-white font-mono leading-none mt-0.5">{{ gl_category_kpis.total_categories }}</p>
           </div>
         </div>
@@ -456,7 +456,7 @@
             <i data-lucide="scale" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Balance Sheet</p>
+            <p class="text-[10px] text-slate-400 font-medium tracking-wider truncate">Balance Sheet</p>
             <p class="text-base font-bold text-blue-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.balance_sheet_categories }}</p>
           </div>
         </div>
@@ -465,7 +465,7 @@
             <i data-lucide="trending-up" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Income Stmt</p>
+            <p class="text-[10px] text-slate-400 font-medium tracking-wider truncate">Income Stmt</p>
             <p class="text-base font-bold text-purple-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.income_statement_categories }}</p>
           </div>
         </div>
@@ -474,7 +474,7 @@
             <i data-lucide="layers" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Mapped Accounts</p>
+            <p class="text-[10px] text-slate-400 font-medium tracking-wider truncate">Mapped Accounts</p>
             <p class="text-base font-bold text-emerald-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.mapped_accounts_total }}</p>
           </div>
         </div>
@@ -483,7 +483,7 @@
             <i data-lucide="pie-chart" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">IFRS 8 Segments</p>
+            <p class="text-[10px] text-slate-400 font-medium tracking-wider truncate">IFRS 8 Segments</p>
             <p class="text-base font-bold text-cyan-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.total_segments }}</p>
           </div>
         </div>
@@ -492,7 +492,7 @@
             <i data-lucide="percent" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider truncate">Avg Target Margin</p>
+            <p class="text-[10px] text-slate-400 font-medium tracking-wider truncate">Avg Target Margin</p>
             <p class="text-base font-bold text-rose-400 font-mono leading-none mt-0.5">{{ gl_category_kpis.average_segment_margin }}%</p>
           </div>
         </div>
@@ -754,14 +754,25 @@
           <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Annual Budget Sets Master: {{ active_company.name }}</span>
         </h3>
-        <a 
-          href="/modules/general-ledger/master/budget-sets/new" 
-          class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
-          title="Create Budget Set"
-        >
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-          <span>Create</span>
-        </a>
+        <div class="flex items-center gap-2">
+          <button 
+            type="button" 
+            onclick="openBudgetDataEntryModal()" 
+            class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/30 shadow-sm text-xs font-bold shrink-0" 
+            title="Enter Monthly Budget Data"
+          >
+            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+            <span>Enter monthly budget</span>
+          </button>
+          <a 
+            href="/modules/general-ledger/master/budget-sets/new" 
+            class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+            title="Create Budget Set"
+          >
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Create</span>
+          </a>
+        </div>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs density-compact" id="glBudgetSetsTable">
@@ -802,20 +813,31 @@
                     </span>
                     {% if b.is_locked %}
                       <span class="px-1.5 py-0.2 text-[8px] font-bold rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-0.5">
-                        <i data-lucide="lock" class="w-2.5 h-2.5"></i> LOCKED
+                        <i data-lucide="lock" class="w-2.5 h-2.5"></i> Locked
                       </span>
                     {% endif %}
                   </div>
                 </td>
                 <td class="table-cell-dynamic py-1.5 px-2.5 text-center">
-                  <button 
-                    type="button" 
-                    onclick="openRowActionMenu(this, event, 'budget_sets', '{{ b.id }}', '{{ b.budget_set_name if b.budget_set_name else b.budget_code }}', '/modules/general-ledger/master/budget-sets/{{ b.id }}/edit', 'deleteMasterRecord(\'budget-sets\', \'{{ b.id }}\', \'{{ b.budget_code }}\', \'row-bud-{{ b.id }}\')')" 
-                    class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
-                    title="More actions"
-                  >
-                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                  </button>
+                  <div class="flex items-center justify-center gap-1.5">
+                    <button 
+                      type="button" 
+                      onclick="openBudgetDataEntryModal('{{ b.id }}', '{{ b.account_id or '' }}', '{{ b.fiscal_year }}')" 
+                      class="px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1 transition cursor-pointer" 
+                      title="Enter monthly breakdown"
+                    >
+                      <i data-lucide="calendar" class="w-3 h-3"></i>
+                      <span>Enter data</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      onclick="openRowActionMenu(this, event, 'budget_sets', '{{ b.id }}', '{{ b.budget_set_name if b.budget_set_name else b.budget_code }}', '/modules/general-ledger/master/budget-sets/{{ b.id }}/edit', 'deleteMasterRecord(\'budget-sets\', \'{{ b.id }}\', \'{{ b.budget_code }}\', \'row-bud-{{ b.id }}\')')" 
+                      class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer" 
+                      title="More actions"
+                    >
+                      <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             {% endfor %}
@@ -827,16 +849,27 @@
   <!-- 9. Batch Templates & Automation Table -->
   {% elif module.route_slug == 'general-ledger' and current_tab == 'templates' %}
     <div class="glass-card rounded-2xl p-4 space-y-3 border border-white/10">
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
-        <h3 class="text-xs font-bold text-white flex items-center gap-1.5 tracking-tight">
-          <i data-lucide="copy" class="w-3.5 h-3.5 text-blue-400"></i>
+      <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200 dark:border-white/5">
+        <h3 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 tracking-tight">
+          <i data-lucide="copy" class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400"></i>
           <span>Recurring Batch Templates: {{ active_company.name }}</span>
         </h3>
+        <div class="flex items-center gap-2">
+          <button 
+            type="button" 
+            onclick="openCreateTemplateModal()" 
+            class="h-8 px-3 rounded-xl flex items-center gap-1.5 cursor-pointer transition-all duration-150 bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30 shadow-sm shadow-blue-500/20 hover:scale-[1.02] active:scale-95 text-xs font-bold shrink-0" 
+            title="Create Batch Template"
+          >
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Create batch template</span>
+          </button>
+        </div>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-white/5 text-slate-400 font-medium font-semibold text-xs">
+            <tr class="border-b border-white/5 text-slate-400 font-semibold text-xs">
               <th class="py-2 px-2.5">Template Code</th>
               <th class="py-2 px-2.5">Template Title</th>
               <th class="py-2 px-2.5">Description & Purpose</th>
@@ -856,14 +889,16 @@
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
-                  <button 
-                    onclick="generateFromTemplate('{{ t.id }}', '{{ t.template_name }}')" 
-                    class="h-7 px-3 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition cursor-pointer mx-auto" 
-                    title="Generate Batch from this Template"
-                  >
-                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                    <span>Generate Batch</span>
-                  </button>
+                  <div class="flex items-center justify-center gap-1.5">
+                    <a 
+                      href="/modules/general-ledger?tab=template-batch-gen&template_id={{ t.id }}" 
+                      class="h-7 px-3 rounded-lg text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 inline-flex items-center gap-1.5 transition cursor-pointer" 
+                      title="Generate batch from this template"
+                    >
+                      <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                      <span>Generate Batch</span>
+                    </a>
+                  </div>
                 </td>
               </tr>
             {% endfor %}
@@ -1141,8 +1176,8 @@
                 </td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">{{ mr.receipt_date }}</td>
                 <td class="py-2.5 px-2.5">
-                  <span class="px-2 py-0.5 text-[9px] font-bold rounded uppercase bg-slate-800 text-slate-300 border border-white/5 font-mono">
-                    {{ mr.receipt_type }}
+                  <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5 font-mono">
+                    {{ mr.receipt_type|title }}
                   </span>
                 </td>
                 <td class="py-2.5 px-2.5 font-semibold text-slate-200">{{ mr.party_name }}</td>
@@ -1154,7 +1189,7 @@
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
                   <span class="px-2 py-0.5 text-[9px] font-medium rounded-full {% if mr.status == 'ISSUED' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20{% else %}bg-rose-500/10 text-rose-400 border border-rose-500/20{% endif %}">
-                    {{ mr.status }}
+                    {{ mr.status|title }}
                   </span>
                 </td>
                 <td class="py-2.5 px-2.5 text-center">
@@ -1210,8 +1245,8 @@
                 </td>
                 <td class="py-2.5 px-2.5 font-mono text-slate-400 text-[11px]">{{ ct.transfer_date }}</td>
                 <td class="py-2.5 px-2.5">
-                  <span class="px-2 py-0.5 text-[9px] font-bold rounded uppercase bg-slate-800 text-slate-300 border border-white/5 font-mono">
-                    {{ ct.transfer_type }}
+                  <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-slate-800 text-slate-300 border border-white/5 font-mono">
+                    {{ ct.transfer_type|title }}
                   </span>
                 </td>
                 <td class="py-2.5 px-2.5 text-slate-300">
@@ -1245,7 +1280,403 @@
 
 </div>
 
+<!-- =========================================================================
+     MODAL: Create Batch Template (Page 3)
+     ========================================================================= -->
+<div id="modal-create-batch-template" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div class="glass-card rounded-3xl p-6 sm:p-7 max-w-lg w-full border border-slate-200 dark:border-white/10 shadow-2xl space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="copy" class="w-4 h-4 text-blue-500"></i>
+        <span>Create batch template</span>
+      </h3>
+      <button type="button" onclick="closeCreateTemplateModal()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white transition">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <form onsubmit="submitCreateTemplateFromBatch(event)" class="space-y-3">
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Template name</label>
+        <input type="text" id="new-tmpl-name" required placeholder="e.g. Monthly utilities distribution" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Description</label>
+        <input type="text" id="new-tmpl-desc" placeholder="Brief explanation of template accounting rules" class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Create from source batch</label>
+        <select id="new-tmpl-source-batch" required class="mac-input w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+          <option value="">-- Select existing batch --</option>
+          {% for b in gl_batches %}
+            <option value="{{ b.id }}">{{ b.batch_number }} - {{ b.batch_title }} ({{ active_company.currency_symbol }}{{ b.total_debit|default(0.0)|money }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="p-3 rounded-xl bg-blue-500/5 border border-blue-500/15 text-[11px] text-blue-600 dark:text-blue-400">
+        Template ratios and voucher distribution will be automatically derived from the lines in the selected batch.
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-white/10">
+        <button type="button" onclick="closeCreateTemplateModal()" class="h-8 px-4 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Cancel</button>
+        <button type="submit" class="h-8 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow-sm inline-flex items-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Save template</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: Budget Data Entry (Page 5)
+     ========================================================================= -->
+<div id="modal-budget-data-entry" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div class="glass-card rounded-3xl p-5 sm:p-6 max-w-3xl w-full border border-slate-200 dark:border-white/10 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <i data-lucide="calendar" class="w-4 h-4 text-blue-500"></i>
+        <span>Budget data entry</span>
+      </h3>
+      <button type="button" onclick="closeBudgetDataEntryModal()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white transition">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Filter selectors -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Financial year</label>
+        <select id="bde-fiscal-year" onchange="fetchMonthlyBudgetData()" class="mac-input w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+          <option value="2026-2027">2026-2027</option>
+          <option value="2025-2026">2025-2026</option>
+        </select>
+      </div>
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Budget set</label>
+        <select id="bde-budget-set" onchange="fetchMonthlyBudgetData()" class="mac-input w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+          {% for b in gl_budgets %}
+            <option value="{{ b.id }}">{{ b.budget_code }} - {{ b.budget_title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="space-y-1">
+        <label class="text-[11px] font-medium text-slate-700 dark:text-slate-300">GL account</label>
+        <select id="bde-account" onchange="fetchMonthlyBudgetData()" class="mac-input w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200">
+          {% for acc in gl_coa %}
+            <option value="{{ acc.id }}">{{ acc.account_number }} - {{ acc.account_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Entry Method Selector & Tools -->
+    <div class="flex items-center justify-between flex-wrap gap-2 p-2.5 rounded-xl bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5">
+      <div class="flex items-center gap-1.5 text-[11px]">
+        <span class="text-slate-400 font-medium mr-1">Entry method:</span>
+        <button type="button" onclick="onBudgetEntryMethodChange('values', this)" class="bde-method-pill px-2.5 py-1 rounded-lg font-bold bg-blue-600 text-white shadow">Entering values</button>
+        <button type="button" onclick="onBudgetEntryMethodChange('split', this)" class="bde-method-pill px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">Annual total split</button>
+      </div>
+
+      <div id="bde-split-controls" class="hidden flex items-center gap-2">
+        <span class="text-[11px] text-slate-400">Annual total:</span>
+        <input type="number" id="bde-annual-split-val" step="1000" placeholder="120000" class="mac-input w-28 px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-white/10">
+        <button type="button" onclick="splitAnnualBudgetTotal()" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition">Apply</button>
+      </div>
+    </div>
+
+    <!-- 12-Month Period Grid -->
+    <div class="border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden">
+      <table class="w-full text-left text-xs density-compact" id="bde-periods-table">
+        <thead>
+          <tr class="border-b border-slate-200 dark:border-white/10 text-slate-400 bg-slate-100/50 dark:bg-slate-900/30 text-[11px]">
+            <th class="py-2 px-3 w-16 text-center">Period</th>
+            <th class="py-2 px-3">Month</th>
+            <th class="py-2 px-3 text-right">Budget amount ({{ active_company.currency_symbol }})</th>
+            <th class="py-2 px-3 text-right">Running balance ({{ active_company.currency_symbol }})</th>
+          </tr>
+        </thead>
+        <tbody id="bde-periods-tbody" class="divide-y divide-slate-100 dark:divide-white/5 text-slate-700 dark:text-slate-200 font-mono text-xs">
+          <!-- 12 rows dynamically rendered by JS -->
+        </tbody>
+        <tfoot>
+          <tr class="border-t-2 border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/50 font-bold font-mono">
+            <td colspan="2" class="py-2 px-3 font-sans text-xs text-slate-900 dark:text-white">Annual total budget</td>
+            <td class="py-2 px-3 text-right text-blue-600 dark:text-blue-400 text-sm" id="bde-total-amount">৳0.00</td>
+            <td class="py-2 px-3 text-right text-emerald-600 dark:text-emerald-400" id="bde-final-balance">৳0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/10">
+      <div class="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
+        <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500"></i>
+        <span>12 fiscal periods (July to June) aligned with active chart of accounts.</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="closeBudgetDataEntryModal()" class="h-8 px-4 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Cancel</button>
+        <button type="button" onclick="submitSaveMonthlyBudget()" class="h-8 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow-sm inline-flex items-center gap-1.5">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Save budget</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+  // --- Modal: Create Batch Template ---
+  function openCreateTemplateModal() {
+    const modal = document.getElementById('modal-create-batch-template');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeCreateTemplateModal() {
+    const modal = document.getElementById('modal-create-batch-template');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  async function submitCreateTemplateFromBatch(e) {
+    e.preventDefault();
+    const name = document.getElementById('new-tmpl-name')?.value;
+    const desc = document.getElementById('new-tmpl-desc')?.value || '';
+    const batchId = document.getElementById('new-tmpl-source-batch')?.value;
+
+    if (!name || !batchId) {
+      alert('Please provide a template name and select a source batch.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/modules/general-ledger/templates/create-from-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source_batch_id: batchId,
+          template_name: name,
+          description: desc
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Batch template ${data.template_code || ''} successfully created!`);
+        closeCreateTemplateModal();
+        window.location.reload();
+      } else {
+        alert('Error: ' + (data.message || 'Failed to create template'));
+      }
+    } catch (err) {
+      alert('Server error creating batch template.');
+    }
+  }
+
+  // --- Modal: Budget Data Entry (12 Periods) ---
+  let currentMonthlyLines = [];
+  const MONTH_NAMES = [
+    "July", "August", "September", "October", "November", "December",
+    "January", "February", "March", "April", "May", "June"
+  ];
+
+  async function openBudgetDataEntryModal(budgetSetId, accountId, fiscalYear) {
+    const modal = document.getElementById('modal-budget-data-entry');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    if (fiscalYear && document.getElementById('bde-fiscal-year')) {
+      document.getElementById('bde-fiscal-year').value = fiscalYear;
+    }
+    if (budgetSetId && document.getElementById('bde-budget-set')) {
+      document.getElementById('bde-budget-set').value = budgetSetId;
+    }
+    if (accountId && document.getElementById('bde-account')) {
+      document.getElementById('bde-account').value = accountId;
+    }
+
+    await fetchMonthlyBudgetData();
+  }
+
+  function closeBudgetDataEntryModal() {
+    const modal = document.getElementById('modal-budget-data-entry');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  async function fetchMonthlyBudgetData() {
+    const bsetId = document.getElementById('bde-budget-set')?.value;
+    const accId = document.getElementById('bde-account')?.value || '';
+    const fy = document.getElementById('bde-fiscal-year')?.value || '2026-2027';
+
+    if (!bsetId) return;
+
+    try {
+      const res = await fetch(`/api/modules/general-ledger/budgets/${bsetId}/monthly-data?gl_account_id=${accId}&fiscal_year=${fy}`);
+      const data = await res.json();
+      if (data.success && data.lines && data.lines.length > 0) {
+        currentMonthlyLines = data.lines;
+      } else {
+        currentMonthlyLines = MONTH_NAMES.map((name, idx) => ({
+          period_number: idx + 1,
+          period_name: name,
+          budget_amount: 0.0
+        }));
+      }
+      renderBudgetMonthlyTable();
+    } catch (err) {
+      console.error('Error fetching monthly budget data:', err);
+      currentMonthlyLines = MONTH_NAMES.map((name, idx) => ({
+        period_number: idx + 1,
+        period_name: name,
+        budget_amount: 0.0
+      }));
+      renderBudgetMonthlyTable();
+    }
+  }
+
+  function renderBudgetMonthlyTable() {
+    const tbody = document.getElementById('bde-periods-tbody');
+    if (!tbody) return;
+
+    const curSym = '{{ active_company.currency_symbol|default("৳") }}';
+    let html = '';
+    let runningBal = 0;
+
+    currentMonthlyLines.forEach((l, idx) => {
+      const amt = parseFloat(l.budget_amount) || 0;
+      runningBal += amt;
+      html += `
+        <tr class="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition">
+          <td class="py-2 px-3 text-center font-mono font-bold text-slate-400 text-xs">${l.period_number}</td>
+          <td class="py-2 px-3 font-sans font-medium text-slate-800 dark:text-slate-200 text-xs">
+            <span>${l.period_name}</span>
+            <span class="text-[10px] text-slate-400 block font-mono">Period ${l.period_number}</span>
+          </td>
+          <td class="py-2 px-3 text-right">
+            <div class="relative inline-flex items-center">
+              <span class="absolute left-2.5 text-slate-400 text-xs">${curSym}</span>
+              <input 
+                type="number" 
+                step="0.01" 
+                value="${amt.toFixed(2)}" 
+                data-idx="${idx}"
+                oninput="onPeriodAmountInput(this, ${idx})" 
+                class="bde-period-input mac-input pl-6 pr-2.5 py-1 text-xs text-right font-mono font-bold rounded-lg border border-slate-200 dark:border-white/10 w-36 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white"
+              >
+            </div>
+          </td>
+          <td class="py-2 px-3 text-right font-mono font-semibold text-slate-500 dark:text-slate-400 text-xs" id="bde-running-${idx}">
+            ${curSym}${runningBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+    recalculateBudgetTotals();
+  }
+
+  function onPeriodAmountInput(inputEl, idx) {
+    const val = parseFloat(inputEl.value) || 0;
+    if (currentMonthlyLines[idx]) {
+      currentMonthlyLines[idx].budget_amount = val;
+    }
+    recalculateBudgetTotals();
+  }
+
+  function recalculateBudgetTotals() {
+    const curSym = '{{ active_company.currency_symbol|default("৳") }}';
+    let total = 0;
+    currentMonthlyLines.forEach((l, idx) => {
+      const amt = parseFloat(l.budget_amount) || 0;
+      total += amt;
+      const runningEl = document.getElementById(`bde-running-${idx}`);
+      if (runningEl) {
+        runningEl.innerText = curSym + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+    });
+
+    const totEl = document.getElementById('bde-total-amount');
+    const finalEl = document.getElementById('bde-final-balance');
+    if (totEl) totEl.innerText = curSym + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (finalEl) finalEl.innerText = curSym + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function onBudgetEntryMethodChange(method, btnEl) {
+    const pills = document.querySelectorAll('.bde-method-pill');
+    pills.forEach(p => {
+      p.classList.remove('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+      p.classList.add('font-medium', 'text-slate-600', 'dark:text-slate-400');
+    });
+    if (btnEl) {
+      btnEl.classList.remove('font-medium', 'text-slate-600', 'dark:text-slate-400');
+      btnEl.classList.add('bg-blue-600', 'text-white', 'shadow', 'font-bold');
+    }
+
+    const splitCtrl = document.getElementById('bde-split-controls');
+    if (splitCtrl) {
+      if (method === 'split') {
+        splitCtrl.classList.remove('hidden');
+      } else {
+        splitCtrl.classList.add('hidden');
+      }
+    }
+  }
+
+  function splitAnnualBudgetTotal() {
+    const totalVal = parseFloat(document.getElementById('bde-annual-split-val')?.value) || 0;
+    if (totalVal <= 0) {
+      alert('Please enter a valid annual total amount to split.');
+      return;
+    }
+    const monthlyVal = Math.round((totalVal / 12) * 100) / 100;
+    currentMonthlyLines.forEach((l, idx) => {
+      if (idx === 11) {
+        l.budget_amount = Math.round((totalVal - (monthlyVal * 11)) * 100) / 100;
+      } else {
+        l.budget_amount = monthlyVal;
+      }
+    });
+    renderBudgetMonthlyTable();
+  }
+
+  async function submitSaveMonthlyBudget() {
+    const bsetId = document.getElementById('bde-budget-set')?.value;
+    const accId = document.getElementById('bde-account')?.value;
+    const fy = document.getElementById('bde-fiscal-year')?.value || '2026-2027';
+
+    if (!bsetId) {
+      alert('Please select a budget set.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/modules/general-ledger/budgets/save-monthly-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          budget_set_id: bsetId,
+          gl_account_id: accId,
+          fiscal_year: fy,
+          lines: currentMonthlyLines
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message || 'Monthly budget data saved successfully!');
+        closeBudgetDataEntryModal();
+        window.location.reload();
+      } else {
+        alert('Error saving budget data: ' + (data.message || 'Failed'));
+      }
+    } catch (err) {
+      alert('Server error saving monthly budget data.');
+    }
+  }
+
   function deleteCbMaster(entity, id, name, rowId) {
     if (!confirm(`Are you sure you want to delete ${name}?\n\nSafe architecture: The record will be soft-deleted (isDelete=1) and removed from the active view while preserving audit integrity in SQL Server.`)) return;
 

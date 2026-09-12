@@ -37,7 +37,7 @@
                 <td class="py-3 px-3 font-mono text-purple-600 dark:text-purple-400">{{ p.default_cost_center }}</td>
                 <td class="py-3 px-3 text-slate-600 dark:text-slate-400 max-w-xs truncate">{{ p.description }}</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">ACTIVE</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Active</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -87,7 +87,7 @@
                 <td class="py-3 px-3 font-mono text-purple-600 dark:text-purple-400">{{ pl.shift_mode }}</td>
                 <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ pl.resource_count }} Units</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">OPERATIONAL</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Operational</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -348,7 +348,7 @@
                 <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.1f}".format(ab.expected_yield_pct|float) }}%</td>
                 <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">{{ ab.total_bom_material_cost|float|money }}</td>
                 <td class="py-3 px-3 text-center">
-                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">READY_FOR_KITTING</span>
+                  <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Ready for kitting</span>
                 </td>
               
                 <td class="py-3 px-3 text-right">
@@ -404,7 +404,7 @@
                 <td class="py-3 px-3 font-mono text-slate-500">{{ req.required_by_date }}</td>
                 <td class="py-3 px-3 text-center">
                   {% if req.priority == 'URGENT' %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">URGENT</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">Urgent</span>
                   {% else %}
                     <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">{{ req.priority }}</span>
                   {% endif %}
@@ -469,9 +469,9 @@
                 <td class="py-3 px-3 text-center font-mono text-[11px] text-slate-500">{{ o.planned_start_date }} &rarr; {{ o.planned_end_date }}</td>
                 <td class="py-3 px-3 text-center">
                   {% if o.status == 'COMPLETED' %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">COMPLETED</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Completed</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">IN_PROGRESS</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">In progress</span>
                   {% endif %}
                 </td>
                 <td class="py-3 px-3 text-center">
@@ -864,19 +864,19 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Closing Fiscal Period</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Closing Fiscal Period</span>
           <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">{{ prod_year_end_data.fiscal_year|default('FY 2026-2027') }}</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">WIP Orders Rolled Forward</span>
+          <span class="text-[10px] font-bold text-slate-500 ">WIP Orders Rolled Forward</span>
           <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ prod_year_end_data.wip_orders_carried_forward|default(4) }} Orders</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Carried WIP Value</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Total Carried WIP Value</span>
           <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ prod_year_end_data.total_wip_value|default(245800.00, true)|money }}</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">COGS Variance Absorption</span>
+          <span class="text-[10px] font-bold text-slate-500 ">COGS Variance Absorption</span>
           <p class="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">{{ prod_year_end_data.cost_variance_closed_to_cogs|default(4850.00, true)|money }}</p>
         </div>
       </div>
@@ -979,7 +979,7 @@
                   {% if oee.status == 'WORLD_CLASS' %}
                     <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">WORLD_CLASS (>85%)</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">OPTIMAL</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">Optimal</span>
                   {% endif %}
                 </td>
               
@@ -1027,9 +1027,9 @@
                 <td class="py-3 px-3 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ "{:,.1f}".format(cp.capacity_utilization_pct|float) }}%</td>
                 <td class="py-3 px-3 text-center">
                   {% if cp.capacity_utilization_pct|float > 90.0 %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">HIGH LOAD</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">High load</span>
                   {% else %}
-                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">OPTIMAL</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Optimal</span>
                   {% endif %}
                 </td>
               
@@ -1063,19 +1063,19 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Total Units Produced</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Total Units Produced</span>
           <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ "{:,.0f}".format(prod_summary.total_units_manufactured|default(965, true)|float) }} Units</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Average Plant OEE</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Average Plant OEE</span>
           <p class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">{{ prod_summary.average_plant_oee_pct|default(86.8, true) }}%</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Overall Scrap Rate</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Overall Scrap Rate</span>
           <p class="text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">{{ prod_summary.overall_scrap_rate_pct|default(1.53, true) }}%</p>
         </div>
         <div class="p-5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 space-y-2">
-          <span class="text-[10px] font-bold text-slate-500 uppercase">Work-In-Progress (WIP) Value</span>
+          <span class="text-[10px] font-bold text-slate-500 ">Work-In-Progress (WIP) Value</span>
           <p class="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400">{{ prod_summary.wip_valuation_usd|default(149360.00, true)|float|money }}</p>
         </div>
       </div>
